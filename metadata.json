@@ -1,0 +1,5 @@
+{
+  "name": "Fahrtenbuch Pro. Fase 3",
+  "description": "Fahrtenbuch Pro is a personal web application designed to fully automate the process of recording and declaring professional mileage for Austrian tax purposes (Finanzamt). It transforms manual processing of callsheets and schedules into a smart, centralized digital workflow.",
+  "requestFramePermissions": []
+}
