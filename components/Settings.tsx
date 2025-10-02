@@ -3,6 +3,7 @@ import { UserProfile, AiModelInfo, View, PersonalizationSettings } from '../type
 import { SaveIcon, LockIcon, XIcon, UserCircleIcon, SparklesIcon } from './Icons';
 import useTranslation from '../hooks/useTranslation';
 import useToast from '../hooks/useToast';
+import useUnsavedChanges from '../hooks/useUnsavedChanges';
 import { fetchOpenRouterModels } from '../services/aiService';
 import { getRateForCountry, getPassengerSurchargeForCountry } from '../services/taxService';
 import useUserProfile from '../hooks/useUserProfile';
@@ -33,12 +34,23 @@ const SettingsView: React.FC<{
     
     const fileInputRef = useRef<HTMLInputElement>(null);
 
+    // Initialize unsaved changes tracker for profile data
+    const { hasUnsavedChanges, markAsSaved, checkUnsavedChanges, resetInitialData } = useUnsavedChanges(
+        userProfile || null,
+        localProfile,
+        {
+            enableBeforeUnload: true,
+            confirmationMessage: t('common_unsaved_changes_warning')
+        }
+    );
+
     useEffect(() => {
         setLocalProfile(userProfile);
+        resetInitialData(userProfile);
         if (userProfile) {
             setPassengerSurcharge(getPassengerSurchargeForCountry(userProfile.country));
         }
-    }, [userProfile]);
+    }, [userProfile, resetInitialData]);
     
     useEffect(() => {
         if (!localProfile) return;
@@ -91,12 +103,20 @@ const SettingsView: React.FC<{
     const handleSaveAllSettings = () => {
         if (localProfile && user) {
             setUserProfile(localProfile);
+            markAsSaved(); // Mark as saved after successful save
             showToast(t('settings_alert_saveSuccess'), 'success');
             onClose();
         }
     };
     
     const onClose = () => setCurrentView('dashboard');
+    
+    const handleClose = async () => {
+        const shouldClose = await checkUnsavedChanges();
+        if (shouldClose) {
+            onClose();
+        }
+    };
     
     const resetPersonalization = () => {
         setPersonalization({ backgroundImage: '', uiTransparency: 0.2, uiBlur: 16, backgroundBlur: 0 });
@@ -361,11 +381,11 @@ const SettingsView: React.FC<{
     };
 
     return (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50 backdrop-blur-sm" onClick={onClose}>
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50 backdrop-blur-sm" onClick={handleClose}>
             <div style={contentStyle} className="rounded-lg shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}>
                 <header className="flex items-center justify-between p-4 border-b border-gray-700/50 flex-shrink-0">
                     <h2 className="text-xl font-bold text-white">{t('settings_title')}</h2>
-                    <button onClick={onClose} className="text-gray-400 hover:text-white"><XIcon className="w-6 h-6" /></button>
+                    <button onClick={handleClose} className="text-gray-400 hover:text-white"><XIcon className="w-6 h-6" /></button>
                 </header>
                 
                 <div className="flex-grow flex min-h-0">
@@ -421,12 +441,24 @@ const SettingsView: React.FC<{
                     </main>
                 </div>
                 
-                <footer className="flex justify-end p-4 bg-transparent border-t border-gray-700/50 flex-shrink-0">
-                    <button onClick={onClose} className="bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg mr-4">{t('common_cancel')}</button>
-                    <button onClick={handleSaveAllSettings} className="flex items-center bg-brand-primary hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition-colors">
-                        <SaveIcon className="w-5 h-5 mr-2"/>
-                        {t('settings_saveAll')}
-                    </button>
+                <footer className="flex justify-between items-center p-4 bg-transparent border-t border-gray-700/50 flex-shrink-0">
+                    <div className="flex items-center gap-2">
+                        {hasUnsavedChanges && (
+                            <>
+                                <div className="w-2 h-2 bg-orange-400 rounded-full animate-pulse"></div>
+                                <span className="text-xs text-orange-400 font-medium">
+                                    {t('common_unsaved_indicator')}
+                                </span>
+                            </>
+                        )}
+                    </div>
+                    <div className="flex gap-4">
+                        <button onClick={handleClose} className="bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg">{t('common_cancel')}</button>
+                        <button onClick={handleSaveAllSettings} className="flex items-center bg-brand-primary hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition-colors">
+                            <SaveIcon className="w-5 h-5 mr-2"/>
+                            {t('settings_saveAll')}
+                        </button>
+                    </div>
                 </footer>
             </div>
         </div>

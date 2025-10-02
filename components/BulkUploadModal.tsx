@@ -8,6 +8,7 @@ import useTranslation from '../hooks/useTranslation';
 import { formatDateForStorage } from '../i18n/translations';
 import useToast from '../hooks/useToast';
 import useUserProfile from '../hooks/useUserProfile';
+import { normalizeSignature } from '../services/tripUtils';
 import { processFileForTrip } from '../services/aiService';
 import useGoogleMapsScript from '../hooks/useGoogleMapsScript';
 import useGoogleCalendar from '../hooks/useGoogleCalendar';
@@ -84,12 +85,7 @@ const robustParseFloat = (numStr: string): number => {
 };
 
 
-const normalizeSignature = (date: string, locations: string[]): string => {
-    const normalizedLocations = locations
-        .map(l => l.trim().toLowerCase().replace(/\s+/g, ' '))
-        .join(',');
-    return `${date}-${normalizedLocations}`;
-};
+
 
 
 const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onClose }) => {
@@ -300,7 +296,9 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
             const distVal = robustParseFloat(values[distanceIndex]);
             if (!isNaN(distVal)) {
                 distance = distVal;
-                if (distVal > 1000) {
+                if (distVal <= 0) {
+                    warnings.push(t('tripEditor_validation_distance_positive'));
+                } else if (distVal > 1000) {
                     warnings.push(t('bulk_warning_improbable_distance'));
                 }
             }
@@ -566,7 +564,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
                            <option value="" disabled>{t('bulk_review_projectPlaceholder')}</option>
                            {allProjectOptions.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                       </select>
-                      <input type="number" value={draft.distance} placeholder={t('bulk_review_distancePlaceholder')} onChange={e => handleUpdateDraft(index, {...draft, distance: parseFloat(e.target.value) || 0})} className="bg-surface-dark p-2 rounded col-span-2"/>
+                      <input type="number" min="0.01" step="0.1" value={draft.distance} placeholder={t('bulk_review_distancePlaceholder')} onChange={e => handleUpdateDraft(index, {...draft, distance: parseFloat(e.target.value) || 0})} className="bg-surface-dark p-2 rounded col-span-2"/>
                   </div>
               ))}
               </div>

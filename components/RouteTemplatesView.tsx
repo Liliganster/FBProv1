@@ -2,6 +2,9 @@ import React, { useMemo, useState } from 'react';
 import { Plus, ArrowLeft, Trash2, Edit2 } from 'lucide-react';
 import useTranslation from '../hooks/useTranslation';
 import useRouteTemplates from '../hooks/useRouteTemplates';
+import useUndoRedo from '../hooks/useUndoRedo';
+import useToast from '../hooks/useToast';
+import UndoToast from './UndoToast';
 import { RouteTemplate } from '../types';
 
 interface RouteTemplatesViewProps {
@@ -14,7 +17,10 @@ const categoryOrder: RouteTemplate['category'][] = ['business', 'commute', 'clie
 
 const RouteTemplatesView: React.FC<RouteTemplatesViewProps> = ({ onBack, theme, personalization }) => {
   const { t } = useTranslation();
+  const { showToast } = useToast();
   const { templates, createTemplate, updateTemplate, deleteTemplate } = useRouteTemplates();
+  const { addAction, undo, getLastAction } = useUndoRedo();
+  const [showUndoToast, setShowUndoToast] = useState(false);
   const [categoryFilter, setCategoryFilter] = useState<'all' | RouteTemplate['category']>('all');
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState<RouteTemplate | null>(null);
@@ -61,12 +67,45 @@ const RouteTemplatesView: React.FC<RouteTemplatesViewProps> = ({ onBack, theme, 
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate required fields
+    if (!form.name.trim() || !form.startLocation.trim() || !form.endLocation.trim()) {
+      showToast(t('projects_alert_fillFields'), 'error');
+      return;
+    }
+    
+    // Validate distance is greater than 0
+    if (!form.distance || form.distance <= 0) {
+      showToast(t('tripEditor_validation_distance_positive'), 'error');
+      return;
+    }
+    
     if (editing) {
       updateTemplate(editing.id, { ...form });
     } else {
       createTemplate({ ...form });
     }
     setShowModal(false);
+  };
+
+  const handleDeleteTemplate = (templateId: string) => {
+    if (window.confirm(t('route_templates_deleteConfirm'))) {
+      const templateToDelete = templates.find(t => t.id === templateId);
+      if (templateToDelete) {
+        deleteTemplate(templateId);
+        
+        // Add undo action
+        addAction({
+          type: 'delete',
+          description: t('undo_action_delete_template'),
+          undo: () => {
+            createTemplate(templateToDelete);
+          }
+        });
+        
+        setShowUndoToast(true);
+      }
+    }
   };
 
   const bgCard = theme === 'dark' ? `rgba(30,30,30,${1 - personalization.uiTransparency})` : `rgba(243,244,246,${1 - personalization.uiTransparency})`;
@@ -155,7 +194,7 @@ const RouteTemplatesView: React.FC<RouteTemplatesViewProps> = ({ onBack, theme, 
                 <span className="text-xs text-gray-500">{t('route_templates_field_uses')}: {tpl.uses}</span>
                 <div className="flex gap-2">
                   <button onClick={() => openEdit(tpl)} className="p-1.5 rounded hover:bg-gray-600/40 text-gray-300 transition-colors" title={t('common_edit')}><Edit2 size={14} /></button>
-                  <button onClick={() => deleteTemplate(tpl.id)} className="p-1.5 rounded hover:bg-red-600/40 text-red-400 transition-colors" title={t('common_delete')}><Trash2 size={14} /></button>
+                  <button onClick={() => handleDeleteTemplate(tpl.id)} className="p-1.5 rounded hover:bg-red-600/40 text-red-400 transition-colors" title={t('common_delete')}><Trash2 size={14} /></button>
                 </div>
               </div>
             </div>
@@ -211,7 +250,7 @@ const RouteTemplatesView: React.FC<RouteTemplatesViewProps> = ({ onBack, theme, 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <Input label={t('route_templates_field_start')} value={form.startLocation} onChange={(v) => setForm(f => ({ ...f, startLocation: v }))} required theme={theme} />
                       <Input label={t('route_templates_field_end')} value={form.endLocation} onChange={(v) => setForm(f => ({ ...f, endLocation: v }))} required theme={theme} />
-                      <NumberInput label={t('route_templates_field_distance')} value={form.distance} onChange={(v) => setForm(f => ({ ...f, distance: v }))} min={0} step={0.1} required theme={theme} />
+                      <NumberInput label={t('route_templates_field_distance')} value={form.distance} onChange={(v) => setForm(f => ({ ...f, distance: v }))} min={0.01} step={0.1} required theme={theme} />
                       <NumberInput label={t('route_templates_field_time')} value={form.estimatedTimeMinutes} onChange={(v) => setForm(f => ({ ...f, estimatedTimeMinutes: v }))} min={0} step={1} theme={theme} />
                     </div>
                   </section>
@@ -254,6 +293,14 @@ const RouteTemplatesView: React.FC<RouteTemplatesViewProps> = ({ onBack, theme, 
           </div>
         </div>
       )}
+      
+      <UndoToast
+        action={getLastAction()}
+        onUndo={undo}
+        onDismiss={() => setShowUndoToast(false)}
+        isVisible={showUndoToast}
+        theme={theme}
+      />
     </div>
   );
 };

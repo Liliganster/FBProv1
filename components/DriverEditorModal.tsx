@@ -4,6 +4,7 @@ import { UserProfile as Driver } from '../types';
 import { XIcon } from './Icons';
 import useTranslation from '../hooks/useTranslation';
 import useToast from '../hooks/useToast';
+import useUnsavedChanges from '../hooks/useUnsavedChanges';
 import Avatar from './Avatar';
 import { getRateForCountry, getPassengerSurchargeForCountry } from '../services/taxService';
 
@@ -14,7 +15,7 @@ interface DriverEditorModalProps {
 }
 
 const DriverEditorModal: React.FC<DriverEditorModalProps> = ({ driver, onSave, onClose }) => {
-  const [formData, setFormData] = useState<Partial<Driver>>({
+  const initialFormData = {
     name: '',
     licensePlate: '',
     uid: '',
@@ -24,15 +25,28 @@ const DriverEditorModal: React.FC<DriverEditorModalProps> = ({ driver, onSave, o
     color: '#374151',
     profilePicture: '',
     ratePerKm: undefined,
-  });
+  };
+  
+  const [formData, setFormData] = useState<Partial<Driver>>(initialFormData);
+  const [savedFormData, setSavedFormData] = useState<Partial<Driver>>(initialFormData);
   const [passengerSurcharge, setPassengerSurcharge] = useState<number>(0);
   const { t } = useTranslation();
   const { showToast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Initialize unsaved changes tracker
+  const { hasUnsavedChanges, markAsSaved, checkUnsavedChanges, resetInitialData } = useUnsavedChanges(
+    savedFormData,
+    formData,
+    {
+      enableBeforeUnload: true,
+      confirmationMessage: t('common_unsaved_changes_warning')
+    }
+  );
+
   useEffect(() => {
     if (driver) {
-      setFormData({
+      const newFormData = {
         name: '',
         licensePlate: '',
         uid: '',
@@ -43,14 +57,20 @@ const DriverEditorModal: React.FC<DriverEditorModalProps> = ({ driver, onSave, o
         profilePicture: '',
         ratePerKm: undefined,
         ...driver,
-      });
+      };
+      setFormData(newFormData);
+      setSavedFormData(newFormData);
+      resetInitialData(newFormData);
       setPassengerSurcharge(getPassengerSurchargeForCountry(driver.country));
     } else {
         const country = '';
-        setFormData(prev => ({...prev, ratePerKm: getRateForCountry(country)}));
+        const newFormData = { ...initialFormData, ratePerKm: getRateForCountry(country) };
+        setFormData(newFormData);
+        setSavedFormData(newFormData);
+        resetInitialData(newFormData);
         setPassengerSurcharge(getPassengerSurchargeForCountry(country));
     }
-  }, [driver]);
+  }, [driver, resetInitialData]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type } = e.target;
@@ -89,7 +109,17 @@ const DriverEditorModal: React.FC<DriverEditorModalProps> = ({ driver, onSave, o
       showToast(t('projects_alert_fillFields'), 'error');
       return;
     }
+    
+    // Mark as saved after successful save
+    markAsSaved();
     onSave(formData as Driver);
+  };
+
+  const handleClose = async () => {
+    const shouldClose = await checkUnsavedChanges();
+    if (shouldClose) {
+      onClose();
+    }
   };
 
   const isEditing = !!driver;
@@ -102,7 +132,7 @@ const DriverEditorModal: React.FC<DriverEditorModalProps> = ({ driver, onSave, o
             {isEditing ? t('driverEditor_title_edit') : t('driverEditor_title_add')}
           </h2>
           <button
-            onClick={onClose}
+            onClick={handleClose}
             className="p-2 text-gray-400 hover:text-white hover:bg-white/5 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-primary/50 transition-colors"
             aria-label={t('common_close')}
           >
@@ -169,19 +199,31 @@ const DriverEditorModal: React.FC<DriverEditorModalProps> = ({ driver, onSave, o
             </div>
           </div>
         </main>
-        <footer className="flex justify-end gap-3 px-6 py-4 border-t border-gray-700/60 bg-background-dark/40">
-          <button
-            onClick={onClose}
-            className="px-4 py-2.5 rounded-md text-sm font-medium bg-gray-600/40 hover:bg-gray-600 text-gray-200 border border-gray-500/60 transition-colors focus:outline-none focus:ring-2 focus:ring-brand-primary/40"
-          >
-            {t('common_cancel')}
-          </button>
-          <button
-            onClick={handleSave}
-            className="px-4 py-2.5 rounded-md text-sm font-medium bg-brand-primary hover:brightness-110 text-white shadow focus:outline-none focus:ring-2 focus:ring-brand-primary/50"
-          >
-            {isEditing ? t('driverEditor_save_btn') : t('driverEditor_add_btn')}
-          </button>
+        <footer className="flex justify-between items-center px-6 py-4 border-t border-gray-700/60 bg-background-dark/40">
+          <div className="flex items-center gap-2">
+            {hasUnsavedChanges && (
+              <>
+                <div className="w-2 h-2 bg-orange-400 rounded-full animate-pulse"></div>
+                <span className="text-xs text-orange-400 font-medium">
+                  {t('common_unsaved_indicator')}
+                </span>
+              </>
+            )}
+          </div>
+          <div className="flex gap-3">
+            <button
+              onClick={handleClose}
+              className="px-4 py-2.5 rounded-md text-sm font-medium bg-gray-600/40 hover:bg-gray-600 text-gray-200 border border-gray-500/60 transition-colors focus:outline-none focus:ring-2 focus:ring-brand-primary/40"
+            >
+              {t('common_cancel')}
+            </button>
+            <button
+              onClick={handleSave}
+              className="px-4 py-2.5 rounded-md text-sm font-medium bg-brand-primary hover:brightness-110 text-white shadow focus:outline-none focus:ring-2 focus:ring-brand-primary/50"
+            >
+              {isEditing ? t('driverEditor_save_btn') : t('driverEditor_add_btn')}
+            </button>
+          </div>
         </footer>
       </div>
     </div>

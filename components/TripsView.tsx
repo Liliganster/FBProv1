@@ -12,6 +12,8 @@ import { formatDateForDisplay } from '../i18n/translations';
 import { calculateTripReimbursement } from '../services/taxService';
 import useGoogleCalendar from '../hooks/useGoogleCalendar';
 import useToast from '../hooks/useToast';
+import useUndoRedo from '../hooks/useUndoRedo';
+import UndoToast from './UndoToast';
 
 const SpecialOriginTag: React.FC<{ originType: SpecialOrigin }> = ({ originType }) => {
   const { t } = useTranslation();
@@ -46,6 +48,8 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
   const { userProfile } = useUserProfile();
   const { isSignedIn, createCalendarEvent } = useGoogleCalendar();
   const { showToast } = useToast();
+  const { addAction, undo, getLastAction } = useUndoRedo();
+  const [showUndoToast, setShowUndoToast] = useState(false);
   const [isEditorModalOpen, setIsEditorModalOpen] = useState(false);
   const [isBulkModalOpen, setIsBulkModalOpen] = useState(false);
   const [isBatchEditModalOpen, setIsBatchEditModalOpen] = useState(false);
@@ -99,7 +103,21 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
   
   const handleDeleteTrip = (id: string) => {
     if (window.confirm(t('trips_deleteConfirm'))) {
-      deleteTrip(id);
+      const tripToDelete = trips.find(t => t.id === id);
+      if (tripToDelete) {
+        deleteTrip(id);
+        
+        // Add undo action
+        addAction({
+          type: 'delete',
+          description: t('undo_action_delete_trip'),
+          undo: () => {
+            addTrip(tripToDelete);
+          }
+        });
+        
+        setShowUndoToast(true);
+      }
     }
   };
   
@@ -147,8 +165,20 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
 
   const handleDeleteSelected = () => {
     if (window.confirm(t('trips_delete_selected_confirm', { count: selectedTripIds.length }))) {
+      const tripsToDelete = trips.filter(t => selectedTripIds.includes(t.id));
       deleteMultipleTrips(selectedTripIds);
+      
+      // Add undo action for multiple trips
+      addAction({
+        type: 'bulk_delete',
+        description: t('undo_action_bulk_delete', { count: tripsToDelete.length }),
+        undo: () => {
+          tripsToDelete.forEach(trip => addTrip(trip));
+        }
+      });
+      
       setSelectedTripIds([]);
+      setShowUndoToast(true);
     }
   };
   
@@ -372,6 +402,14 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
           onClose={() => setIsDetailModalOpen(false)}
         />
       )}
+      
+      <UndoToast
+        action={getLastAction()}
+        onUndo={undo}
+        onDismiss={() => setShowUndoToast(false)}
+        isVisible={showUndoToast}
+        theme={theme}
+      />
     </div>
   );
 };

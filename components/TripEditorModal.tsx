@@ -6,8 +6,10 @@ import useTranslation from '../hooks/useTranslation';
 import useGoogleMapsScript from '../hooks/useGoogleMapsScript';
 import useToast from '../hooks/useToast';
 import useUserProfile from '../hooks/useUserProfile';
+import useUnsavedChanges from '../hooks/useUnsavedChanges';
 import { getRateForCountry } from '../services/taxService';
 import useGoogleCalendar from '../hooks/useGoogleCalendar';
+import { isDuplicateTrip, findDuplicateTrips } from '../services/tripUtils';
 
 declare global {
   interface Window {
@@ -37,6 +39,9 @@ const TripEditorModal: React.FC<TripEditorModalProps> = ({ trip, projects, trips
     ratePerKm: undefined,
     ...trip,
   });
+
+  // Track initial data for unsaved changes detection
+  const [initialFormData, setInitialFormData] = useState<Partial<Trip>>(formData);
   const [isCalculatingDist, setIsCalculatingDist] = useState(false);
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
@@ -53,14 +58,42 @@ const TripEditorModal: React.FC<TripEditorModalProps> = ({ trip, projects, trips
   
   const { isLoaded: isMapsScriptLoaded, error: mapsScriptError } = useGoogleMapsScript({ apiKey: userProfile?.googleMapsApiKey });
 
+  // Initialize unsaved changes tracker
+  const { hasUnsavedChanges, markAsSaved, checkUnsavedChanges, resetInitialData } = useUnsavedChanges(
+    initialFormData,
+    formData,
+    {
+      enableBeforeUnload: true,
+      confirmationMessage: t('common_unsaved_changes_warning')
+    }
+  );
+
   useEffect(() => {
     if (trip) {
-        setFormData({ passengers: 0, ...trip });
+        const newFormData = { passengers: 0, ...trip };
+        setFormData(newFormData);
+        setInitialFormData(newFormData);
+        resetInitialData(newFormData);
         if (trip.ratePerKm !== undefined) {
             setIsRateManuallySet(true);
         }
+    } else {
+        // Reset for new trip
+        const newFormData = {
+          date: new Date().toISOString().split('T')[0],
+          locations: ['', ''],
+          distance: 0,
+          reason: '',
+          projectId: '',
+          specialOrigin: SpecialOrigin.HOME,
+          passengers: 0,
+          ratePerKm: undefined,
+        };
+        setFormData(newFormData);
+        setInitialFormData(newFormData);
+        resetInitialData(newFormData);
     }
-  }, [trip]);
+  }, [trip, resetInitialData]);
 
   useEffect(() => {
     if (isRateManuallySet || trip || !userProfile) return; 
@@ -107,7 +140,9 @@ const TripEditorModal: React.FC<TripEditorModalProps> = ({ trip, projects, trips
 
     if (name === 'distance') {
       const dist = parseFloat(value);
-      if (dist > 1000) {
+      if (dist <= 0 && value !== '') {
+        setDistanceWarning(t('tripEditor_validation_distance_positive'));
+      } else if (dist > 1000) {
         setDistanceWarning(t('tripEditor_alert_improbable_distance'));
       } else {
         setDistanceWarning('');
@@ -303,11 +338,36 @@ const TripEditorModal: React.FC<TripEditorModalProps> = ({ trip, projects, trips
     if (finalLocations.length < 2 || !finalLocations[0] || !finalLocations[finalLocations.length - 1]) {
         validationErrors.push(t('tripEditor_validation_locations'));
     }
+    if (!formData.distance || formData.distance <= 0) {
+        validationErrors.push(t('tripEditor_validation_distance_positive'));
+    }
 
     if (validationErrors.length > 0) {
         const errorString = validationErrors.join(', ');
         showToast(`${t('tripEditor_validation_prefix')}: ${errorString}`, 'error');
         return;
+    }
+
+    // Check for duplicate trips (same date + same route)
+    const tripToCheck = { date: formData.date!, locations: finalLocations };
+    const isDuplicate = isDuplicateTrip(tripToCheck, trips, trip?.id);
+    
+    if (isDuplicate) {
+        const duplicateTrips = findDuplicateTrips(tripToCheck, trips, trip?.id);
+        
+        const confirmed = window.confirm(
+            `${t('tripEditor_warning_duplicate')}\n\n` +
+            `Fecha: ${formData.date}\n` +
+            `Ruta: ${finalLocations.join(' → ')}\n\n` +
+            `${duplicateTrips.length > 1 ? 
+                `Se encontraron ${duplicateTrips.length} viajes similares` : 
+                `Se encontró 1 viaje similar`}\n\n` +
+            `${t('tripEditor_duplicate_confirmation')}`
+        );
+        
+        if (!confirmed) {
+            return;
+        }
     }
 
     const finalFormData = { ...formData, locations: finalLocations };
@@ -318,6 +378,9 @@ const TripEditorModal: React.FC<TripEditorModalProps> = ({ trip, projects, trips
     }
 
     const finalTrip = { id: formData.id || `trip-${Date.now()}-${Math.random()}`, ...finalFormData } as Trip;
+    
+    // Mark as saved after successful save
+    markAsSaved();
     onSave(finalTrip);
 
     if (addToCalendar && isSignedIn) {
@@ -333,6 +396,13 @@ const TripEditorModal: React.FC<TripEditorModalProps> = ({ trip, projects, trips
                 showToast(t('toast_calendar_event_error'), 'error');
             }
         }
+    }
+  };
+
+  const handleClose = async () => {
+    const shouldClose = await checkUnsavedChanges();
+    if (shouldClose) {
+      onClose();
     }
   };
 
@@ -402,7 +472,7 @@ const TripEditorModal: React.FC<TripEditorModalProps> = ({ trip, projects, trips
             <h2 className="text-lg font-semibold tracking-tight text-white">{trip ? t('tripEditor_title_edit') : t('tripEditor_title_add')}</h2>
           </div>
           <button
-            onClick={onClose}
+            onClick={handleClose}
             aria-label={t('common_close')}
             className="p-2 text-gray-400 hover:text-white hover:bg-white/5 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-primary/50 transition-colors"
           >
@@ -529,7 +599,7 @@ const TripEditorModal: React.FC<TripEditorModalProps> = ({ trip, projects, trips
                   <div>
                       <label className="block text-[11px] font-semibold uppercase tracking-wide text-gray-300/90 mb-1">{t('tripEditor_form_distance')}</label>
                       <div className="flex items-center">
-                        <input type="number" name="distance" value={formData.distance || ''} onChange={handleChange} className="w-full bg-background-dark/70 border border-gray-600/70 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/50" />
+                        <input type="number" min="0.01" step="0.1" name="distance" value={formData.distance || ''} onChange={handleChange} className="w-full bg-background-dark/70 border border-gray-600/70 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/50" />
                         <button onClick={handleCalculateDistance} disabled={!isMapsScriptLoaded || isCalculatingDist} className="ml-2 p-2 bg-brand-primary/15 text-brand-primary rounded-md hover:bg-brand-primary/25 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-brand-primary/40" title={!isMapsScriptLoaded ? 'Google Maps script is loading...' : 'Calculate distance'}>
                           {isCalculatingDist ? <LoaderIcon className="w-5 h-5 animate-spin" /> : <RouteIcon className="w-5 h-5"/>}
                         </button>
@@ -562,19 +632,31 @@ const TripEditorModal: React.FC<TripEditorModalProps> = ({ trip, projects, trips
               </div>
           </>
         </main>
-        <footer className="flex justify-end gap-3 px-6 py-4 border-t border-gray-700/60 bg-background-dark/40">
-          <button
-            onClick={onClose}
-            className="px-4 py-2.5 rounded-md text-sm font-medium bg-gray-600/40 hover:bg-gray-600 text-gray-200 border border-gray-500/60 transition-colors focus:outline-none focus:ring-2 focus:ring-brand-primary/40"
-          >
-            {t('common_cancel')}
-          </button>
-          <button
-            onClick={handleSave}
-            className="px-4 py-2.5 rounded-md text-sm font-medium bg-brand-primary hover:brightness-110 text-white shadow focus:outline-none focus:ring-2 focus:ring-brand-primary/50"
-          >
-            {t('tripEditor_saveBtn')}
-          </button>
+        <footer className="flex justify-between items-center px-6 py-4 border-t border-gray-700/60 bg-background-dark/40">
+          <div className="flex items-center gap-2">
+            {hasUnsavedChanges && (
+              <>
+                <div className="w-2 h-2 bg-orange-400 rounded-full animate-pulse"></div>
+                <span className="text-xs text-orange-400 font-medium">
+                  {t('common_unsaved_indicator')}
+                </span>
+              </>
+            )}
+          </div>
+          <div className="flex gap-3">
+            <button
+              onClick={handleClose}
+              className="px-4 py-2.5 rounded-md text-sm font-medium bg-gray-600/40 hover:bg-gray-600 text-gray-200 border border-gray-500/60 transition-colors focus:outline-none focus:ring-2 focus:ring-brand-primary/40"
+            >
+              {t('common_cancel')}
+            </button>
+            <button
+              onClick={handleSave}
+              className="px-4 py-2.5 rounded-md text-sm font-medium bg-brand-primary hover:brightness-110 text-white shadow focus:outline-none focus:ring-2 focus:ring-brand-primary/50"
+            >
+              {t('tripEditor_saveBtn')}
+            </button>
+          </div>
         </footer>
       </div>
     </div>

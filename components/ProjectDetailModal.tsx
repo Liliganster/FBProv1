@@ -204,7 +204,7 @@ const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({ project, trips,
                       <EyeIcon className="w-4 h-4" />
                     </button>
                     <button
-                      onClick={() => deleteCallsheetFromProject(project.id, file.id)}
+                      onClick={() => { if (window.confirm(t('files_deleteConfirm'))) { deleteCallsheetFromProject(project.id, file.id); } }}
                       className="p-1.5 text-red-400 hover:text-red-300 hover:bg-red-400/10 rounded-md transition-colors"
                     >
                       <TrashIcon className="w-4 h-4" />

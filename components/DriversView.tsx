@@ -7,9 +7,15 @@ import { PlusIcon, EditIcon, TrashIcon, UsersIcon, StarIcon, SearchIcon } from '
 import useTranslation from '../hooks/useTranslation';
 import DriverEditorModal from './DriverEditorModal';
 import useActiveDriver from '../hooks/useActiveDriver';
+import useUndoRedo from '../hooks/useUndoRedo';
+import UndoToast from './UndoToast';
 import Avatar from './Avatar';
 
-const DriversView: React.FC = () => {
+interface DriversViewProps {
+  theme: 'light' | 'dark';
+}
+
+const DriversView: React.FC<DriversViewProps> = ({ theme }) => {
   const { drivers, addDriver, updateDriver, deleteDriver, deleteMultipleDrivers } = useDrivers();
   // FIX: Fetch projects along with trips to link them to drivers.
   const { trips, projects } = useTrips();
@@ -18,6 +24,8 @@ const DriversView: React.FC = () => {
   const [editingDriver, setEditingDriver] = useState<Driver | null>(null);
   const [selectedDriverIds, setSelectedDriverIds] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const { addAction, undo, getLastAction } = useUndoRedo();
+  const [showUndoToast, setShowUndoToast] = useState(false);
   const { t } = useTranslation();
 
   const driverStats = useMemo(() => {
@@ -62,7 +70,21 @@ const DriversView: React.FC = () => {
 
   const handleDelete = (driverId: string) => {
     if (window.confirm(t('drivers_delete_confirm'))) {
-      deleteDriver(driverId);
+      const driverToDelete = drivers.find(d => d.id === driverId);
+      if (driverToDelete) {
+        deleteDriver(driverId);
+        
+        // Add undo action
+        addAction({
+          type: 'delete',
+          description: t('undo_action_delete_driver'),
+          undo: () => {
+            addDriver(driverToDelete);
+          }
+        });
+        
+        setShowUndoToast(true);
+      }
     }
   };
 
@@ -82,8 +104,20 @@ const DriversView: React.FC = () => {
 
   const handleDeleteSelected = () => {
     if (window.confirm(t('drivers_delete_selected_confirm', { count: selectedDriverIds.length }))) {
+      const driversToDelete = drivers.filter(d => selectedDriverIds.includes(d.id));
       deleteMultipleDrivers(selectedDriverIds);
+      
+      // Add undo action for multiple drivers
+      addAction({
+        type: 'bulk_delete',
+        description: t('undo_action_bulk_delete', { count: driversToDelete.length }),
+        undo: () => {
+          driversToDelete.forEach(driver => addDriver(driver));
+        }
+      });
+      
       setSelectedDriverIds([]);
+      setShowUndoToast(true);
     }
   };
 
@@ -201,6 +235,14 @@ const DriversView: React.FC = () => {
           onClose={() => setIsEditorOpen(false)}
         />
       )}
+      
+      <UndoToast
+        action={getLastAction()}
+        onUndo={undo}
+        onDismiss={() => setShowUndoToast(false)}
+        isVisible={showUndoToast}
+        theme={theme}
+      />
     </div>
   );
 };

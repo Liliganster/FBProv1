@@ -5,6 +5,7 @@ import { XIcon } from './Icons';
 import useTranslation from '../hooks/useTranslation';
 import useToast from '../hooks/useToast';
 import useTrips from '../hooks/useTrips';
+import useUnsavedChanges from '../hooks/useUnsavedChanges';
 
 interface ProjectEditorModalProps {
   project: Project | null;
@@ -14,16 +15,29 @@ interface ProjectEditorModalProps {
 const ProjectEditorModal: React.FC<ProjectEditorModalProps> = ({ project, onClose }) => {
   const { addProject, updateProject } = useTrips();
   const [formState, setFormState] = useState({ name: '', producer: '', ratePerKm: '' as string | number });
+  const [initialFormState, setInitialFormState] = useState(formState);
   const { t } = useTranslation();
   const { showToast } = useToast();
 
-  useEffect(() => {
-    if (project) {
-      setFormState({ name: project.name, producer: project.producer, ratePerKm: project.ratePerKm ?? '' });
-    } else {
-      setFormState({ name: '', producer: '', ratePerKm: '' });
+  // Initialize unsaved changes tracker
+  const { hasUnsavedChanges, markAsSaved, checkUnsavedChanges, resetInitialData } = useUnsavedChanges(
+    initialFormState,
+    formState,
+    {
+      enableBeforeUnload: true,
+      confirmationMessage: t('common_unsaved_changes_warning')
     }
-  }, [project]);
+  );
+
+  useEffect(() => {
+    const newFormState = project 
+      ? { name: project.name, producer: project.producer, ratePerKm: project.ratePerKm ?? '' }
+      : { name: '', producer: '', ratePerKm: '' };
+    
+    setFormState(newFormState);
+    setInitialFormState(newFormState);
+    resetInitialData(newFormState);
+  }, [project, resetInitialData]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type } = e.target;
@@ -43,7 +57,17 @@ const ProjectEditorModal: React.FC<ProjectEditorModalProps> = ({ project, onClos
     } else {
       addProject({ name: formState.name, producer: formState.producer, ratePerKm: rateToSave });
     }
+    
+    // Mark as saved after successful save
+    markAsSaved();
     onClose();
+  };
+
+  const handleClose = async () => {
+    const shouldClose = await checkUnsavedChanges();
+    if (shouldClose) {
+      onClose();
+    }
   };
 
   const isEditing = !!project;
@@ -56,7 +80,7 @@ const ProjectEditorModal: React.FC<ProjectEditorModalProps> = ({ project, onClos
             {isEditing ? t('projectEditor_title_edit') : t('projectEditor_title_add')}
           </h2>
           <button
-            onClick={onClose}
+            onClick={handleClose}
             aria-label={t('common_close')}
             className="p-2 text-gray-400 hover:text-white hover:bg-white/5 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-primary/50 transition-colors"
           >
@@ -80,19 +104,31 @@ const ProjectEditorModal: React.FC<ProjectEditorModalProps> = ({ project, onClos
             </p>
           </div>
         </main>
-        <footer className="flex justify-end gap-3 px-6 py-4 border-t border-gray-700/60 bg-background-dark/40">
-          <button
-            onClick={onClose}
-            className="px-4 py-2.5 rounded-md text-sm font-medium bg-gray-600/40 hover:bg-gray-600 text-gray-200 border border-gray-500/60 transition-colors focus:outline-none focus:ring-2 focus:ring-brand-primary/40"
-          >
-            {t('common_cancel')}
-          </button>
-          <button
-            onClick={handleSave}
-            className="px-4 py-2.5 rounded-md text-sm font-medium bg-brand-primary hover:brightness-110 text-white shadow focus:outline-none focus:ring-2 focus:ring-brand-primary/50"
-          >
-            {isEditing ? t('projects_form_saveBtn') : t('projects_form_addBtn')}
-          </button>
+        <footer className="flex justify-between items-center px-6 py-4 border-t border-gray-700/60 bg-background-dark/40">
+          <div className="flex items-center gap-2">
+            {hasUnsavedChanges && (
+              <>
+                <div className="w-2 h-2 bg-orange-400 rounded-full animate-pulse"></div>
+                <span className="text-xs text-orange-400 font-medium">
+                  {t('common_unsaved_indicator')}
+                </span>
+              </>
+            )}
+          </div>
+          <div className="flex gap-3">
+            <button
+              onClick={handleClose}
+              className="px-4 py-2.5 rounded-md text-sm font-medium bg-gray-600/40 hover:bg-gray-600 text-gray-200 border border-gray-500/60 transition-colors focus:outline-none focus:ring-2 focus:ring-brand-primary/40"
+            >
+              {t('common_cancel')}
+            </button>
+            <button
+              onClick={handleSave}
+              className="px-4 py-2.5 rounded-md text-sm font-medium bg-brand-primary hover:brightness-110 text-white shadow focus:outline-none focus:ring-2 focus:ring-brand-primary/50"
+            >
+              {isEditing ? t('projects_form_saveBtn') : t('projects_form_addBtn')}
+            </button>
+          </div>
         </footer>
       </div>
     </div>

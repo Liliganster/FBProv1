@@ -149,6 +149,19 @@ export const translations = {
     projects_no_search_results: 'No projects match your search.',
     projects_no_projects: 'No projects found.',
 
+    drivers_title: 'Drivers',
+    drivers_add_btn: 'Add Driver',
+    drivers_col_name: 'Driver Name',
+    drivers_col_license: 'License Plate',
+    drivers_col_projects: 'Projects',
+    drivers_col_total_km: 'Total Km',
+    drivers_col_actions: 'Actions',
+    drivers_search_placeholder: 'Search drivers...',
+    drivers_no_drivers: 'No drivers found.',
+    drivers_no_search_results: 'No drivers match your search.',
+    drivers_delete_confirm: 'Are you sure you want to delete this driver?',
+    drivers_delete_selected_confirm: 'Are you sure you want to delete the {{count}} selected drivers?',
+
     settings_title: 'Settings',
     settings_tab_profile: 'Profile',
     settings_tab_compliance: 'Compliance & Audit',
@@ -245,6 +258,7 @@ export const translations = {
     tripEditor_alert_improbable_distance: 'This seems like a very long trip. Please double-check.',
     tripEditor_validation_prefix: 'Please complete the following required fields',
     tripEditor_validation_locations: 'Origin & Destination',
+    tripEditor_validation_distance_positive: 'Distance must be greater than 0 km',
     
     batch_edit_title: 'Edit {{count}} trips',
     batch_edit_change_project: 'Change Project',
@@ -283,6 +297,8 @@ export const translations = {
     bulk_warning_future_date: 'Warning: Date is in the future.',
     bulk_warning_improbable_distance: 'Warning: Improbable distance (> 1000km or < 0).',
     bulk_warning_duplicate: 'Warning: This may be a duplicate of an existing trip.',
+    tripEditor_warning_duplicate: 'Warning: A trip with the same date and locations already exists.',
+    tripEditor_duplicate_confirmation: 'Do you want to save this trip anyway?',
     
     reports_title: 'Reports',
     reports_generateNew: 'Generate New Report',
@@ -335,6 +351,8 @@ export const translations = {
     report_audit_signature: 'Report Signature (SHA-256)',
     report_audit_chain_start: 'First Trip Hash',
     report_audit_chain_end: 'Last Trip Hash',
+    
+    files_deleteConfirm: 'Are you sure you want to delete this file?',
     
     detail_title: 'Trip Details',
     detail_date: 'Date',
@@ -479,6 +497,7 @@ export const translations = {
     route_templates_section_basic: 'Basic Information',
     route_templates_section_route: 'Route Details',
     route_templates_section_details: 'Additional Details',
+    route_templates_deleteConfirm: 'Are you sure you want to delete this route template?',
 
     cost_analysis_title: 'Cost Analysis',
     cost_analysis_back_to_advanced: 'Back to Advanced',
@@ -518,6 +537,23 @@ export const translations = {
     
     common_cancel: 'Cancel',
     common_back: 'Back',
+    common_undo: 'Undo',
+    common_redo: 'Redo',
+    
+    // Unsaved changes indicators and warnings
+    common_unsaved_changes_warning: 'You have unsaved changes. Are you sure you want to close?',
+    common_unsaved_indicator: 'Unsaved changes',
+    common_unsaved_changes_details: 'Changes will be lost if you continue without saving.',
+    
+    undo_action_delete_trip: 'Deleted trip',
+    undo_action_delete_project: 'Deleted project',
+    undo_action_delete_template: 'Deleted template',
+    undo_action_delete_driver: 'Deleted driver',
+    undo_action_delete_file: 'Deleted file',
+    undo_action_bulk_delete: 'Deleted {{count}} items',
+    undo_toast_message: '{{action}}. ',
+    undo_toast_button: 'Undo',
+    
     settings_not_loaded: 'App settings could not be loaded. Please try again.',
 
     rate_per_km: 'Rate (€/km)',
@@ -662,6 +698,19 @@ export const translations = {
     projects_no_search_results: 'Keine Projekte entsprechen Ihrer Suche.',
     projects_no_projects: 'Keine Projekte gefunden.',
 
+    drivers_title: 'Fahrer',
+    drivers_add_btn: 'Fahrer hinzufügen',
+    drivers_col_name: 'Fahrername',
+    drivers_col_license: 'Kennzeichen',
+    drivers_col_projects: 'Projekte',
+    drivers_col_total_km: 'Gesamt Km',
+    drivers_col_actions: 'Aktionen',
+    drivers_search_placeholder: 'Fahrer suchen...',
+    drivers_no_drivers: 'Keine Fahrer gefunden.',
+    drivers_no_search_results: 'Keine Fahrer entsprechen Ihrer Suche.',
+    drivers_delete_confirm: 'Sind Sie sicher, dass Sie diesen Fahrer löschen möchten?',
+    drivers_delete_selected_confirm: 'Sind Sie sicher, dass Sie die {{count}} ausgewählten Fahrer löschen möchten?',
+
     settings_title: 'Einstellungen',
     settings_tab_profile: 'Profil',
     settings_tab_compliance: 'Compliance & Audit',
@@ -758,6 +807,7 @@ export const translations = {
     tripEditor_alert_improbable_distance: 'Dies scheint eine sehr lange Fahrt zu sein. Bitte überprüfen Sie die Eingabe.',
     tripEditor_validation_prefix: 'Bitte füllen Sie die folgenden Pflichtfelder aus',
     tripEditor_validation_locations: 'Start & Ziel',
+    tripEditor_validation_distance_positive: 'Distanz muss größer als 0 km sein',
     
     batch_edit_title: '{{count}} Fahrten bearbeiten',
     batch_edit_change_project: 'Projekt ändern',
@@ -796,6 +846,8 @@ export const translations = {
     bulk_warning_future_date: 'Warnung: Datum liegt in der Zukunft.',
     bulk_warning_improbable_distance: 'Warnung: Unwahrscheinliche Distanz (> 1000km oder < 0).',
     bulk_warning_duplicate: 'Warnung: Dies könnte ein Duplikat einer bestehenden Fahrt sein.',
+    tripEditor_warning_duplicate: 'Warnung: Eine Fahrt mit demselben Datum und Orten existiert bereits.',
+    tripEditor_duplicate_confirmation: 'Möchten Sie diese Fahrt trotzdem speichern?',
     
     reports_title: 'Berichte',
     reports_generateNew: 'Neuen Bericht erstellen',
@@ -848,6 +900,8 @@ export const translations = {
     report_audit_signature: 'Berichtssignatur (SHA-256)',
     report_audit_chain_start: 'Hash der ersten Fahrt',
     report_audit_chain_end: 'Hash der letzten Fahrt',
+    
+    files_deleteConfirm: 'Sind Sie sicher, dass Sie diese Datei löschen möchten?',
     
     detail_title: 'Fahrtdetails',
     detail_date: 'Datum',
@@ -992,6 +1046,7 @@ export const translations = {
     route_templates_section_basic: 'Grundinformationen',
     route_templates_section_route: 'Routendetails',
     route_templates_section_details: 'Zusätzliche Details',
+    route_templates_deleteConfirm: 'Sind Sie sicher, dass Sie diese Routenvorlage löschen möchten?',
 
     cost_analysis_title: 'Kostenanalyse',
     cost_analysis_back_to_advanced: 'Zurück zu Erweitert',
@@ -1031,6 +1086,23 @@ export const translations = {
     
     common_cancel: 'Abbrechen',
     common_back: 'Zurück',
+    common_undo: 'Rückgängig',
+    common_redo: 'Wiederholen',
+    
+    // Unsaved changes indicators and warnings
+    common_unsaved_changes_warning: 'Sie haben nicht gespeicherte Änderungen. Sind Sie sicher, dass Sie schließen möchten?',
+    common_unsaved_indicator: 'Nicht gespeicherte Änderungen',
+    common_unsaved_changes_details: 'Änderungen gehen verloren, wenn Sie fortfahren, ohne zu speichern.',
+    
+    undo_action_delete_trip: 'Fahrt gelöscht',
+    undo_action_delete_project: 'Projekt gelöscht',
+    undo_action_delete_template: 'Vorlage gelöscht',
+    undo_action_delete_driver: 'Fahrer gelöscht',
+    undo_action_delete_file: 'Datei gelöscht',
+    undo_action_bulk_delete: '{{count}} Elemente gelöscht',
+    undo_toast_message: '{{action}}. ',
+    undo_toast_button: 'Rückgängig machen',
+    
     settings_not_loaded: 'App-Einstellungen konnten nicht geladen werden. Bitte versuchen Sie es erneut.',
 
     rate_per_km: 'Satz (€/km)',
@@ -1175,6 +1247,19 @@ export const translations = {
     projects_no_search_results: 'Ningún proyecto coincide con tu búsqueda.',
     projects_no_projects: 'No se encontraron proyectos.',
 
+    drivers_title: 'Conductores',
+    drivers_add_btn: 'Añadir Conductor',
+    drivers_col_name: 'Nombre del Conductor',
+    drivers_col_license: 'Placa',
+    drivers_col_projects: 'Proyectos',
+    drivers_col_total_km: 'Km Totales',
+    drivers_col_actions: 'Acciones',
+    drivers_search_placeholder: 'Buscar conductores...',
+    drivers_no_drivers: 'No se encontraron conductores.',
+    drivers_no_search_results: 'Ningún conductor coincide con tu búsqueda.',
+    drivers_delete_confirm: '¿Estás seguro de que quieres eliminar este conductor?',
+    drivers_delete_selected_confirm: '¿Estás seguro de que quieres eliminar los {{count}} conductores seleccionados?',
+
     settings_title: 'Ajustes',
     settings_tab_profile: 'Perfil',
     settings_tab_compliance: 'Cumplimiento y Auditoría',
@@ -1271,6 +1356,7 @@ export const translations = {
     tripEditor_alert_improbable_distance: 'Este parece un viaje muy largo. Por favor, compruébalo.',
     tripEditor_validation_prefix: 'Por favor, completa los siguientes campos obligatorios',
     tripEditor_validation_locations: 'Origen y Destino',
+    tripEditor_validation_distance_positive: 'La distancia debe ser mayor que 0 km',
     
     batch_edit_title: 'Editar {{count}} viajes',
     batch_edit_change_project: 'Cambiar Proyecto',
@@ -1309,6 +1395,8 @@ export const translations = {
     bulk_warning_future_date: 'Aviso: La fecha es en el futuro.',
     bulk_warning_improbable_distance: 'Aviso: Distancia improbable (> 1000km o < 0).',
     bulk_warning_duplicate: 'Aviso: Podría ser un duplicado de un viaje existente.',
+    tripEditor_warning_duplicate: 'Aviso: Ya existe un viaje con la misma fecha y ubicaciones.',
+    tripEditor_duplicate_confirmation: '¿Deseas guardar este viaje de todos modos?',
     
     reports_title: 'Informes',
     reports_generateNew: 'Generar Nuevo Informe',
@@ -1361,6 +1449,8 @@ export const translations = {
     report_audit_signature: 'Firma del Informe (SHA-256)',
     report_audit_chain_start: 'Hash del Primer Viaje',
     report_audit_chain_end: 'Hash del Último Viaje',
+    
+    files_deleteConfirm: '¿Estás seguro de que quieres eliminar este archivo?',
     
     detail_title: 'Detalles del Viaje',
     detail_date: 'Fecha',
@@ -1489,6 +1579,7 @@ export const translations = {
     route_templates_section_basic: 'Información Básica',
     route_templates_section_route: 'Detalles de Ruta',
     route_templates_section_details: 'Detalles Adicionales',
+    route_templates_deleteConfirm: '¿Estás seguro de que quieres eliminar esta plantilla de ruta?',
 
     cost_analysis_title: 'Análisis de Costos',
     cost_analysis_back_to_advanced: 'Volver a Avanzado',
@@ -1528,6 +1619,23 @@ export const translations = {
 
     common_cancel: 'Cancelar',
     common_back: 'Atrás',
+    common_undo: 'Deshacer',
+    common_redo: 'Rehacer',
+    
+    // Unsaved changes indicators and warnings
+    common_unsaved_changes_warning: 'Tienes cambios sin guardar. ¿Estás seguro de que quieres cerrar?',
+    common_unsaved_indicator: 'Cambios sin guardar',
+    common_unsaved_changes_details: 'Los cambios se perderán si continúas sin guardar.',
+    
+    undo_action_delete_trip: 'Viaje eliminado',
+    undo_action_delete_project: 'Proyecto eliminado',
+    undo_action_delete_template: 'Plantilla eliminada',
+    undo_action_delete_driver: 'Conductor eliminado',
+    undo_action_delete_file: 'Archivo eliminado',
+    undo_action_bulk_delete: '{{count}} elementos eliminados',
+    undo_toast_message: '{{action}}. ',
+    undo_toast_button: 'Deshacer',
+    
     settings_not_loaded: 'No se pudieron cargar los ajustes de la aplicación. Por favor, inténtalo de nuevo.',
 
     rate_per_km: 'Tarifa (€/km)',

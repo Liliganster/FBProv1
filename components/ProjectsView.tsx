@@ -9,6 +9,8 @@ import ProjectEditorModal from './ProjectEditorModal';
 import ProjectDetailModal from './ProjectDetailModal';
 import { calculateTripReimbursement } from '../services/taxService';
 import useDashboardSettings from '../hooks/useDashboardSettings';
+import useUndoRedo from '../hooks/useUndoRedo';
+import UndoToast from './UndoToast';
 
 interface ProjectsViewProps {
     setCurrentView: (view: View) => void;
@@ -17,7 +19,7 @@ interface ProjectsViewProps {
 }
 
 const ProjectsView: React.FC<ProjectsViewProps> = ({ setCurrentView, personalization, theme }) => {
-  const { projects, trips, deleteProject, deleteMultipleProjects } = useTrips();
+  const { projects, trips, addProject, deleteProject, deleteMultipleProjects } = useTrips();
   const { userProfile } = useUserProfile();
   const { visibleProjectIds, toggleProjectVisibility } = useDashboardSettings();
   
@@ -26,6 +28,8 @@ const ProjectsView: React.FC<ProjectsViewProps> = ({ setCurrentView, personaliza
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedProjectIds, setSelectedProjectIds] = useState<string[]>([]);
+  const { addAction, undo, getLastAction } = useUndoRedo();
+  const [showUndoToast, setShowUndoToast] = useState(false);
   
   const { t } = useTranslation();
 
@@ -75,6 +79,17 @@ const ProjectsView: React.FC<ProjectsViewProps> = ({ setCurrentView, personaliza
     e.stopPropagation();
      if (window.confirm(t('projects_deleteConfirm'))) {
         await deleteProject(project.id);
+        
+        // Add undo action
+        addAction({
+          type: 'delete',
+          description: t('undo_action_delete_project'),
+          undo: () => {
+            addProject(project);
+          }
+        });
+        
+        setShowUndoToast(true);
      }
   };
 
@@ -94,8 +109,20 @@ const ProjectsView: React.FC<ProjectsViewProps> = ({ setCurrentView, personaliza
 
   const handleDeleteSelected = async () => {
     if (window.confirm(t('projects_delete_selected_confirm', { count: selectedProjectIds.length }))) {
+      const projectsToDelete = projects.filter(p => selectedProjectIds.includes(p.id));
       await deleteMultipleProjects(selectedProjectIds);
+      
+      // Add undo action for multiple projects
+      addAction({
+        type: 'bulk_delete',
+        description: t('undo_action_bulk_delete', { count: projectsToDelete.length }),
+        undo: () => {
+          projectsToDelete.forEach(project => addProject(project));
+        }
+      });
+      
       setSelectedProjectIds([]);
+      setShowUndoToast(true);
     }
   };
 
@@ -241,6 +268,14 @@ const ProjectsView: React.FC<ProjectsViewProps> = ({ setCurrentView, personaliza
           onClose={() => setIsDetailOpen(false)}
         />
       )}
+      
+      <UndoToast
+        action={getLastAction()}
+        onUndo={undo}
+        onDismiss={() => setShowUndoToast(false)}
+        isVisible={showUndoToast}
+        theme={theme}
+      />
     </div>
   );
 };
