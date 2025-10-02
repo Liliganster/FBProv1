@@ -475,6 +475,9 @@ export const translations = {
     route_templates_cat_commute: 'Commute',
     route_templates_cat_client: 'Client',
     route_templates_cat_other: 'Other',
+    route_templates_section_basic: 'Basic Information',
+    route_templates_section_route: 'Route Details',
+    route_templates_section_details: 'Additional Details',
 
     cost_analysis_title: 'Cost Analysis',
     cost_analysis_back_to_advanced: 'Back to Advanced',
@@ -984,6 +987,9 @@ export const translations = {
     route_templates_cat_commute: 'Arbeitsweg',
     route_templates_cat_client: 'Kunde',
     route_templates_cat_other: 'Sonstiges',
+    route_templates_section_basic: 'Grundinformationen',
+    route_templates_section_route: 'Routendetails',
+    route_templates_section_details: 'Zusätzliche Details',
 
     cost_analysis_title: 'Kostenanalyse',
     cost_analysis_back_to_advanced: 'Zurück zu Erweitert',
@@ -1477,6 +1483,9 @@ export const translations = {
     route_templates_cat_commute: 'Conmutación',
     route_templates_cat_client: 'Cliente',
     route_templates_cat_other: 'Otro',
+    route_templates_section_basic: 'Información Básica',
+    route_templates_section_route: 'Detalles de Ruta',
+    route_templates_section_details: 'Detalles Adicionales',
 
     cost_analysis_title: 'Análisis de Costos',
     cost_analysis_back_to_advanced: 'Volver a Avanzado',

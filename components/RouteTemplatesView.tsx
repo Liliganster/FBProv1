@@ -164,66 +164,93 @@ const RouteTemplatesView: React.FC<RouteTemplatesViewProps> = ({ onBack, theme, 
       )}
 
       {showModal && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 animate-fadeIn">
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50 backdrop-blur-sm" onClick={() => setShowModal(false)}>
           <div 
-            style={{ backgroundColor: bgCard, backdropFilter: `blur(${personalization.uiBlur}px)` }} 
-            className="w-full max-w-5xl rounded-lg p-6 max-h-[90vh] overflow-y-auto shadow-xl animate-slideIn"
+            style={{
+              backgroundColor: theme === 'dark'
+                ? `rgba(30, 30, 30, ${1 - personalization.uiTransparency})`
+                : `rgba(243, 244, 246, ${1 - personalization.uiTransparency})`,
+              backdropFilter: `blur(${personalization.uiBlur}px)`,
+            }}
+            className="rounded-lg shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col" 
+            onClick={e => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-white">{editing ? t('route_templates_modal_edit_title') : t('route_templates_modal_create_title')}</h2>
-              <button 
-                onClick={() => setShowModal(false)} 
-                className="text-gray-400 hover:text-white p-2 rounded-full hover:bg-gray-700/40 transition-colors"
-              >
+            <header className="flex items-center justify-between p-4 border-b border-gray-700/50 flex-shrink-0">
+              <h2 className="text-xl font-bold text-white">
+                {editing ? t('route_templates_modal_edit_title') : t('route_templates_modal_create_title')}
+              </h2>
+              <button onClick={() => setShowModal(false)} className="text-gray-400 hover:text-white">
                 ✕
               </button>
+            </header>
+            
+            <div className="flex-grow flex min-h-0">
+              <main className="w-full p-6 overflow-y-auto">
+                <form onSubmit={handleSubmit} className="space-y-6">
+                  <section>
+                    <h3 className="text-lg font-semibold text-white mb-4">{t('route_templates_section_basic')}</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <Input label={t('route_templates_field_name')} value={form.name} onChange={(v) => setForm(f => ({ ...f, name: v }))} required theme={theme} />
+                      <div>
+                        <label className="block text-sm font-medium text-on-surface-dark-secondary mb-1">
+                          {t('route_templates_field_category')}
+                        </label>
+                        <select 
+                          value={form.category} 
+                          onChange={e => setForm(f => ({ ...f, category: e.target.value as any }))} 
+                          className="w-full bg-background-dark border border-gray-600 rounded-md p-2 focus:ring-2 focus:ring-brand-primary focus:outline-none"
+                        >
+                          {categoryOrder.map(c => <option key={c} value={c}>{t(`route_templates_cat_${c}`)}</option>)}
+                        </select>
+                      </div>
+                    </div>
+                  </section>
+
+                  <section>
+                    <h3 className="text-lg font-semibold text-white mb-4">{t('route_templates_section_route')}</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <Input label={t('route_templates_field_start')} value={form.startLocation} onChange={(v) => setForm(f => ({ ...f, startLocation: v }))} required theme={theme} />
+                      <Input label={t('route_templates_field_end')} value={form.endLocation} onChange={(v) => setForm(f => ({ ...f, endLocation: v }))} required theme={theme} />
+                      <NumberInput label={t('route_templates_field_distance')} value={form.distance} onChange={(v) => setForm(f => ({ ...f, distance: v }))} min={0} step={0.1} required theme={theme} />
+                      <NumberInput label={t('route_templates_field_time')} value={form.estimatedTimeMinutes} onChange={(v) => setForm(f => ({ ...f, estimatedTimeMinutes: v }))} min={0} step={1} theme={theme} />
+                    </div>
+                  </section>
+
+                  <section>
+                    <h3 className="text-lg font-semibold text-white mb-4">{t('route_templates_section_details')}</h3>
+                    <div>
+                      <label className="block text-sm font-medium text-on-surface-dark-secondary mb-1">
+                        {t('route_templates_field_description')}
+                      </label>
+                      <textarea 
+                        value={form.description} 
+                        onChange={e => setForm(f => ({ ...f, description: e.target.value }))} 
+                        rows={4} 
+                        className="w-full bg-background-dark border border-gray-600 rounded-md p-2 focus:ring-2 focus:ring-brand-primary focus:outline-none resize-none"
+                        placeholder={t('route_templates_field_description_placeholder') || 'Descripción opcional...'} 
+                      />
+                    </div>
+                  </section>
+                </form>
+              </main>
             </div>
-            <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-4">
-                <Input label={t('route_templates_field_name')} value={form.name} onChange={(v) => setForm(f => ({ ...f, name: v }))} required />
-                <div>
-                  <label className="block text-xs font-semibold uppercase mb-2 text-gray-400">{t('route_templates_field_category')}</label>
-                  <select 
-                    value={form.category} 
-                    onChange={e => setForm(f => ({ ...f, category: e.target.value as any }))} 
-                    className="w-full bg-gray-700 border border-gray-600 rounded-md p-3 text-white focus:ring-2 focus:ring-brand-primary focus:outline-none text-sm transition-colors hover:border-blue-500/50"
-                  >
-                    {categoryOrder.map(c => <option key={c} value={c}>{t(`route_templates_cat_${c}`)}</option>)}
-                  </select>
-                </div>
-                <Input label={t('route_templates_field_start')} value={form.startLocation} onChange={(v) => setForm(f => ({ ...f, startLocation: v }))} required />
-                <Input label={t('route_templates_field_end')} value={form.endLocation} onChange={(v) => setForm(f => ({ ...f, endLocation: v }))} required />
-              </div>
-              <div className="space-y-4">
-                <NumberInput label={t('route_templates_field_distance')} value={form.distance} onChange={(v) => setForm(f => ({ ...f, distance: v }))} min={0} step={0.1} required />
-                <NumberInput label={t('route_templates_field_time')} value={form.estimatedTimeMinutes} onChange={(v) => setForm(f => ({ ...f, estimatedTimeMinutes: v }))} min={0} step={1} />
-                <div>
-                  <label className="block text-xs font-semibold uppercase mb-2 text-gray-400">{t('route_templates_field_description')}</label>
-                  <textarea 
-                    value={form.description} 
-                    onChange={e => setForm(f => ({ ...f, description: e.target.value }))} 
-                    rows={5} 
-                    className="w-full bg-gray-700 border border-gray-600 rounded-md p-3 text-white focus:ring-2 focus:ring-brand-primary focus:outline-none text-sm resize-none hover:border-blue-500/50 transition-colors" 
-                    placeholder={t('route_templates_field_description_placeholder') || ''} 
-                  />
-                </div>
-              </div>
-              <div className="md:col-span-2 flex justify-end gap-4 pt-4 border-t border-gray-700">
-                <button 
-                  type="button" 
-                  onClick={() => setShowModal(false)} 
-                  className="px-6 py-2 bg-gray-600 hover:bg-gray-500 text-white rounded-lg transition-colors"
-                >
-                  {t('common_cancel')}
-                </button>
-                <button 
-                  type="submit" 
-                  className="px-6 py-2 bg-brand-primary hover:bg-blue-600 text-white rounded-lg font-semibold transition-colors shadow-md hover:shadow-blue-500/20"
-                >
-                  {editing ? t('common_save') : t('route_templates_modal_create_submit')}
-                </button>
-              </div>
-            </form>
+            
+            <footer className="flex justify-end p-4 bg-transparent border-t border-gray-700/50 flex-shrink-0">
+              <button 
+                onClick={() => setShowModal(false)} 
+                className="bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg mr-4"
+              >
+                {t('common_cancel')}
+              </button>
+              <button 
+                type="submit" 
+                onClick={handleSubmit}
+                className="flex items-center bg-brand-primary hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition-colors"
+              >
+                <Plus className="w-4 h-4 mr-2"/>
+                {editing ? t('common_save') : t('route_templates_modal_create_submit')}
+              </button>
+            </footer>
           </div>
         </div>
       )}
@@ -254,21 +281,21 @@ const FilterButton: React.FC<{ active: boolean; onClick: () => void; children: R
   </button>
 );
 
-const Input: React.FC<{ label: string; value: string; onChange: (v: string) => void; required?: boolean }> = ({ label, value, onChange, required }) => (
+const Input: React.FC<{ label: string; value: string; onChange: (v: string) => void; required?: boolean; theme: 'light' | 'dark' }> = ({ label, value, onChange, required, theme }) => (
   <div>
-    <label className="block text-xs font-semibold uppercase mb-2 text-gray-400">{label}</label>
+    <label className="block text-sm font-medium text-on-surface-dark-secondary mb-1">{label}</label>
     <input 
       value={value} 
       onChange={e => onChange(e.target.value)} 
       required={required} 
-      className="w-full bg-gray-700 border border-gray-600 rounded-md p-3 text-white focus:ring-2 focus:ring-brand-primary focus:outline-none text-sm transition-colors hover:border-blue-500/50" 
+      className="w-full bg-background-dark border border-gray-600 rounded-md p-2 focus:ring-2 focus:ring-brand-primary focus:outline-none"
     />
   </div>
 );
 
-const NumberInput: React.FC<{ label: string; value: number; onChange: (v: number) => void; min?: number; step?: number; required?: boolean }> = ({ label, value, onChange, min, step, required }) => (
+const NumberInput: React.FC<{ label: string; value: number; onChange: (v: number) => void; min?: number; step?: number; required?: boolean; theme: 'light' | 'dark' }> = ({ label, value, onChange, min, step, required, theme }) => (
   <div>
-    <label className="block text-xs font-semibold uppercase mb-2 text-gray-400">{label}</label>
+    <label className="block text-sm font-medium text-on-surface-dark-secondary mb-1">{label}</label>
     <input 
       type="number" 
       value={value} 
@@ -276,7 +303,7 @@ const NumberInput: React.FC<{ label: string; value: number; onChange: (v: number
       step={step} 
       required={required} 
       onChange={e => onChange(parseFloat(e.target.value) || 0)} 
-      className="w-full bg-gray-700 border border-gray-600 rounded-md p-3 text-white focus:ring-2 focus:ring-brand-primary focus:outline-none text-sm transition-colors hover:border-blue-500/50" 
+      className="w-full bg-background-dark border border-gray-600 rounded-md p-2 focus:ring-2 focus:ring-brand-primary focus:outline-none"
     />
   </div>
 );
