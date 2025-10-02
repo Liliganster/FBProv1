@@ -31,8 +31,33 @@ import { useAuth } from './hooks/useAuth';
 const App: React.FC = () => {
   const { user, logout } = useAuth();
 
+  // Helper function to get view from URL
+  const getViewFromUrl = (): View => {
+    const path = window.location.pathname;
+    const validViews: View[] = ['dashboard', 'trips', 'projects', 'reports', 'calendar', 'advanced', 'settings'];
+    
+    if (path === '/' || path === '') return 'dashboard';
+    
+    const viewFromPath = path.slice(1) as View; // Remove leading slash
+    return validViews.includes(viewFromPath) ? viewFromPath : 'dashboard';
+  };
+
+  // Helper function to update URL without page reload
+  const updateUrlForView = (view: View) => {
+    const path = view === 'dashboard' ? '/' : `/${view}`;
+    if (window.location.pathname !== path) {
+      window.history.pushState({ view }, '', path);
+    }
+  };
+
   const [currentView, setCurrentView] = useState<View>(() => {
     if (!user) return 'dashboard';
+    
+    // First try to get view from URL
+    const urlView = getViewFromUrl();
+    if (urlView !== 'dashboard') return urlView;
+    
+    // Fallback to localStorage
     const savedView = localStorage.getItem(`fahrtenbuch_currentView_${user.id}`) as View;
     const validViews: View[] = ['dashboard', 'trips', 'projects', 'reports', 'calendar', 'advanced', 'settings'];
     return savedView && validViews.includes(savedView) ? savedView : 'dashboard';
@@ -92,8 +117,46 @@ const App: React.FC = () => {
   useEffect(() => {
     if (user) {
       localStorage.setItem(`fahrtenbuch_currentView_${user.id}`, currentView);
+      updateUrlForView(currentView);
     }
   }, [currentView, user]);
+
+  // Handle browser navigation (back/forward buttons)
+  useEffect(() => {
+    const handlePopState = (event: PopStateEvent) => {
+      const view = event.state?.view || getViewFromUrl();
+      setCurrentView(view);
+    };
+
+    // Set initial state if none exists
+    if (!window.history.state) {
+      window.history.replaceState({ view: currentView }, '', currentView === 'dashboard' ? '/' : `/${currentView}`);
+    }
+
+    window.addEventListener('popstate', handlePopState);
+    
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, [currentView]);
+
+  // Update page title based on current view
+  useEffect(() => {
+    const getPageTitle = (view: View): string => {
+      const titles = {
+        dashboard: t('nav_dashboard'),
+        trips: t('nav_trips'),
+        projects: t('nav_projects'),
+        reports: t('nav_reports'),
+        calendar: t('nav_calendar'),
+        advanced: t('nav_advanced'),
+        settings: t('nav_settings')
+      };
+      return `${titles[view]} - Fahrtenbuch Pro`;
+    };
+
+    document.title = getPageTitle(currentView);
+  }, [currentView, t]);
   
   useEffect(() => {
     if (user) {
