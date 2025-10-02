@@ -81,6 +81,7 @@ const App: React.FC = () => {
       backgroundImage: '',
       uiTransparency: 0.2,
       uiBlur: 16,
+      backgroundBlur: 0,
   });
 
   // Load personalization settings on mount/user change
@@ -92,17 +93,21 @@ const App: React.FC = () => {
                 const parsed = JSON.parse(savedSettings);
                 // Basic validation
                 if (typeof parsed.backgroundImage === 'string' && typeof parsed.uiTransparency === 'number' && typeof parsed.uiBlur === 'number') {
+                    // Add backgroundBlur if missing for backwards compatibility
+                    if (typeof parsed.backgroundBlur !== 'number') {
+                        parsed.backgroundBlur = 0;
+                    }
                     setPersonalization(parsed);
                 } else {
                     throw new Error("Invalid settings format");
                 }
             } catch (e) {
                 console.error("Failed to parse personalization settings, resetting to default.", e);
-                setPersonalization({ backgroundImage: '', uiTransparency: 0.2, uiBlur: 16 });
+                setPersonalization({ backgroundImage: '', uiTransparency: 0.2, uiBlur: 16, backgroundBlur: 0 });
             }
         } else {
             // Reset to default if nothing is saved for this user
-            setPersonalization({ backgroundImage: '', uiTransparency: 0.2, uiBlur: 16 });
+            setPersonalization({ backgroundImage: '', uiTransparency: 0.2, uiBlur: 16, backgroundBlur: 0 });
         }
     }
   }, [user]);
@@ -186,10 +191,7 @@ const App: React.FC = () => {
     if (personalization.backgroundImage) {
         // When there's an image, set it and remove any background color classes
         body.classList.remove('bg-background-dark', 'bg-gray-100');
-        body.style.backgroundImage = `url(${personalization.backgroundImage})`;
-        body.style.backgroundSize = 'cover';
-        body.style.backgroundPosition = 'center';
-        body.style.backgroundAttachment = 'fixed';
+        body.style.backgroundImage = 'none'; // Remove from body, we'll use a separate element
         body.style.backgroundColor = ''; // Clear inline color
     } else {
         // When there's no image, clear image styles and apply theme background color class
@@ -202,7 +204,7 @@ const App: React.FC = () => {
             body.classList.add('bg-background-dark');
         }
     }
-  }, [theme, personalization.backgroundImage, user]);
+  }, [theme, personalization.backgroundImage, personalization.backgroundBlur, user]);
 
 
   const renderView = () => {
@@ -251,6 +253,19 @@ const App: React.FC = () => {
   return (
     <RouteTemplatesProvider>
     <div className="relative flex h-screen font-sans bg-transparent">
+      {/* Background image with independent blur */}
+      {personalization.backgroundImage && (
+        <div 
+          className="fixed inset-0 -z-10"
+          style={{
+            backgroundImage: `url(${personalization.backgroundImage})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundAttachment: 'fixed',
+            filter: personalization.backgroundBlur > 0 ? `blur(${personalization.backgroundBlur}px)` : 'none'
+          }}
+        />
+      )}
       <nav 
         style={navStyle}
         className={`

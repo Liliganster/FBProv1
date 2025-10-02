@@ -1,17 +1,17 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import useTrips from '../hooks/useTrips';
-import { BarChartIcon, LineChartIcon, PieChartIcon, BellIcon, LeafIcon, ListIcon, FolderIcon } from './Icons';
+import { BarChartIcon, BellIcon, LeafIcon, ListIcon, FolderIcon } from './Icons';
 import useTranslation from '../hooks/useTranslation';
 import useUserProfile from '../hooks/useUserProfile';
 // FIX: Import View type for stronger prop typing.
 import { Trip, View, PersonalizationSettings } from '../types';
 import TripDetailModal from './TripDetailModal';
-import { calculateTripReimbursement } from '../services/taxService';
+
 import useDashboardSettings from '../hooks/useDashboardSettings';
 import { formatDateForDisplay } from '../i18n/translations';
 
-type ChartType = 'projectKm' | 'monthlyKm' | 'projectReimbursement';
+type ChartType = 'projectKm';
 
 interface DashboardProps {
     setCurrentView: (view: View) => void;
@@ -27,7 +27,7 @@ const Dashboard: React.FC<DashboardProps> = ({ setCurrentView, personalization, 
     const [viewingTrip, setViewingTrip] = useState<Trip | null>(null);
     const [isAlertsOpen, setIsAlertsOpen] = useState(false);
     const alertsRef = useRef<HTMLDivElement>(null);
-    const { t, language } = useTranslation();
+    const { t } = useTranslation();
 
     const userTrips = useMemo(() => {
         if (!userProfile) return [];
@@ -54,10 +54,7 @@ const Dashboard: React.FC<DashboardProps> = ({ setCurrentView, personalization, 
     }, []);
 
     const totalKm = userTrips.reduce((sum, trip) => sum + trip.distance, 0);
-    const totalReimbursement = userTrips.reduce((sum, trip) => {
-        const project = projects.find(p => p.id === trip.projectId);
-        return sum + calculateTripReimbursement(trip, userProfile, project);
-    }, 0);
+
     const EMISSION_FACTOR_G_PER_KM = 140;
     const totalCo2 = (totalKm * EMISSION_FACTOR_G_PER_KM) / 1000; // in kg
 
@@ -81,21 +78,11 @@ const Dashboard: React.FC<DashboardProps> = ({ setCurrentView, personalization, 
         .reduce((sum, trip) => sum + trip.distance, 0),
     })).filter(p => p.km > 0);
 
-    const kmByMonth = userTrips.reduce((acc, trip) => {
-      const monthYear = new Date(trip.date).toLocaleDateString(language, { year: '2-digit', month: 'short' });
-      acc[monthYear] = (acc[monthYear] || 0) + trip.distance;
-      return acc;
-    }, {} as Record<string, number>);
 
-    // FIX: Cast `km` to `number` to resolve TypeScript's `unknown` type inference issue.
-    const monthlyChartData = Object.entries(kmByMonth).map(([name, km]) => ({ name, km: parseFloat((km as number).toFixed(1)) }));
+
+
     
-    const reimbursementByProject = projects.map(project => ({
-      name: project.name,
-      value: userTrips
-        .filter(trip => trip.projectId === project.id)
-        .reduce((sum, trip) => sum + calculateTripReimbursement(trip, userProfile, project), 0),
-    })).filter(p => p.value > 0);
+
 
     const alerts = useMemo(() => {
         if (!userTrips) return [];
@@ -150,23 +137,10 @@ const Dashboard: React.FC<DashboardProps> = ({ setCurrentView, personalization, 
     );
     
     const renderChart = () => {
-        switch(chartType) {
-            case 'projectKm':
-                return <Bar dataKey="km" fill="#007aff" name={t('dashboard_tooltip_kms')} />;
-            case 'monthlyKm':
-                return <Line type="monotone" dataKey="km" stroke="#34c759" name={t('dashboard_tooltip_kms')} />;
-            case 'projectReimbursement':
-                return (
-                    <Pie data={reimbursementByProject} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label>
-                        {reimbursementByProject.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
-                        ))}
-                    </Pie>
-                );
-        }
+        return <Bar dataKey="km" fill="#007aff" name={t('dashboard_tooltip_kms')} />;
     };
     
-    const chartData = chartType === 'projectKm' ? kmByProject : monthlyChartData;
+    const chartData = kmByProject;
 
     return (
         <div>
@@ -200,9 +174,8 @@ const Dashboard: React.FC<DashboardProps> = ({ setCurrentView, personalization, 
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
                 <StatCard title={t('dashboard_totalKm')} value={`${totalKm.toFixed(1)} km`} cta={t('dashboard_viewAllTrips')} onClick={() => setCurrentView('trips')} />
-                <StatCard title={t('dashboard_estimatedEarnings')} value={`€ ${totalReimbursement.toFixed(2)}`} />
                 <StatCard title={t('dashboard_activeProjects')} value={activeProjectsCount.toString()} cta={t('dashboard_manageProjects')} onClick={() => setCurrentView('projects')} />
                 <StatCard title={t('dashboard_total_co2')} value={`${totalCo2.toFixed(1)} kg`}>
                     <LeafIcon className="w-5 h-5 text-green-400" />
@@ -213,32 +186,20 @@ const Dashboard: React.FC<DashboardProps> = ({ setCurrentView, personalization, 
                 <div style={contentStyle} className="lg:col-span-2 p-6 rounded-lg shadow-lg">
                     <div className="flex justify-between items-center mb-4">
                         <h3 className="text-lg font-semibold text-white">{t('dashboard_visualAnalysis')}</h3>
-                        <div className="flex items-center gap-1 bg-background-dark p-1 rounded-lg">
-                            <ChartButton type="projectKm" label={t('dashboard_chartTab_kmPerProject')} icon={<BarChartIcon className="w-4 h-4" />} current={chartType} setType={setChartType} />
-                            <ChartButton type="monthlyKm" label={t('dashboard_chartTab_kmPerMonth')} icon={<LineChartIcon className="w-4 h-4" />} current={chartType} setType={setChartType} />
-                            <ChartButton type="projectReimbursement" label={t('dashboard_chartTab_earnings')} icon={<PieChartIcon className="w-4 h-4" />} current={chartType} setType={setChartType} />
-                        </div>
+
                     </div>
                     <ResponsiveContainer width="100%" height={300}>
-                        {chartType === 'projectReimbursement' ? (
-                             <PieChart>
-                                {renderChart()}
-                                <Tooltip formatter={(value) => `€ ${Number(value).toFixed(2)}`} />
-                                <Legend />
-                            </PieChart>
-                        ) : (
-                            <LineChart data={chartData}>
-                                <CartesianGrid strokeDasharray="3 3" stroke="#4a4a4a" />
-                                <XAxis dataKey="name" stroke="#a0a0a0" />
-                                <YAxis stroke="#a0a0a0" />
-                                <Tooltip 
-                                    contentStyle={{ backgroundColor: '#1e1e1e', border: '1px solid #4a4a4a' }}
-                                    formatter={(value) => `${Number(value).toFixed(1)} km`}
-                                />
-                                <Legend />
-                                {renderChart()}
-                            </LineChart>
-                        )}
+                        <BarChart data={chartData}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#4a4a4a" />
+                            <XAxis dataKey="name" stroke="#a0a0a0" />
+                            <YAxis stroke="#a0a0a0" />
+                            <Tooltip 
+                                contentStyle={{ backgroundColor: '#1e1e1e', border: '1px solid #4a4a4a' }}
+                                formatter={(value) => `${Number(value).toFixed(1)} km`}
+                            />
+                            <Legend />
+                            {renderChart()}
+                        </BarChart>
                     </ResponsiveContainer>
                 </div>
                 <div style={contentStyle} className="p-6 rounded-lg shadow-lg">

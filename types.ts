@@ -6,6 +6,7 @@ export interface PersonalizationSettings {
     backgroundImage: string;
     uiTransparency: number;
     uiBlur: number;
+    backgroundBlur: number;
 }
 
 

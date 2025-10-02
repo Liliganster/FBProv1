@@ -99,7 +99,7 @@ const SettingsView: React.FC<{
     const onClose = () => setCurrentView('dashboard');
     
     const resetPersonalization = () => {
-        setPersonalization({ backgroundImage: '', uiTransparency: 0.2, uiBlur: 16 });
+        setPersonalization({ backgroundImage: '', uiTransparency: 0.2, uiBlur: 16, backgroundBlur: 0 });
     };
 
     const PRESET_BACKGROUNDS = [
@@ -313,6 +313,14 @@ const SettingsView: React.FC<{
                             onChange={handlePersonalizationChange}
                             min={0} max={32} step={1}
                             displayValue={`${personalization.uiBlur}px`}
+                        />
+                        <SliderField
+                            label={t('settings_personalization_bg_blur_label')}
+                            name="backgroundBlur"
+                            value={personalization.backgroundBlur}
+                            onChange={handlePersonalizationChange}
+                            min={0} max={20} step={1}
+                            displayValue={`${personalization.backgroundBlur}px`}
                         />
                          <button onClick={resetPersonalization} className="text-sm text-brand-primary hover:underline mt-2">
                             {t('settings_personalization_reset_btn')}
