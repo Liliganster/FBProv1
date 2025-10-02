@@ -6,8 +6,6 @@ import { useAuth } from './hooks/useAuth';
 import { TripsProvider } from './context/TripsContext';
 import { UserProfileProvider } from './context/UserProfileContext';
 import { GoogleCalendarProvider } from './context/GoogleCalendarContext';
-import { DriversProvider } from './context/DriversContext';
-import { ActiveDriverProvider } from './context/ActiveDriverContext';
 import { LoaderIcon } from './components/Icons';
 
 const Auth: React.FC = () => {
@@ -33,11 +31,7 @@ const Auth: React.FC = () => {
     <UserProfileProvider>
       <GoogleCalendarProvider>
         <TripsProvider>
-          <DriversProvider>
-            <ActiveDriverProvider>
-              <App />
-            </ActiveDriverProvider>
-          </DriversProvider>
+          <App />
         </TripsProvider>
       </GoogleCalendarProvider>
     </UserProfileProvider>

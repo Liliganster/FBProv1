@@ -1,12 +1,10 @@
 import React, { useState, useMemo } from 'react';
-import useDrivers from '../hooks/useDrivers';
 import useTrips from '../hooks/useTrips';
+import useUserProfile from '../hooks/useUserProfile';
 // FIX: Use UserProfile as Driver since Driver type was merged.
 import { UserProfile as Driver } from '../types';
 import { PlusIcon, EditIcon, TrashIcon, UsersIcon, StarIcon, SearchIcon } from './Icons';
 import useTranslation from '../hooks/useTranslation';
-import DriverEditorModal from './DriverEditorModal';
-import useActiveDriver from '../hooks/useActiveDriver';
 import useUndoRedo from '../hooks/useUndoRedo';
 import UndoToast from './UndoToast';
 import Avatar from './Avatar';
@@ -16,10 +14,16 @@ interface DriversViewProps {
 }
 
 const DriversView: React.FC<DriversViewProps> = ({ theme }) => {
-  const { drivers, addDriver, updateDriver, deleteDriver, deleteMultipleDrivers } = useDrivers();
+  // Temporary placeholder since Drivers functionality was removed in merge
+  const drivers: any[] = [];
+  const addDriver = (driver: any) => {};
+  const updateDriver = (driver: any) => {};
+  const deleteDriver = (id: string) => {};
+  const deleteMultipleDrivers = (ids: string[]) => {};
   // FIX: Fetch projects along with trips to link them to drivers.
   const { trips, projects } = useTrips();
-  const { activeDriver, setActiveDriverId } = useActiveDriver();
+  const [activeDriverId, setActiveDriverId] = useState<string | null>(null);
+  const activeDriver = useMemo(() => drivers.find(d => d.id === activeDriverId) || null, [drivers, activeDriverId]);
   const [isEditorOpen, setIsEditorOpen] = useState(false);
   const [editingDriver, setEditingDriver] = useState<Driver | null>(null);
   const [selectedDriverIds, setSelectedDriverIds] = useState<string[]>([]);
@@ -228,6 +232,7 @@ const DriversView: React.FC<DriversViewProps> = ({ theme }) => {
         </table>
       </div>
 
+      {/* DriverEditorModal removed in merge
       {isEditorOpen && (
         <DriverEditorModal
           driver={editingDriver}
@@ -235,6 +240,7 @@ const DriversView: React.FC<DriversViewProps> = ({ theme }) => {
           onClose={() => setIsEditorOpen(false)}
         />
       )}
+      */}
       
       <UndoToast
         action={getLastAction()}
