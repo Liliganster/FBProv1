@@ -2,6 +2,7 @@
 import React, { createContext, useState, useCallback, ReactNode, useEffect } from 'react';
 import { User, UserCredentials, UserProfile } from '../types';
 import { getRateForCountry } from '../services/taxService';
+import { migrateLegacyDrivers } from '../services/legacyDriverMigration';
 
 interface AuthContextType {
   user: User | null;
@@ -22,7 +23,6 @@ const SESSION_STORAGE_KEY = 'fahrtenbuch_session_userid';
 const ANONYMOUS_DATA_KEYS = [
     'fahrtenbuch_trips',
     'fahrtenbuch_projects',
-    'fahrtenbuch_drivers',
     'fahrtenbuch_reports',
     'fahrtenbuch_admin_settings'
 ];
@@ -93,7 +93,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   }, []);
   
-  const migrateAnonymousData = (newUserId: string) => {
+  const migrateAnonymousData = (newUserId: string, fallbackName: string) => {
       console.log("Migrating anonymous data to new user:", newUserId);
       ANONYMOUS_DATA_KEYS.forEach(oldKey => {
           const data = localStorage.getItem(oldKey);
@@ -104,6 +104,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
               console.log(`Migrated ${oldKey} to ${newKey}`);
           }
       });
+
+      migrateLegacyDrivers(
+        newUserId,
+        fallbackName,
+        `fahrtenbuch_user_profile_${newUserId}`,
+        ['fahrtenbuch_drivers']
+      );
   };
 
   const register = useCallback(async (email: string, pass: string): Promise<void> => {
@@ -121,7 +128,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(users));
 
     if (isFirstUser) {
-        migrateAnonymousData(newUserId);
+        migrateAnonymousData(newUserId, lowerCaseEmail.split('@')[0]);
     }
 
     const newUser: User = { id: newUserId, email: lowerCaseEmail };
@@ -165,7 +172,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         localStorage.setItem(profileKey, JSON.stringify(newUserProfile));
         
         if (isFirstUser) {
-            migrateAnonymousData(newUserId);
+            migrateAnonymousData(newUserId, name || lowerCaseEmail.split('@')[0]);
         }
     }
     
