@@ -1,7 +1,8 @@
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import { Project, CallsheetFile, SpecialOrigin, UserProfile, Trip, DocumentType } from '../types';
 import useTrips from '../hooks/useTrips';
+import useProjects from '../hooks/useProjects';
 import { XIcon, FileTextIcon, EyeIcon, TrashIcon, LoaderIcon, SparklesIcon, LeafIcon, LineChartIcon, UsersIcon, PieChartIcon, CarIcon } from './Icons';
 import useTranslation from '../hooks/useTranslation';
 import useToast from '../hooks/useToast';
@@ -11,15 +12,17 @@ import useUserProfile from '../hooks/useUserProfile';
 import useGoogleMapsScript from '../hooks/useGoogleMapsScript';
 
 interface ProjectDetailModalProps {
-  project: Project,
+  projectId: string,
   trips: Trip[],
   onClose: () => void;
 }
 
-const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({ project, trips, onClose }) => {
+const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({ projectId, trips, onClose }) => {
   const { addCallsheetsToProject, deleteCallsheetFromProject, addMultipleTrips } = useTrips();
+  const { projects } = useProjects();
   const { userProfile } = useUserProfile();
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadingFiles, setUploadingFiles] = useState<string[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [processingFileId, setProcessingFileId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -27,6 +30,29 @@ const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({ project, trips,
   const { showToast } = useToast();
   
   const { isLoaded: isMapsScriptLoaded, error: mapsScriptError } = useGoogleMapsScript({ apiKey: userProfile?.googleMapsApiKey });
+
+  // Get the current project from the projects context (will be updated automatically)
+  const project = useMemo(() => {
+    return projects.find(p => p.id === projectId);
+  }, [projects, projectId]);
+
+  // If project is not found, show error
+  if (!project) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/60 backdrop-blur-sm" onClick={onClose}>
+        <div className="bg-background-dark border border-red-500/50 rounded-lg p-6 max-w-md mx-auto">
+          <h2 className="text-lg font-semibold text-red-400 mb-2">Project Not Found</h2>
+          <p className="text-gray-300 mb-4">The requested project could not be found.</p>
+          <button 
+            onClick={onClose}
+            className="px-4 py-2 bg-brand-primary text-white rounded-md hover:brightness-110 transition-all"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   const projectTrips = trips;
 
@@ -58,14 +84,24 @@ const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({ project, trips,
       showToast(t('projects_alert_maxFiles', { count: 5 }), 'warning');
       return;
     }
+
+    const fileNames = Array.from(files).map(f => f.name);
     setIsUploading(true);
+    setUploadingFiles(fileNames);
+
     try {
       await addCallsheetsToProject(project.id, Array.from(files));
       showToast(files.length > 1 ? t('projects_alert_upload_success_multiple', { count: files.length }) : t('projects_alert_upload_success_single', { fileName: files[0].name }), 'success');
+      
+      // Clear the file input to allow uploading the same file again if needed
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
     } catch (error) {
       showToast(t('projects_alert_upload_error'), 'error');
     } finally {
       setIsUploading(false);
+      setUploadingFiles([]);
     }
   };
   
@@ -175,6 +211,23 @@ const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({ project, trips,
               </div>
             </div>
             <ul className="space-y-2 max-h-64 overflow-y-auto pr-1">
+              {/* Show uploading files */}
+              {uploadingFiles.map((fileName, index) => (
+                <li
+                  key={`uploading-${index}`}
+                  className="flex items-center justify-between gap-3 px-3 py-2 bg-blue-500/10 border border-blue-500/30 rounded-md animate-pulse"
+                >
+                  <div className="flex items-center gap-2 min-w-0">
+                    <LoaderIcon className="w-4 h-4 text-blue-400 flex-shrink-0 animate-spin" />
+                    <span className="text-xs text-blue-300 truncate" title={fileName}>{fileName}</span>
+                  </div>
+                  <div className="flex items-center gap-1 flex-shrink-0">
+                    <span className="text-xs text-blue-400">Uploading...</span>
+                  </div>
+                </li>
+              ))}
+              
+              {/* Show existing callsheets */}
               {(project.callsheets || []).map(file => (
                 <li
                   key={file.id}
@@ -204,7 +257,16 @@ const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({ project, trips,
                       <EyeIcon className="w-4 h-4" />
                     </button>
                     <button
-                      onClick={() => { if (window.confirm(t('files_deleteConfirm'))) { deleteCallsheetFromProject(project.id, file.id); } }}
+                      onClick={async () => { 
+                        if (window.confirm(t('files_deleteConfirm'))) { 
+                          try {
+                            await deleteCallsheetFromProject(project.id, file.id);
+                            showToast('Callsheet deleted successfully', 'success');
+                          } catch (error) {
+                            showToast('Error deleting callsheet', 'error');
+                          }
+                        } 
+                      }}
                       className="p-1.5 text-red-400 hover:text-red-300 hover:bg-red-400/10 rounded-md transition-colors"
                     >
                       <TrashIcon className="w-4 h-4" />
@@ -212,6 +274,15 @@ const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({ project, trips,
                   </div>
                 </li>
               ))}
+              
+              {/* Show empty state when no callsheets and not uploading */}
+              {(project.callsheets || []).length === 0 && uploadingFiles.length === 0 && (
+                <li className="text-center py-8">
+                  <FileTextIcon className="w-8 h-8 text-gray-500 mx-auto mb-2" />
+                  <p className="text-sm text-gray-500">No callsheets uploaded yet</p>
+                  <p className="text-xs text-gray-600 mt-1">Upload documents to extract trips with AI</p>
+                </li>
+              )}
             </ul>
           </section>
         </main>

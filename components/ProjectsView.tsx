@@ -263,7 +263,7 @@ const ProjectsView: React.FC<ProjectsViewProps> = ({ setCurrentView, personaliza
       
       {isDetailOpen && selectedProject && (
         <ProjectDetailModal
-          project={selectedProject}
+          projectId={selectedProject.id}
           trips={trips.filter(t => t.projectId === selectedProject.id)}
           onClose={() => setIsDetailOpen(false)}
         />
