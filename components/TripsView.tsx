@@ -80,25 +80,40 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
     setIsEditorModalOpen(true);
   };
   
-  const handleSaveTrip = (trip: Trip) => {
-    if (editingTrip) {
-      updateTrip(trip);
-    } else {
-      addTrip(trip);
+  const handleSaveTrip = async (trip: Trip) => {
+    try {
+      if (editingTrip) {
+        await updateTrip(trip);
+      } else {
+        await addTrip(trip);
+      }
+      setIsEditorModalOpen(false);
+      setEditingTrip(null);
+    } catch (error) {
+      console.error('Error saving trip:', error);
+      showToast('Error saving trip', 'error');
     }
-    setIsEditorModalOpen(false);
-    setEditingTrip(null);
   };
 
-  const handleSaveBulkTrips = (newTrips: Omit<Trip, 'id'>[]) => {
-    addCsvTrips(newTrips);
-    setIsBulkModalOpen(false);
+  const handleSaveBulkTrips = async (newTrips: Omit<Trip, 'id'>[]) => {
+    try {
+      await addCsvTrips(newTrips);
+      setIsBulkModalOpen(false);
+    } catch (error) {
+      console.error('Error saving bulk trips:', error);
+      showToast('Error saving bulk trips', 'error');
+    }
   }
 
-  const handleSaveBatch = (updates: { projectId?: string; reason?: string }) => {
-    updateMultipleTrips(selectedTripIds, updates);
-    setIsBatchEditModalOpen(false);
-    setSelectedTripIds([]);
+  const handleSaveBatch = async (updates: { projectId?: string; reason?: string }) => {
+    try {
+      await updateMultipleTrips(selectedTripIds, updates);
+      setIsBatchEditModalOpen(false);
+      setSelectedTripIds([]);
+    } catch (error) {
+      console.error('Error updating multiple trips:', error);
+      showToast('Error updating trips', 'error');
+    }
   };
   
   const handleDeleteTrip = (id: string) => {

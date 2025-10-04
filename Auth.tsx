@@ -3,7 +3,7 @@ import React from 'react';
 import App from './App';
 import LoginView from './components/LoginView';
 import { useAuth } from './hooks/useAuth';
-import { TripsProvider } from './context/TripsContext';
+import { LedgerTripsProvider } from './context/LedgerTripsContext';
 import { UserProfileProvider } from './context/UserProfileContext';
 import { GoogleCalendarProvider } from './context/GoogleCalendarContext';
 import { LoaderIcon } from './components/Icons';
@@ -30,9 +30,9 @@ const Auth: React.FC = () => {
   return (
     <UserProfileProvider>
       <GoogleCalendarProvider>
-        <TripsProvider>
+        <LedgerTripsProvider>
           <App />
-        </TripsProvider>
+        </LedgerTripsProvider>
       </GoogleCalendarProvider>
     </UserProfileProvider>
   );

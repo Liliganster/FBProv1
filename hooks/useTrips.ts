@@ -1,10 +1,10 @@
 import { useContext } from 'react';
-import { TripsContext } from '../context/TripsContext';
+import { LedgerTripsContext } from '../context/LedgerTripsContext';
 
 const useTrips = () => {
-  const context = useContext(TripsContext);
+  const context = useContext(LedgerTripsContext);
   if (!context) {
-    throw new Error('useTrips must be used within a TripsProvider');
+    throw new Error('useTrips must be used within a LedgerTripsProvider');
   }
   return context;
 };
