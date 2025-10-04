@@ -1,8 +1,11 @@
+
 import React, { createContext, useState, useCallback, ReactNode, useEffect } from 'react';
 import { User as SupabaseUser, Session } from '@supabase/supabase-js';
-import { User } from '../types';
+import { User, UserCredentials, UserProfile } from '../types';
 import { DbProfile } from '../types/database';
 import { authService } from '../services/authService';
+import { getRateForCountry } from '../services/taxService';
+import { migrateLegacyDrivers } from '../services/legacyDriverMigration';
 
 interface AuthContextType {
   user: User | null;
@@ -21,6 +24,31 @@ interface AuthContextType {
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+const USERS_STORAGE_KEY = 'fahrtenbuch_users';
+const SESSION_STORAGE_KEY = 'fahrtenbuch_session_userid';
+
+// Data keys for migration
+const ANONYMOUS_DATA_KEYS = [
+    'fahrtenbuch_trips',
+    'fahrtenbuch_projects',
+    'fahrtenbuch_reports',
+    'fahrtenbuch_admin_settings'
+];
+
+const decodeJwt = (token: string) => {
+    try {
+        const base64Url = token.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(''));
+        return JSON.parse(jsonPayload);
+    } catch (e) {
+        console.error("Failed to decode JWT", e);
+        return null;
+    }
+};
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -118,7 +146,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     
     // State will be updated by the auth state change listener
   }, []);
-
+  
   const register = useCallback(async (email: string, password: string): Promise<void> => {
     const { user: authUser, error } = await authService.signUp(email, password, {
       full_name: email.split('@')[0] // Use email prefix as default name
@@ -136,55 +164,57 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }, []);
 
   const loginWithGoogle = useCallback(async (credential: string): Promise<void> => {
-    // For now, we'll use the OAuth flow instead of credential-based login
-    // This is a compatibility function for existing components
-    await signInWithOAuth('google');
-  }, []);
-
-  const logout = useCallback(async () => {
-    const { error } = await authService.signOut();
-    if (error) {
-      console.error('Error signing out:', error);
+    const decoded: { email: string; name: string; picture: string; } | null = decodeJwt(credential);
+    if (!decoded) {
+        throw new Error("Invalid Google credential.");
     }
-    // State will be updated by the auth state change listener
-  }, []);
+    const { email, name, picture } = decoded;
+    const lowerCaseEmail = email.toLowerCase();
+    
+    const users: Record<string, UserCredentials> = JSON.parse(localStorage.getItem(USERS_STORAGE_KEY) || '{}');
+    let userCredentials = users[lowerCaseEmail];
+    let loggedInUserId: string;
 
-  // New Supabase-specific methods
-  const signInWithOAuth = useCallback(async (provider: 'google' | 'github' | 'apple'): Promise<void> => {
-    const { error } = await authService.signInWithOAuth(provider);
-    if (error) {
-      throw new Error(error.message || `${provider} sign-in failed`);
+    if (userCredentials) {
+        // User exists, just log them in
+        loggedInUserId = userCredentials.id;
+    } else {
+        // New user, register them and create a profile
+        const isFirstUser = Object.keys(users).length === 0;
+        const newUserId = `user-${Date.now()}`;
+        loggedInUserId = newUserId;
+        users[lowerCaseEmail] = { id: newUserId }; // No password stored for Google users
+        localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(users));
+
+        // Create and save their profile
+        const newUserProfile: UserProfile = {
+            id: `profile-${newUserId}`,
+            name,
+            profilePicture: picture,
+            country: 'AT',
+            ratePerKm: getRateForCountry('AT'),
+            color: '#374151',
+        };
+        const profileKey = `fahrtenbuch_user_profile_${newUserId}`;
+        localStorage.setItem(profileKey, JSON.stringify(newUserProfile));
+        
+        if (isFirstUser) {
+            migrateAnonymousData(newUserId, name || lowerCaseEmail.split('@')[0]);
+        }
     }
+    
+    const loggedInUser: User = { id: loggedInUserId, email: lowerCaseEmail };
+    setUser(loggedInUser);
+    localStorage.setItem(SESSION_STORAGE_KEY, loggedInUser.id);
   }, []);
 
-  const resetPassword = useCallback(async (email: string): Promise<void> => {
-    const { error } = await authService.resetPassword(email);
-    if (error) {
-      throw new Error(error.message || 'Password reset failed');
-    }
+  const logout = useCallback(() => {
+    setUser(null);
+    localStorage.removeItem(SESSION_STORAGE_KEY);
+    // Optionally, clear session-related data from memory/state here if needed
   }, []);
 
-  const updatePassword = useCallback(async (password: string): Promise<void> => {
-    const { error } = await authService.updatePassword(password);
-    if (error) {
-      throw new Error(error.message || 'Password update failed');
-    }
-  }, []);
-
-  const value = { 
-    user, 
-    supabaseUser,
-    profile,
-    isLoading, 
-    login, 
-    register, 
-    logout, 
-    loginWithGoogle, 
-    googleClientId,
-    signInWithOAuth,
-    resetPassword,
-    updatePassword
-  };
+  const value = { user, isLoading, login, register, logout, loginWithGoogle, googleClientId };
 
   return (
     <AuthContext.Provider value={value}>

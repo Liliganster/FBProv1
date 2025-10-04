@@ -217,3 +217,12 @@ export interface RouteTemplate {
   lastUsedAt?: string; // ISO date
   createdAt: string; // ISO date
 }
+
+// Projects State interface for React context
+export interface ProjectsState {
+  projects: Project[];
+  editingProject: Project | null;
+  selectedProject: string | null;
+  loading: boolean;
+  error: string | null;
+}

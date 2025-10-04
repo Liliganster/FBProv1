@@ -4,6 +4,8 @@ import { saveFile, deleteFile, deleteMultipleFiles } from '../services/dbService
 import { useAuth } from '../hooks/useAuth';
 import useLocalStorage from '../hooks/useLocalStorage';
 import { useTripsLedger } from '../hooks/useTripsLedger';
+import { createTripLedgerService } from '../services/supabaseTripLedgerService';
+import { useProjects } from '../hooks/useProjects';
 
 interface LedgerTripsContextType {
   trips: Trip[];
