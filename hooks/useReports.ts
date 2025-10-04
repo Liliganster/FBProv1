@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Report } from '../types';
+import { Report, TripLedgerVerification } from '../types';
 import { useAuth } from './useAuth';
+import { tripLedgerService } from '../services/tripLedgerService';
 
 const useReports = () => {
   const { user } = useAuth();
@@ -23,9 +24,20 @@ const useReports = () => {
     }
   };
 
-  const addReport = (report: Omit<Report, 'id'>) => {
-    const newReport = { ...report, id: `report-${Date.now()}` };
+  const addReport = async (report: Omit<Report, 'id'>) => {
+    // Verify ledger integrity before generating report
+    const verification = await tripLedgerService.verifyLedgerIntegrity();
+    
+    const newReport: Report = {
+      ...report,
+      id: `report-${Date.now()}`,
+      // Add ledger verification to report
+      ledgerVerification: verification,
+      generationTimestamp: new Date().toISOString()
+    };
+    
     updateAndSaveReports([newReport, ...reports]);
+    return newReport;
   };
 
   const deleteReport = (reportId: string) => {
@@ -44,7 +56,45 @@ const useReports = () => {
     updateAndSaveReports([]);
   };
 
-  return { reports, addReport, deleteReport, deleteMultipleReports, setAllReports, deleteAllReports };
+  // Verify ledger integrity for a specific report
+  const verifyReportIntegrity = async (reportId: string): Promise<boolean> => {
+    const report = reports.find(r => r.id === reportId);
+    if (!report?.ledgerVerification) {
+      return false;
+    }
+
+    // Re-verify current ledger state
+    const currentVerification = await tripLedgerService.verifyLedgerIntegrity();
+    
+    // Compare root hashes - if they match, the ledger hasn't changed since report generation
+    return report.ledgerVerification.rootHash === currentVerification.rootHash;
+  };
+
+  // Get verification status for all reports
+  const getReportsVerificationStatus = async (): Promise<Record<string, boolean>> => {
+    const status: Record<string, boolean> = {};
+    
+    for (const report of reports) {
+      if (report.ledgerVerification) {
+        status[report.id] = await verifyReportIntegrity(report.id);
+      } else {
+        status[report.id] = false; // No verification data
+      }
+    }
+    
+    return status;
+  };
+
+  return { 
+    reports, 
+    addReport, 
+    deleteReport, 
+    deleteMultipleReports, 
+    setAllReports, 
+    deleteAllReports,
+    verifyReportIntegrity,
+    getReportsVerificationStatus
+  };
 };
 
 export default useReports;

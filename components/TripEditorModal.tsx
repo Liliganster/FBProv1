@@ -10,6 +10,8 @@ import useUnsavedChanges from '../hooks/useUnsavedChanges';
 import { getRateForCountry } from '../services/taxService';
 import useGoogleCalendar from '../hooks/useGoogleCalendar';
 import { isDuplicateTrip, findDuplicateTrips } from '../services/tripUtils';
+import { useTripsLedger } from '../hooks/useTripsLedger';
+import { TripLedgerSource } from '../types';
 
 declare global {
   interface Window {
@@ -21,13 +23,14 @@ interface TripEditorModalProps {
   trip: Trip | null;
   projects: Project[];
   trips: Trip[];
-  onSave: (trip: Trip) => void;
+  onSave?: (trip: Trip) => void; // Made optional since ledger handles persistence
   onClose: () => void;
 }
 
 const TripEditorModal: React.FC<TripEditorModalProps> = ({ trip, projects, trips, onSave, onClose }) => {
   const { userProfile } = useUserProfile();
   const { isSignedIn, createCalendarEvent } = useGoogleCalendar();
+  const { createTrip, updateTrip } = useTripsLedger();
   const [formData, setFormData] = useState<Partial<Trip>>({
     date: new Date().toISOString().split('T')[0],
     locations: ['', ''],
@@ -37,11 +40,13 @@ const TripEditorModal: React.FC<TripEditorModalProps> = ({ trip, projects, trips
     specialOrigin: SpecialOrigin.HOME,
     passengers: 0,
     ratePerKm: undefined,
+    editJustification: '',
     ...trip,
   });
 
   // Track initial data for unsaved changes detection
   const [initialFormData, setInitialFormData] = useState<Partial<Trip>>(formData);
+  const [hasUserInteracted, setHasUserInteracted] = useState(false);
   const [isCalculatingDist, setIsCalculatingDist] = useState(false);
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
@@ -57,7 +62,7 @@ const TripEditorModal: React.FC<TripEditorModalProps> = ({ trip, projects, trips
   const { showToast } = useToast();
   
   const { isLoaded: isMapsScriptLoaded, error: mapsScriptError } = useGoogleMapsScript({ apiKey: userProfile?.googleMapsApiKey });
-
+  
   // Initialize unsaved changes tracker
   const { hasUnsavedChanges, markAsSaved, checkUnsavedChanges, resetInitialData } = useUnsavedChanges(
     initialFormData,
@@ -67,6 +72,9 @@ const TripEditorModal: React.FC<TripEditorModalProps> = ({ trip, projects, trips
       confirmationMessage: t('common_unsaved_changes_warning')
     }
   );
+
+  // Only show unsaved changes warning if user has actually interacted AND there are changes
+  const shouldWarnAboutUnsavedChanges = hasUnsavedChanges && (hasUserInteracted || !!trip?.id);
 
   useEffect(() => {
     if (trip) {
@@ -88,6 +96,7 @@ const TripEditorModal: React.FC<TripEditorModalProps> = ({ trip, projects, trips
           specialOrigin: SpecialOrigin.HOME,
           passengers: 0,
           ratePerKm: undefined,
+          editJustification: '',
         };
         setFormData(newFormData);
         setInitialFormData(newFormData);
@@ -138,6 +147,11 @@ const TripEditorModal: React.FC<TripEditorModalProps> = ({ trip, projects, trips
     const { name, value } = e.target;
     const isNumber = e.target.getAttribute('type') === 'number';
 
+    // Mark that user has interacted with the form (but not for programmatic changes like rate auto-setting)
+    if (!trip?.id) { // Only for new trips
+      setHasUserInteracted(true);
+    }
+
     if (name === 'distance') {
       const dist = parseFloat(value);
       if (dist <= 0 && value !== '') {
@@ -154,6 +168,9 @@ const TripEditorModal: React.FC<TripEditorModalProps> = ({ trip, projects, trips
 
   const handleRateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setIsRateManuallySet(true);
+    if (!trip?.id) {
+      setHasUserInteracted(true);
+    }
     handleChange(e);
   };
   
@@ -165,6 +182,11 @@ const TripEditorModal: React.FC<TripEditorModalProps> = ({ trip, projects, trips
         showToast(t('tripEditor_alert_noHomeAddress'), 'warning');
         e.target.value = formData.specialOrigin || SpecialOrigin.HOME;
         return;
+    }
+
+    // Only mark as interacted for new trips
+    if (!trip?.id) {
+      setHasUserInteracted(true);
     }
     
     const sortedTrips = [...trips]
@@ -197,6 +219,11 @@ const TripEditorModal: React.FC<TripEditorModalProps> = ({ trip, projects, trips
 };
 
   const handleLocationChange = (index: number, value: string) => {
+    // Only mark as interacted for new trips
+    if (!trip?.id) {
+      setHasUserInteracted(true);
+    }
+    
     const newLocations = [...(formData.locations || [])];
     newLocations[index] = value;
     setFormData(prev => ({ ...prev, locations: newLocations }));
@@ -223,6 +250,11 @@ const TripEditorModal: React.FC<TripEditorModalProps> = ({ trip, projects, trips
   }
 
   const handleSuggestionClick = (index: number, prediction: any) => {
+    // Only mark as interacted for new trips
+    if (!trip?.id) {
+      setHasUserInteracted(true);
+    }
+    
     const newLocations = [...(formData.locations || [])];
     newLocations[index] = prediction.description;
     setFormData(prev => ({ ...prev, locations: newLocations }));
@@ -234,6 +266,11 @@ const TripEditorModal: React.FC<TripEditorModalProps> = ({ trip, projects, trips
 
 
   const handleAddLocation = (index: number) => {
+    // Only mark as interacted for new trips
+    if (!trip?.id) {
+      setHasUserInteracted(true);
+    }
+    
     const newLocations = [...(formData.locations || [])];
     newLocations.splice(index + 1, 0, '');
     setFormData(prev => ({...prev, locations: newLocations}));
@@ -244,6 +281,12 @@ const TripEditorModal: React.FC<TripEditorModalProps> = ({ trip, projects, trips
       showToast(t('tripEditor_alert_minLocations'), 'warning');
       return;
     }
+    
+    // Only mark as interacted for new trips
+    if (!trip?.id) {
+      setHasUserInteracted(true);
+    }
+    
     const newLocations = [...(formData.locations || [])];
     newLocations.splice(index, 1);
     setFormData(prev => ({...prev, locations: newLocations}));
@@ -280,6 +323,10 @@ const TripEditorModal: React.FC<TripEditorModalProps> = ({ trip, projects, trips
         const regionCode = getCountryCode(userProfile?.country);
         const distance = await calculateDistance(finalLocationsForCalc, userProfile?.googleMapsApiKey || '', regionCode);
         if (distance !== null) {
+            // Only mark as interacted for new trips
+            if (!trip?.id) {
+              setHasUserInteracted(true);
+            }
             setFormData(prev => ({ ...prev, distance }));
             if (distance > 1000) {
               setDistanceWarning(t('tripEditor_alert_improbable_distance'));
@@ -302,6 +349,22 @@ const TripEditorModal: React.FC<TripEditorModalProps> = ({ trip, projects, trips
         setIsCalculatingDist(false);
       }
   }
+
+  // Helper function to determine which fields changed between trips
+  const getChangedFields = (originalTrip: Trip, updatedTrip: Trip): string[] => {
+    const changedFields: string[] = [];
+    
+    if (originalTrip.date !== updatedTrip.date) changedFields.push('date');
+    if (JSON.stringify(originalTrip.locations) !== JSON.stringify(updatedTrip.locations)) changedFields.push('locations');
+    if (originalTrip.distance !== updatedTrip.distance) changedFields.push('distance');
+    if (originalTrip.projectId !== updatedTrip.projectId) changedFields.push('projectId');
+    if (originalTrip.reason !== updatedTrip.reason) changedFields.push('reason');
+    if (originalTrip.specialOrigin !== updatedTrip.specialOrigin) changedFields.push('specialOrigin');
+    if (originalTrip.passengers !== updatedTrip.passengers) changedFields.push('passengers');
+    if (originalTrip.ratePerKm !== updatedTrip.ratePerKm) changedFields.push('ratePerKm');
+    
+    return changedFields;
+  };
 
   const handleSave = async () => {
     let locationsToSave = [...(formData.locations || ['', ''])];
@@ -329,6 +392,8 @@ const TripEditorModal: React.FC<TripEditorModalProps> = ({ trip, projects, trips
       });
       
     const validationErrors: string[] = [];
+    const isEditingExistingTrip = !!trip?.id;
+    
     if (!formData.date) {
         validationErrors.push(t('tripEditor_form_date'));
     }
@@ -340,6 +405,9 @@ const TripEditorModal: React.FC<TripEditorModalProps> = ({ trip, projects, trips
     }
     if (!formData.distance || formData.distance <= 0) {
         validationErrors.push(t('tripEditor_validation_distance_positive'));
+    }
+    if (isEditingExistingTrip && (!formData.editJustification || formData.editJustification.trim() === '')) {
+        validationErrors.push(t('tripEditor_validation_editJustification'));
     }
 
     if (validationErrors.length > 0) {
@@ -377,31 +445,69 @@ const TripEditorModal: React.FC<TripEditorModalProps> = ({ trip, projects, trips
         finalFormData.ratePerKm = Number(finalFormData.ratePerKm);
     }
 
-    const finalTrip = { id: formData.id || `trip-${Date.now()}-${Math.random()}`, ...finalFormData } as Trip;
+    const finalTrip = { 
+        id: formData.id || `trip-${Date.now()}-${Math.random()}`, 
+        ...finalFormData 
+    } as Trip;
     
-    // Mark as saved after successful save
-    markAsSaved();
-    onSave(finalTrip);
-
-    if (addToCalendar && isSignedIn) {
-        if (!userProfile?.googleCalendarPrimaryId) {
-            showToast(t('toast_calendar_no_primary'), 'warning');
+    try {
+        if (isEditingExistingTrip) {
+            // Use ledger AMEND operation for existing trips
+            const changedFields = getChangedFields(trip!, finalTrip);
+            await updateTrip(
+                finalTrip.id,
+                finalTrip,
+                formData.editJustification || 'Trip updated',
+                changedFields
+            );
+            showToast(t('tripEditor_trip_updated_success'), 'success');
         } else {
-            try {
-                const projectName = projects.find(p => p.id === finalTrip.projectId)?.name || 'Trip';
-                await createCalendarEvent(finalTrip, projectName);
-                showToast(t('toast_calendar_event_success'), 'success');
-            } catch (error) {
-                console.error('Failed to create calendar event:', error);
-                showToast(t('toast_calendar_event_error'), 'error');
+            // Use ledger CREATE operation for new trips
+            await createTrip(finalTrip, TripLedgerSource.MANUAL);
+            showToast(t('tripEditor_trip_created_success'), 'success');
+        }
+        
+        // Mark as saved after successful ledger operation
+        markAsSaved();
+        
+        // Call legacy onSave for backward compatibility if provided
+        if (onSave) {
+            onSave(finalTrip);
+        }
+
+        // Handle calendar integration
+        if (addToCalendar && isSignedIn) {
+            if (!userProfile?.googleCalendarPrimaryId) {
+                showToast(t('toast_calendar_no_primary'), 'warning');
+            } else {
+                try {
+                    const projectName = projects.find(p => p.id === finalTrip.projectId)?.name || 'Trip';
+                    await createCalendarEvent(finalTrip, projectName);
+                    showToast(t('toast_calendar_event_success'), 'success');
+                } catch (error) {
+                    console.error('Failed to create calendar event:', error);
+                    showToast(t('toast_calendar_event_error'), 'error');
+                }
             }
         }
+        
+        // Close modal after successful save
+        onClose();
+        
+    } catch (error) {
+        console.error('Failed to save trip:', error);
+        showToast(error instanceof Error ? error.message : 'Failed to save trip', 'error');
     }
   };
 
   const handleClose = async () => {
-    const shouldClose = await checkUnsavedChanges();
-    if (shouldClose) {
+    // Only check for unsaved changes if user has actually interacted OR it's an existing trip
+    if (shouldWarnAboutUnsavedChanges) {
+      const shouldClose = await checkUnsavedChanges();
+      if (shouldClose) {
+        onClose();
+      }
+    } else {
       onClose();
     }
   };
@@ -440,6 +546,11 @@ const TripEditorModal: React.FC<TripEditorModalProps> = ({ trip, projects, trips
           setDragIndex(null);
           setDragOverIndex(null);
           return;
+      }
+
+      // Only mark as interacted for new trips
+      if (!trip?.id) {
+        setHasUserInteracted(true);
       }
 
       const locations = [...(formData.locations || [])];
@@ -596,6 +707,23 @@ const TripEditorModal: React.FC<TripEditorModalProps> = ({ trip, projects, trips
                       </select>
                   </div>
                   <InputField label={t('tripEditor_form_passengers')} type="number" name="passengers" value={formData.passengers} onChange={handleChange} min={0} />
+                  {trip?.id && (
+                    <div className="md:col-span-2">
+                      <label className="block text-[11px] font-semibold uppercase tracking-wide text-gray-300/90 mb-1">{t('tripEditor_form_editJustification')}</label>
+                      <textarea
+                        name="editJustification"
+                        value={formData.editJustification || ''}
+                        onChange={handleChange}
+                        placeholder={t('tripEditor_form_editJustification_placeholder')}
+                        rows={3}
+                        className="w-full bg-background-dark/70 border border-gray-600/70 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/50 resize-none"
+                        required
+                      />
+                      <p className="text-xs text-gray-400 mt-1">
+                        {t('tripEditor_validation_editJustification')}
+                      </p>
+                    </div>
+                  )}
                   <div>
                       <label className="block text-[11px] font-semibold uppercase tracking-wide text-gray-300/90 mb-1">{t('tripEditor_form_distance')}</label>
                       <div className="flex items-center">
@@ -634,7 +762,7 @@ const TripEditorModal: React.FC<TripEditorModalProps> = ({ trip, projects, trips
         </main>
         <footer className="flex justify-between items-center px-6 py-4 border-t border-gray-700/60 bg-background-dark/40">
           <div className="flex items-center gap-2">
-            {hasUnsavedChanges && (
+            {shouldWarnAboutUnsavedChanges && (
               <>
                 <div className="w-2 h-2 bg-orange-400 rounded-full animate-pulse"></div>
                 <span className="text-xs text-orange-400 font-medium">

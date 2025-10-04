@@ -81,6 +81,7 @@ export interface Trip {
   hash?: string;
   previousHash?: string;
   ratePerKm?: number;
+  editJustification?: string; // Required when editing existing trips
 }
 
 export interface CallsheetFile {
@@ -117,6 +118,89 @@ export interface Report {
   signature?: string;
   firstTripHash?: string;
   lastTripHash?: string;
+  
+  // Ledger integrity verification
+  ledgerVerification?: TripLedgerVerification;
+  generationTimestamp?: string;
+}
+
+// Trip Ledger System - Immutable append-only log for trip operations
+export enum TripLedgerOperation {
+  CREATE = 'CREATE',
+  AMEND = 'AMEND',
+  VOID = 'VOID',
+  IMPORT_BATCH = 'IMPORT_BATCH'
+}
+
+export enum TripLedgerSource {
+  MANUAL = 'MANUAL',
+  AI_AGENT = 'AI_AGENT',
+  CSV_IMPORT = 'CSV_IMPORT',
+  BULK_UPLOAD = 'BULK_UPLOAD'
+}
+
+export interface TripLedgerEntry {
+  id: string; // Unique entry ID
+  hash: string; // SHA-256 hash of this entry
+  previousHash: string | null; // Hash of previous entry in chain
+  timestamp: string; // ISO timestamp of operation
+  operation: TripLedgerOperation;
+  source: TripLedgerSource;
+  userId: string; // Who performed the operation
+  batchId?: string; // Group ID for batch operations
+  
+  // Trip data
+  tripId: string;
+  tripSnapshot: Trip; // Complete trip state after operation
+  
+  // Amendment/Void specific data
+  correctionReason?: string; // Required for AMEND operations
+  changedFields?: string[]; // Fields that were modified
+  sourceDocumentId?: string; // ID of callsheet, email, or document that motivated the change
+  sourceDocumentName?: string; // Human-readable name of source document
+  
+  // Void specific data
+  voidReason?: string; // Required for VOID operations
+  previousSnapshot?: Trip; // Trip state before voiding (for audit)
+}
+
+export interface TripLedgerBatch {
+  batchId: string;
+  timestamp: string;
+  source: TripLedgerSource;
+  userId: string;
+  entryCount: number;
+  firstEntryHash: string;
+  lastEntryHash: string;
+  sourceDocuments?: {
+    id: string;
+    name: string;
+    type: string;
+  }[];
+}
+
+export interface TripLedgerVerification {
+  isValid: boolean;
+  totalEntries: number;
+  rootHash: string;
+  firstEntry?: TripLedgerEntry;
+  lastEntry?: TripLedgerEntry;
+  brokenChainAt?: string; // Hash where chain breaks if invalid
+  verificationTimestamp: string;
+}
+
+// Projected state for UI (computed from ledger)
+export interface TripProjection {
+  trip: Trip;
+  isVoided: boolean;
+  createdAt: string;
+  lastModifiedAt: string;
+  amendmentCount: number;
+  lastOperation: TripLedgerOperation;
+  sourceDocument?: {
+    id: string;
+    name: string;
+  };
 }
 
 // Route Template for frequent trips

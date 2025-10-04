@@ -17,7 +17,7 @@ export const UserProfileContext = createContext<UserProfileContextType | undefin
 export const UserProfileProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const { user } = useAuth();
   const storageKey = user ? `fahrtenbuch_user_profile_${user.id}` : null;
-  const fallbackName = user ? user.email.split('@')[0] : 'user';
+  const fallbackName = user && user.email ? user.email.split('@')[0] : 'user';
 
   const [userProfile, setUserProfile] = useLocalStorage<UserProfile | null>(storageKey, () => {
     if (!user) return null;
