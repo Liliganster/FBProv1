@@ -5,20 +5,43 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <script>
-      // URL Cleaner - Fix URL accumulation problems
+      // URL Cleaner & Anti-Loop Protection
       (function() {
+        // Prevenir bucles infinitos - verificar si ya procesamos esta URL
+        var processedKey = 'url_processed_' + window.location.href;
+        var alreadyProcessed = sessionStorage.getItem(processedKey);
+        
+        if (alreadyProcessed) {
+          return; // Ya procesamos esta URL en esta sesión
+        }
+        
         var path = window.location.pathname;
+        var needsCleanup = false;
+        var cleanPath = path;
+        
         // Check for duplicate index.html in the path
         if (path.includes('/index.html/') || path.match(/\/index\.html$/i)) {
+          cleanPath = path.replace(/\/index\.html/g, '');
+          needsCleanup = true;
+        }
+        
+        // Normalize empty path
+        if (!cleanPath || cleanPath === '') {
+          cleanPath = '/';
+        }
+        
+        // Only apply cleanup if needed
+        if (needsCleanup && cleanPath !== path) {
           var baseUrl = window.location.origin;
-          // Clean the path of any index.html references and normalize slashes
-          var cleanPath = path.replace(/\/index\.html/g, '');
-          cleanPath = cleanPath || '/';
-          // Preserve query string and hash
           var query = window.location.search;
           var hash = window.location.hash;
+          var newUrl = baseUrl + cleanPath + query + hash;
+          
+          // Mark this URL as processed
+          sessionStorage.setItem(processedKey, 'true');
+          
           // Replace current URL without a page reload
-          window.history.replaceState(null, document.title, baseUrl + cleanPath + query + hash);
+          window.history.replaceState(null, document.title, newUrl);
         }
       })();
     </script>

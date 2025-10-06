@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/useAuth';
 
@@ -7,32 +7,57 @@ import { useAuth } from '../hooks/useAuth';
  * Procesa la URL manualmente para evitar bucles infinitos
  */
 const AuthCallback: React.FC = () => {
-  const { isLoading } = useAuth();
+  const { isLoading, user } = useAuth();
+  const [processed, setProcessed] = useState(false);
 
   useEffect(() => {
+    // Prevenir procesamiento múltiple
+    if (processed) return;
+    
     // Procesar el callback OAuth manualmente
     const processOAuthCallback = async () => {
       try {
-        // Obtener el hash o la URL completa
         const hash = window.location.hash;
         const query = window.location.search;
         
+        console.log('AuthCallback: Processing OAuth callback', { hash, query });
+        
         if (hash || query) {
-          // Notificar a Supabase del callback sin actualizar la URL para evitar bucles
-          await supabase.auth.getSession();
+          // Marcar como procesado antes de hacer la petición
+          setProcessed(true);
           
-          // Redirigir a la página principal después de procesar
-          window.history.replaceState({}, document.title, '/');
+          // Notificar a Supabase del callback
+          const { data, error } = await supabase.auth.getSession();
+          
+          if (error) {
+            console.error('AuthCallback: Error getting session', error);
+          } else {
+            console.log('AuthCallback: Session obtained successfully', data);
+          }
+          
+          // Esperar un momento para que el contexto de Auth se actualice
+          setTimeout(() => {
+            // Limpiar la URL y redirigir a la página principal
+            window.location.href = '/';
+          }, 500);
+        } else if (!isLoading) {
+          // Si no hay hash ni query, redirigir inmediatamente
+          console.log('AuthCallback: No OAuth data, redirecting to home');
+          window.location.href = '/';
         }
       } catch (error) {
         console.error('Error processing OAuth callback:', error);
+        // En caso de error, redirigir de todas formas
+        setTimeout(() => {
+          window.location.href = '/';
+        }, 1000);
       }
     };
 
     if (!isLoading) {
       processOAuthCallback();
     }
-  }, [isLoading]);
+  }, [isLoading, processed]);
 
   return (
     <div className="flex items-center justify-center h-screen">
