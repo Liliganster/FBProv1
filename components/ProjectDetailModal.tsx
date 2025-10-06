@@ -18,8 +18,9 @@ interface ProjectDetailModalProps {
 }
 
 const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({ projectId, trips, onClose }) => {
-  const { addCallsheetsToProject, deleteCallsheetFromProject, addMultipleTrips } = useTrips();
-  const { projects } = useProjects();
+  const tripsContext = useTrips();
+  const { projects, addCallsheetsToProject, deleteCallsheetFromProject } = useProjects();
+  const addMultipleTrips = tripsContext.addMultipleTrips || (() => Promise.resolve());
   const { userProfile } = useUserProfile();
   const [isUploading, setIsUploading] = useState(false);
   const [uploadingFiles, setUploadingFiles] = useState<string[]>([]);

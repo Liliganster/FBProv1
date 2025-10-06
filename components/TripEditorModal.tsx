@@ -10,8 +10,6 @@ import useUnsavedChanges from '../hooks/useUnsavedChanges';
 import { getRateForCountry } from '../services/taxService';
 import useGoogleCalendar from '../hooks/useGoogleCalendar';
 import { isDuplicateTrip, findDuplicateTrips } from '../services/tripUtils';
-import { useTripsLedger } from '../hooks/useTripsLedger';
-import { TripLedgerSource } from '../types';
 
 declare global {
   interface Window {
@@ -30,7 +28,6 @@ interface TripEditorModalProps {
 const TripEditorModal: React.FC<TripEditorModalProps> = ({ trip, projects, trips, onSave, onClose }) => {
   const { userProfile } = useUserProfile();
   const { isSignedIn, createCalendarEvent } = useGoogleCalendar();
-  const { createTrip, updateTrip } = useTripsLedger();
   const [formData, setFormData] = useState<Partial<Trip>>({
     date: new Date().toISOString().split('T')[0],
     locations: ['', ''],
@@ -451,29 +448,19 @@ const TripEditorModal: React.FC<TripEditorModalProps> = ({ trip, projects, trips
     } as Trip;
     
     try {
-        if (isEditingExistingTrip) {
-            // Use ledger AMEND operation for existing trips
-            const changedFields = getChangedFields(trip!, finalTrip);
-            await updateTrip(
-                finalTrip.id,
-                finalTrip,
-                formData.editJustification || 'Trip updated',
-                changedFields
-            );
-            showToast(t('tripEditor_trip_updated_success'), 'success');
-        } else {
-            // Use ledger CREATE operation for new trips
-            await createTrip(finalTrip, TripLedgerSource.MANUAL);
-            showToast(t('tripEditor_trip_created_success'), 'success');
-        }
-        
-        // Mark as saved after successful ledger operation
-        markAsSaved();
-        
-        // Call legacy onSave for backward compatibility if provided
+        // Call onSave callback which will handle persistence via Supabase context
         if (onSave) {
             onSave(finalTrip);
         }
+        
+        if (isEditingExistingTrip) {
+            showToast(t('tripEditor_trip_updated_success'), 'success');
+        } else {
+            showToast(t('tripEditor_trip_created_success'), 'success');
+        }
+        
+        // Mark as saved after successful save
+        markAsSaved();
 
         // Handle calendar integration
         if (addToCalendar && isSignedIn) {

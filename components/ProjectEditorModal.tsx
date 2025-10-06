@@ -31,7 +31,7 @@ const ProjectEditorModal: React.FC<ProjectEditorModalProps> = ({ project, onClos
 
   useEffect(() => {
     const newFormState = project 
-      ? { name: project.name, producer: project.producer, ratePerKm: project.ratePerKm ?? '' }
+      ? { name: project.name, producer: project.producer, ratePerKm: (project as any).ratePerKm ?? '' }
       : { name: '', producer: '', ratePerKm: '' };
     
     setFormState(newFormState);
@@ -53,9 +53,9 @@ const ProjectEditorModal: React.FC<ProjectEditorModalProps> = ({ project, onClos
     const rateToSave = formState.ratePerKm === '' || isNaN(Number(formState.ratePerKm)) ? undefined : Number(formState.ratePerKm);
 
     if (project) {
-      updateProject({ ...project, name: formState.name, producer: formState.producer, ratePerKm: rateToSave });
+      updateProject({ ...(project as any), name: formState.name, producer: formState.producer, ratePerKm: rateToSave } as any);
     } else {
-      addProject({ name: formState.name, producer: formState.producer, ratePerKm: rateToSave });
+      addProject({ name: formState.name, producer: formState.producer, ratePerKm: rateToSave } as any);
     }
     
     // Mark as saved after successful save

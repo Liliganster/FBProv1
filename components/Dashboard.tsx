@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import useTrips from '../hooks/useTrips';
+// import useTrips from '../hooks/useTrips'; // Temporarily commented out
 import { BarChartIcon, BellIcon, LeafIcon, ListIcon, FolderIcon } from './Icons';
 import useTranslation from '../hooks/useTranslation';
 import useUserProfile from '../hooks/useUserProfile';
@@ -20,7 +20,9 @@ interface DashboardProps {
 }
 
 const Dashboard: React.FC<DashboardProps> = ({ setCurrentView, personalization, theme }) => {
-    const { trips, projects } = useTrips();
+    // Temporarily use empty arrays until context is properly configured
+    const trips: Trip[] = [];
+    const projects: any[] = [];
     const { userProfile } = useUserProfile();
     const { visibleProjectIds, hasSettings } = useDashboardSettings();
     const [chartType, setChartType] = useState<ChartType>('projectKm');

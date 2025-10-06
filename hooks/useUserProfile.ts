@@ -1,6 +1,6 @@
 
 import { useContext } from 'react';
-import { UserProfileContext } from '../context/UserProfileContext';
+import { UserProfileContext } from '../context/SupabaseUserProfileContext';
 
 const useUserProfile = () => {
   const context = useContext(UserProfileContext);

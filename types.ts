@@ -1,7 +1,3 @@
-
-
-
-
 export interface PersonalizationSettings {
     backgroundImage: string;
     uiTransparency: number;
@@ -36,36 +32,40 @@ export enum DocumentType {
 }
 
 // UserProfile merges UserSettings and the old Driver interface
+// Full extended profile (restored fields used across components)
 export interface UserProfile {
-  id: string;
-  name: string;
-  licensePlate?: string;
-  uid?: string;
-  address?: string;
-  city?: string;
-  country?: string;
-  profilePicture?: string;
-  color?: string;
-  ratePerKm?: number;
-  googleMapsApiKey?: string;
-  googleCalendarApiKey?: string;
-  googleCalendarClientId?: string;
-  googleCalendarPrimaryId?: string;
-  openRouterApiKey?: string;
-  openRouterModel?: string;
-  lockedUntilDate?: string;
-  
-  // New fields for advanced trip costing
-  vehicleType?: 'combustion' | 'electric';
-  fuelConsumption?: number; // L/100km
-  fuelPrice?: number; // €/L
-  energyConsumption?: number; // kWh/100km
-  energyPrice?: number; // €/kWh
-  maintenanceCostPerKm?: number; // €/km
-  parkingCostPerKm?: number; // €/km
-  tollsCostPerKm?: number; // €/km
-  finesCostPerKm?: number; // €/km
-  miscCostPerKm?: number; // €/km for uncategorized costs
+  id: string
+  email?: string | null
+  fullName?: string | null
+  name?: string | null
+  licensePlate?: string | null
+  uid?: string | null
+  address?: string | null
+  city?: string | null
+  country?: string | null
+  profilePicture?: string | null
+  color?: string | null
+  ratePerKm?: number | null
+  googleMapsApiKey?: string | null
+  googleCalendarApiKey?: string | null
+  googleCalendarClientId?: string | null
+  googleCalendarPrimaryId?: string | null
+  openRouterApiKey?: string | null
+  openRouterModel?: string | null
+  lockedUntilDate?: string | null
+  vehicleType?: 'combustion' | 'electric' | null
+  fuelConsumption?: number | null
+  fuelPrice?: number | null
+  energyConsumption?: number | null
+  energyPrice?: number | null
+  maintenanceCostPerKm?: number | null
+  parkingCostPerKm?: number | null
+  tollsCostPerKm?: number | null
+  finesCostPerKm?: number | null
+  miscCostPerKm?: number | null
+  avatarUrl?: string | null
+  createdAt?: string
+  updatedAt?: string
 }
 
 export interface Trip {
@@ -91,13 +91,16 @@ export interface CallsheetFile {
 }
 
 export interface Project {
-  id: string;
-  name: string;
-  producer: string;
-  callsheets?: CallsheetFile[];
-  ratePerKm?: number;
-  // FIX: Add ownerDriverId to associate projects with a driver/user profile.
-  ownerDriverId?: string;
+  id: string
+  userId: string
+  name: string
+  description?: string | null
+  producer: string
+  ratePerKm?: number | null
+  ownerDriverId?: string | null
+  callsheets?: CallsheetFile[]
+  createdAt: string
+  updatedAt: string
 }
 
 export interface AiModelInfo {

@@ -7,120 +7,71 @@
 export interface Database {
   public: {
     Tables: {
-      profiles: {
+      user_profiles: {
         Row: {
           id: string
+          email: string | null
+          full_name: string | null
+          name: string | null
+          license_plate: string | null
+          avatar_url: string | null
           created_at: string
           updated_at: string
-          email: string
-          full_name: string | null
-          country: string | null
-          ratePerKm: number | null
-          homeAddress: string | null
-          officeAddress: string | null
-          googleMapsApiKey: string | null
-          googleCalendarApiKey: string | null
-          googleCalendarClientId: string | null
-          googleCalendarPrimaryId: string | null
-          openRouterApiKey: string | null
-          openRouterModel: string | null
-          lockedUntilDate: string | null
-          vehicleType: 'combustion' | 'electric' | null
-          fuelConsumption: number | null
-          fuelPrice: number | null
-          energyConsumption: number | null
-          energyPrice: number | null
-          maintenanceCostPerKm: number | null
-          parkingCostPerKm: number | null
-          tollsCostPerKm: number | null
-          finesCostPerKm: number | null
-          miscCostPerKm: number | null
         }
         Insert: {
-          id?: string
+          id: string
+          email?: string | null
+          full_name?: string | null
+          name?: string | null
+          license_plate?: string | null
+          avatar_url?: string | null
           created_at?: string
           updated_at?: string
-          email: string
-          full_name?: string | null
-          country?: string | null
-          ratePerKm?: number | null
-          homeAddress?: string | null
-          officeAddress?: string | null
-          googleMapsApiKey?: string | null
-          googleCalendarApiKey?: string | null
-          googleCalendarClientId?: string | null
-          googleCalendarPrimaryId?: string | null
-          openRouterApiKey?: string | null
-          openRouterModel?: string | null
-          lockedUntilDate?: string | null
-          vehicleType?: 'combustion' | 'electric' | null
-          fuelConsumption?: number | null
-          fuelPrice?: number | null
-          energyConsumption?: number | null
-          energyPrice?: number | null
-          maintenanceCostPerKm?: number | null
-          parkingCostPerKm?: number | null
-          tollsCostPerKm?: number | null
-          finesCostPerKm?: number | null
-          miscCostPerKm?: number | null
         }
         Update: {
           id?: string
-          updated_at?: string
-          email?: string
+          email?: string | null
           full_name?: string | null
-          country?: string | null
-          ratePerKm?: number | null
-          homeAddress?: string | null
-          officeAddress?: string | null
-          googleMapsApiKey?: string | null
-          googleCalendarApiKey?: string | null
-          googleCalendarClientId?: string | null
-          googleCalendarPrimaryId?: string | null
-          openRouterApiKey?: string | null
-          openRouterModel?: string | null
-          lockedUntilDate?: string | null
-          vehicleType?: 'combustion' | 'electric' | null
-          fuelConsumption?: number | null
-          fuelPrice?: number | null
-          energyConsumption?: number | null
-          energyPrice?: number | null
-          maintenanceCostPerKm?: number | null
-          parkingCostPerKm?: number | null
-          tollsCostPerKm?: number | null
-          finesCostPerKm?: number | null
-          miscCostPerKm?: number | null
+          name?: string | null
+          license_plate?: string | null
+          avatar_url?: string | null
+          created_at?: string
+          updated_at?: string
         }
       }
       projects: {
         Row: {
           id: string
-          created_at: string
-          updated_at: string
           user_id: string
           name: string
+          description: string | null
           producer: string
-          ratePerKm: number | null
-          ownerDriverId: string | null
+          rate_per_km: number | null
+          owner_driver_id: string | null
+          created_at: string
+          updated_at: string
         }
         Insert: {
           id?: string
-          created_at?: string
-          updated_at?: string
           user_id: string
           name: string
-          producer: string
-          ratePerKm?: number | null
-          ownerDriverId?: string | null
+          description?: string | null
+          producer?: string
+          rate_per_km?: number | null
+          owner_driver_id?: string | null
+          created_at?: string
+          updated_at?: string
         }
         Update: {
           id?: string
-          updated_at?: string
           user_id?: string
           name?: string
+          description?: string | null
           producer?: string
-          ratePerKm?: number | null
-          ownerDriverId?: string | null
+          rate_per_km?: number | null
+          owner_driver_id?: string | null
+          created_at?: string
+          updated_at?: string
         }
       }
       trip_ledger: {
@@ -182,23 +133,22 @@ export interface Database {
           previous_snapshot?: any | null
         }
       }
-      trip_ledger_batches: {
+      trip_batches: {
         Row: {
           id: string
           batch_id: string
-          created_at: string
           user_id: string
           timestamp: string
           source: 'MANUAL' | 'AI_AGENT' | 'CSV_IMPORT' | 'BULK_UPLOAD'
           entry_count: number
           first_entry_hash: string
           last_entry_hash: string
-          source_documents: any | null // JSON field
+          source_documents: any | null
+          created_at: string
         }
         Insert: {
           id?: string
           batch_id: string
-          created_at?: string
           user_id: string
           timestamp: string
           source: 'MANUAL' | 'AI_AGENT' | 'CSV_IMPORT' | 'BULK_UPLOAD'
@@ -206,11 +156,11 @@ export interface Database {
           first_entry_hash: string
           last_entry_hash: string
           source_documents?: any | null
+          created_at?: string
         }
         Update: {
           id?: string
           batch_id?: string
-          created_at?: string
           user_id?: string
           timestamp?: string
           source?: 'MANUAL' | 'AI_AGENT' | 'CSV_IMPORT' | 'BULK_UPLOAD'
@@ -218,6 +168,7 @@ export interface Database {
           first_entry_hash?: string
           last_entry_hash?: string
           source_documents?: any | null
+          created_at?: string
         }
       }
       callsheets: {
@@ -248,6 +199,110 @@ export interface Database {
           file_data?: any | null
         }
       }
+      route_templates: {
+        Row: {
+          id: string
+          user_id: string
+          name: string
+          category: 'business' | 'commute' | 'client' | 'other'
+          start_location: string
+          end_location: string
+          distance: number
+          estimated_time_minutes: number | null
+          description: string | null
+          uses: number
+          last_used_at: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          name: string
+          category: 'business' | 'commute' | 'client' | 'other'
+          start_location: string
+          end_location: string
+          distance: number
+          estimated_time_minutes?: number | null
+          description?: string | null
+          uses?: number
+          last_used_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          name?: string
+          category?: 'business' | 'commute' | 'client' | 'other'
+          start_location?: string
+          end_location?: string
+          distance?: number
+          estimated_time_minutes?: number | null
+          description?: string | null
+          uses?: number
+          last_used_at?: string | null
+          updated_at?: string
+        }
+      }
+      reports: {
+        Row: {
+          id: string
+          user_id: string
+          generation_date: string
+          start_date: string
+          end_date: string
+          project_id: string
+          project_name: string
+          total_distance: number
+          trips_data: any // JSON field for trips array
+          user_profile_snapshot: any // JSON field
+          signature: string | null
+          first_trip_hash: string | null
+          last_trip_hash: string | null
+          ledger_verification: any | null // JSON field
+          generation_timestamp: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          generation_date: string
+          start_date: string
+          end_date: string
+          project_id: string
+          project_name: string
+          total_distance: number
+          trips_data: any
+          user_profile_snapshot: any
+          signature?: string | null
+          first_trip_hash?: string | null
+          last_trip_hash?: string | null
+          ledger_verification?: any | null
+          generation_timestamp?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          generation_date?: string
+          start_date?: string
+          end_date?: string
+          project_id?: string
+          project_name?: string
+          total_distance?: number
+          trips_data?: any
+          user_profile_snapshot?: any
+          signature?: string | null
+          first_trip_hash?: string | null
+          last_trip_hash?: string | null
+          ledger_verification?: any | null
+          generation_timestamp?: string | null
+          updated_at?: string
+        }
+      }
     }
     Views: {
       [_ in never]: never
@@ -259,25 +314,33 @@ export interface Database {
       trip_operation: 'CREATE' | 'AMEND' | 'VOID' | 'IMPORT_BATCH'
       trip_source: 'MANUAL' | 'AI_AGENT' | 'CSV_IMPORT' | 'BULK_UPLOAD'
       vehicle_type: 'combustion' | 'electric'
+      route_category: 'business' | 'commute' | 'client' | 'other'
     }
   }
 }
 
 // Type helpers
-export type DbProfile = Database['public']['Tables']['profiles']['Row']
+export type DbProfile = Database['public']['Tables']['user_profiles']['Row']
 export type DbProject = Database['public']['Tables']['projects']['Row']
+export type DbUserProfile = Database['public']['Tables']['user_profiles']['Row']
 export type DbTripLedger = Database['public']['Tables']['trip_ledger']['Row']
-export type DbTripLedgerBatch = Database['public']['Tables']['trip_ledger_batches']['Row']
+export type DbTripLedgerBatch = Database['public']['Tables']['trip_batches']['Row']
 export type DbCallsheet = Database['public']['Tables']['callsheets']['Row']
+export type DbRouteTemplate = Database['public']['Tables']['route_templates']['Row']
+export type DbReport = Database['public']['Tables']['reports']['Row']
 
-export type DbProfileInsert = Database['public']['Tables']['profiles']['Insert']
+export type DbProfileInsert = Database['public']['Tables']['user_profiles']['Insert']
 export type DbProjectInsert = Database['public']['Tables']['projects']['Insert']
 export type DbTripLedgerInsert = Database['public']['Tables']['trip_ledger']['Insert']
-export type DbTripLedgerBatchInsert = Database['public']['Tables']['trip_ledger_batches']['Insert']
+export type DbTripLedgerBatchInsert = Database['public']['Tables']['trip_batches']['Insert']
 export type DbCallsheetInsert = Database['public']['Tables']['callsheets']['Insert']
+export type DbRouteTemplateInsert = Database['public']['Tables']['route_templates']['Insert']
+export type DbReportInsert = Database['public']['Tables']['reports']['Insert']
 
-export type DbProfileUpdate = Database['public']['Tables']['profiles']['Update']
+export type DbProfileUpdate = Database['public']['Tables']['user_profiles']['Update']
 export type DbProjectUpdate = Database['public']['Tables']['projects']['Update']
 export type DbTripLedgerUpdate = Database['public']['Tables']['trip_ledger']['Update']
-export type DbTripLedgerBatchUpdate = Database['public']['Tables']['trip_ledger_batches']['Update']
+export type DbTripLedgerBatchUpdate = Database['public']['Tables']['trip_batches']['Update']
 export type DbCallsheetUpdate = Database['public']['Tables']['callsheets']['Update']
+export type DbRouteTemplateUpdate = Database['public']['Tables']['route_templates']['Update']
+export type DbReportUpdate = Database['public']['Tables']['reports']['Update']

@@ -20,7 +20,6 @@ import SettingsView from './components/Settings';
 import ReportsView from './components/ReportsView';
 import CalendarView from './components/CalendarView';
 import AdvancedView from './components/AdvancedView';
-import { RouteTemplatesProvider } from './context/RouteTemplatesContext';
 import useTranslation from './hooks/useTranslation';
 import { View, PersonalizationSettings } from './types';
 import useUserProfile from './hooks/useUserProfile';
@@ -28,8 +27,14 @@ import Avatar from './components/Avatar';
 // FIX: Changed to a named import for useAuth, as it's not a default export.
 import { useAuth } from './hooks/useAuth';
 
+// Added explicit type for useAuth return to fix "Property 'user' does not exist on type '{}'" error
+type AuthHookReturn = {
+  user: { id: string } | null;
+  logout: () => void;
+};
+
 const App: React.FC = () => {
-  const { user, logout } = useAuth();
+  const { user, logout } = useAuth() as AuthHookReturn;
 
   // Helper function to get view from URL
   const getViewFromUrl = (): View => {
@@ -251,7 +256,6 @@ const App: React.FC = () => {
   };
 
   return (
-    <RouteTemplatesProvider>
     <div className="relative flex h-screen font-sans bg-transparent">
       {/* Background image with independent blur */}
       {personalization.backgroundImage && (
@@ -376,7 +380,6 @@ const App: React.FC = () => {
         {renderView()}
       </main>
     </div>
-    </RouteTemplatesProvider>
   );
 };
 

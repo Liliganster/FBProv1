@@ -1,13 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import useTranslation from '../hooks/useTranslation';
 import { AtSignIcon, KeyRoundIcon, LoaderIcon } from './Icons';
-
-declare global {
-  interface Window {
-    google: any;
-  }
-}
 
 const LoginView: React.FC = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -16,72 +10,19 @@ const LoginView: React.FC = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { login, register, loginWithGoogle, googleClientId } = useAuth();
+  const { login, register, signInWithOAuth } = useAuth();
   const { t } = useTranslation();
-  const renderIntervalRef = useRef<number | null>(null);
 
-  const handleGoogleSignIn = React.useCallback(async (response: any) => {
+  const handleGoogleSignIn = async () => {
     setLoading(true);
+    setError('');
     try {
-        if(loginWithGoogle) {
-          await loginWithGoogle(response.credential);
-        }
+      await signInWithOAuth('google');
     } catch (err) {
-        setError(err instanceof Error ? err.message : String(err));
-    } finally {
-        setLoading(false);
+      setError(err instanceof Error ? err.message : String(err));
+      setLoading(false);
     }
-  }, [loginWithGoogle]);
-
-  useEffect(() => {
-    if (!googleClientId) {
-      return;
-    }
-
-    const renderGoogleButton = () => {
-      const buttonContainer = document.getElementById('googleSignInButtonContainer');
-      // If GSI script is loaded and button container is in the DOM
-      if (window.google?.accounts?.id && buttonContainer) {
-        try {
-          window.google.accounts.id.initialize({
-            client_id: googleClientId,
-            callback: handleGoogleSignIn,
-          });
-          window.google.accounts.id.renderButton(
-            buttonContainer,
-            { theme: 'outline', size: 'large', type: 'standard', text: 'signin_with', shape: 'rectangular' }
-          );
-          // Once rendered, clear the interval
-          if (renderIntervalRef.current) {
-            clearInterval(renderIntervalRef.current);
-            renderIntervalRef.current = null;
-          }
-        } catch (e) {
-          console.error("Error initializing Google Sign-In", e);
-          setError("Could not initialize Google Sign-In.");
-          if (renderIntervalRef.current) {
-            clearInterval(renderIntervalRef.current);
-            renderIntervalRef.current = null;
-          }
-        }
-      }
-    };
-
-    // If script is already available, render immediately.
-    // Otherwise, set an interval to poll for the script.
-    if (window.google?.accounts?.id) {
-      renderGoogleButton();
-    } else {
-      renderIntervalRef.current = window.setInterval(renderGoogleButton, 200);
-    }
-
-    // Cleanup interval on component unmount
-    return () => {
-      if (renderIntervalRef.current) {
-        clearInterval(renderIntervalRef.current);
-      }
-    };
-  }, [googleClientId, handleGoogleSignIn]);
+  };
 
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -188,7 +129,28 @@ const LoginView: React.FC = () => {
             <span className="mx-4 text-sm text-on-surface-dark-secondary">{t('login_or_continue_with')}</span>
             <hr className="flex-grow border-gray-600" />
         </div>
-        <div id="googleSignInButtonContainer"></div>
+        
+        <button
+          type="button"
+          onClick={handleGoogleSignIn}
+          disabled={loading}
+          className="w-full flex items-center justify-center gap-3 py-3 px-4 border border-gray-600 rounded-lg text-sm font-medium text-white bg-surface-dark hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-background-dark focus:ring-brand-primary disabled:opacity-50 transition-colors"
+        >
+          <svg className="w-5 h-5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+          </svg>
+          {loading ? (
+            <>
+              <LoaderIcon className="w-5 h-5 animate-spin" />
+              {t('login_signing_in')}
+            </>
+          ) : (
+            t('login_continue_google')
+          )}
+        </button>
 
         <div className="text-sm text-center">
           <button onClick={() => { setIsLogin(!isLogin); setError(''); }} className="font-medium text-brand-primary hover:text-blue-400">

@@ -1,5 +1,6 @@
+// Supabase-only hook for trips functionality
 import { useContext } from 'react';
-import { LedgerTripsContext } from '../context/LedgerTripsContext';
+import { LedgerTripsContext } from '../context/SupabaseLedgerTripsContext';
 
 const useTrips = () => {
   const context = useContext(LedgerTripsContext);

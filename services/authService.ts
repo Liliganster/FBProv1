@@ -31,9 +31,14 @@ class AuthService {
 
       if (error) throw error
 
-      // Create profile entry if user was created successfully
+      // Try to create profile entry (optional - may fail if DB not configured)
       if (data.user) {
-        await this.createUserProfile(data.user, metadata)
+        try {
+          await this.createUserProfile(data.user, metadata)
+        } catch (profileError) {
+          console.warn('Could not create user profile, continuing without:', profileError);
+          // Continue without profile - signup should still succeed
+        }
       }
 
       return {
@@ -80,7 +85,7 @@ class AuthService {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`
+          redirectTo: `${window.location.origin}`
         }
       })
 
@@ -97,9 +102,32 @@ class AuthService {
   async signOut(): Promise<{ error: AuthError | null }> {
     try {
       const { error } = await supabase.auth.signOut()
+      
+      // Also clear any local storage that might be corrupted
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('supabase.auth.token');
+        sessionStorage.clear();
+      }
+      
       return { error }
     } catch (error) {
+      // Even if signOut fails, try to clear local storage
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('supabase.auth.token');
+        sessionStorage.clear();
+      }
       return { error: error as AuthError }
+    }
+  }
+
+  /**
+   * Clear all stored authentication data
+   */
+  async clearSession(): Promise<void> {
+    try {
+      await this.signOut();
+    } catch (error) {
+      console.warn('Error during session clearing:', error);
     }
   }
 
@@ -110,14 +138,21 @@ class AuthService {
     try {
       const { data, error } = await supabase.auth.getSession()
       
-      if (error) throw error
+      if (error) {
+        console.warn('Session error, may need to re-login:', error);
+        // Don't throw for session errors, just return null
+        return {
+          user: null,
+          session: null
+        };
+      }
 
       return {
         user: data.session?.user || null,
         session: data.session
       }
     } catch (error) {
-      console.error('Error getting session:', error)
+      console.warn('Error getting session, returning null:', error)
       return {
         user: null,
         session: null
@@ -182,18 +217,18 @@ class AuthService {
    */
   private async createUserProfile(user: User, metadata: { 
     full_name?: string
-    country?: string 
+    avatar_url?: string 
   } = {}): Promise<DbProfile | null> {
     try {
       const profileData: DbProfileInsert = {
         id: user.id,
-        email: user.email!,
+        email: user.email || null,
         full_name: metadata.full_name || user.user_metadata?.full_name || null,
-        country: metadata.country || null
+        avatar_url: metadata.avatar_url || user.user_metadata?.avatar_url || null
       }
 
       const { data, error } = await supabase
-        .from('profiles')
+        .from('user_profiles')
         .insert(profileData)
         .select()
         .single()
@@ -216,19 +251,24 @@ class AuthService {
   async getUserProfile(userId: string): Promise<DbProfile | null> {
     try {
       const { data, error } = await supabase
-        .from('profiles')
+        .from('user_profiles')
         .select('*')
         .eq('id', userId)
         .single()
 
       if (error) {
-        console.error('Error fetching user profile:', error)
-        return null
+        console.warn('Could not fetch user profile:', error);
+        // Return null if RLS blocks access or record doesn't exist
+        if (error.code === 'PGRST116' || error.code === '42501' || error.code === 'PGRST204') {
+          console.warn('Profile not accessible/found, user can still use app without profile');
+          return null;
+        }
+        return null;
       }
 
       return data
     } catch (error) {
-      console.error('Error fetching user profile:', error)
+      console.warn('Error fetching user profile, continuing without:', error)
       return null
     }
   }
@@ -239,7 +279,7 @@ class AuthService {
   async updateUserProfile(userId: string, updates: DbProfileUpdate): Promise<DbProfile | null> {
     try {
       const { data, error } = await supabase
-        .from('profiles')
+        .from('user_profiles')
         .update({
           ...updates,
           updated_at: new Date().toISOString()
@@ -259,6 +299,8 @@ class AuthService {
       return null
     }
   }
+
+  // NOTE: Detailed profile mapping removed (handled directly where needed)
 }
 
 // Export singleton instance

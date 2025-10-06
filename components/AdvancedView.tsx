@@ -775,7 +775,7 @@ const AdvancedView: React.FC<AdvancedViewProps> = ({ personalization, theme }) =
     const { t } = useTranslation();
     const { showToast } = useToast();
     const { userProfile, setUserProfile } = useUserProfile();
-    const { trips, projects, replaceAllTripsAndProjects, deleteAllTrips, deleteAllProjects, verifyTripHashes } = useTrips();
+    const { trips, projects, replaceAllTrips, replaceAllProjects, deleteAllData, verifyLedgerIntegrity } = useTrips();
     const { reports, setAllReports, deleteAllReports } = useReports();
     const { user, logout } = useAuth();
     const [auditResult, setAuditResult] = useState<AuditResult>(null);
@@ -863,7 +863,8 @@ const AdvancedView: React.FC<AdvancedViewProps> = ({ personalization, theme }) =
                 }
                 
                 if (window.confirm(t('advanced_import_confirm'))) {
-                    await replaceAllTripsAndProjects({ trips: data.trips, projects: data.projects });
+                    await replaceAllTrips(data.trips);
+                    await replaceAllProjects(data.projects);
                     setUserProfile(data.userProfile);
                     setAllReports(data.reports);
                     showToast(t('advanced_import_success'), 'success');
@@ -880,22 +881,21 @@ const AdvancedView: React.FC<AdvancedViewProps> = ({ personalization, theme }) =
 
     const handleDeleteAllTrips = async () => {
         if (window.confirm(t('advanced_delete_all_trips_confirm'))) {
-            await deleteAllTrips();
+            await replaceAllTrips([]);
             showToast('All trips have been deleted.', 'success');
         }
     };
     
     const handleDeleteAllProjects = async () => {
         if (window.confirm(t('advanced_delete_all_projects_confirm'))) {
-            await deleteAllProjects();
+            await replaceAllProjects([]);
             showToast('All projects have been deleted.', 'success');
         }
     };
 
     const handleResetApp = async () => {
         if (window.confirm(t('advanced_reset_app_confirm'))) {
-            await deleteAllTrips();
-            await deleteAllProjects();
+            await deleteAllData();
             deleteAllReports();
             setUserProfile(null);
              if(user) {
@@ -911,8 +911,14 @@ const AdvancedView: React.FC<AdvancedViewProps> = ({ personalization, theme }) =
     };
 
     const handleVerifyHashes = async () => {
-        const result = await verifyTripHashes();
-        setAuditResult(result);
+        const result = await verifyLedgerIntegrity();
+        setAuditResult({ 
+            ok: result.isValid, 
+            errors: result.errors.map(error => ({ 
+                trip: {} as Trip, 
+                reason: error 
+            }))
+        });
     };
     
     const Section: React.FC<{ title: string; isDanger?: boolean; children: React.ReactNode }> = ({ title, isDanger = false, children }) => (

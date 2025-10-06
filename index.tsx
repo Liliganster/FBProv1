@@ -4,6 +4,7 @@ import Auth from './Auth';
 import { TranslationProvider } from './i18n';
 import { ToastProvider } from './context/ToastContext';
 import { AuthProvider } from './context/AuthContext';
+import ErrorBoundary from './components/ErrorBoundary';
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {
@@ -13,12 +14,14 @@ if (!rootElement) {
 const root = ReactDOM.createRoot(rootElement);
 root.render(
   <React.StrictMode>
-    <TranslationProvider>
-      <ToastProvider>
-        <AuthProvider>
-          <Auth />
-        </AuthProvider>
-      </ToastProvider>
-    </TranslationProvider>
+    <ErrorBoundary>
+      <TranslationProvider>
+        <ToastProvider>
+          <AuthProvider>
+            <Auth />
+          </AuthProvider>
+        </ToastProvider>
+      </TranslationProvider>
+    </ErrorBoundary>
   </React.StrictMode>
 );

@@ -1,5 +1,5 @@
 import React, { createContext, useState, useCallback, ReactNode, useEffect } from 'react';
-import { User as SupabaseUser, Session } from '@supabase/supabase-js';
+import { User as SupabaseUser } from '@supabase/supabase-js';
 import { User } from '../types';
 import { DbProfile } from '../types/database';
 import { authService } from '../services/authService';
@@ -12,90 +12,60 @@ interface AuthContextType {
   login: (email: string, pass: string) => Promise<void>;
   register: (email: string, pass: string) => Promise<void>;
   logout: () => void;
-  loginWithGoogle?: (credential: string) => Promise<void>;
-  googleClientId: string | null;
-  // New Supabase-specific methods
   signInWithOAuth: (provider: 'google' | 'github' | 'apple') => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
   updatePassword: (password: string) => Promise<void>;
 }
 
-export const AuthContext = createContext<AuthContextType | undefined>(undefined);
+export const AuthContext = createContext<AuthContextType | null>(null);
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [supabaseUser, setSupabaseUser] = useState<SupabaseUser | null>(null);
   const [profile, setProfile] = useState<DbProfile | null>(null);
-  const [googleClientId, setGoogleClientId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Initialize auth state and listen for changes
   useEffect(() => {
     let mounted = true;
 
-    // Get initial session
     const initAuth = async () => {
       try {
         const { user: currentUser, session } = await authService.getSession();
-        
-        if (mounted) {
-          if (currentUser && session) {
-            setSupabaseUser(currentUser);
-            
-            // Convert to legacy User format for compatibility
-            const legacyUser: User = {
-              id: currentUser.id,
-              email: currentUser.email!
-            };
-            setUser(legacyUser);
+        if (!mounted) return;
 
-            // Fetch user profile
-            const userProfile = await authService.getUserProfile(currentUser.id);
-            setProfile(userProfile);
-            
-            // Set Google Client ID from profile if available
-            if (userProfile?.googleCalendarClientId) {
-              setGoogleClientId(userProfile.googleCalendarClientId);
-            }
-          }
-          setIsLoading(false);
+        if (currentUser && session) {
+          setSupabaseUser(currentUser);
+          const legacyUser: User = { id: currentUser.id, email: currentUser.email || '' };
+          setUser(legacyUser);
+          const userProfile = await authService.getUserProfile(currentUser.id);
+          setProfile(userProfile);
+        } else {
+          setSupabaseUser(null);
+          setUser(null);
+          setProfile(null);
         }
-      } catch (error) {
-        console.error('Error initializing auth:', error);
-        if (mounted) {
-          setIsLoading(false);
-        }
+      } catch (e) {
+        console.error('Error initializing auth:', e);
+      } finally {
+        if (mounted) setIsLoading(false);
       }
     };
 
     initAuth();
 
-    // Listen for auth changes
     const { data: { subscription } } = authService.onAuthStateChange(async (session) => {
-      if (mounted) {
-        if (session?.user) {
-          setSupabaseUser(session.user);
-          
-          const legacyUser: User = {
-            id: session.user.id,
-            email: session.user.email!
-          };
-          setUser(legacyUser);
-
-          // Fetch updated profile
-          const userProfile = await authService.getUserProfile(session.user.id);
-          setProfile(userProfile);
-          
-          if (userProfile?.googleCalendarClientId) {
-            setGoogleClientId(userProfile.googleCalendarClientId);
-          }
-        } else {
-          setSupabaseUser(null);
-          setUser(null);
-          setProfile(null);
-          setGoogleClientId(null);
-        }
-        setIsLoading(false);
+      if (!mounted) return;
+      if (session?.user) {
+        const sUser = session.user;
+        setSupabaseUser(sUser);
+        const legacyUser: User = { id: sUser.id, email: sUser.email || '' };
+        setUser(legacyUser);
+        const userProfile = await authService.getUserProfile(sUser.id);
+        setProfile(userProfile);
+      } else {
+        setSupabaseUser(null);
+        setUser(null);
+        setProfile(null);
       }
     });
 
@@ -105,90 +75,48 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     };
   }, []);
 
-  const login = useCallback(async (email: string, password: string): Promise<void> => {
+  const login = useCallback(async (email: string, password: string) => {
     const { user: authUser, error } = await authService.signIn(email, password);
-    
-    if (error) {
-      throw new Error(error.message || 'Login failed');
-    }
-    
-    if (!authUser) {
-      throw new Error('Login failed');
-    }
-    
-    // State will be updated by the auth state change listener
+    if (error || !authUser) throw new Error(error?.message || 'Login failed');
   }, []);
 
-  const register = useCallback(async (email: string, password: string): Promise<void> => {
-    const { user: authUser, error } = await authService.signUp(email, password, {
-      full_name: email.split('@')[0] // Use email prefix as default name
-    });
-    
-    if (error) {
-      throw new Error(error.message || 'Registration failed');
-    }
-    
-    if (!authUser) {
-      throw new Error('Registration failed');
-    }
-    
-    // State will be updated by the auth state change listener
-  }, []);
-
-  const loginWithGoogle = useCallback(async (credential: string): Promise<void> => {
-    // For now, we'll use the OAuth flow instead of credential-based login
-    // This is a compatibility function for existing components
-    await signInWithOAuth('google');
+  const register = useCallback(async (email: string, password: string) => {
+    const { user: authUser, error } = await authService.signUp(email, password, { full_name: email.split('@')[0] });
+    if (error || !authUser) throw new Error(error?.message || 'Registration failed');
   }, []);
 
   const logout = useCallback(async () => {
     const { error } = await authService.signOut();
-    if (error) {
-      console.error('Error signing out:', error);
-    }
-    // State will be updated by the auth state change listener
+    if (error) console.error('Error signing out:', error);
   }, []);
 
-  // New Supabase-specific methods
-  const signInWithOAuth = useCallback(async (provider: 'google' | 'github' | 'apple'): Promise<void> => {
+  const signInWithOAuth = useCallback(async (provider: 'google' | 'github' | 'apple') => {
     const { error } = await authService.signInWithOAuth(provider);
-    if (error) {
-      throw new Error(error.message || `${provider} sign-in failed`);
-    }
+    if (error) throw new Error(error.message || `${provider} sign-in failed`);
   }, []);
 
-  const resetPassword = useCallback(async (email: string): Promise<void> => {
+  const resetPassword = useCallback(async (email: string) => {
     const { error } = await authService.resetPassword(email);
-    if (error) {
-      throw new Error(error.message || 'Password reset failed');
-    }
+    if (error) throw new Error(error.message || 'Password reset failed');
   }, []);
 
-  const updatePassword = useCallback(async (password: string): Promise<void> => {
+  const updatePassword = useCallback(async (password: string) => {
     const { error } = await authService.updatePassword(password);
-    if (error) {
-      throw new Error(error.message || 'Password update failed');
-    }
+    if (error) throw new Error(error.message || 'Password update failed');
   }, []);
 
-  const value = { 
-    user, 
+  const value: AuthContextType = {
+    user,
     supabaseUser,
     profile,
-    isLoading, 
-    login, 
-    register, 
-    logout, 
-    loginWithGoogle, 
-    googleClientId,
+    isLoading,
+    login,
+    register,
+    logout,
     signInWithOAuth,
     resetPassword,
     updatePassword
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

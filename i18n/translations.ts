@@ -50,6 +50,8 @@ export const translations = {
     register_switch_to_login: 'Already have an account? Sign in',
     login_password_mismatch: 'Passwords do not match.',
     login_or_continue_with: 'Or continue with',
+    login_continue_google: 'Continue with Google',
+    login_signing_in: 'Signing in...',
 
     dashboard_title: 'Dashboard',
     dashboard_totalKm: 'Total Kilometers',
@@ -1160,6 +1162,8 @@ export const translations = {
     register_switch_to_login: '¿Ya tienes una cuenta? Inicia sesión',
     login_password_mismatch: 'Las contraseñas no coinciden.',
     login_or_continue_with: 'O continuar con',
+    login_continue_google: 'Continuar con Google',
+    login_signing_in: 'Iniciando sesión...',
     
     dashboard_title: 'Dashboard',
     dashboard_totalKm: 'Kilómetros Totales',

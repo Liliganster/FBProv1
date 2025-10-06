@@ -5,7 +5,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { TripLedgerVerification } from '../types';
-import { useTripsLedger } from '../hooks/useTripsLedger';
+import useTrips from '../hooks/useTrips';
 import useTranslation from '../hooks/useTranslation';
 import { CheckIcon, LoaderIcon, SettingsIcon } from './Icons';
 
@@ -18,7 +18,8 @@ const LedgerIntegrityWidget: React.FC<LedgerIntegrityWidgetProps> = ({
   className = '', 
   showDetails = false 
 }) => {
-  const { verifyLedger, lastVerification } = useTripsLedger();
+  const { verifyLedgerIntegrity, getRootHash } = useTrips();
+  const [lastVerification, setLastVerification] = useState<TripLedgerVerification | null>(null);
   const { t } = useTranslation();
   const [isVerifying, setIsVerifying] = useState(false);
   const [verification, setVerification] = useState<TripLedgerVerification | null>(lastVerification);
@@ -30,8 +31,16 @@ const LedgerIntegrityWidget: React.FC<LedgerIntegrityWidgetProps> = ({
   const handleVerify = async () => {
     setIsVerifying(true);
     try {
-      const result = await verifyLedger();
-      setVerification(result);
+      const result = await verifyLedgerIntegrity();
+      const rootHash = await getRootHash();
+      const verificationResult: TripLedgerVerification = {
+        isValid: result.isValid,
+        totalEntries: 0,
+        rootHash: rootHash || '',
+        verificationTimestamp: new Date().toISOString()
+      };
+      setVerification(verificationResult);
+      setLastVerification(verificationResult);
     } catch (error) {
       console.error('Failed to verify ledger:', error);
     } finally {
