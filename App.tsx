@@ -74,17 +74,19 @@ const App: React.FC = () => {
   };
 
   const [currentView, setCurrentView] = useState<ExtendedView>(() => {
-    if (!user) return 'dashboard';
-    
     // First try to get view from URL
     const urlView = getViewFromUrl();
     if (urlView === 'auth-callback') return urlView;
     if (urlView !== 'dashboard') return urlView as View;
     
-    // Fallback to localStorage
-    const savedView = localStorage.getItem(`fahrtenbuch_currentView_${user.id}`) as View;
-    const validViews: View[] = ['dashboard', 'trips', 'projects', 'reports', 'calendar', 'advanced', 'settings'];
-    return savedView && validViews.includes(savedView) ? savedView : 'dashboard';
+    // Fallback to localStorage only if user is available
+    if (user) {
+      const savedView = localStorage.getItem(`fahrtenbuch_currentView_${user.id}`) as View;
+      const validViews: View[] = ['dashboard', 'trips', 'projects', 'reports', 'calendar', 'advanced', 'settings'];
+      return savedView && validViews.includes(savedView) ? savedView : 'dashboard';
+    }
+    
+    return 'dashboard';
   });
 
   const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(() => {
@@ -143,7 +145,7 @@ const App: React.FC = () => {
       }
   }, [personalization, user]);
 
-  // Clean up malformed URLs on mount
+  // Clean up malformed URLs on mount and sync view/URL
   useEffect(() => {
     const currentPath = window.location.pathname;
     if (currentPath.includes('/index.html') || currentPath.includes('//')) {
@@ -151,10 +153,9 @@ const App: React.FC = () => {
       const cleanPath = view === 'dashboard' ? '/' : `/${view}`;
       window.history.replaceState({ view }, '', cleanPath);
     }
-  }, []);
-  
-  useEffect(() => {
-    if (user) {
+    
+    // Solo actualizar localStorage y URL si no estamos en auth-callback
+    if (user && currentView !== 'auth-callback') {
       localStorage.setItem(`fahrtenbuch_currentView_${user.id}`, currentView);
       updateUrlForView(currentView);
     }

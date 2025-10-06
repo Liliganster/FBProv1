@@ -1,71 +1,50 @@
-import React, { useEffect, useState } from 'react';
-import { supabase } from '../lib/supabase';
+import React, { useEffect, useRef } from 'react';
 import { useAuth } from '../hooks/useAuth';
 
 /**
  * Componente que maneja el callback de autenticación OAuth
- * Procesa la URL manualmente para evitar bucles infinitos
+ * Simplificado para evitar bucles infinitos - deja que Supabase maneje todo automáticamente
  */
 const AuthCallback: React.FC = () => {
   const { isLoading, user } = useAuth();
-  const [processed, setProcessed] = useState(false);
+  const hasRedirected = useRef(false);
 
   useEffect(() => {
-    // Prevenir procesamiento múltiple
-    if (processed) return;
+    // Prevenir múltiples redirecciones
+    if (hasRedirected.current) return;
     
-    // Procesar el callback OAuth manualmente
-    const processOAuthCallback = async () => {
-      try {
-        const hash = window.location.hash;
-        const query = window.location.search;
-        
-        console.log('AuthCallback: Processing OAuth callback', { hash, query });
-        
-        if (hash || query) {
-          // Marcar como procesado antes de hacer la petición
-          setProcessed(true);
-          
-          // Notificar a Supabase del callback
-          const { data, error } = await supabase.auth.getSession();
-          
-          if (error) {
-            console.error('AuthCallback: Error getting session', error);
-          } else {
-            console.log('AuthCallback: Session obtained successfully', data);
-          }
-          
-          // Esperar un momento para que el contexto de Auth se actualice
-          setTimeout(() => {
-            // Limpiar la URL y redirigir a la página principal
-            window.location.href = '/';
-          }, 500);
-        } else if (!isLoading) {
-          // Si no hay hash ni query, redirigir inmediatamente
-          console.log('AuthCallback: No OAuth data, redirecting to home');
-          window.location.href = '/';
-        }
-      } catch (error) {
-        console.error('Error processing OAuth callback:', error);
-        // En caso de error, redirigir de todas formas
-        setTimeout(() => {
-          window.location.href = '/';
-        }, 1000);
-      }
-    };
-
+    // Solo redirigir cuando termine de cargar
     if (!isLoading) {
-      processOAuthCallback();
+      // Si el usuario ya está autenticado, redirigir a home
+      if (user) {
+        console.log('AuthCallback: User authenticated, redirecting to home');
+        hasRedirected.current = true;
+        
+        // Limpiar la URL hash/query y redirigir
+        window.history.replaceState({}, document.title, '/');
+        window.location.href = '/';
+      } else {
+        // Si después de procesar el callback no hay usuario, algo salió mal
+        console.log('AuthCallback: No user found after auth, redirecting to login');
+        hasRedirected.current = true;
+        
+        setTimeout(() => {
+          window.history.replaceState({}, document.title, '/');
+          window.location.href = '/';
+        }, 2000);
+      }
     }
-  }, [isLoading, processed]);
+  }, [isLoading, user]);
 
   return (
-    <div className="flex items-center justify-center h-screen">
+    <div className="flex items-center justify-center h-screen bg-background-dark text-on-surface-dark">
       <div className="text-center">
         <h1 className="text-2xl font-bold mb-4">Completando autenticación...</h1>
-        <p className="text-gray-500">Serás redirigido en un momento.</p>
+        <p className="text-gray-400 mb-6">
+          {isLoading ? 'Verificando credenciales...' : 'Redirigiendo...'}
+        </p>
         <div className="mt-4">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-brand-primary mx-auto"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mx-auto"></div>
         </div>
       </div>
     </div>

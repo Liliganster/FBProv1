@@ -1,4 +1,4 @@
-﻿import React, { createContext, useState, useCallback, ReactNode, useEffect } from 'react';
+﻿import React, { createContext, useState, useCallback, ReactNode, useEffect, useRef } from 'react';
 import { User as SupabaseUser } from '@supabase/supabase-js';
 import { User } from '../types';
 import { DbProfile } from '../types/database';
@@ -27,9 +27,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [profile, setProfile] = useState<DbProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [configError, setConfigError] = useState<string | null>(null);
+  
+  // Use ref instead of state to avoid triggering re-renders
+  const isProcessingAuth = useRef(false);
+  const lastProcessedUserId = useRef<string | null>(null);
 
   useEffect(() => {
     let mounted = true;
+    let authSubscription: { unsubscribe: () => void } | null = null;
 
     if (!isSupabaseConfigured) {
       setConfigError(SUPABASE_CONFIG_ERROR);
@@ -44,12 +49,19 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     setConfigError(null);
 
-    const initAuth = async () => {
+    const updateAuthState = async (currentUser: SupabaseUser | null) => {
+      // Prevent concurrent updates and duplicate processing
+      if (!mounted || isProcessingAuth.current) return;
+      
+      // Skip if we already processed this user
+      const userId = currentUser?.id || null;
+      if (userId === lastProcessedUserId.current) return;
+      
       try {
-        const { user: currentUser, session } = await authService.getSession();
-        if (!mounted) return;
-
-        if (currentUser && session) {
+        isProcessingAuth.current = true;
+        lastProcessedUserId.current = userId;
+        
+        if (currentUser) {
           setSupabaseUser(currentUser);
           const legacyUser: User = { id: currentUser.id, email: currentUser.email || '' };
           setUser(legacyUser);
@@ -61,6 +73,21 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           setProfile(null);
         }
       } catch (e) {
+        console.error('Error updating auth state:', e);
+      } finally {
+        if (mounted) {
+          isProcessingAuth.current = false;
+        }
+      }
+    };
+
+    const initAuth = async () => {
+      try {
+        const { user: currentUser, session } = await authService.getSession();
+        if (!mounted) return;
+
+        await updateAuthState(currentUser);
+      } catch (e) {
         console.error('Error initializing auth:', e);
       } finally {
         if (mounted) setIsLoading(false);
@@ -69,25 +96,24 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     initAuth();
 
+    // Subscribe to auth state changes with debouncing and deduplication
     const { data: { subscription } } = authService.onAuthStateChange(async (session) => {
       if (!mounted) return;
-      if (session?.user) {
-        const sUser = session.user;
-        setSupabaseUser(sUser);
-        const legacyUser: User = { id: sUser.id, email: sUser.email || '' };
-        setUser(legacyUser);
-        const userProfile = await authService.getUserProfile(sUser.id);
-        setProfile(userProfile);
-      } else {
-        setSupabaseUser(null);
-        setUser(null);
-        setProfile(null);
-      }
+      
+      // Small delay to allow Supabase to finish processing
+      setTimeout(async () => {
+        if (!mounted) return;
+        await updateAuthState(session?.user || null);
+      }, 100);
     });
+    
+    authSubscription = subscription;
 
     return () => {
       mounted = false;
-      subscription.unsubscribe();
+      if (authSubscription) {
+        authSubscription.unsubscribe();
+      }
     };
   }, []);
 
