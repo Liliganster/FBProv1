@@ -239,42 +239,46 @@ class DatabaseService {
       if (!userId) throw new Error('Usuario no autenticado')
 
       // Upload files to Supabase Storage and create database records
-      const uploadPromises = files.map(async (file) => {
-        // Generate unique file path
-        const timestamp = Date.now()
-        const sanitizedFileName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_')
-        const filePath = `${userId}/${projectId}/${timestamp}_${sanitizedFileName}`
+      const uploadResults = await Promise.all(
+        files.map(async (file) => {
+          // Generate unique file path
+          const timestamp = Date.now()
+          const sanitizedFileName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_')
+          const filePath = `${userId}/${projectId}/${timestamp}_${sanitizedFileName}`
 
-        // Upload to Supabase Storage
-        const { data: uploadData, error: uploadError } = await supabase.storage
-          .from('callsheets')
-          .upload(filePath, file, {
-            cacheControl: '3600',
-            upsert: false
-          })
+          // Upload to Supabase Storage
+          const { data: uploadData, error: uploadError } = await supabase.storage
+            .from('callsheets')
+            .upload(filePath, file, {
+              cacheControl: '3600',
+              upsert: false
+            })
 
-        if (uploadError) {
-          throw new Error(`Failed to upload file ${file.name}: ${uploadError.message}`)
-        }
+          if (uploadError) {
+            throw new Error(`Failed to upload file ${file.name}: ${uploadError.message}`)
+          }
 
-        // Get public URL
-        const { data: { publicUrl } } = supabase.storage
-          .from('callsheets')
-          .getPublicUrl(filePath)
+          // Get public URL
+          const { data: { publicUrl } } = supabase.storage
+            .from('callsheets')
+            .getPublicUrl(filePath)
 
-        return {
-          project_id: projectId,
-          user_id: userId,
-          filename: file.name,
-          url: publicUrl,
-          file_path: filePath,
-          file_type: file.type
-        }
-      })
+          return {
+            filePath,  // Keep for cleanup if needed
+            fileType: file.type,  // Keep for return value
+            dbRecord: {
+              project_id: projectId,
+              user_id: userId,
+              filename: file.name,
+              url: publicUrl
+            }
+          }
+        })
+      )
 
-      const callsheetsToInsert = await Promise.all(uploadPromises)
-
-      // Insert records into database
+      // Insert records into database (only columns that exist)
+      const callsheetsToInsert = uploadResults.map(r => r.dbRecord)
+      
       const { data, error } = await supabase
         .from('callsheets')
         .insert(callsheetsToInsert)
@@ -283,8 +287,8 @@ class DatabaseService {
       if (error) {
         // If database insert fails, clean up uploaded files
         await Promise.all(
-          callsheetsToInsert.map(cs => 
-            supabase.storage.from('callsheets').remove([cs.file_path])
+          uploadResults.map(r => 
+            supabase.storage.from('callsheets').remove([r.filePath])
           )
         )
         throw new Error(`Failed to add callsheets: ${error.message}`)
@@ -293,7 +297,7 @@ class DatabaseService {
       return (data || []).map((d: any, index: number) => ({ 
         id: d.id, 
         name: d.filename ?? d.name, 
-        type: callsheetsToInsert[index].file_type || 'application/octet-stream'
+        type: uploadResults[index].fileType || 'application/octet-stream'
       }))
     } catch (error) {
       throw new Error((error as any)?.message || 'Failed to add callsheets')
@@ -305,23 +309,36 @@ class DatabaseService {
    */
   async deleteCallsheetFromProject(callsheetId: string): Promise<void> {
     try {
-      // Get callsheet record to get file path
+      // Get callsheet record to extract file path from URL
       const { data: callsheet, error: fetchError } = await supabase
         .from('callsheets')
-        .select('file_path')
+        .select('url')
         .eq('id', callsheetId)
         .single()
 
       if (fetchError) throw fetchError
 
-      // Delete from storage if file_path exists
-      if (callsheet?.file_path) {
-        const { error: storageError } = await supabase.storage
-          .from('callsheets')
-          .remove([callsheet.file_path])
+      // Extract file path from URL and delete from storage
+      if (callsheet?.url) {
+        try {
+          // Extract path from Supabase storage URL
+          // URL format: https://[project].supabase.co/storage/v1/object/public/callsheets/[path]
+          const urlParts = callsheet.url.split('/callsheets/')
+          if (urlParts.length > 1) {
+            const filePath = decodeURIComponent(urlParts[1])
+            
+            const { error: storageError } = await supabase.storage
+              .from('callsheets')
+              .remove([filePath])
 
-        if (storageError) {
-          throw new Error(`Failed to delete file from storage: ${storageError.message}`)
+            // Don't throw on storage error, just log it - the file might already be deleted
+            if (storageError) {
+              console.warn('Could not delete file from storage:', storageError.message)
+            }
+          }
+        } catch (urlError) {
+          // If URL parsing fails, continue with database deletion
+          console.warn('Could not parse storage URL:', urlError)
         }
       }
 

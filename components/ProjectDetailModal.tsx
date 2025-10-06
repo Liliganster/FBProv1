@@ -111,7 +111,7 @@ const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({ projectId, trip
       // Get the callsheet record with URL from database
       const { data, error } = await supabase
         .from('callsheets')
-        .select('url, file_path')
+        .select('url')
         .eq('id', file.id)
         .single();
 
@@ -136,21 +136,28 @@ const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({ projectId, trip
     setProcessingFileId(file.id);
     setIsProcessing(true);
     try {
-      // Get the callsheet record with file path from database
+      // Get the callsheet record with URL from database
       const { data: callsheetData, error: callsheetError } = await supabase
         .from('callsheets')
-        .select('url, file_path, filename')
+        .select('url, filename')
         .eq('id', file.id)
         .single();
 
-      if (callsheetError || !callsheetData?.file_path) {
+      if (callsheetError || !callsheetData?.url) {
         throw new Error('Could not retrieve file information.');
       }
+
+      // Extract file path from URL
+      const urlParts = callsheetData.url.split('/callsheets/')
+      if (urlParts.length < 2) {
+        throw new Error('Invalid file URL format.');
+      }
+      const filePath = decodeURIComponent(urlParts[1]);
 
       // Download file from Supabase Storage
       const { data: fileData, error: downloadError } = await supabase.storage
         .from('callsheets')
-        .download(callsheetData.file_path);
+        .download(filePath);
 
       if (downloadError || !fileData) {
         throw new Error('Could not download file from storage.');
