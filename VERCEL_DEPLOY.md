@@ -179,7 +179,30 @@ AsegÃºrate que:
 - ⚠️ NUNCA lo borres o modifiques sin saber qué haces
 - El problema es que Vercel necesita hacer rebuild para aplicar la configuración
 
-**Estado:** ✅ Archivo configurado | ⏳ Requiere redeploy
+**SOLUCIÓN APLICADA - 2025-10-06:**
+
+✅ **vercel.json actualizado con:**
+- `buildCommand` y `outputDirectory` explícitos
+- `framework: "vite"` especificado
+- Doble configuración: `rewrites` + `routes` para máxima compatibilidad
+- Headers de seguridad adicionales
+
+✅ **public/_redirects creado** como fallback
+
+**SIGUIENTE PASO CRÍTICO:**
+```bash
+# Ejecuta AHORA en tu terminal:
+git add .
+git commit -m "fix: Complete Vercel SPA routing configuration"
+git push origin main
+```
+
+**Luego:**
+1. Ve a Vercel Deployments: https://vercel.com/liliganster/fbprov1/deployments
+2. Espera que termine el deploy automático (2-3 min)
+3. **SI PERSISTE EL ERROR:** Haz redeploy manual sin caché (botón "..." → Redeploy → Desmarcar "Use existing Build Cache")
+
+**Estado:** ✅ Configuración completa aplicada | ⏳ Esperando commit + push
 
 ---
 
