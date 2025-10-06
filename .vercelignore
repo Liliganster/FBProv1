@@ -1,0 +1,16 @@
+# Vercel ignore file
+# Files to ignore during deployment
+
+# Documentation
+*.md
+!README.md
+
+# Development files
+.git
+.vscode
+.idea
+
+# Logs
+*.log
+npm-debug.log*
+

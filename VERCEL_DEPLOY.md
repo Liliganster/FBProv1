@@ -122,22 +122,64 @@ AsegÃºrate que:
 - EstÃ©n marcadas para Production, Preview y Development
 - Hayas hecho Redeploy despuÃ©s de agregarlas
 
-### Error 404 en rutas
+### Error 404 en rutas (al hacer refresh)
 
-Ya estÃ¡ configurado en vercel.json âœ…
+**Síntoma:** Error 404 NOT_FOUND al hacer refresh en rutas como `/trips`, `/projects`
 
-## ðŸŽ‰ Resultado final
+**Causa:** Vercel no encuentra el archivo físico y no está redirigiendo a `index.html`
 
-Tu aplicaciÃ³n tendrÃ¡:
+**Solución Rápida:**
 
-- âœ… URL pÃºblica: https://fb-prov1.vercel.app
-- âœ… SSL/HTTPS automÃ¡tico
-- âœ… CDN global (70+ ubicaciones)
-- âœ… Despliegue continuo (cada push)
-- âœ… Zero downtime
-- âœ… Preview deployments
-- âœ… Rollback instantÃ¡neo
-- âœ… Analytics incluido
+1. **Verifica que `vercel.json` existe y tiene el contenido correcto:**
+   ```json
+   {
+     "rewrites": [
+       {
+         "source": "/(.*)",
+         "destination": "/index.html"
+       }
+     ],
+     "headers": [
+       {
+         "source": "/assets/(.*)",
+         "headers": [
+           {
+             "key": "Cache-Control",
+             "value": "public, max-age=31536000, immutable"
+           }
+         ]
+       }
+     ]
+   }
+   ```
+
+2. **Fuerza un redeploy en Vercel:**
+   - Ve a: https://vercel.com/liliganster/fbprov1/deployments
+   - Click en el último deployment (el de arriba)
+   - Click en el botón "..." (tres puntos)
+   - Selecciona **"Redeploy"**
+   - Marca la opción **"Use existing Build Cache"** como **OFF** ❌
+   - Click "Redeploy"
+
+3. **Espera 2-3 minutos** y prueba de nuevo
+
+4. **Si el problema persiste:**
+   ```bash
+   # Haz un commit vacío para forzar rebuild
+   git commit --allow-empty -m "fix: Force Vercel redeploy for routing"
+   git push origin main
+   ```
+
+5. **Limpia la caché del navegador:**
+   - Chrome: Ctrl+Shift+Delete → Borrar caché
+   - O prueba en modo incógnito (Ctrl+Shift+N)
+
+**Prevención:** 
+- ✅ El archivo `vercel.json` YA EXISTE y está bien configurado
+- ⚠️ NUNCA lo borres o modifiques sin saber qué haces
+- El problema es que Vercel necesita hacer rebuild para aplicar la configuración
+
+**Estado:** ✅ Archivo configurado | ⏳ Requiere redeploy
 
 ---
 
