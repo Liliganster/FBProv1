@@ -1,14 +1,16 @@
-import React, { createContext, useState, useCallback, ReactNode, useEffect } from 'react';
+﻿import React, { createContext, useState, useCallback, ReactNode, useEffect } from 'react';
 import { User as SupabaseUser } from '@supabase/supabase-js';
 import { User } from '../types';
 import { DbProfile } from '../types/database';
 import { authService } from '../services/authService';
+import { SUPABASE_CONFIG_ERROR, isSupabaseConfigured } from '../lib/supabase';
 
 interface AuthContextType {
   user: User | null;
   supabaseUser: SupabaseUser | null;
   profile: DbProfile | null;
   isLoading: boolean;
+  configError: string | null;
   login: (email: string, pass: string) => Promise<void>;
   register: (email: string, pass: string) => Promise<void>;
   logout: () => void;
@@ -24,9 +26,23 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [supabaseUser, setSupabaseUser] = useState<SupabaseUser | null>(null);
   const [profile, setProfile] = useState<DbProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [configError, setConfigError] = useState<string | null>(null);
 
   useEffect(() => {
     let mounted = true;
+
+    if (!isSupabaseConfigured) {
+      setConfigError(SUPABASE_CONFIG_ERROR);
+      setIsLoading(false);
+      setUser(null);
+      setSupabaseUser(null);
+      setProfile(null);
+      return () => {
+        mounted = false;
+      };
+    }
+
+    setConfigError(null);
 
     const initAuth = async () => {
       try {
@@ -75,41 +91,54 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     };
   }, []);
 
+  const ensureConfigured = useCallback(() => {
+    if (!isSupabaseConfigured) {
+      throw new Error(SUPABASE_CONFIG_ERROR);
+    }
+  }, []);
+
   const login = useCallback(async (email: string, password: string) => {
+    ensureConfigured();
     const { user: authUser, error } = await authService.signIn(email, password);
     if (error || !authUser) throw new Error(error?.message || 'Login failed');
-  }, []);
+  }, [ensureConfigured]);
 
   const register = useCallback(async (email: string, password: string) => {
+    ensureConfigured();
     const { user: authUser, error } = await authService.signUp(email, password, { full_name: email.split('@')[0] });
     if (error || !authUser) throw new Error(error?.message || 'Registration failed');
-  }, []);
+  }, [ensureConfigured]);
 
   const logout = useCallback(async () => {
+    ensureConfigured();
     const { error } = await authService.signOut();
     if (error) console.error('Error signing out:', error);
-  }, []);
+  }, [ensureConfigured]);
 
   const signInWithOAuth = useCallback(async (provider: 'google' | 'github' | 'apple') => {
+    ensureConfigured();
     const { error } = await authService.signInWithOAuth(provider);
     if (error) throw new Error(error.message || `${provider} sign-in failed`);
-  }, []);
+  }, [ensureConfigured]);
 
   const resetPassword = useCallback(async (email: string) => {
+    ensureConfigured();
     const { error } = await authService.resetPassword(email);
     if (error) throw new Error(error.message || 'Password reset failed');
-  }, []);
+  }, [ensureConfigured]);
 
   const updatePassword = useCallback(async (password: string) => {
+    ensureConfigured();
     const { error } = await authService.updatePassword(password);
     if (error) throw new Error(error.message || 'Password update failed');
-  }, []);
+  }, [ensureConfigured]);
 
   const value: AuthContextType = {
     user,
     supabaseUser,
     profile,
     isLoading,
+    configError,
     login,
     register,
     logout,

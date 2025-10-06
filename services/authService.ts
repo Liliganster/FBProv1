@@ -85,7 +85,8 @@ class AuthService {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
-          redirectTo: `${window.location.origin}`
+          // Usar una ruta específica para el callback para evitar bucles de redirección
+          redirectTo: `${window.location.origin}/auth/callback`
         }
       })
 

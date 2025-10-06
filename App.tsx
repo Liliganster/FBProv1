@@ -22,8 +22,12 @@ import CalendarView from './components/CalendarView';
 import AdvancedView from './components/AdvancedView';
 import useTranslation from './hooks/useTranslation';
 import { View, PersonalizationSettings } from './types';
+
+// Extendemos View para incluir la ruta de autenticación
+type ExtendedView = View | 'auth-callback';
 import useUserProfile from './hooks/useUserProfile';
 import Avatar from './components/Avatar';
+import AuthCallback from './components/AuthCallback';
 // FIX: Changed to a named import for useAuth, as it's not a default export.
 import { useAuth } from './hooks/useAuth';
 
@@ -37,7 +41,7 @@ const App: React.FC = () => {
   const { user, logout } = useAuth() as AuthHookReturn;
 
   // Helper function to get view from URL
-  const getViewFromUrl = (): View => {
+  const getViewFromUrl = (): View | 'auth-callback' => {
     let path = window.location.pathname;
     const validViews: View[] = ['dashboard', 'trips', 'projects', 'reports', 'calendar', 'advanced', 'settings'];
     
@@ -45,6 +49,11 @@ const App: React.FC = () => {
     path = path.replace(/\/index\.html/g, '');
     
     if (path === '/' || path === '') return 'dashboard';
+    
+    // Check for OAuth callback path
+    if (path.startsWith('/auth/callback')) {
+      return 'auth-callback';
+    }
     
     // Extract the view name, handling multiple slashes
     const pathParts = path.split('/').filter(part => part !== '');
@@ -54,19 +63,23 @@ const App: React.FC = () => {
   };
 
   // Helper function to update URL without page reload
-  const updateUrlForView = (view: View) => {
+  const updateUrlForView = (view: ExtendedView) => {
+    // No actualizar la URL si estamos en la ruta de callback
+    if (view === 'auth-callback') return;
+    
     const path = view === 'dashboard' ? '/' : `/${view}`;
     if (window.location.pathname !== path) {
       window.history.pushState({ view }, '', path);
     }
   };
 
-  const [currentView, setCurrentView] = useState<View>(() => {
+  const [currentView, setCurrentView] = useState<ExtendedView>(() => {
     if (!user) return 'dashboard';
     
     // First try to get view from URL
     const urlView = getViewFromUrl();
-    if (urlView !== 'dashboard') return urlView;
+    if (urlView === 'auth-callback') return urlView;
+    if (urlView !== 'dashboard') return urlView as View;
     
     // Fallback to localStorage
     const savedView = localStorage.getItem(`fahrtenbuch_currentView_${user.id}`) as View;
@@ -147,28 +160,32 @@ const App: React.FC = () => {
     }
   }, [currentView, user]);
 
-  // Handle browser navigation (back/forward buttons)
+  // Handle browser navigation (back/forward buttons) without recrear el listener cada cambio de vista
   useEffect(() => {
-    const handlePopState = (event: PopStateEvent) => {
-      const view = event.state?.view || getViewFromUrl();
-      setCurrentView(view);
-    };
-
-    // Set initial state if none exists
+    // Garantiza que el estado inicial exista una sola vez
     if (!window.history.state) {
       window.history.replaceState({ view: currentView }, '', currentView === 'dashboard' ? '/' : `/${currentView}`);
     }
 
-    window.addEventListener('popstate', handlePopState);
-    
-    return () => {
-      window.removeEventListener('popstate', handlePopState);
+    const handlePopState = (event: PopStateEvent) => {
+      const view = (event.state?.view || getViewFromUrl()) as View;
+      // Evita setState redundante que provoca re-renders innecesarios
+      setCurrentView(prev => (prev === view ? prev : view));
     };
-  }, [currentView]);
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+    // Intencionalmente sin dependencia de currentView para no recrear el listener.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Update page title based on current view
   useEffect(() => {
-    const getPageTitle = (view: View): string => {
+    const getPageTitle = (view: ExtendedView): string => {
+      if (view === 'auth-callback') {
+        return 'Autenticación - Fahrtenbuch Pro';
+      }
+      
       const titles = {
         dashboard: t('nav_dashboard'),
         trips: t('nav_trips'),
@@ -229,6 +246,11 @@ const App: React.FC = () => {
 
 
   const renderView = () => {
+    // Si estamos en la ruta de callback de OAuth, mostramos el componente AuthCallback
+    if (currentView === 'auth-callback') {
+      return <AuthCallback />;
+    }
+    
     const commonProps = { personalization, theme };
     switch (currentView) {
       case 'dashboard':
