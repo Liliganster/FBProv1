@@ -1,8 +1,4 @@
 ﻿{
-  "buildCommand": "npm run build",
-  "outputDirectory": "dist",
-  "devCommand": "npm run dev",
-  "framework": "vite",
   "rewrites": [
     {
       "source": "/(.*)",
