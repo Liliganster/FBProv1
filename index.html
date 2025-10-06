@@ -4,6 +4,24 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+      // URL Cleaner - Fix URL accumulation problems
+      (function() {
+        var path = window.location.pathname;
+        // Check for duplicate index.html in the path
+        if (path.includes('/index.html/') || path.match(/\/index\.html$/i)) {
+          var baseUrl = window.location.origin;
+          // Clean the path of any index.html references and normalize slashes
+          var cleanPath = path.replace(/\/index\.html/g, '');
+          cleanPath = cleanPath || '/';
+          // Preserve query string and hash
+          var query = window.location.search;
+          var hash = window.location.hash;
+          // Replace current URL without a page reload
+          window.history.replaceState(null, document.title, baseUrl + cleanPath + query + hash);
+        }
+      })();
+    </script>
     <title>Fahrtenbuch Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
