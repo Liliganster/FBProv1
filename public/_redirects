@@ -1,3 +1,9 @@
-# Redirect all routes to index.html for SPA routing
-/*    /index.html   200
+# SPA routing fallback - only for non-asset requests
+/dashboard    /index.html   200
+/trips        /index.html   200
+/projects     /index.html   200
+/reports      /index.html   200
+/calendar     /index.html   200
+/advanced     /index.html   200
+/settings     /index.html   200
 

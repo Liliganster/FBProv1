@@ -38,12 +38,18 @@ const App: React.FC = () => {
 
   // Helper function to get view from URL
   const getViewFromUrl = (): View => {
-    const path = window.location.pathname;
+    let path = window.location.pathname;
     const validViews: View[] = ['dashboard', 'trips', 'projects', 'reports', 'calendar', 'advanced', 'settings'];
+    
+    // Clean up any repeated /index.html in the path
+    path = path.replace(/\/index\.html/g, '');
     
     if (path === '/' || path === '') return 'dashboard';
     
-    const viewFromPath = path.slice(1) as View; // Remove leading slash
+    // Extract the view name, handling multiple slashes
+    const pathParts = path.split('/').filter(part => part !== '');
+    const viewFromPath = pathParts[pathParts.length - 1] as View;
+    
     return validViews.includes(viewFromPath) ? viewFromPath : 'dashboard';
   };
 
@@ -123,6 +129,16 @@ const App: React.FC = () => {
           localStorage.setItem(`fahrtenbuch_personalization_${user.id}`, JSON.stringify(personalization));
       }
   }, [personalization, user]);
+
+  // Clean up malformed URLs on mount
+  useEffect(() => {
+    const currentPath = window.location.pathname;
+    if (currentPath.includes('/index.html') || currentPath.includes('//')) {
+      const view = getViewFromUrl();
+      const cleanPath = view === 'dashboard' ? '/' : `/${view}`;
+      window.history.replaceState({ view }, '', cleanPath);
+    }
+  }, []);
   
   useEffect(() => {
     if (user) {
