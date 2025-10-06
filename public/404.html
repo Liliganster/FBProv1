@@ -1,20 +1,17 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Redirigiendo...</title>
-  <meta http-equiv="refresh" content="0; url=/index.html" />
+  <meta http-equiv="refresh" content="0; url=/" />
   <script>
-    // Fallback JS redirect preserving path for some static hosts
-    (function(){
-      var path = window.location.pathname + window.location.search + window.location.hash;
-      // For Vercel this page normally won't be used, but just in case
-      window.location.replace('/index.html' + (path === '/' ? '' : path));
+    (function () {
+      window.location.replace('/');
     })();
   </script>
 </head>
 <body>
-  <p>Redirigiendo a la aplicación...</p>
+  <p>Redirigiendo a la aplicacion...</p>
 </body>
 </html>
