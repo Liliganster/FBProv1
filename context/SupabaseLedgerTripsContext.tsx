@@ -1,6 +1,5 @@
 import React, { createContext, ReactNode, useContext, useEffect, useState, useCallback, useMemo } from 'react';
 import { Trip, CallsheetFile, TripLedgerSource } from '../types';
-import { saveFile, deleteFile, deleteMultipleFiles } from '../services/dbService';
 import { useAuth } from '../hooks/useAuth';
 import { createTripLedgerService, TripLedgerService } from '../services/supabaseTripLedgerService';
 import { useProjects } from '../hooks/useProjects';
@@ -304,11 +303,10 @@ export const LedgerTripsProvider: React.FC<{ children: ReactNode }> = ({ childre
 
   const addCallsheetToProject = useCallback(async (projectId: string, file: File): Promise<void> => {
     try {
-      await saveFile(`${projectId}_${file.name}`, file);
+      // Now handled by ProjectsContext which uploads to Supabase Storage
       await projectsContext.addCallsheetsToProject(projectId, [file]);
       showToast('Callsheet added successfully', 'success');
     } catch (err) {
-      console.error('Error adding callsheet:', err);
       const errorMessage = err instanceof Error ? err.message : 'Failed to add callsheet';
       showToast(errorMessage, 'error');
       throw err;
@@ -317,11 +315,10 @@ export const LedgerTripsProvider: React.FC<{ children: ReactNode }> = ({ childre
 
   const deleteCallsheetFromProject = useCallback(async (projectId: string, callsheetId: string): Promise<void> => {
     try {
-      await deleteFile(callsheetId);
+      // Now handled by ProjectsContext which deletes from Supabase Storage
       await projectsContext.deleteCallsheetFromProject(projectId, callsheetId);
       showToast('Callsheet deleted successfully', 'success');
     } catch (err) {
-      console.error('Error deleting callsheet:', err);
       const errorMessage = err instanceof Error ? err.message : 'Failed to delete callsheet';
       showToast(errorMessage, 'error');
       throw err;

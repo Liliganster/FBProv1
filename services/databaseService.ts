@@ -238,36 +238,64 @@ class DatabaseService {
       const userId = authData?.user?.id
       if (!userId) throw new Error('Usuario no autenticado')
 
-      // Solo insertar los campos mínimos requeridos
-      const callsheetsToInsert = files.map(file => ({
-        project_id: projectId,
-        user_id: userId,
-        filename: file.name,
-        url: '' // Required field in DB, set to empty string as placeholder
-      }))
+      // Upload files to Supabase Storage and create database records
+      const uploadPromises = files.map(async (file) => {
+        // Generate unique file path
+        const timestamp = Date.now()
+        const sanitizedFileName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_')
+        const filePath = `${userId}/${projectId}/${timestamp}_${sanitizedFileName}`
 
+        // Upload to Supabase Storage
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('callsheets')
+          .upload(filePath, file, {
+            cacheControl: '3600',
+            upsert: false
+          })
+
+        if (uploadError) {
+          throw new Error(`Failed to upload file ${file.name}: ${uploadError.message}`)
+        }
+
+        // Get public URL
+        const { data: { publicUrl } } = supabase.storage
+          .from('callsheets')
+          .getPublicUrl(filePath)
+
+        return {
+          project_id: projectId,
+          user_id: userId,
+          filename: file.name,
+          url: publicUrl,
+          file_path: filePath,
+          file_type: file.type
+        }
+      })
+
+      const callsheetsToInsert = await Promise.all(uploadPromises)
+
+      // Insert records into database
       const { data, error } = await supabase
         .from('callsheets')
         .insert(callsheetsToInsert)
         .select()
 
       if (error) {
-        console.error('Error al insertar callsheets:', {
-          message: error.message,
-          code: error.code,
-          details: error.details,
-          hint: error.hint
-        })
+        // If database insert fails, clean up uploaded files
+        await Promise.all(
+          callsheetsToInsert.map(cs => 
+            supabase.storage.from('callsheets').remove([cs.file_path])
+          )
+        )
         throw new Error(`Failed to add callsheets: ${error.message}`)
       }
 
-      return (data || []).map((d: any) => ({ 
+      return (data || []).map((d: any, index: number) => ({ 
         id: d.id, 
         name: d.filename ?? d.name, 
-        type: 'application/octet-stream' // Default type since column doesn't exist in DB
+        type: callsheetsToInsert[index].file_type || 'application/octet-stream'
       }))
     } catch (error) {
-      console.error('Error adding callsheets to project:', error)
       throw new Error((error as any)?.message || 'Failed to add callsheets')
     }
   }
@@ -277,6 +305,27 @@ class DatabaseService {
    */
   async deleteCallsheetFromProject(callsheetId: string): Promise<void> {
     try {
+      // Get callsheet record to get file path
+      const { data: callsheet, error: fetchError } = await supabase
+        .from('callsheets')
+        .select('file_path')
+        .eq('id', callsheetId)
+        .single()
+
+      if (fetchError) throw fetchError
+
+      // Delete from storage if file_path exists
+      if (callsheet?.file_path) {
+        const { error: storageError } = await supabase.storage
+          .from('callsheets')
+          .remove([callsheet.file_path])
+
+        if (storageError) {
+          throw new Error(`Failed to delete file from storage: ${storageError.message}`)
+        }
+      }
+
+      // Delete from database
       const { error } = await supabase
         .from('callsheets')
         .delete()
@@ -284,7 +333,6 @@ class DatabaseService {
 
       if (error) throw error
     } catch (error) {
-      console.error('Error deleting callsheet:', error)
       throw new Error('Failed to delete callsheet')
     }
   }

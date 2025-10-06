@@ -6,10 +6,10 @@ import useProjects from '../hooks/useProjects';
 import { XIcon, FileTextIcon, EyeIcon, TrashIcon, LoaderIcon, SparklesIcon, LeafIcon, LineChartIcon, UsersIcon, PieChartIcon, CarIcon } from './Icons';
 import useTranslation from '../hooks/useTranslation';
 import useToast from '../hooks/useToast';
-import { getFile } from '../services/dbService';
 import { processFileForTrip } from '../services/aiService';
 import useUserProfile from '../hooks/useUserProfile';
 import useGoogleMapsScript from '../hooks/useGoogleMapsScript';
+import { supabase } from '../lib/supabase';
 
 interface ProjectDetailModalProps {
   projectId: string,
@@ -108,11 +108,19 @@ const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({ projectId, trip
   
   const handleViewFile = async (file: CallsheetFile) => {
     try {
-      const fileData = await getFile(file.id);
-      if (fileData) {
-        const url = URL.createObjectURL(fileData);
-        window.open(url, '_blank');
+      // Get the callsheet record with URL from database
+      const { data, error } = await supabase
+        .from('callsheets')
+        .select('url, file_path')
+        .eq('id', file.id)
+        .single();
+
+      if (error || !data?.url) {
+        throw new Error('File URL not found');
       }
+
+      // Open the file URL in a new tab
+      window.open(data.url, '_blank');
     } catch (error) {
       showToast('Error retrieving file.', 'error');
     }
@@ -128,11 +136,29 @@ const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({ projectId, trip
     setProcessingFileId(file.id);
     setIsProcessing(true);
     try {
-      const fileData = await getFile(file.id);
-      if (!fileData) {
-        throw new Error('Could not retrieve file to process.');
+      // Get the callsheet record with file path from database
+      const { data: callsheetData, error: callsheetError } = await supabase
+        .from('callsheets')
+        .select('url, file_path, filename')
+        .eq('id', file.id)
+        .single();
+
+      if (callsheetError || !callsheetData?.file_path) {
+        throw new Error('Could not retrieve file information.');
       }
-      const { tripData } = await processFileForTrip(fileData, userProfile, DocumentType.CALLSHEET);
+
+      // Download file from Supabase Storage
+      const { data: fileData, error: downloadError } = await supabase.storage
+        .from('callsheets')
+        .download(callsheetData.file_path);
+
+      if (downloadError || !fileData) {
+        throw new Error('Could not download file from storage.');
+      }
+
+      // Convert Blob to File object
+      const downloadedFile = new File([fileData], callsheetData.filename, { type: fileData.type });
+      const { tripData } = await processFileForTrip(downloadedFile, userProfile, DocumentType.CALLSHEET);
       
       addMultipleTrips([{
         ...tripData,

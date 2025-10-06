@@ -1,10 +1,9 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-// import useTrips from '../hooks/useTrips'; // Temporarily commented out
+import useTrips from '../hooks/useTrips';
 import { BarChartIcon, BellIcon, LeafIcon, ListIcon, FolderIcon } from './Icons';
 import useTranslation from '../hooks/useTranslation';
 import useUserProfile from '../hooks/useUserProfile';
-// FIX: Import View type for stronger prop typing.
 import { Trip, View, PersonalizationSettings } from '../types';
 import TripDetailModal from './TripDetailModal';
 
@@ -20,9 +19,7 @@ interface DashboardProps {
 }
 
 const Dashboard: React.FC<DashboardProps> = ({ setCurrentView, personalization, theme }) => {
-    // Temporarily use empty arrays until context is properly configured
-    const trips: Trip[] = [];
-    const projects: any[] = [];
+    const { trips, projects } = useTrips();
     const { userProfile } = useUserProfile();
     const { visibleProjectIds, hasSettings } = useDashboardSettings();
     const [chartType, setChartType] = useState<ChartType>('projectKm');
