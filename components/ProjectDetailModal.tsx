@@ -195,7 +195,7 @@ const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({ projectId, trip
                   onChange={handleFileSelect}
                   multiple
                   className="hidden"
-                  accept="image/*,application/pdf,.txt,.eml,message/rfc822"
+                  accept="image/*,application/pdf,.pdf,.txt,.eml,message/rfc822,.doc,.docx,.xls,.xlsx,.csv,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                 />
                 <button
                   onClick={() => fileInputRef.current?.click()}

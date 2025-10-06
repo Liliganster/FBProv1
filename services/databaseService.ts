@@ -61,8 +61,9 @@ class DatabaseService {
         ownerDriverId: project.owner_driver_id ?? null,
         callsheets: project.callsheets?.map((cs: DbCallsheet) => ({
           id: cs.id,
-          name: cs.name,
-          type: cs.type
+            // Compatibilidad: si la columna real es filename
+          name: (cs as any).filename ?? (cs as any).name,
+          type: 'application/octet-stream' // Default type since column doesn't exist in DB
         })) || [],
         createdAt: project.created_at,
         updatedAt: project.updated_at
@@ -156,8 +157,8 @@ class DatabaseService {
         ownerDriverId: data.owner_driver_id ?? null,
         callsheets: data.callsheets?.map((cs: DbCallsheet) => ({
           id: cs.id,
-          name: cs.name,
-          type: cs.type
+          name: (cs as any).filename ?? (cs as any).name,
+          type: 'application/octet-stream' // Default type since column doesn't exist in DB
         })) || [],
         createdAt: data.created_at,
         updatedAt: data.updated_at
@@ -229,40 +230,45 @@ class DatabaseService {
    */
   async addCallsheetsToProject(projectId: string, files: File[]): Promise<CallsheetFile[]> {
     try {
-      const callsheets: CallsheetFile[] = []
+      if (!files || files.length === 0) return []
 
-      for (const file of files) {
-        // For now, we'll store file metadata only
-        // In a production environment, you'd want to upload files to Supabase Storage
-        const callsheetData: DbCallsheetInsert = {
-          project_id: projectId,
-          name: file.name,
-          type: file.type,
-          file_data: {
-            size: file.size,
-            lastModified: file.lastModified
-          }
-        }
+      // Obtener user id actual
+      const { data: authData, error: authErr } = await supabase.auth.getUser()
+      if (authErr) throw new Error('No se pudo obtener usuario autenticado')
+      const userId = authData?.user?.id
+      if (!userId) throw new Error('Usuario no autenticado')
 
-        const { data, error } = await supabase
-          .from('callsheets')
-          .insert(callsheetData)
-          .select()
-          .single()
+      // Solo insertar los campos mínimos requeridos
+      const callsheetsToInsert = files.map(file => ({
+        project_id: projectId,
+        user_id: userId,
+        filename: file.name,
+        url: '' // Required field in DB, set to empty string as placeholder
+      }))
 
-        if (error) throw error
+      const { data, error } = await supabase
+        .from('callsheets')
+        .insert(callsheetsToInsert)
+        .select()
 
-        callsheets.push({
-          id: data.id,
-          name: data.name,
-          type: data.type
+      if (error) {
+        console.error('Error al insertar callsheets:', {
+          message: error.message,
+          code: error.code,
+          details: error.details,
+          hint: error.hint
         })
+        throw new Error(`Failed to add callsheets: ${error.message}`)
       }
 
-      return callsheets
+      return (data || []).map((d: any) => ({ 
+        id: d.id, 
+        name: d.filename ?? d.name, 
+        type: 'application/octet-stream' // Default type since column doesn't exist in DB
+      }))
     } catch (error) {
       console.error('Error adding callsheets to project:', error)
-      throw new Error('Failed to add callsheets')
+      throw new Error((error as any)?.message || 'Failed to add callsheets')
     }
   }
 
@@ -317,8 +323,8 @@ class DatabaseService {
         ownerDriverId: data.owner_driver_id ?? null,
         callsheets: data.callsheets?.map((cs: DbCallsheet) => ({
           id: cs.id,
-          name: cs.name,
-          type: cs.type
+          name: (cs as any).filename ?? (cs as any).name,
+          type: 'application/octet-stream' // Default type since column doesn't exist in DB
         })) || [],
         createdAt: data.created_at,
         updatedAt: data.updated_at

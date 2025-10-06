@@ -177,26 +177,31 @@ export interface Database {
           created_at: string
           updated_at: string
           project_id: string
-          name: string
-          type: string
-          file_data: any | null // JSON field for file metadata
+          user_id: string
+          filename: string
+          url: string
+          // compat opcional: name (si todavía existe en la tabla real)
+          name?: string | null
         }
         Insert: {
           id?: string
           created_at?: string
           updated_at?: string
           project_id: string
-          name: string
-          type: string
-          file_data?: any | null
+          user_id: string
+          filename: string
+          url: string
+          // permitir que código antiguo aún pueda mandar name
+          name?: string | null
         }
         Update: {
           id?: string
           updated_at?: string
           project_id?: string
-          name?: string
-          type?: string
-          file_data?: any | null
+          user_id?: string
+          filename?: string
+          url?: string
+          name?: string | null
         }
       }
       route_templates: {
