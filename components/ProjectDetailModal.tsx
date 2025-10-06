@@ -81,8 +81,8 @@ const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({ projectId, trip
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
-    if (files.length > 5) {
-      showToast(t('projects_alert_maxFiles', { count: 5 }), 'warning');
+    if (files.length > 20) {
+      showToast(t('projects_alert_maxFiles', { count: 20 }), 'warning');
       return;
     }
 
@@ -207,7 +207,7 @@ const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({ projectId, trip
                   ) : (
                     <FileTextIcon className="w-4 h-4" />
                   )}
-                  {t('projects_uploadCallsheets', { count: 5 })}
+                  {t('projects_uploadCallsheets', { count: 20 })}
                 </button>
               </div>
             </div>
