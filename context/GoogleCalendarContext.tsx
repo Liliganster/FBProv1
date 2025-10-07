@@ -68,14 +68,21 @@ export const GoogleCalendarProvider: React.FC<{ children: ReactNode }> = ({ chil
   useEffect(() => {
     // Skip initialization if Google Calendar credentials are not configured
     if (!GOOGLE_CALENDAR_API_KEY || !GOOGLE_CALENDAR_CLIENT_ID || !userProfile) {
+      console.log('[Google Calendar] Skipping init:', {
+        hasApiKey: !!GOOGLE_CALENDAR_API_KEY,
+        hasClientId: !!GOOGLE_CALENDAR_CLIENT_ID,
+        hasUserProfile: !!userProfile
+      });
       setIsInitialized(false);
       return;
     }
     
+    console.log('[Google Calendar] Starting initialization...');
     const GOOGLE_AUTH_STATE_KEY_INIT = `fahrtenbuch_google_auth_state_${userProfile.id}`;
 
     const initClients = async () => {
       try {
+        console.log('[Google Calendar] Loading gapi client...');
         await new Promise<void>((resolve, reject) => window.gapi.load('client:picker', {
           callback: resolve,
           onerror: reject,
@@ -83,12 +90,14 @@ export const GoogleCalendarProvider: React.FC<{ children: ReactNode }> = ({ chil
           ontimeout: reject,
         }));
 
+        console.log('[Google Calendar] Initializing gapi client...');
         await window.gapi.client.init({
           apiKey: GOOGLE_CALENDAR_API_KEY,
           discoveryDocs: DISCOVERY_DOCS,
         });
         setGapiClient(window.gapi.client);
 
+        console.log('[Google Calendar] Initializing token client...');
         const newtokenClient = window.google.accounts.oauth2.initTokenClient({
           client_id: GOOGLE_CALENDAR_CLIENT_ID,
           scope: SCOPES,
