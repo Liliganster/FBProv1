@@ -10,7 +10,6 @@ import useUserProfile from '../hooks/useUserProfile';
 import { useAuth } from '../hooks/useAuth';
 import LanguageSwitcher from './LanguageSwitcher';
 import { Palette, Languages, Newspaper, HelpCircle, UploadCloud, ImageOff } from 'lucide-react';
-import useGoogleCalendar from '../hooks/useGoogleCalendar';
 
 type Tab = 'profile' | 'compliance' | 'api' | 'personalization' | 'language' | 'changelog' | 'help';
 
@@ -22,7 +21,6 @@ const SettingsView: React.FC<{
 }> = ({ setCurrentView, personalization, setPersonalization, theme }) => {
     const { userProfile, setUserProfile } = useUserProfile();
     const { user } = useAuth();
-    const { isSignedIn, calendars } = useGoogleCalendar();
     const [localProfile, setLocalProfile] = useState<UserProfile | null>(userProfile);
     const { t } = useTranslation();
     const { showToast } = useToast();
@@ -212,36 +210,6 @@ const SettingsView: React.FC<{
                     <div className="space-y-4">
                         <h2 className="text-xl font-semibold text-white">{t('settings_api_title')}</h2>
                         <div className="space-y-6">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <InputField label={t('settings_api_gmaps_key')} name="googleMapsApiKey" value={localProfile.googleMapsApiKey} onChange={handleProfileChange} placeholder={t('settings_api_pasteKey')}/>
-                            </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 border border-gray-700 rounded-lg">
-                                 <h3 className="text-lg font-medium text-on-surface-dark md:col-span-2 -mb-2">{t('settings_api_gcal_title')}</h3>
-                                 <InputField label={t('settings_api_gcal_apikey')} name="googleCalendarApiKey" value={localProfile.googleCalendarApiKey} onChange={handleProfileChange} placeholder={t('settings_api_pasteKey')}/>
-                                 <InputField label={t('settings_api_gcal_clientid')} name="googleCalendarClientId" value={localProfile.googleCalendarClientId} onChange={handleProfileChange} placeholder="....apps.googleusercontent.com"/>
-                                 {isSignedIn && calendars.length > 0 && (
-                                    <div className="md:col-span-2">
-                                        <label htmlFor="googleCalendarPrimaryId" className="block text-sm font-medium text-on-surface-dark-secondary mb-1">{t('settings_api_gcal_primary')}</label>
-                                        <select
-                                            id="googleCalendarPrimaryId"
-                                            name="googleCalendarPrimaryId"
-                                            value={localProfile.googleCalendarPrimaryId || ''}
-                                            onChange={handleProfileChange}
-                                            className="w-full bg-background-dark border border-gray-600 rounded-md p-2 focus:ring-2 focus:ring-brand-primary focus:outline-none"
-                                        >
-                                            <option value="">{t('settings_api_gcal_primary_placeholder')}</option>
-                                            {calendars.map(cal => (
-                                                <option key={cal.id} value={cal.id}>{cal.summary}</option>
-                                            ))}
-                                        </select>
-                                    </div>
-                                )}
-                                <div className="md:col-span-2 text-xs text-on-surface-dark-secondary bg-background-dark p-3 rounded-lg mt-2">
-                                    <p className="font-semibold">{t('settings_api_gcal_drive_note_title')}</p>
-                                    <p>{t('settings_api_gcal_drive_note_body')}</p>
-                                </div>
-                            </div>
-
                             <div className="space-y-2 p-4 border border-gray-700 rounded-lg">
                                 <h3 className="text-lg font-medium mb-2 text-on-surface-dark">{t('settings_api_ai_title')}</h3>
                                 <ProviderConfigContainer>
