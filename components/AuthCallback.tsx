@@ -12,26 +12,31 @@ const AuthCallback: React.FC = () => {
   useEffect(() => {
     // Prevenir múltiples redirecciones
     if (hasRedirected.current) return;
-    
+
     // Solo redirigir cuando termine de cargar
     if (!isLoading) {
       // Si el usuario ya está autenticado, redirigir a home
       if (user) {
         console.log('AuthCallback: User authenticated, redirecting to home');
         hasRedirected.current = true;
-        
-        // Limpiar la URL hash/query y redirigir
-        window.history.replaceState({}, document.title, '/');
-        window.location.href = '/';
+
+        // Limpiar la URL completamente (hash, search params) y navegar sin recarga
+        const cleanUrl = new URL('/', window.location.origin);
+        window.history.replaceState({ view: 'dashboard' }, document.title, cleanUrl.pathname);
+
+        // Forzar la navegación pero usando replace para no causar bucle
+        window.location.replace('/');
       } else {
         // Si después de procesar el callback no hay usuario, algo salió mal
         console.log('AuthCallback: No user found after auth, redirecting to login');
         hasRedirected.current = true;
-        
+
+        // Esperar un poco más para dar tiempo a que Supabase procese
         setTimeout(() => {
-          window.history.replaceState({}, document.title, '/');
-          window.location.href = '/';
-        }, 2000);
+          const cleanUrl = new URL('/', window.location.origin);
+          window.history.replaceState({ view: 'dashboard' }, document.title, cleanUrl.pathname);
+          window.location.replace('/');
+        }, 3000);
       }
     }
   }, [isLoading, user]);

@@ -44,21 +44,21 @@ const App: React.FC = () => {
   const getViewFromUrl = (): View | 'auth-callback' => {
     let path = window.location.pathname;
     const validViews: View[] = ['dashboard', 'trips', 'projects', 'reports', 'calendar', 'advanced', 'settings'];
-    
+
     // Clean up any repeated /index.html in the path
     path = path.replace(/\/index\.html/g, '');
-    
+
     if (path === '/' || path === '') return 'dashboard';
-    
-    // Check for OAuth callback path
-    if (path.startsWith('/auth/callback')) {
+
+    // Check for OAuth callback path (con o sin query params o hash)
+    if (path.includes('/auth/callback') || path.startsWith('/auth/callback')) {
       return 'auth-callback';
     }
-    
+
     // Extract the view name, handling multiple slashes
-    const pathParts = path.split('/').filter(part => part !== '');
+    const pathParts = path.split('/').filter(part => part !== '' && part !== 'index.html');
     const viewFromPath = pathParts[pathParts.length - 1] as View;
-    
+
     return validViews.includes(viewFromPath) ? viewFromPath : 'dashboard';
   };
 
@@ -148,12 +148,18 @@ const App: React.FC = () => {
   // Clean up malformed URLs on mount and sync view/URL
   useEffect(() => {
     const currentPath = window.location.pathname;
+
+    // No limpiar URLs si estamos en auth-callback, dejar que Supabase procese primero
+    if (currentPath.includes('/auth/callback')) {
+      return;
+    }
+
     if (currentPath.includes('/index.html') || currentPath.includes('//')) {
       const view = getViewFromUrl();
       const cleanPath = view === 'dashboard' ? '/' : `/${view}`;
       window.history.replaceState({ view }, '', cleanPath);
     }
-    
+
     // Solo actualizar localStorage y URL si no estamos en auth-callback
     if (user && currentView !== 'auth-callback') {
       localStorage.setItem(`fahrtenbuch_currentView_${user.id}`, currentView);
