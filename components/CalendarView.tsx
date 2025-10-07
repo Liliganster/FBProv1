@@ -110,6 +110,10 @@ const CalendarView: React.FC<CalendarViewProps> = ({ setCurrentView, personaliza
   }
 
   if (!isConfigured) {
+    // Debug info for troubleshooting
+    const hasApiKey = !!import.meta.env.VITE_GOOGLE_CALENDAR_API_KEY;
+    const hasClientId = !!import.meta.env.VITE_GOOGLE_CALENDAR_CLIENT_ID;
+    
     return (
       <div style={contentStyle} className="p-8 rounded-lg text-center flex flex-col items-center justify-center min-h-[20rem]">
         <SettingsIcon className="w-16 h-16 mb-4 text-gray-600" />
@@ -117,6 +121,20 @@ const CalendarView: React.FC<CalendarViewProps> = ({ setCurrentView, personaliza
         <p className="text-lg mb-4 max-w-md text-gray-400">
           La integración con Google Calendar no está configurada. Las credenciales se configuran a nivel de servidor mediante variables de entorno.
         </p>
+        
+        {/* Debug info */}
+        <div className="mt-4 p-4 bg-gray-800/50 rounded-lg text-left text-sm max-w-md">
+          <p className="font-bold mb-2">Estado de configuración:</p>
+          <p className="text-gray-400">
+            ✓ VITE_GOOGLE_CALENDAR_API_KEY: {hasApiKey ? '✅ Configurada' : '❌ Falta'}
+          </p>
+          <p className="text-gray-400">
+            ✓ VITE_GOOGLE_CALENDAR_CLIENT_ID: {hasClientId ? '✅ Configurada' : '❌ Falta'}
+          </p>
+          <p className="text-gray-400 mt-2 text-xs">
+            {!hasApiKey || !hasClientId ? 'Configura las variables en Vercel y haz redeploy' : 'Variables configuradas pero no inicializadas'}
+          </p>
+        </div>
       </div>
     );
   }
