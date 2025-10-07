@@ -464,9 +464,6 @@ const TripEditorModal: React.FC<TripEditorModalProps> = ({ trip, projects, trips
 
         // Handle calendar integration
         if (addToCalendar && isSignedIn) {
-            if (!userProfile?.googleCalendarPrimaryId) {
-                showToast(t('toast_calendar_no_primary'), 'warning');
-            } else {
                 try {
                     const projectName = projects.find(p => p.id === finalTrip.projectId)?.name || 'Trip';
                     await createCalendarEvent(finalTrip, projectName);
@@ -733,12 +730,12 @@ const TripEditorModal: React.FC<TripEditorModalProps> = ({ trip, projects, trips
                             checked={addToCalendar}
                             onChange={(e) => setAddToCalendar(e.target.checked)}
                             className="h-4 w-4 rounded border-gray-500 bg-background-dark text-brand-primary focus:ring-brand-primary focus:outline-none"
-                            disabled={!userProfile?.googleCalendarPrimaryId}
+                            disabled={!isSignedIn}
                         />
                         <label
                           htmlFor="addToCalendar"
-                          className={`text-xs font-medium ${!userProfile?.googleCalendarPrimaryId ? 'text-gray-500 cursor-not-allowed' : 'text-gray-300 cursor-pointer'}`}
-                          title={!userProfile?.googleCalendarPrimaryId ? t('toast_calendar_no_primary') : undefined}
+                          className={`text-xs font-medium ${!isSignedIn ? 'text-gray-500 cursor-not-allowed' : 'text-gray-300 cursor-pointer'}`}
+                          title={!isSignedIn ? 'Sign in to Google Calendar first' : undefined}
                         >
                           {t('tripEditor_form_addToCalendar')}
                         </label>

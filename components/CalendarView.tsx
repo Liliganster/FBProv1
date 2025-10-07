@@ -27,7 +27,8 @@ const CalendarView: React.FC<CalendarViewProps> = ({ setCurrentView, personaliza
   const [selectedCalendars, setSelectedCalendars] = useState<string[]>([]);
   const [selectedEvent, setSelectedEvent] = useState<any | null>(null);
 
-  const isConfigured = userProfile?.googleCalendarApiKey && userProfile?.googleCalendarClientId;
+  // Google Calendar is now automatically configured via environment variables
+  const isConfigured = true; // Always true if env vars are set
 
   useEffect(() => {
     if (calendars.length > 0 && selectedCalendars.length === 0) {

@@ -32,6 +32,10 @@ const DISCOVERY_DOCS = [
     'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'
 ];
 
+// Get Google Calendar credentials from environment variables
+const GOOGLE_CALENDAR_API_KEY = import.meta.env.VITE_GOOGLE_CALENDAR_API_KEY;
+const GOOGLE_CALENDAR_CLIENT_ID = import.meta.env.VITE_GOOGLE_CALENDAR_CLIENT_ID;
+
 export const GoogleCalendarProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const { userProfile } = useUserProfile();
   const [isInitialized, setIsInitialized] = useState(false);
@@ -62,7 +66,8 @@ export const GoogleCalendarProvider: React.FC<{ children: ReactNode }> = ({ chil
   }, [gapiClient, GOOGLE_AUTH_STATE_KEY]);
 
   useEffect(() => {
-    if (!userProfile?.googleCalendarApiKey || !userProfile?.googleCalendarClientId) {
+    // Skip initialization if Google Calendar credentials are not configured
+    if (!GOOGLE_CALENDAR_API_KEY || !GOOGLE_CALENDAR_CLIENT_ID || !userProfile) {
       setIsInitialized(false);
       return;
     }
@@ -79,13 +84,13 @@ export const GoogleCalendarProvider: React.FC<{ children: ReactNode }> = ({ chil
         }));
 
         await window.gapi.client.init({
-          apiKey: userProfile.googleCalendarApiKey,
+          apiKey: GOOGLE_CALENDAR_API_KEY,
           discoveryDocs: DISCOVERY_DOCS,
         });
         setGapiClient(window.gapi.client);
 
         const newtokenClient = window.google.accounts.oauth2.initTokenClient({
-          client_id: userProfile.googleCalendarClientId,
+          client_id: GOOGLE_CALENDAR_CLIENT_ID,
           scope: SCOPES,
           callback: (tokenResponse: any) => {
             if (tokenResponse.error) {
@@ -228,7 +233,7 @@ export const GoogleCalendarProvider: React.FC<{ children: ReactNode }> = ({ chil
   };
   
   const showPicker = (callback: (data: any) => void) => {
-    if (!gapiClient || !isSignedIn || !userProfile?.googleCalendarApiKey || !window.google?.picker) {
+    if (!gapiClient || !isSignedIn || !GOOGLE_CALENDAR_API_KEY || !window.google?.picker) {
       showToast('Google Picker API is not ready.', 'error');
       return;
     }
@@ -241,7 +246,7 @@ export const GoogleCalendarProvider: React.FC<{ children: ReactNode }> = ({ chil
         const picker = new window.google.picker.PickerBuilder()
             .addView(view)
             .setOAuthToken(token)
-            .setDeveloperKey(userProfile.googleCalendarApiKey)
+            .setDeveloperKey(GOOGLE_CALENDAR_API_KEY)
             .setCallback(callback)
             .build();
         picker.setVisible(true);
@@ -254,9 +259,6 @@ export const GoogleCalendarProvider: React.FC<{ children: ReactNode }> = ({ chil
   const createCalendarEvent = useCallback(async (trip: Trip, projectName: string) => {
     if (!gapiClient || !isSignedIn) {
       throw new Error('Not signed into Google');
-    }
-    if (!userProfile?.googleCalendarPrimaryId) {
-      throw new Error('No primary calendar selected');
     }
 
     const event = {
@@ -273,8 +275,9 @@ export const GoogleCalendarProvider: React.FC<{ children: ReactNode }> = ({ chil
     };
 
     try {
+        // Use 'primary' to automatically use the user's primary calendar
         const response = await gapiClient.calendar.events.insert({
-          'calendarId': userProfile.googleCalendarPrimaryId,
+          'calendarId': 'primary',
           'resource': event
         });
         return response;
@@ -282,7 +285,7 @@ export const GoogleCalendarProvider: React.FC<{ children: ReactNode }> = ({ chil
         console.error('Error creating calendar event:', err);
         throw new Error('Failed to create event. Check console for details.');
     }
-  }, [gapiClient, isSignedIn, userProfile]);
+  }, [gapiClient, isSignedIn]);
 
   const value = {
     isInitialized,

@@ -47,9 +47,6 @@ export interface UserProfile {
   color?: string | null
   ratePerKm?: number | null
   googleMapsApiKey?: string | null
-  googleCalendarApiKey?: string | null
-  googleCalendarClientId?: string | null
-  googleCalendarPrimaryId?: string | null
   openRouterApiKey?: string | null
   openRouterModel?: string | null
   lockedUntilDate?: string | null
