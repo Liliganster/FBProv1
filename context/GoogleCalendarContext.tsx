@@ -138,17 +138,28 @@ export const GoogleCalendarProvider: React.FC<{ children: ReactNode }> = ({ chil
         });
         setTokenClient(newtokenClient);
         setIsInitialized(true);
+        console.log('[Google Calendar] ✅ Initialization complete!');
 
       } catch (error) {
-        console.error('Error during Google API initialization:', error);
+        console.error('[Google Calendar] ❌ Error during initialization:', error);
         showToast('Failed to initialize Google API integration.', 'error');
       }
     };
     
+    let attempts = 0;
+    const maxAttempts = 50; // 5 seconds total (50 * 100ms)
+    
     const checkScriptsAndInit = () => {
+      attempts++;
+      
       if (window.gapi && window.google?.accounts?.oauth2) {
+        console.log('[Google Calendar] Scripts loaded, initializing...');
         initClients();
+      } else if (attempts >= maxAttempts) {
+        console.error('[Google Calendar] ❌ Timeout waiting for Google scripts to load');
+        showToast('Google Calendar scripts failed to load. Check your internet connection.', 'error');
       } else {
+        console.log(`[Google Calendar] Waiting for scripts... (${attempts}/${maxAttempts})`);
         setTimeout(checkScriptsAndInit, 100);
       }
     };
