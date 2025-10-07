@@ -7,15 +7,21 @@
     <script>
       // URL Cleaner & Anti-Loop Protection
       (function() {
-        // Prevenir bucles infinitos - verificar si ya procesamos esta URL
-        var processedKey = 'url_processed_' + window.location.href;
-        var alreadyProcessed = sessionStorage.getItem(processedKey);
+        var path = window.location.pathname;
         
-        if (alreadyProcessed) {
-          return; // Ya procesamos esta URL en esta sesión
+        // IMPORTANTE: No procesar rutas de autenticación - dejar que React las maneje
+        if (path.includes('/auth/')) {
+          return;
         }
         
-        var path = window.location.pathname;
+        // Prevenir bucles infinitos - verificar si ya procesamos esta URL
+        var processedKey = 'url_cleanup_done';
+        var alreadyProcessed = sessionStorage.getItem(processedKey);
+        
+        if (alreadyProcessed === 'true') {
+          return; // Ya procesamos la limpieza en esta sesión
+        }
+        
         var needsCleanup = false;
         var cleanPath = path;
         
@@ -37,7 +43,7 @@
           var hash = window.location.hash;
           var newUrl = baseUrl + cleanPath + query + hash;
           
-          // Mark this URL as processed
+          // Mark cleanup as done for this session
           sessionStorage.setItem(processedKey, 'true');
           
           // Replace current URL without a page reload

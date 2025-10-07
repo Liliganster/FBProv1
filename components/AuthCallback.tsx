@@ -1,8 +1,5 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useAuth } from '../hooks/useAuth';
-
-// Bandera global para prevenir múltiples procesamientos en toda la aplicación
-const CALLBACK_PROCESSED_KEY = 'oauth_callback_processed';
 
 /**
  * Componente que maneja el callback de autenticación OAuth
@@ -11,69 +8,44 @@ const CALLBACK_PROCESSED_KEY = 'oauth_callback_processed';
 const AuthCallback: React.FC = () => {
   const { isLoading, user } = useAuth();
   const hasRedirected = useRef(false);
-  const [processingStartTime] = useState(Date.now());
-  const hasInitialized = useRef(false);
+  const redirectTimer = useRef<number | null>(null);
 
   useEffect(() => {
-    // Ejecutar solo una vez al montar
-    if (hasInitialized.current) return;
-    hasInitialized.current = true;
-
-    // Marcar que estamos procesando este callback
-    const callbackProcessed = sessionStorage.getItem(CALLBACK_PROCESSED_KEY);
-
-    // Si ya fue procesado en esta sesión, redirigir inmediatamente
-    if (callbackProcessed === 'true') {
-      console.log('AuthCallback: Already processed, redirecting immediately');
-      window.location.replace('/');
-      return;
-    }
-
-    // Marcar como procesado para evitar loops en refresh
-    sessionStorage.setItem(CALLBACK_PROCESSED_KEY, 'true');
-
-    // Limpiar el hash inmediatamente para que no se reprocese
-    if (window.location.hash) {
+    // Limpiar el hash de la URL para que no se reprocese en refresh
+    if (window.location.hash && !hasRedirected.current) {
       const cleanUrl = window.location.pathname + window.location.search;
       window.history.replaceState(null, '', cleanUrl);
     }
-  }, []);
 
-  useEffect(() => {
-    // Prevenir múltiples redirecciones
-    if (hasRedirected.current) return;
-
-    // Solo redirigir cuando termine de cargar
-    if (!isLoading) {
-      // Si el usuario ya está autenticado, redirigir a home
+    // Solo redirigir cuando termine de cargar Y tengamos un usuario autenticado
+    if (!isLoading && !hasRedirected.current) {
       if (user) {
         console.log('AuthCallback: User authenticated, redirecting to home');
         hasRedirected.current = true;
-
-        // Limpiar la marca antes de redirigir para permitir futuros logins
-        setTimeout(() => {
-          sessionStorage.removeItem(CALLBACK_PROCESSED_KEY);
+        
+        // Usar replace en lugar de navigate para no crear entrada en historial
+        redirectTimer.current = window.setTimeout(() => {
           window.location.replace('/');
-        }, 100);
+        }, 500);
       } else {
-        // Esperar hasta 5 segundos para que Supabase procese
-        const elapsedTime = Date.now() - processingStartTime;
-        if (elapsedTime < 5000) {
-          console.log('AuthCallback: Waiting for authentication to complete...');
-          return;
-        }
-
-        // Si después de 5 segundos no hay usuario, redirigir a login
-        console.log('AuthCallback: No user found after auth, redirecting to login');
+        // Si no hay usuario después de cargar, también redirigir
+        // (Supabase no pudo autenticar, probablemente token expirado o inválido)
+        console.log('AuthCallback: No user found, redirecting to home');
         hasRedirected.current = true;
-
-        sessionStorage.removeItem(CALLBACK_PROCESSED_KEY);
-        setTimeout(() => {
+        
+        redirectTimer.current = window.setTimeout(() => {
           window.location.replace('/');
-        }, 100);
+        }, 500);
       }
     }
-  }, [isLoading, user, processingStartTime]);
+
+    // Cleanup del timer al desmontar
+    return () => {
+      if (redirectTimer.current !== null) {
+        clearTimeout(redirectTimer.current);
+      }
+    };
+  }, [isLoading, user]);
 
   return (
     <div className="flex items-center justify-center h-screen bg-background-dark text-on-surface-dark">
