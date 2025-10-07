@@ -113,11 +113,10 @@ const CalendarView: React.FC<CalendarViewProps> = ({ setCurrentView, personaliza
     return (
       <div style={contentStyle} className="p-8 rounded-lg text-center flex flex-col items-center justify-center min-h-[20rem]">
         <SettingsIcon className="w-16 h-16 mb-4 text-gray-600" />
-        <h2 className="text-2xl font-bold mb-2">{t('calendar_config_prompt_title')}</h2>
-        <p className="text-lg mb-4 max-w-md">{t('calendar_config_prompt_desc')}</p>
-        <button onClick={() => setCurrentView('settings')} className="bg-brand-primary hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg">
-          {t('nav_settings')}
-        </button>
+        <h2 className="text-2xl font-bold mb-2">Google Calendar no disponible</h2>
+        <p className="text-lg mb-4 max-w-md text-gray-400">
+          La integración con Google Calendar no está configurada. Las credenciales se configuran a nivel de servidor mediante variables de entorno.
+        </p>
       </div>
     );
   }
