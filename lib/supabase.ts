@@ -13,7 +13,10 @@ if (isSupabaseConfigured && supabaseUrl && supabaseAnonKey) {
     auth: {
       autoRefreshToken: true,
       persistSession: true,
-      detectSessionInUrl: false // Cambiado a false para evitar bucles de redirección
+      // Habilitar el procesamiento automático del callback OAuth en la URL.
+      // Con detectSessionInUrl en false, el flujo PKCE/implicit no guarda la sesión
+      // tras el retorno a /auth/callback y provoca un bucle de login en producción.
+      detectSessionInUrl: true
     }
   })
 } else if (typeof window !== 'undefined') {
