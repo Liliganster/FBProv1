@@ -47,6 +47,7 @@ export const GoogleCalendarProvider: React.FC<{ children: ReactNode }> = ({ chil
   const { t } = useTranslation();
   const manualSignOut = useRef(false);
   const initialAuthCheckPerformed = useRef(false);
+  const hasStartedInit = useRef(false); // Prevent double initialization
   
   const GOOGLE_AUTH_STATE_KEY = userProfile ? `fahrtenbuch_google_auth_state_${userProfile.id}` : null;
 
@@ -74,9 +75,17 @@ export const GoogleCalendarProvider: React.FC<{ children: ReactNode }> = ({ chil
         hasUserProfile: !!userProfile
       });
       setIsInitialized(false);
+      hasStartedInit.current = false;
       return;
     }
     
+    // Prevent double initialization (React StrictMode triggers useEffect twice)
+    if (hasStartedInit.current) {
+      console.log('[Google Calendar] Already initializing, skipping...');
+      return;
+    }
+    
+    hasStartedInit.current = true;
     console.log('[Google Calendar] Starting initialization...');
     const GOOGLE_AUTH_STATE_KEY_INIT = `fahrtenbuch_google_auth_state_${userProfile.id}`;
 
@@ -101,6 +110,7 @@ export const GoogleCalendarProvider: React.FC<{ children: ReactNode }> = ({ chil
         const newtokenClient = window.google.accounts.oauth2.initTokenClient({
           client_id: GOOGLE_CALENDAR_CLIENT_ID,
           scope: SCOPES,
+          ux_mode: 'popup', // Force popup mode to avoid redirect_uri issues
           callback: (tokenResponse: any) => {
             if (tokenResponse.error) {
               const expectedErrors = ['access_denied', 'user_logged_out', 'consent_required', 'interaction_required', 'login_required'];
