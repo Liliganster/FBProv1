@@ -76,16 +76,20 @@ const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<ExtendedView>(() => {
     // First try to get view from URL
     const urlView = getViewFromUrl();
-    if (urlView === 'auth-callback') return urlView;
-    if (urlView !== 'dashboard') return urlView as View;
     
-    // Fallback to localStorage only if user is available
-    if (user) {
-      const savedView = localStorage.getItem(`fahrtenbuch_currentView_${user.id}`) as View;
+    // Special case: auth callback
+    if (urlView === 'auth-callback') return urlView;
+    
+    // If there's a specific view in the URL (not dashboard/root), use it
+    if (urlView !== 'dashboard' && window.location.pathname !== '/' && window.location.pathname !== '') {
       const validViews: View[] = ['dashboard', 'trips', 'projects', 'reports', 'calendar', 'advanced', 'settings'];
-      return savedView && validViews.includes(savedView) ? savedView : 'dashboard';
+      if (validViews.includes(urlView as View)) {
+        return urlView as View;
+      }
     }
     
+    // For root path or invalid paths, always start with dashboard
+    // Don't restore from localStorage on initial load to avoid 404s
     return 'dashboard';
   });
 
@@ -160,10 +164,15 @@ const App: React.FC = () => {
       window.history.replaceState({ view }, '', cleanPath);
     }
 
-    // Solo actualizar localStorage y URL si no estamos en auth-callback
-    if (user && currentView !== 'auth-callback') {
-      localStorage.setItem(`fahrtenbuch_currentView_${user.id}`, currentView);
+    // Solo actualizar URL si no estamos en auth-callback
+    // Guardar en localStorage solo cuando el usuario navega activamente, no en carga inicial
+    if (currentView !== 'auth-callback') {
       updateUrlForView(currentView);
+      
+      // Solo guardar en localStorage después de la carga inicial
+      if (user && currentPath !== '/') {
+        localStorage.setItem(`fahrtenbuch_currentView_${user.id}`, currentView);
+      }
     }
   }, [currentView, user]);
 
