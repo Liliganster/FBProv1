@@ -16,7 +16,12 @@ if (isSupabaseConfigured && supabaseUrl && supabaseAnonKey) {
       // Habilitar el procesamiento automático del callback OAuth en la URL.
       // Con detectSessionInUrl en false, el flujo PKCE/implicit no guarda la sesión
       // tras el retorno a /auth/callback y provoca un bucle de login en producción.
-      detectSessionInUrl: true
+      detectSessionInUrl: true,
+      // Configurar para que solo detecte en rutas específicas
+      flowType: 'pkce',
+      // Prevenir procesamiento múltiple del mismo hash
+      storage: typeof window !== 'undefined' ? window.localStorage : undefined,
+      storageKey: 'supabase.auth.token'
     }
   })
 } else if (typeof window !== 'undefined') {

@@ -1,5 +1,8 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
+
+// Bandera global para prevenir múltiples procesamientos en toda la aplicación
+const CALLBACK_PROCESSED_KEY = 'oauth_callback_processed';
 
 /**
  * Componente que maneja el callback de autenticación OAuth
@@ -8,6 +11,33 @@ import { useAuth } from '../hooks/useAuth';
 const AuthCallback: React.FC = () => {
   const { isLoading, user } = useAuth();
   const hasRedirected = useRef(false);
+  const [processingStartTime] = useState(Date.now());
+  const hasInitialized = useRef(false);
+
+  useEffect(() => {
+    // Ejecutar solo una vez al montar
+    if (hasInitialized.current) return;
+    hasInitialized.current = true;
+
+    // Marcar que estamos procesando este callback
+    const callbackProcessed = sessionStorage.getItem(CALLBACK_PROCESSED_KEY);
+
+    // Si ya fue procesado en esta sesión, redirigir inmediatamente
+    if (callbackProcessed === 'true') {
+      console.log('AuthCallback: Already processed, redirecting immediately');
+      window.location.replace('/');
+      return;
+    }
+
+    // Marcar como procesado para evitar loops en refresh
+    sessionStorage.setItem(CALLBACK_PROCESSED_KEY, 'true');
+
+    // Limpiar el hash inmediatamente para que no se reprocese
+    if (window.location.hash) {
+      const cleanUrl = window.location.pathname + window.location.search;
+      window.history.replaceState(null, '', cleanUrl);
+    }
+  }, []);
 
   useEffect(() => {
     // Prevenir múltiples redirecciones
@@ -20,26 +50,30 @@ const AuthCallback: React.FC = () => {
         console.log('AuthCallback: User authenticated, redirecting to home');
         hasRedirected.current = true;
 
-        // Limpiar la URL completamente (hash, search params) y navegar sin recarga
-        const cleanUrl = new URL('/', window.location.origin);
-        window.history.replaceState({ view: 'dashboard' }, document.title, cleanUrl.pathname);
-
-        // Forzar la navegación pero usando replace para no causar bucle
-        window.location.replace('/');
+        // Limpiar la marca antes de redirigir para permitir futuros logins
+        setTimeout(() => {
+          sessionStorage.removeItem(CALLBACK_PROCESSED_KEY);
+          window.location.replace('/');
+        }, 100);
       } else {
-        // Si después de procesar el callback no hay usuario, algo salió mal
+        // Esperar hasta 5 segundos para que Supabase procese
+        const elapsedTime = Date.now() - processingStartTime;
+        if (elapsedTime < 5000) {
+          console.log('AuthCallback: Waiting for authentication to complete...');
+          return;
+        }
+
+        // Si después de 5 segundos no hay usuario, redirigir a login
         console.log('AuthCallback: No user found after auth, redirecting to login');
         hasRedirected.current = true;
 
-        // Esperar un poco más para dar tiempo a que Supabase procese
+        sessionStorage.removeItem(CALLBACK_PROCESSED_KEY);
         setTimeout(() => {
-          const cleanUrl = new URL('/', window.location.origin);
-          window.history.replaceState({ view: 'dashboard' }, document.title, cleanUrl.pathname);
           window.location.replace('/');
-        }, 3000);
+        }, 100);
       }
     }
-  }, [isLoading, user]);
+  }, [isLoading, user, processingStartTime]);
 
   return (
     <div className="flex items-center justify-center h-screen bg-background-dark text-on-surface-dark">
