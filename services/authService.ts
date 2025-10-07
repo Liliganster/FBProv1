@@ -104,18 +104,42 @@ class AuthService {
     try {
       const { error } = await supabase.auth.signOut()
       
-      // Also clear any local storage that might be corrupted
+      // Clear only Supabase-specific storage, not all sessionStorage
+      // to avoid breaking other app functionality (like loop prevention)
       if (typeof window !== 'undefined') {
-        localStorage.removeItem('supabase.auth.token');
-        sessionStorage.clear();
+        // Clear localStorage items that might be corrupted
+        const keysToRemove = [];
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          if (key && (key.startsWith('supabase') || key.startsWith('sb-'))) {
+            keysToRemove.push(key);
+          }
+        }
+        keysToRemove.forEach(key => localStorage.removeItem(key));
+        
+        // Clear only Supabase-related sessionStorage items
+        const sessionKeysToRemove = [];
+        for (let i = 0; i < sessionStorage.length; i++) {
+          const key = sessionStorage.key(i);
+          if (key && (key.startsWith('supabase') || key.startsWith('sb-'))) {
+            sessionKeysToRemove.push(key);
+          }
+        }
+        sessionKeysToRemove.forEach(key => sessionStorage.removeItem(key));
       }
       
       return { error }
     } catch (error) {
-      // Even if signOut fails, try to clear local storage
+      // Even if signOut fails, try to clear storage
       if (typeof window !== 'undefined') {
-        localStorage.removeItem('supabase.auth.token');
-        sessionStorage.clear();
+        const keysToRemove = [];
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          if (key && (key.startsWith('supabase') || key.startsWith('sb-'))) {
+            keysToRemove.push(key);
+          }
+        }
+        keysToRemove.forEach(key => localStorage.removeItem(key));
       }
       return { error: error as AuthError }
     }
@@ -129,6 +153,17 @@ class AuthService {
       await this.signOut();
     } catch (error) {
       console.warn('Error during session clearing:', error);
+      // Still try to clear storage even if signOut fails
+      if (typeof window !== 'undefined') {
+        const keysToRemove = [];
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          if (key && (key.startsWith('supabase') || key.startsWith('sb-'))) {
+            keysToRemove.push(key);
+          }
+        }
+        keysToRemove.forEach(key => localStorage.removeItem(key));
+      }
     }
   }
 
