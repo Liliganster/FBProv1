@@ -464,14 +464,13 @@ const TripEditorModal: React.FC<TripEditorModalProps> = ({ trip, projects, trips
 
         // Handle calendar integration
         if (addToCalendar && isSignedIn) {
-                try {
-                    const projectName = projects.find(p => p.id === finalTrip.projectId)?.name || 'Trip';
-                    await createCalendarEvent(finalTrip, projectName);
-                    showToast(t('toast_calendar_event_success'), 'success');
-                } catch (error) {
-                    console.error('Failed to create calendar event:', error);
-                    showToast(t('toast_calendar_event_error'), 'error');
-                }
+            try {
+                const projectName = projects.find(p => p.id === finalTrip.projectId)?.name || 'Trip';
+                await createCalendarEvent(finalTrip, projectName);
+                showToast(t('toast_calendar_event_success'), 'success');
+            } catch (error) {
+                console.error('Failed to create calendar event:', error);
+                showToast(t('toast_calendar_event_error'), 'error');
             }
         }
         
