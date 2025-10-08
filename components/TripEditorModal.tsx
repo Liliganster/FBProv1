@@ -650,7 +650,7 @@ const TripEditorModal: React.FC<TripEditorModalProps> = ({ trip, projects, trips
                                       value={location}
                                       onChange={(e) => handleLocationChange(index, e.target.value)}
                                       disabled={isOriginDisabled || isDestinationDisabled}
-                                      className="w-full bg-background-dark/70 border border-gray-600/70 rounded-md px-3 py-2 text-sm text-on-surface-dark placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-primary/50 disabled:bg-gray-800 disabled:text-gray-500 disabled:cursor-not-allowed"
+                                      className="w-full bg-background-dark/70 border border-gray-600/70 rounded-md px-3 py-2 text-sm text-on-surface-dark placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-primary/50 disabled:bg-gray-800 disabled:text-gray-500 disabled:cursor-not-allowed"
                                       autoComplete="off"
                                       title={
                                         showOriginHint ? t('tripEditor_form_origin_empty_hint') :
@@ -699,7 +699,7 @@ const TripEditorModal: React.FC<TripEditorModalProps> = ({ trip, projects, trips
                         onChange={handleChange}
                         placeholder={t('tripEditor_form_editJustification_placeholder')}
                         rows={3}
-                        className="w-full bg-background-dark/70 border border-gray-600/70 rounded-md px-3 py-2 text-sm text-on-surface-dark placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-primary/50 resize-none"
+                        className="w-full bg-background-dark/70 border border-gray-600/70 rounded-md px-3 py-2 text-sm text-on-surface-dark placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-primary/50 resize-none"
                         required
                       />
                       <p className="text-xs text-gray-400 mt-1">
@@ -710,7 +710,7 @@ const TripEditorModal: React.FC<TripEditorModalProps> = ({ trip, projects, trips
                   <div>
                       <label className="block text-[11px] font-semibold uppercase tracking-wide text-gray-300/90 mb-1">{t('tripEditor_form_distance')}</label>
                       <div className="flex items-center">
-                        <input type="number" min="0.01" step="0.1" name="distance" value={formData.distance || ''} onChange={handleChange} className="w-full bg-background-dark/70 border border-gray-600/70 rounded-md px-3 py-2 text-sm text-on-surface-dark placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-primary/50" />
+                        <input type="number" min="0.01" step="0.1" name="distance" value={formData.distance || ''} onChange={handleChange} className="w-full bg-background-dark/70 border border-gray-600/70 rounded-md px-3 py-2 text-sm text-on-surface-dark placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-primary/50" />
                         <button onClick={handleCalculateDistance} disabled={!isMapsScriptLoaded || isCalculatingDist} className="ml-2 p-2 bg-brand-primary/15 text-brand-primary rounded-md hover:bg-brand-primary/25 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-brand-primary/40" title={!isMapsScriptLoaded ? 'Google Maps script is loading...' : 'Calculate distance'}>
                           {isCalculatingDist ? <LoaderIcon className="w-5 h-5 animate-spin" /> : <RouteIcon className="w-5 h-5"/>}
                         </button>
@@ -786,7 +786,7 @@ const InputField: React.FC<{label: string, name: string, value?: string | number
       min={min}
       placeholder={placeholder}
       step="0.01"
-      className="w-full bg-background-dark/70 border border-gray-600/70 rounded-md px-3 py-2 text-sm text-on-surface-dark placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-primary/50 disabled:bg-gray-800 disabled:text-gray-500 disabled:cursor-not-allowed"
+      className="w-full bg-background-dark/70 border border-gray-600/70 rounded-md px-3 py-2 text-sm text-on-surface-dark placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-primary/50 disabled:bg-gray-800 disabled:text-gray-500 disabled:cursor-not-allowed"
     />
   </div>
 );
