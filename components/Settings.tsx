@@ -483,7 +483,7 @@ const InputField: React.FC<{label: string, name: string, value?: string | number
             placeholder={placeholder}
             disabled={disabled}
             step={type === 'number' ? '0.01' : undefined}
-            className="w-full bg-background-dark border border-gray-600 rounded-md p-2 text-on-surface-dark placeholder-gray-300 focus:ring-2 focus:ring-brand-primary focus:outline-none disabled:bg-gray-800 disabled:text-gray-400 disabled:cursor-not-allowed"
+            className="w-full bg-background-dark border border-gray-600 rounded-md p-2 text-on-surface-dark placeholder-gray-500 focus:ring-2 focus:ring-brand-primary focus:outline-none disabled:bg-gray-800 disabled:text-gray-400 disabled:cursor-not-allowed"
         />
     </div>
 );
