@@ -75,7 +75,7 @@ const ReportsView: React.FC<ReportsViewProps> = ({ personalization, theme }) => 
   }
   
   return (
-    <div>
+    <div className={`${theme === 'dark' ? 'text-on-surface-dark' : 'text-gray-900'}`}>
       <div className="flex justify-between items-center mb-8">
         {selectedReportIds.length > 0 ? (
           <div className="flex items-center gap-4 w-full">

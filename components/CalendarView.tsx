@@ -140,7 +140,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ setCurrentView, personaliza
   }
 
   return (
-    <div className="flex h-full -m-8">
+    <div className={`flex h-full -m-8 ${theme === 'dark' ? 'text-on-surface-dark' : 'text-gray-900'}`}>
       <div style={contentStyle} className="w-64 p-4 border-r border-gray-700/50 flex flex-col">
         <h2 className="text-xl font-semibold mb-4">{t('calendar_calendars_title')}</h2>
         <ul className="space-y-2 overflow-y-auto">

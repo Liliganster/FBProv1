@@ -7,7 +7,20 @@ import useUserProfile from '../hooks/useUserProfile';
 import useTrips from '../hooks/useTrips';
 import useReports from '../hooks/useReports';
 import { useAuth } from '../hooks/useAuth';
-import { DownloadIcon, UploadIcon, CheckCircleIcon, XCircleIcon, AlertTriangleIcon, ShieldCheckIcon, DollarSign, SaveIcon, ArrowLeftIcon, Route, TreePine, X } from 'lucide-react';
+import {
+  LuDownload as DownloadIcon,
+  LuUpload as UploadIcon,
+  LuCircleCheck as CheckCircleIcon,
+  LuCircleX as XCircleIcon,
+  LuTriangleAlert as AlertTriangleIcon,
+  LuShieldCheck as ShieldCheckIcon,
+  LuDollarSign as DollarSign,
+  LuSave as SaveIcon,
+  LuArrowLeft as ArrowLeftIcon,
+  LuRoute as Route,
+  LuTreePine as TreePine,
+  LuX as X,
+} from 'react-icons/lu';
 import { Trip, PersonalizationSettings, UserProfile } from '../types';
 import { formatDateForDisplay } from '../i18n/translations';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar } from 'recharts';

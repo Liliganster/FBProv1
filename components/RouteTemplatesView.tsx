@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { Plus, ArrowLeft, Trash2, Edit2 } from 'lucide-react';
+import { LuPlus as Plus, LuArrowLeft as ArrowLeft, LuTrash2 as Trash2, LuPencilLine as Edit2 } from 'react-icons/lu';
 import useTranslation from '../hooks/useTranslation';
 import useRouteTemplates from '../hooks/useRouteTemplates';
 import useUndoRedo from '../hooks/useUndoRedo';

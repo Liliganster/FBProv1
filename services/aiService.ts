@@ -3,6 +3,7 @@
 import { SpecialOrigin, UserProfile, Trip, AiModelInfo, DocumentType } from '../types';
 import { formatDateForStorage } from '../i18n/translations';
 import { calculateDistance, getCountryCode } from './googleMapsService';
+import { extractUniversalStructured, type ExtractMode } from './extractor-universal/index';
 
 
 declare const pdfjsLib: any;
@@ -313,4 +314,54 @@ export async function processFileForTrip(file: File, userProfile: UserProfile, d
     };
   
     return { tripData, projectName: extractedData.projectName };
+}
+
+// New: Universal extractor wrapper using Direct/Agent modes (with OCR in Agent)
+export async function processFileForTripUniversal(
+  input: { file?: File; text?: string },
+  userProfile: UserProfile,
+  documentType: DocumentType,
+  mode: ExtractMode
+): Promise<{ tripData: Omit<Trip, 'id' | 'projectId'>; projectName: string }> {
+  const userHomeAddress = (userProfile.address && userProfile.city && userProfile.country)
+    ? `${userProfile.address}, ${userProfile.city}, ${userProfile.country}`
+    : null;
+  if (!userHomeAddress) throw new Error("Your home address is not set in your profile.");
+
+  // Extract using the new universal pipeline (Gemini + optional OCR)
+  const extraction = await extractUniversalStructured({
+    mode,
+    input: { file: input.file, text: input.text },
+    provider: 'auto',
+    credentials: {
+      geminiApiKey: (import.meta as any).env?.VITE_GEMINI_API_KEY || (window as any)?.GEMINI_API_KEY || null,
+      openRouterApiKey: userProfile.openRouterApiKey || (import.meta as any).env?.VITE_OPENROUTER_API_KEY || null,
+      openRouterModel: userProfile.openRouterModel || (import.meta as any).env?.VITE_OPENROUTER_MODEL || null,
+    },
+  });
+  const locations = [userHomeAddress, ...extraction.locations, userHomeAddress];
+
+  let distance = 0;
+  if (userProfile.googleMapsApiKey && (window as any).google) {
+    try {
+      const regionCode = getCountryCode(userProfile?.country);
+      const calculatedDist = await calculateDistance(locations, userProfile.googleMapsApiKey!, regionCode);
+      distance = calculatedDist ?? 0;
+    } catch (e) {
+      console.warn(`Could not calculate distance for trip. Reason:`, e instanceof Error ? e.message : e);
+    }
+  }
+
+  const date = extraction.date || new Date().toISOString().split('T')[0];
+  const reason = extraction.projectName || 'Extracted Trip';
+
+  const tripData: Omit<Trip, 'id' | 'projectId'> = {
+    date,
+    locations: locations.length >= 2 ? locations : [userHomeAddress, userHomeAddress],
+    distance,
+    reason,
+    specialOrigin: SpecialOrigin.HOME,
+  };
+
+  return { tripData, projectName: extraction.projectName };
 }

@@ -152,7 +152,7 @@ const InputField: React.FC<{
       value={value}
       onChange={onChange}
       placeholder={placeholder}
-      className="w-full bg-background-dark border border-gray-600 rounded-md p-2 focus:ring-2 focus:ring-brand-primary focus:outline-none"
+      className="w-full bg-background-dark border border-gray-600 rounded-md p-2 text-on-surface-dark placeholder-gray-300 focus:ring-2 focus:ring-brand-primary focus:outline-none"
     />
   </div>
 );

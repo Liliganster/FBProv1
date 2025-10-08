@@ -213,7 +213,7 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
   };
 
   return (
-    <div>
+    <div className={`${theme === 'dark' ? 'text-on-surface-dark' : 'text-gray-900'}`}>
       <div className="flex justify-between items-center mb-8">
         {selectedTripIds.length > 0 ? (
           <div className="flex items-center gap-4 w-full">
@@ -248,11 +248,11 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
                   id="project-filter"
                   value={projectFilter}
                   onChange={(e) => setProjectFilter(e.target.value)}
-                  className="bg-surface-dark border border-gray-600 rounded-lg py-2 px-4 focus:ring-2 focus:ring-brand-primary focus:outline-none text-on-surface-dark"
+                  className="bg-surface-dark border border-gray-600 rounded-lg py-2 px-4 focus:ring-2 focus:ring-brand-primary focus:outline-none text-white"
                 >
-                  <option value="all">{t('trips_filter_all_projects')}</option>
+                  <option value="all" className="bg-surface-dark text-white">{t('trips_filter_all_projects')}</option>
                   {projects.map(p => (
-                    <option key={p.id} value={p.id}>{p.name}</option>
+                    <option key={p.id} value={p.id} className="bg-surface-dark text-white">{p.name}</option>
                   ))}
                 </select>
               </div>
@@ -322,7 +322,7 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
               return (
               <tr 
                 key={trip.id} 
-                className={`${isSelected ? 'bg-brand-primary/20' : ''} hover:bg-gray-800/40 transition-colors`}
+                className={`${isSelected ? 'bg-brand-primary/20' : ''} hover:bg-gray-800/40 transition-colors ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}
               >
                 <td className="p-4" onClick={(e) => e.stopPropagation()}>
                   <input

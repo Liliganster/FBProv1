@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import useTranslation from '../hooks/useTranslation';
 import { UndoAction } from '../hooks/useUndoRedo';
-import { RotateCcw, X } from 'lucide-react';
+import { LuRotateCcw as RotateCcw, LuX as X } from 'react-icons/lu';
 
 interface UndoToastProps {
   action: UndoAction | null;

@@ -1,6 +1,4 @@
-import type { CallsheetExtraction } from './config/schema';
-
-export function isCallsheetExtraction(x: any): x is CallsheetExtraction {
+export function isCrewFirstCallsheet(x: any): x is { date: string; projectName: string; locations: string[] } {
   return (
     x && typeof x === 'object' &&
     typeof x.date === 'string' &&
@@ -8,3 +6,4 @@ export function isCallsheetExtraction(x: any): x is CallsheetExtraction {
     Array.isArray(x.locations) && x.locations.every((s: any) => typeof s === 'string')
   );
 }
+

@@ -142,7 +142,7 @@ const Dashboard: React.FC<DashboardProps> = ({ setCurrentView, personalization, 
     const chartData = kmByProject;
 
     return (
-        <div>
+        <div className={`${theme === 'dark' ? 'text-on-surface-dark' : 'text-gray-900'}`}>
             <div className="flex justify-between items-start mb-8">
                 <div>
                     <h1 className="text-3xl font-bold text-white">{t('dashboard_title')}</h1>
@@ -193,7 +193,12 @@ const Dashboard: React.FC<DashboardProps> = ({ setCurrentView, personalization, 
                             <XAxis dataKey="name" stroke="#a0a0a0" />
                             <YAxis stroke="#a0a0a0" />
                             <Tooltip 
-                                contentStyle={{ backgroundColor: '#1e1e1e', border: '1px solid #4a4a4a' }}
+                                contentStyle={{ 
+                                    backgroundColor: '#1e1e1e', 
+                                    border: '1px solid #4a4a4a',
+                                    color: '#e5e5e5',
+                                    borderRadius: '8px'
+                                }}
                                 formatter={(value) => `${Number(value).toFixed(1)} km`}
                             />
                             <Legend />

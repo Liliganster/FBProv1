@@ -9,7 +9,14 @@ import { getRateForCountry, getPassengerSurchargeForCountry } from '../services/
 import useUserProfile from '../hooks/useUserProfile';
 import { useAuth } from '../hooks/useAuth';
 import LanguageSwitcher from './LanguageSwitcher';
-import { Palette, Languages, Newspaper, HelpCircle, UploadCloud, ImageOff } from 'lucide-react';
+import {
+  LuPalette as Palette,
+  LuLanguages as Languages,
+  LuNewspaper as Newspaper,
+  LuCircleHelp as HelpCircle,
+  LuCloudUpload as UploadCloud,
+  LuImageOff as ImageOff,
+} from 'react-icons/lu';
 
 type Tab = 'profile' | 'compliance' | 'api' | 'personalization' | 'language' | 'changelog' | 'help';
 
@@ -124,8 +131,6 @@ const SettingsView: React.FC<{
         { id: 'road', url: 'https://images.unsplash.com/photo-1478860409698-8707f313ee8b?q=80&w=1920&auto=format&fit=crop', alt: 'Winding mountain road' },
         { id: 'city', url: 'https://images.unsplash.com/photo-1519817914152-22d216bb9170?q=80&w=1920&auto=format&fit=crop', alt: 'Cityscape at night with light trails' },
         { id: 'forest', url: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?q=80&w=1920&auto=format&fit=crop', alt: 'Sunlight filtering through a forest road' },
-        { id: 'abstract', url: 'https://images.unsplash.com/photo-1554189097-90d3b604b045?q=80&w=1920&auto=format&fit=crop', alt: 'Dark abstract geometric background' },
-        { id: 'coast', url: 'https://images.unsplash.com/photo-1507525428034-b723a996f329?q=80&w=1920&auto=format&fit=crop', alt: 'Aerial view of a coastal road' },
     ];
     
     const handleUploadClick = () => {
@@ -136,12 +141,13 @@ const SettingsView: React.FC<{
         const file = e.target.files?.[0];
         if (file) {
             if (file.size > 2 * 1024 * 1024) { // 2MB limit
-                showToast(t('toast_error_file_too_large'), 'error');
+                showToast(t('toast_error_file_too_large') || 'Archivo demasiado grande (máx 2MB)', 'error');
                 return;
             }
             const reader = new FileReader();
             reader.onloadend = () => {
                 setPersonalization(prev => ({ ...prev, backgroundImage: reader.result as string }));
+                showToast('Imagen cargada correctamente', 'success');
             };
             reader.readAsDataURL(file);
         }
@@ -249,10 +255,22 @@ const SettingsView: React.FC<{
                         
                         <div>
                             <label className="block text-sm font-medium text-on-surface-dark-secondary mb-2">{t('settings_personalization_bg_image_label')}</label>
+                            {personalization.backgroundImage && (
+                                <div className="mb-4">
+                                    <p className="text-xs text-on-surface-dark-secondary mb-2">Vista previa actual:</p>
+                                    <div 
+                                        className="w-full h-20 rounded-lg border border-gray-600 bg-cover bg-center"
+                                        style={{
+                                            backgroundImage: `url(${personalization.backgroundImage})`,
+                                            filter: personalization.backgroundBlur > 0 ? `blur(${personalization.backgroundBlur}px)` : 'none'
+                                        }}
+                                    />
+                                </div>
+                            )}
                             <div className="flex flex-col sm:flex-row gap-4">
-                                <button onClick={handleUploadClick} className="flex items-center justify-center gap-2 bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg transition-colors">
+                                <button onClick={handleUploadClick} className="flex items-center justify-center gap-2 bg-brand-primary hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition-colors">
                                     <UploadCloud size={18}/>
-                                    {t('settings_personalization_upload_image_btn')}
+                                    {t('settings_personalization_upload_image_btn') || 'Subir Imagen'}
                                 </button>
                                 <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept="image/png, image/jpeg, image/webp" />
                                 {personalization.backgroundImage && (
@@ -465,7 +483,7 @@ const InputField: React.FC<{label: string, name: string, value?: string | number
             placeholder={placeholder}
             disabled={disabled}
             step={type === 'number' ? '0.01' : undefined}
-            className="w-full bg-background-dark border border-gray-600 rounded-md p-2 focus:ring-2 focus:ring-brand-primary focus:outline-none disabled:bg-gray-800 disabled:text-gray-400 disabled:cursor-not-allowed"
+            className="w-full bg-background-dark border border-gray-600 rounded-md p-2 text-on-surface-dark placeholder-gray-300 focus:ring-2 focus:ring-brand-primary focus:outline-none disabled:bg-gray-800 disabled:text-gray-400 disabled:cursor-not-allowed"
         />
     </div>
 );

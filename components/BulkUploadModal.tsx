@@ -9,7 +9,7 @@ import { formatDateForStorage } from '../i18n/translations';
 import useToast from '../hooks/useToast';
 import useUserProfile from '../hooks/useUserProfile';
 import { normalizeSignature } from '../services/tripUtils';
-import { processFileForTrip } from '../services/aiService';
+import { processFileForTrip, processFileForTripUniversal } from '../services/aiService';
 import useGoogleMapsScript from '../hooks/useGoogleMapsScript';
 import useGoogleCalendar from '../hooks/useGoogleCalendar';
 
@@ -99,7 +99,9 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
   const [csvPastedText, setCsvPastedText] = useState('');
 
   const [aiFiles, setAiFiles] = useState<File[]>([]);
+  const [aiText, setAiText] = useState<string>("");
   const [isProcessing, setIsProcessing] = useState(false);
+  const [aiExtractMode, setAiExtractMode] = useState<'direct'|'agent'>('direct');
   const [documentType, setDocumentType] = useState<DocumentType>(DocumentType.CALLSHEET);
   
   const { t } = useTranslation();
@@ -144,14 +146,21 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
       }
       
       setIsProcessing(true);
-      
-      const promises = aiFiles.map(file => 
-        processFileForTrip(file, userProfile, documentType)
-          .then(result => ({ status: 'fulfilled' as const, value: result }))
-          .catch(error => ({ status: 'rejected' as const, reason: error, fileName: file.name }))
-      );
-      
-      const results = await Promise.all(promises);
+
+      const hasTextOnly = aiFiles.length === 0 && aiText.trim().length > 0;
+      const results = hasTextOnly
+        ? await Promise.all([
+            processFileForTripUniversal({ text: aiText }, userProfile, documentType, aiExtractMode)
+              .then(value => ({ status: 'fulfilled' as const, value }))
+              .catch(reason => ({ status: 'rejected' as const, reason, fileName: 'pasted-text' }))
+          ])
+        : await Promise.all(
+            aiFiles.map(file =>
+              processFileForTripUniversal({ file }, userProfile, documentType, aiExtractMode)
+                .then(value => ({ status: 'fulfilled' as const, value }))
+                .catch(reason => ({ status: 'rejected' as const, reason, fileName: file.name }))
+            )
+          );
 
       const successfulExtractions: { tripData: Omit<Trip, 'id' | 'projectId'>; projectName: string }[] = [];
       let errorCount = 0;
@@ -519,6 +528,39 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
                       </button>
                     </div>
                   </div>
+                  <div>
+                    <label className="block text-xs font-medium uppercase tracking-wide text-on-surface-dark-secondary mb-2">Extraction Mode</label>
+                    <div className="flex gap-1 rounded-md bg-background-dark/60 p-1 border border-gray-700/60">
+                      <button
+                        onClick={() => setAiExtractMode('direct')}
+                        className={`w-full text-center px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+                          aiExtractMode === 'direct' ? 'bg-brand-primary text-white' : 'text-on-surface-dark-secondary hover:bg-gray-700/50'
+                        }`}
+                      >
+                        Direct
+                      </button>
+                      <button
+                        onClick={() => setAiExtractMode('agent')}
+                        className={`w-full text-center px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+                          aiExtractMode === 'agent' ? 'bg-brand-primary text-white' : 'text-on-surface-dark-secondary hover:bg-gray-700/50'
+                        }`}
+                      >
+                        Agent (OCR)
+                      </button>
+                    </div>
+                  </div>
+                  {documentType === DocumentType.EMAIL && (
+                    <div>
+                      <label className="block text-xs font-medium uppercase tracking-wide text-on-surface-dark-secondary mb-2">Pegar texto (Email / Texto)</label>
+                      <textarea
+                        rows={8}
+                        className="w-full bg-background-dark border border-gray-600/70 rounded-md p-3 font-mono text-xs focus:outline-none focus:ring-2 focus:ring-brand-primary resize-y min-h-[140px]"
+                        placeholder="Pega aquí el contenido del email o texto libre"
+                        value={aiText}
+                        onChange={(e)=>setAiText(e.target.value)}
+                      />
+                    </div>
+                  )}
                   <div onDragOver={handleDragOver} onDrop={handleDrop} className="border-2 border-dashed border-gray-600 rounded-lg p-8 text-center cursor-pointer hover:border-brand-primary transition-colors" onClick={() => document.getElementById('ai-upload')?.click()}>
                       <UploadCloudIcon className="w-12 h-12 mx-auto text-gray-500 mb-2"/>
                       <h3 className="font-semibold text-lg text-white">Drag & drop your documents</h3>
@@ -576,13 +618,15 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
               <>
                   <button onClick={onClose} className="px-4 py-2 text-sm bg-gray-700 hover:bg-gray-600 text-white rounded-md font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-brand-primary/60 mr-3">{t('common_cancel')}</button>
                  {mode === 'ai' && (
-                    <button onClick={handleProcessAi} disabled={isProcessing || aiFiles.length === 0 || mapsLoading} className="flex items-center justify-center bg-brand-primary hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-lg disabled:opacity-50 w-48">
+                    <button onClick={handleProcessAi} disabled={isProcessing || (aiFiles.length === 0 && aiText.trim().length === 0) || mapsLoading} className="flex items-center justify-center bg-brand-primary hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-lg disabled:opacity-50 w-60">
                         {isProcessing ? (
                             <><LoaderIcon className="w-5 h-5 mr-2 animate-spin"/> Processing...</>
                         ) : mapsLoading ? (
                             <><LoaderIcon className="w-5 h-5 mr-2 animate-spin"/> Loading Maps...</>
-                        ) : (
+                        ) : aiFiles.length > 0 ? (
                             <><SparklesIcon className="w-5 h-5 mr-2" /> {`Process ${aiFiles.length} files`}</>
+                        ) : (
+                            <><SparklesIcon className="w-5 h-5 mr-2" /> Process text</>
                         )}
                     </button>
                  )}
