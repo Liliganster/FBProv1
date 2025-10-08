@@ -23,7 +23,7 @@ import {
 } from 'react-icons/lu';
 import { Trip, PersonalizationSettings, UserProfile } from '../types';
 import { formatDateForDisplay } from '../i18n/translations';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Legend, ResponsiveContainer, BarChart, Bar } from 'recharts';
 
 type AuditResult = {
     ok: boolean;
@@ -557,18 +557,7 @@ const CostAnalysisDashboard: React.FC<{
                                                 tickFormatter={(value) => formatCurrency(value)} 
                                                 tick={{fontSize: 10}} 
                                             />
-                                            <Tooltip 
-                                                contentStyle={{ 
-                                                    backgroundColor: '#1e1e1e', 
-                                                    border: '1px solid #4a4a4a',
-                                                    borderRadius: '8px'
-                                                }}
-                                                formatter={(value: number, name: string) => {
-                                                    if (name === 'cost') return [formatCurrency(value), 'Costo Total'];
-                                                    return [value, name];
-                                                }}
-                                                labelFormatter={(label) => `${t('cost_project_selector_label')} ${label}`}
-                                            />
+                                            {/* Tooltip removed: only bar hover color change remains */}
                                             <Bar 
                                                 dataKey="cost" 
                                                 fill="#007aff" 

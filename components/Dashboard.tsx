@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend, ResponsiveContainer } from 'recharts';
 import useTrips from '../hooks/useTrips';
 import { BarChartIcon, BellIcon, LeafIcon, ListIcon, FolderIcon } from './Icons';
 import useTranslation from '../hooks/useTranslation';
@@ -192,15 +192,7 @@ const Dashboard: React.FC<DashboardProps> = ({ setCurrentView, personalization, 
                             <CartesianGrid strokeDasharray="3 3" stroke="#4a4a4a" />
                             <XAxis dataKey="name" stroke="#a0a0a0" />
                             <YAxis stroke="#a0a0a0" />
-                            <Tooltip 
-                                contentStyle={{ 
-                                    backgroundColor: '#1e1e1e', 
-                                    border: '1px solid #4a4a4a',
-                                    color: '#e5e5e5',
-                                    borderRadius: '8px'
-                                }}
-                                formatter={(value) => `${Number(value).toFixed(1)} km`}
-                            />
+                            {/* Tooltip removed: only bar hover color change remains */}
                             <Legend />
                             {renderChart()}
                         </BarChart>

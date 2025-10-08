@@ -94,20 +94,22 @@ select.bg-gray-100 {
 }
 
 /* Fix Recharts tooltip styles */
-.recharts-tooltip-wrapper .recharts-default-tooltip {
-  background-color: #1e1e1e !important;
-  border: 1px solid #4a4a4a !important;
-  border-radius: 8px !important;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3) !important;
+/* Recharts: disable tooltip visuals (we removed components) and add hover highlight */
+.recharts-tooltip-wrapper {
+  display: none !important;
 }
 
-.recharts-tooltip-wrapper .recharts-tooltip-label,
-.recharts-tooltip-wrapper .recharts-tooltip-item {
-  color: #e5e5e5 !important;
+/* Bar hover: subtle color change */
+.recharts-rectangle {
+  transition: fill 0.2s ease-in-out;
 }
-
-.recharts-tooltip-wrapper .recharts-tooltip-item-name {
-  color: #a3a3a3 !important;
+.recharts-rectangle:hover {
+  fill: #2891ff !important; /* brighter brand-primary */
+  cursor: pointer;
+}
+/* Some builds wrap rectangles in bar-rectangle groups */
+.recharts-bar-rectangle:hover path {
+  fill: #2891ff !important;
 }
 
 /* UNIVERSAL PLACEHOLDER FIX - Override all placeholder styles */
