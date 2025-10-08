@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
-import useTranslation from '../hooks/useTranslation';
+import useLoginTranslation from '../hooks/useLoginTranslation';
 import { AtSignIcon, KeyRoundIcon, LoaderIcon } from './Icons';
 
 const LoginView: React.FC = () => {
@@ -11,7 +11,17 @@ const LoginView: React.FC = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { login, register, signInWithOAuth } = useAuth();
-  const { t } = useTranslation();
+  const { t } = useLoginTranslation();
+
+  // Reset form state on mount to prevent duplicate state
+  React.useEffect(() => {
+    setEmail('');
+    setPassword('');
+    setConfirmPassword('');
+    setError('');
+    setLoading(false);
+    setIsLogin(true);
+  }, []);
 
   const handleGoogleSignIn = async () => {
     setLoading(true);
@@ -52,11 +62,28 @@ const LoginView: React.FC = () => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-background-dark">
-      <div className="w-full max-w-md p-8 space-y-8 bg-surface-dark rounded-xl shadow-2xl">
+    <div className="flex items-center justify-center min-h-screen relative overflow-hidden">
+      {/* Background image */}
+      <div 
+        className="absolute inset-0 z-0"
+        style={{
+          backgroundImage: 'url(/images/urbanbuzz_image_of_a_tv_camera_setup_in_a_white_background_the__188e8b3b-4b30-41b8-bb2a-927e4cb4d0ef.png)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+        }}
+      />
+      {/* Dark overlay only on background */}
+      <div className="absolute inset-0 z-10 bg-gradient-to-br from-black/60 via-black/40 to-black/60" />
+      
+      {/* Login form */}
+      <div className="w-full max-w-md p-8 space-y-8 bg-gray-900/95 backdrop-blur-md rounded-xl shadow-2xl border border-gray-700/50 relative z-20">
         <div className="text-center">
-          <h1 className="text-3xl font-bold text-white mb-4">Fahrtenbuch Pro</h1>
-          <h2 className="mt-2 text-xl font-semibold text-on-surface-dark">
+          <div className="mb-6">
+            <h1 className="text-4xl font-bold text-white mb-2 tracking-wide">Fahrtenbuch Pro</h1>
+            <p className="text-sm text-gray-300 font-light tracking-widest">PROFESSIONAL LOGBOOK</p>
+          </div>
+          <h2 className="mt-2 text-xl font-semibold text-white">
             {isLogin ? t('login_title') : t('register_title')}
           </h2>
         </div>
@@ -75,7 +102,7 @@ const LoginView: React.FC = () => {
               autoComplete="email"
               required
               aria-label={t('login_email_placeholder')}
-              className="w-full bg-background-dark border border-gray-600 rounded-lg py-3 pl-10 pr-4 focus:ring-2 focus:ring-brand-primary focus:outline-none text-on-surface-dark"
+              className="w-full bg-gray-800 border border-gray-600 rounded-lg py-3 pl-10 pr-4 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none text-white placeholder-gray-400"
               placeholder={t('login_email_placeholder')}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -95,7 +122,7 @@ const LoginView: React.FC = () => {
               autoComplete={isLogin ? "current-password" : "new-password"}
               required
               aria-label={t('login_password_placeholder')}
-              className="w-full bg-background-dark border border-gray-600 rounded-lg py-3 pl-10 pr-4 focus:ring-2 focus:ring-brand-primary focus:outline-none text-on-surface-dark"
+              className="w-full bg-gray-800 border border-gray-600 rounded-lg py-3 pl-10 pr-4 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none text-white placeholder-gray-400"
               placeholder={t('login_password_placeholder')}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -116,7 +143,7 @@ const LoginView: React.FC = () => {
                 autoComplete="new-password"
                 required
                 aria-label={t('register_confirm_password_placeholder')}
-                className="w-full bg-background-dark border border-gray-600 rounded-lg py-3 pl-10 pr-4 focus:ring-2 focus:ring-brand-primary focus:outline-none text-on-surface-dark"
+                className="w-full bg-gray-800 border border-gray-600 rounded-lg py-3 pl-10 pr-4 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none text-white placeholder-gray-400"
                 placeholder={t('register_confirm_password_placeholder')}
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
@@ -129,7 +156,7 @@ const LoginView: React.FC = () => {
               type="submit"
               disabled={loading}
               aria-label={isLogin ? t('login_btn') : t('register_btn')}
-              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-brand-primary hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-background-dark focus:ring-brand-primary disabled:opacity-50"
+              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-blue-500 disabled:opacity-50"
             >
               {loading && <LoaderIcon className="w-5 h-5 mr-2 animate-spin" aria-hidden="true"/>}
               {isLogin ? t('login_btn') : t('register_btn')}
@@ -139,7 +166,7 @@ const LoginView: React.FC = () => {
 
         <div className="flex items-center my-6">
             <hr className="flex-grow border-gray-600" />
-            <span className="mx-4 text-sm text-on-surface-dark-secondary">{t('login_or_continue_with')}</span>
+            <span className="mx-4 text-sm text-gray-400">{t('login_or_continue_with')}</span>
             <hr className="flex-grow border-gray-600" />
         </div>
         
@@ -148,7 +175,7 @@ const LoginView: React.FC = () => {
           onClick={handleGoogleSignIn}
           disabled={loading}
           aria-label={t('login_continue_google')}
-          className="w-full flex items-center justify-center gap-3 py-3 px-4 border border-gray-600 rounded-lg text-sm font-medium text-white bg-surface-dark hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-background-dark focus:ring-brand-primary disabled:opacity-50 transition-colors"
+          className="w-full flex items-center justify-center gap-3 py-3 px-4 border border-gray-600 rounded-lg text-sm font-medium text-white bg-gray-800 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-blue-500 disabled:opacity-50 transition-colors"
         >
           <svg className="w-5 h-5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
             <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -170,7 +197,7 @@ const LoginView: React.FC = () => {
           <button 
             onClick={() => { setIsLogin(!isLogin); setError(''); }} 
             aria-label={isLogin ? t('login_switch_to_register') : t('register_switch_to_login')}
-            className="font-medium text-brand-primary hover:text-blue-400"
+            className="font-medium text-blue-400 hover:text-blue-300"
           >
             {isLogin ? t('login_switch_to_register') : t('register_switch_to_login')}
           </button>

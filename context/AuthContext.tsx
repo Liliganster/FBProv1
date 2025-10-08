@@ -98,13 +98,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     // Subscribe to auth state changes with debouncing and deduplication
     const { data: { subscription } } = authService.onAuthStateChange(async (session) => {
-      if (!mounted) return;
-      
-      // Small delay to allow Supabase to finish processing
-      setTimeout(async () => {
-        if (!mounted) return;
-        await updateAuthState(session?.user || null);
-      }, 100);
+      if (!mounted || isProcessingAuth.current) return;
+      await updateAuthState(session?.user || null);
     });
     
     authSubscription = subscription;
@@ -137,8 +132,36 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const logout = useCallback(async () => {
     ensureConfigured();
-    const { error } = await authService.signOut();
-    if (error) console.error('Error signing out:', error);
+    
+    // Immediately set loading state to ensure clean transition
+    setIsLoading(true);
+    
+    try {
+      const { error } = await authService.signOut();
+      if (error) console.error('Error signing out:', error);
+    } finally {
+      // Force clean state regardless of sign-out success
+      setUser(null);
+      setSupabaseUser(null);
+      setProfile(null);
+      setIsLoading(false);
+      
+      // Clear any refs to prevent stale state
+      isProcessingAuth.current = false;
+      lastProcessedUserId.current = null;
+      
+      // Clear any user-specific localStorage to ensure clean login state
+      if (typeof window !== 'undefined') {
+        const userKeys = [];
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          if (key && key.startsWith('fahrtenbuch_')) {
+            userKeys.push(key);
+          }
+        }
+        userKeys.forEach(key => localStorage.removeItem(key));
+      }
+    }
   }, [ensureConfigured]);
 
   const signInWithOAuth = useCallback(async (provider: 'google' | 'github' | 'apple') => {

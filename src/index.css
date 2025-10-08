@@ -1,6 +1,4 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
 /* Force dark background for entire document */
 html, body {
@@ -16,7 +14,10 @@ input::-moz-placeholder,
 input::-ms-input-placeholder,
 textarea::-webkit-input-placeholder,
 textarea::-moz-placeholder,
-textarea::-ms-input-placeholder,
+textarea::-ms-input-placeholder {
+  color: #9ca3af !important; /* Gray-400 - good contrast on dark */
+  opacity: 1 !important;
+}
 
 /* All dark backgrounds - most specific selectors */
 .bg-background-dark input::placeholder,
@@ -35,7 +36,6 @@ textarea.bg-gray-800::placeholder,
 .bg-gray-700 textarea::placeholder,
 input.bg-gray-700::placeholder,
 textarea.bg-gray-700::placeholder,
-
 /* Semi-transparent dark backgrounds */
 input[class*="bg-background-dark"]::placeholder,
 textarea[class*="bg-background-dark"]::placeholder,

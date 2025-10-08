@@ -14,15 +14,13 @@ if (!rootElement) {
 
 const root = ReactDOM.createRoot(rootElement);
 root.render(
-  <React.StrictMode>
-    <ErrorBoundary>
-      <TranslationProvider>
-        <ToastProvider>
-          <AuthProvider>
-            <Auth />
-          </AuthProvider>
-        </ToastProvider>
-      </TranslationProvider>
-    </ErrorBoundary>
-  </React.StrictMode>
+  <ErrorBoundary>
+    <TranslationProvider>
+      <ToastProvider>
+        <AuthProvider>
+          <Auth />
+        </AuthProvider>
+      </ToastProvider>
+    </TranslationProvider>
+  </ErrorBoundary>
 );

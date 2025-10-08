@@ -30,6 +30,15 @@ const Auth: React.FC = () => {
     );
   }
 
+  // Mostrar siempre la pantalla de login (con foto) cuando no hay usuario,
+  // incluso durante la carga inicial, para evitar el "doble" de pantallas.
+  if (!user) {
+    // Force a clean render of LoginView
+    return <LoginView key="main-login" />;
+  }
+
+  // En caso de que haya un usuario pero el contexto aún esté cargando,
+  // mostramos un loader. Esto no afecta al flujo de login sin usuario.
   if (isLoading) {
     return (
       <LoadingDiagnostics 
@@ -37,10 +46,6 @@ const Auth: React.FC = () => {
         details="Conectando con Supabase y validando sesion de usuario"
       />
     );
-  }
-
-  if (!user) {
-    return <LoginView />;
   }
 
   // Providers that depend on a logged-in user are wrapped here
