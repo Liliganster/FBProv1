@@ -33,7 +33,7 @@ const ExtractorModal: React.FC<ExtractorModalProps> = ({ onClose }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-      <div className="w-full max-w-3xl rounded-lg bg-surface-dark p-4 shadow-xl">
+      <div className="w-full max-w-xs sm:max-w-lg md:max-w-2xl lg:max-w-3xl rounded-lg bg-surface-dark p-4 shadow-xl">
         <div className="mb-3 flex items-center justify-between">
           <h2 className="text-lg font-semibold">Extractor de Hoja de Rodaje</h2>
           <button onClick={onClose} className="p-2 hover:opacity-80" aria-label="Close">

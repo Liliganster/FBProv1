@@ -5,6 +5,7 @@ import { TranslationProvider } from './i18n';
 import { ToastProvider } from './context/ToastContext';
 import { AuthProvider } from './context/AuthContext';
 import ErrorBoundary from './components/ErrorBoundary';
+import './src/index.css';
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {

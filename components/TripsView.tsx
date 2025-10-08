@@ -342,7 +342,7 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
                 </td>
                 <td className="p-4 cursor-pointer" onClick={() => handleViewTrip(trip)}>
                   <div className="flex items-center">
-                    <span className="truncate max-w-md">{trip.locations.join(' → ')}</span>
+                    <span className="truncate max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg">{trip.locations.join(' → ')}</span>
                     <SpecialOriginTag originType={trip.specialOrigin} />
                     {allWarnings.length > 0 && (
                       <div className="ml-2" title={allWarnings.join('\n')}>

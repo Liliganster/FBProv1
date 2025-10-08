@@ -591,22 +591,22 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
               <h3 className="font-semibold text-lg mb-4">{t('bulk_review_title', { count: draftTrips.length })}</h3>
               <div className="space-y-4">
               {draftTrips.map((draft, index) => (
-                  <div key={index} className="bg-background-dark p-4 rounded-lg grid grid-cols-12 gap-4 relative items-center">
+                  <div key={index} className="bg-background-dark p-4 rounded-lg grid grid-cols-1 sm:grid-cols-2 md:grid-cols-12 gap-4 relative items-center">
                       {draft.warnings && draft.warnings.length > 0 && (
                         <div className="absolute -left-3 top-1/2 -translate-y-1/2" title={draft.warnings.join('\n')}>
                             <WarningIcon className="w-6 h-6 text-yellow-400" />
                         </div>
                       )}
                       <button onClick={() => handleRemoveDraft(index)} className="absolute top-2 right-2 text-red-400 hover:text-red-300"><TrashIcon className="w-4 h-4" /></button>
-                      <input type="date" value={draft.date} onChange={e => handleUpdateDraft(index, {...draft, date: e.target.value})} className="bg-surface-dark p-2 rounded col-span-2"/>
-                      <div className="bg-surface-dark p-2 rounded col-span-5 truncate" title={draft.locations.join(' → ')}>
+                      <input type="date" value={draft.date} onChange={e => handleUpdateDraft(index, {...draft, date: e.target.value})} className="bg-surface-dark p-2 rounded md:col-span-2"/>
+                      <div className="bg-surface-dark p-2 rounded md:col-span-5 truncate" title={draft.locations.join(' → ')}>
                          {draft.locations.join(' → ')}
                       </div>
-                      <select value={draft.projectId} onChange={e => handleUpdateDraft(index, {...draft, projectId: e.target.value})} className="bg-surface-dark p-2 rounded col-span-3">
+                      <select value={draft.projectId} onChange={e => handleUpdateDraft(index, {...draft, projectId: e.target.value})} className="bg-surface-dark p-2 rounded md:col-span-3">
                            <option value="" disabled>{t('bulk_review_projectPlaceholder')}</option>
                            {allProjectOptions.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                       </select>
-                      <input type="number" min="0.01" step="0.1" value={draft.distance} placeholder={t('bulk_review_distancePlaceholder')} onChange={e => handleUpdateDraft(index, {...draft, distance: parseFloat(e.target.value) || 0})} className="bg-surface-dark p-2 rounded col-span-2"/>
+                      <input type="number" min="0.01" step="0.1" value={draft.distance} placeholder={t('bulk_review_distancePlaceholder')} onChange={e => handleUpdateDraft(index, {...draft, distance: parseFloat(e.target.value) || 0})} className="bg-surface-dark p-2 rounded md:col-span-2"/>
                   </div>
               ))}
               </div>
