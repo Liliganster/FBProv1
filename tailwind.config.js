@@ -46,8 +46,8 @@ export default {
         'gradient-brand-subtle': 'linear-gradient(135deg, #007aff20 0%, #5856d620 100%)',
         'gradient-glass': 'linear-gradient(135deg, rgba(26, 26, 26, 0.8) 0%, rgba(42, 42, 42, 0.8) 100%)',
         'gradient-overlay': 'linear-gradient(135deg, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0.8) 100%)',
-        // Title gradient - readable with subtle darkening effect from left to right
-        'gradient-title': 'linear-gradient(to right, #ffffff 0%, #e5e5e5 50%, #cccccc 100%)',
+        // Title gradient - very light with minimal darkening at the end
+        'gradient-title': 'linear-gradient(to right, #ffffff 0%, #ffffff 60%, #f5f5f5 85%, #e0e0e0 100%)',
       },
       placeholderColor: {
         'on-surface-dark-secondary': '#a3a3a3',
