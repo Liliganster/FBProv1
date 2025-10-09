@@ -203,7 +203,7 @@ const RouteTemplatesView: React.FC<RouteTemplatesViewProps> = ({ onBack, theme, 
       )}
 
       {showModal && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50 backdrop-blur-sm" onClick={() => setShowModal(false)}>
+        <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 p-4 z-50">
           <div 
             style={{
               backgroundColor: theme === 'dark'
@@ -211,9 +211,8 @@ const RouteTemplatesView: React.FC<RouteTemplatesViewProps> = ({ onBack, theme, 
                 : `rgba(243, 244, 246, ${1 - personalization.uiTransparency})`,
               backdropFilter: `blur(${personalization.uiBlur}px)`,
             }}
-            className="rounded-lg shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col" 
-            onClick={e => e.stopPropagation()}
-          >
+            className="rounded-lg shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col"
+            >
             <header className="flex items-center justify-between p-4 border-b border-gray-700/50 flex-shrink-0">
               <h2 className="text-xl font-bold text-white">
                 {editing ? t('route_templates_modal_edit_title') : t('route_templates_modal_create_title')}
