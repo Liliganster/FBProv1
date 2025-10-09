@@ -331,7 +331,7 @@ const CostAnalysisDashboard: React.FC<{
                         <ArrowLeftIcon className="w-5 h-5" />
                     </button>
                     <div>
-                        <h1 className="text-2xl font-bold text-white">{t('cost_analysis_title')}</h1>
+                        <h1 className={`text-2xl font-bold ${theme === 'dark' ? 'text-[rgba(135,206,235,1)]' : 'text-gray-900'}`}>{t('cost_analysis_title')}</h1>
                         <p className="text-sm text-on-surface-dark-secondary">{t('cost_analysis_description_personal')}</p>
                     </div>
                 </div>
@@ -370,10 +370,10 @@ const CostAnalysisDashboard: React.FC<{
                 
                 {/* Tarjetas de métricas principales */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                    <StatCard title={t('cost_total_distance')} value={`${(costData?.totalKm || 0).toFixed(1)} km`} />
-                    <StatCard title={t('cost_total_trips')} value={(costData?.totalTrips || 0).toString()} />
-                    <StatCard title={t('cost_est_total')} value={formatCurrency(costData?.totalCost || 0)} />
-                    <StatCard title={t('cost_avg_cost_km')} value={formatCurrency(costData?.avgCostPerKm || 0)} />
+                    <StatCard title={t('cost_total_distance')} value={`${(costData?.totalKm || 0).toFixed(1)} km`} theme={theme} />
+                    <StatCard title={t('cost_total_trips')} value={(costData?.totalTrips || 0).toString()} theme={theme} />
+                    <StatCard title={t('cost_est_total')} value={formatCurrency(costData?.totalCost || 0)} theme={theme} />
+                    <StatCard title={t('cost_avg_cost_km')} value={formatCurrency(costData?.avgCostPerKm || 0)} theme={theme} />
                 </div>
 
                 {/* Contenido condicional según el tab seleccionado */}
@@ -766,10 +766,10 @@ const CostAnalysisDashboard: React.FC<{
     );
 };
 
-const StatCard: React.FC<{ title: string; value: string; }> = ({ title, value }) => (
+const StatCard: React.FC<{ title: string; value: string; theme: 'light' | 'dark'; }> = ({ title, value, theme }) => (
     <div className="bg-background-dark p-4 rounded-lg">
         <h3 className="text-sm font-medium text-on-surface-dark-secondary">{title}</h3>
-        <p className="text-3xl font-bold text-white mt-1">{value}</p>
+        <p className={`text-3xl font-bold mt-1 ${theme === 'dark' ? 'text-[rgba(135,206,235,1)]' : 'text-gray-900'}`}>{value}</p>
     </div>
 );
 
@@ -987,7 +987,7 @@ const AdvancedView: React.FC<AdvancedViewProps> = ({ personalization, theme }) =
     
     const renderMainView = () => (
          <div>
-            <h1 className="text-3xl font-bold text-white mb-8">{t('advanced_title')}</h1>
+            <h1 className={`text-3xl font-bold mb-8 ${theme === 'dark' ? 'text-[rgba(135,206,235,1)]' : 'text-gray-900'}`}>{t('advanced_title')}</h1>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <ActionCard
                     title={t('advanced_route_templates_title')}

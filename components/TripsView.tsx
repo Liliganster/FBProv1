@@ -217,7 +217,7 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
       <div className="flex justify-between items-center mb-8">
         {selectedTripIds.length > 0 ? (
           <div className="flex items-center gap-4 w-full">
-            <h2 className="text-xl font-semibold text-white">{t('trips_selected_count', { count: selectedTripIds.length })}</h2>
+            <h2 className={`text-xl font-semibold ${theme === 'dark' ? 'text-[rgba(135,206,235,1)]' : 'text-gray-900'}`}>{t('trips_selected_count', { count: selectedTripIds.length })}</h2>
             <div className="ml-auto flex items-center gap-2">
               <button
                 onClick={() => setIsBatchEditModalOpen(true)}
@@ -238,7 +238,7 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
         ) : (
           <>
             <div>
-                <h1 className="text-3xl font-bold text-white">{t('trips_title')}</h1>
+                <h1 className={`text-3xl font-bold ${theme === 'dark' ? 'text-[rgba(135,206,235,1)]' : 'text-gray-900'}`}>{t('trips_title')}</h1>
                 {userProfile && <h2 className="text-lg font-semibold text-brand-primary">{userProfile.name}</h2>}
             </div>
             <div className="flex items-center gap-4">

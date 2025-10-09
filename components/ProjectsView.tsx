@@ -140,7 +140,7 @@ const ProjectsView: React.FC<ProjectsViewProps> = ({ setCurrentView, personaliza
       <div className="flex justify-between items-center mb-8">
         {selectedProjectIds.length > 0 ? (
           <div className="flex items-center gap-4 w-full">
-            <h2 className="text-xl font-semibold text-white">{t('projects_selected_count', { count: selectedProjectIds.length })}</h2>
+            <h2 className={`text-xl font-semibold ${theme === 'dark' ? 'text-[rgba(135,206,235,1)]' : 'text-gray-900'}`}>{t('projects_selected_count', { count: selectedProjectIds.length })}</h2>
             <button
               onClick={handleDeleteSelected}
               className="flex items-center bg-red-600 hover:bg-red-500 text-white font-bold py-2 px-4 rounded-lg transition-colors ml-auto"
@@ -152,7 +152,7 @@ const ProjectsView: React.FC<ProjectsViewProps> = ({ setCurrentView, personaliza
         ) : (
           <>
             <div>
-              <h1 className="text-3xl font-bold text-white">{t('projects_title')}</h1>
+              <h1 className={`text-3xl font-bold ${theme === 'dark' ? 'text-[rgba(135,206,235,1)]' : 'text-gray-900'}`}>{t('projects_title')}</h1>
               {userProfile && <h2 className="text-lg font-semibold text-brand-primary">{userProfile.name}</h2>}
             </div>
             <div className="flex items-center gap-4">
@@ -218,7 +218,7 @@ const ProjectsView: React.FC<ProjectsViewProps> = ({ setCurrentView, personaliza
                     className="bg-background-dark border-gray-600 rounded text-brand-primary focus:ring-brand-primary focus:ring-2 h-5 w-5"
                   />
                 </td>
-                <td className="p-4 font-semibold text-white">{project.name}</td>
+                <td className={`p-4 font-semibold ${theme === 'dark' ? 'text-[rgba(135,206,235,1)]' : 'text-gray-900'}`}>{project.name}</td>
                 <td className="p-4">{project.producer}</td>
                 <td className="p-4">{project.tripCount}</td>
                 <td className="p-4">{project.documentCount}</td>

@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend, ResponsiveContainer } from 'recharts';
 import useTrips from '../hooks/useTrips';
-import { BarChartIcon, BellIcon, LeafIcon, ListIcon, FolderIcon } from './Icons';
+import { BarChartIcon, BellIcon, Co2EmissionIcon, ListIcon, FolderIcon } from './Icons';
 import useTranslation from '../hooks/useTranslation';
 import useUserProfile from '../hooks/useUserProfile';
 import { Trip, View, PersonalizationSettings } from '../types';
@@ -122,7 +122,7 @@ const Dashboard: React.FC<DashboardProps> = ({ setCurrentView, personalization, 
                     <h3 className="text-sm font-medium text-on-surface-dark-secondary uppercase tracking-wider">{title}</h3>
                     {children && !cta && <div className="text-right">{children}</div>}
                 </div>
-                <p className="text-3xl font-bold text-white mt-2">{value}</p>
+                <p className={`text-3xl font-bold mt-2 ${theme === 'dark' ? 'text-[rgba(135,206,235,1)]' : 'text-gray-900'}`}>{value}</p>
             </div>
             <div className="flex-grow flex flex-col justify-end">
                 {children && cta && <div className="mt-4">{children}</div>}
@@ -136,7 +136,7 @@ const Dashboard: React.FC<DashboardProps> = ({ setCurrentView, personalization, 
     );
     
     const renderChart = () => {
-        return <Bar dataKey="km" fill="#007aff" name={t('dashboard_tooltip_kms')} />;
+        return <Bar dataKey="km" fill="#a9adb1" name={t('dashboard_tooltip_kms')} />;
     };
     
     const chartData = kmByProject;
@@ -145,7 +145,7 @@ const Dashboard: React.FC<DashboardProps> = ({ setCurrentView, personalization, 
         <div className={`${theme === 'dark' ? 'text-on-surface-dark' : 'text-gray-900'}`}>
             <div className="flex justify-between items-start mb-8">
                 <div>
-                    <h1 className="text-3xl font-bold text-white">{t('dashboard_title')}</h1>
+                    <h1 className={`text-3xl font-bold ${theme === 'dark' ? 'text-[rgba(135,206,235,1)]' : 'text-gray-900'}`}>{t('dashboard_title')}</h1>
                     {userProfile && <h2 className="text-lg font-semibold text-brand-primary">{userProfile.name}</h2>}
                 </div>
                 <div className="relative" ref={alertsRef}>
@@ -176,15 +176,13 @@ const Dashboard: React.FC<DashboardProps> = ({ setCurrentView, personalization, 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
                 <StatCard title={t('dashboard_totalKm')} value={`${totalKm.toFixed(1)} km`} cta={t('dashboard_viewAllTrips')} onClick={() => setCurrentView('trips')} />
                 <StatCard title={t('dashboard_activeProjects')} value={activeProjectsCount.toString()} cta={t('dashboard_manageProjects')} onClick={() => setCurrentView('projects')} />
-                <StatCard title={t('dashboard_total_co2')} value={`${totalCo2.toFixed(1)} kg`}>
-                    <LeafIcon className="w-5 h-5 text-green-400" />
-                </StatCard>
+                <StatCard title={t('dashboard_total_co2')} value={`${totalCo2.toFixed(1)} kg`} />
             </div>
             
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div style={contentStyle} className="lg:col-span-2 p-6 rounded-lg shadow-lg">
                     <div className="flex justify-between items-center mb-4">
-                        <h3 className="text-lg font-semibold text-white">{t('dashboard_visualAnalysis')}</h3>
+                        <h3 className={`text-lg font-semibold ${theme === 'dark' ? 'text-[rgba(135,206,235,1)]' : 'text-gray-900'}`}>{t('dashboard_visualAnalysis')}</h3>
 
                     </div>
                     <ResponsiveContainer width="100%" height={300}>
@@ -199,7 +197,7 @@ const Dashboard: React.FC<DashboardProps> = ({ setCurrentView, personalization, 
                     </ResponsiveContainer>
                 </div>
                 <div style={contentStyle} className="p-6 rounded-lg shadow-lg">
-                    <h3 className="text-lg font-semibold text-white mb-4">{t('dashboard_recentTrips')}</h3>
+                    <h3 className={`text-lg font-semibold mb-4 ${theme === 'dark' ? 'text-[rgba(135,206,235,1)]' : 'text-gray-900'}`}>{t('dashboard_recentTrips')}</h3>
                     <div className="space-y-3">
                         {recentTrips.length > 0 ? recentTrips.map(trip => (
                              <div key={trip.id} onClick={() => setViewingTrip(trip)} className="flex items-center p-2 rounded-lg hover:bg-gray-800/40 cursor-pointer">

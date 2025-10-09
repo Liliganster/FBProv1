@@ -307,3 +307,15 @@ export const MoonIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
 export const MenuIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
     <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
 );
+
+export const Co2EmissionIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 22V16"/>
+        <path d="M8 16h8"/>
+        <ellipse cx="12" cy="14" rx="4" ry="2"/>
+        <ellipse cx="10" cy="11" rx="3" ry="1.5"/>
+        <ellipse cx="14" cy="9" rx="2.5" ry="1.2"/>
+        <ellipse cx="11" cy="7" rx="2" ry="1"/>
+        <ellipse cx="13" cy="5" rx="1.5" ry="0.8"/>
+    </svg>
+);

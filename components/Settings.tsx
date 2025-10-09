@@ -172,7 +172,7 @@ const SettingsView: React.FC<{
                 return (
                     <div className="space-y-6">
                         <section>
-                            <h2 className="text-xl font-semibold text-white">{t('settings_profile_title')}</h2>
+                            <h2 className={`text-xl font-semibold ${theme === 'dark' ? 'text-[rgba(135,206,235,1)]' : 'text-gray-900'}`}>{t('settings_profile_title')}</h2>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                                 <InputField label={t('settings_profile_fullName')} name="name" value={localProfile.name} onChange={handleProfileChange} />
                                 <InputField label={t('settings_profile_uid')} name="uid" value={localProfile.uid} onChange={handleProfileChange} />
@@ -191,7 +191,7 @@ const SettingsView: React.FC<{
             case 'compliance':
                 return (
                     <div className="space-y-4">
-                        <h2 className="text-xl font-semibold text-white flex items-center gap-2">
+                        <h2 className={`text-xl font-semibold flex items-center gap-2 ${theme === 'dark' ? 'text-[rgba(135,206,235,1)]' : 'text-gray-900'}`}>
                             {t('settings_tab_compliance')}
                         </h2>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
@@ -251,7 +251,7 @@ const SettingsView: React.FC<{
             case 'personalization':
                 return (
                     <div className="space-y-6">
-                        <h2 className="text-xl font-semibold text-white">{t('settings_personalization_title')}</h2>
+                        <h2 className={`text-xl font-semibold ${theme === 'dark' ? 'text-[rgba(135,206,235,1)]' : 'text-gray-900'}`}>{t('settings_personalization_title')}</h2>
                         
                         <div>
                             <label className="block text-sm font-medium text-on-surface-dark-secondary mb-2">{t('settings_personalization_bg_image_label')}</label>
@@ -336,7 +336,7 @@ const SettingsView: React.FC<{
             case 'language':
                  return (
                     <div className="space-y-4">
-                        <h2 className="text-xl font-semibold text-white">{t('settings_language_title')}</h2>
+                        <h2 className={`text-xl font-semibold ${theme === 'dark' ? 'text-[rgba(135,206,235,1)]' : 'text-gray-900'}`}>{t('settings_language_title')}</h2>
                         <LanguageSwitcher />
                     </div>
                 );
@@ -370,7 +370,7 @@ const SettingsView: React.FC<{
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50 backdrop-blur-sm" onClick={handleClose}>
             <div style={contentStyle} className="rounded-lg shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}>
                 <header className="flex items-center justify-between p-4 border-b border-gray-700/50 flex-shrink-0">
-                    <h2 className="text-xl font-bold text-white">{t('settings_title')}</h2>
+                    <h2 className={`text-xl font-bold ${theme === 'dark' ? 'text-[rgba(135,206,235,1)]' : 'text-gray-900'}`}>{t('settings_title')}</h2>
                     <button onClick={handleClose} className="text-gray-400 hover:text-white"><XIcon className="w-6 h-6" /></button>
                 </header>
                 

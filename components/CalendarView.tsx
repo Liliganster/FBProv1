@@ -162,7 +162,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ setCurrentView, personaliza
           <div className="flex items-center gap-2">
             <button onClick={() => changeMonth(-1)} className="p-2 rounded-full hover:bg-surface-dark"><ChevronLeftIcon className="w-6 h-6"/></button>
             <button onClick={() => changeMonth(1)} className="p-2 rounded-full hover:bg-surface-dark"><ChevronRightIcon className="w-6 h-6"/></button>
-            <h1 className="text-2xl font-bold text-white ml-2">
+            <h1 className={`text-2xl font-bold ml-2 ${theme === 'dark' ? 'text-[rgba(135,206,235,1)]' : 'text-gray-900'}`}>
               {currentDate.toLocaleDateString(language, { month: 'long', year: 'numeric' })}
             </h1>
           </div>

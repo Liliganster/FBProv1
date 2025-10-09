@@ -79,7 +79,7 @@ const ReportsView: React.FC<ReportsViewProps> = ({ personalization, theme }) => 
       <div className="flex justify-between items-center mb-8">
         {selectedReportIds.length > 0 ? (
           <div className="flex items-center gap-4 w-full">
-            <h2 className="text-xl font-semibold text-white">{t('reports_selected_count', { count: selectedReportIds.length })}</h2>
+            <h2 className={`text-xl font-semibold ${theme === 'dark' ? 'text-[rgba(135,206,235,1)]' : 'text-gray-900'}`}>{t('reports_selected_count', { count: selectedReportIds.length })}</h2>
             <button
               onClick={handleDeleteSelected}
               className="flex items-center bg-red-600 hover:bg-red-500 text-white font-bold py-2 px-4 rounded-lg transition-colors ml-auto"
@@ -91,7 +91,7 @@ const ReportsView: React.FC<ReportsViewProps> = ({ personalization, theme }) => 
         ) : (
           <>
             <div>
-                <h1 className="text-3xl font-bold text-white">{t('reports_title')}</h1>
+                <h1 className={`text-3xl font-bold ${theme === 'dark' ? 'text-[rgba(135,206,235,1)]' : 'text-gray-900'}`}>{t('reports_title')}</h1>
                 {userProfile && <h2 className="text-lg font-semibold text-brand-primary">{userProfile.name}</h2>}
             </div>
             <button 

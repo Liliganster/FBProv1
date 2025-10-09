@@ -10,6 +10,8 @@ import {
   LuMenu as Menu,
   LuX as X,
   LuCalendarDays as CalendarDays,
+  LuRoute as Route,
+  LuRocket as Rocket,
   LuSettings as Settings,
   LuLogOut as LogOut,
 } from 'react-icons/lu';
@@ -294,16 +296,16 @@ const App: React.FC = () => {
 
   const navItems = [
     { view: 'dashboard', label: t('nav_dashboard'), icon: <LayoutDashboard size={20} /> },
-    { view: 'trips', label: t('nav_trips'), icon: <Car size={20} /> },
+    { view: 'trips', label: t('nav_trips'), icon: <Route size={20} /> },
     { view: 'projects', label: t('nav_projects'), icon: <FolderOpen size={20} /> },
     { view: 'reports', label: t('nav_reports'), icon: <FileText size={20} /> },
     { view: 'calendar', label: t('nav_calendar'), icon: <CalendarDays size={20} /> },
-    { view: 'advanced', label: t('nav_advanced'), icon: <Star size={20} /> },
+    { view: 'advanced', label: t('nav_advanced'), icon: <Rocket size={20} /> },
   ];
   
   const navStyle = {
       backgroundColor: theme === 'dark' 
-          ? `rgba(15, 23, 42, ${1 - personalization.uiTransparency})` 
+          ? `rgba(0, 0, 0, ${1 - personalization.uiTransparency})` 
           : `rgba(255, 255, 255, ${1 - personalization.uiTransparency})`,
       backdropFilter: `blur(${personalization.uiBlur}px)`,
   };
@@ -349,7 +351,7 @@ const App: React.FC = () => {
       `}>
         <div className={`p-6 flex items-center ${sidebarCollapsed ? 'justify-center' : 'justify-between'} border-b ${theme === 'dark' ? 'border-gray-700/30' : 'border-gray-200/50'}`}>
           {!sidebarCollapsed && (
-            <h1 className="text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+            <h1 className={`text-xl font-bold ${theme === 'dark' ? 'bg-gradient-to-r from-gray-100 to-gray-300 bg-clip-text text-transparent' : 'text-gray-900'}`}>
               FahrtenBuch Pro
             </h1>
           )}
@@ -357,7 +359,7 @@ const App: React.FC = () => {
             onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
             className={`p-2 rounded-lg transition-all duration-300 transform hover:scale-105 ${
               theme === 'dark' 
-                ? 'hover:bg-surface-dark/80 hover:shadow-md hover:shadow-blue-500/20' 
+                ? 'hover:bg-surface-dark/80 hover:shadow-md hover:shadow-gray-500/20' 
                 : 'hover:bg-gray-100 hover:shadow-md hover:shadow-gray-500/20'
             }`}
           >
@@ -375,9 +377,9 @@ const App: React.FC = () => {
                 w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 transform
                 ${sidebarCollapsed ? 'justify-center' : ''}
                 ${currentView === item.view
-                  ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg shadow-blue-500/30 scale-[1.02]'
+                  ? 'bg-gradient-to-r from-gray-800 to-black text-white shadow-lg shadow-gray-800/30 scale-[1.02]'
                   : theme === 'dark'
-                    ? 'hover:bg-surface-dark/80 text-on-surface-dark-secondary hover:text-on-surface-dark hover:scale-[1.02] hover:shadow-md hover:shadow-blue-500/20'
+                    ? 'hover:bg-surface-dark/80 text-on-surface-dark-secondary hover:text-on-surface-dark hover:scale-[1.02] hover:shadow-md hover:shadow-gray-500/20'
                     : 'hover:bg-gray-100 text-gray-600 hover:text-gray-900 hover:scale-[1.02] hover:shadow-md hover:shadow-gray-500/20'
                 }
               `}
@@ -407,9 +409,9 @@ const App: React.FC = () => {
                 title={sidebarCollapsed ? t('nav_settings') : undefined}
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 transform ${sidebarCollapsed ? 'justify-center' : ''} ${
                     currentView === 'settings'
-                    ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg shadow-blue-500/30 scale-[1.02]'
+                    ? 'bg-gradient-to-r from-gray-800 to-black text-white shadow-lg shadow-gray-800/30 scale-[1.02]'
                     : theme === 'dark'
-                        ? 'hover:bg-surface-dark/80 text-on-surface-dark-secondary hover:text-on-surface-dark hover:scale-[1.02] hover:shadow-md hover:shadow-blue-500/20'
+                        ? 'hover:bg-surface-dark/80 text-on-surface-dark-secondary hover:text-on-surface-dark hover:scale-[1.02] hover:shadow-md hover:shadow-gray-500/20'
                         : 'hover:bg-gray-100 text-gray-600 hover:text-gray-900 hover:scale-[1.02] hover:shadow-md hover:shadow-gray-500/20'
                 }`}
             >
