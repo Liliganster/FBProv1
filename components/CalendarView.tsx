@@ -198,7 +198,14 @@ const CalendarView: React.FC<CalendarViewProps> = ({ setCurrentView, personaliza
               });
               const isToday = day.toDateString() === new Date().toDateString();
               return (
-                <div key={day.toString()} className="bg-gray-900/80 rounded-lg p-1.5 flex flex-col gap-1 overflow-y-auto border border-gray-800">
+                <div
+                  key={day.toString()}
+                  className="rounded-lg p-1.5 flex flex-col gap-1 overflow-y-auto border border-gray-800"
+                  style={{
+                    backgroundColor: `rgba(17, 24, 39, ${1 - personalization.uiTransparency})`,
+                    backdropFilter: `blur(${personalization.uiBlur}px)`
+                  }}
+                >
                   <span className={`font-semibold text-xs ${isToday ? 'bg-brand-primary text-white rounded-full h-5 w-5 flex items-center justify-center' : ''}`}>{day.getDate()}</span>
                   {dayEvents.map(event => (
                     <div key={event.id} onClick={() => setSelectedEvent(event)} className="text-xs p-1 rounded cursor-pointer text-white truncate" style={{backgroundColor: event.backgroundColor || '#007aff'}}>

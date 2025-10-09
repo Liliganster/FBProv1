@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Bash(where code)"
+      "Bash(where code)",
+      "Bash(npm run build:*)"
     ],
     "deny": [],
     "ask": []
