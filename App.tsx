@@ -232,13 +232,13 @@ const App: React.FC = () => {
       localStorage.setItem(`fahrtenbuch_theme_${user.id}`, theme);
     }
 
-    // 1. Set base theme classes for text color
+    // 1. Set base theme classes for text color and Natural Frost Light Mode
     if (theme === 'light') {
-        body.classList.remove('text-on-surface-dark');
-        body.classList.add('text-gray-900');
+        body.classList.remove('text-on-surface-dark', 'theme-dark');
+        body.classList.add('text-gray-900', 'theme-light');
     } else {
-        body.classList.remove('text-gray-900');
-        body.classList.add('text-on-surface-dark');
+        body.classList.remove('text-gray-900', 'theme-light');
+        body.classList.add('text-on-surface-dark', 'theme-dark');
     }
 
     // 2. Handle the background (image or color)
@@ -254,7 +254,8 @@ const App: React.FC = () => {
         body.style.backgroundImage = 'none';
         body.classList.remove('bg-background-dark', 'bg-gray-100');
         if (theme === 'light') {
-            body.style.backgroundColor = '#f3f4f6'; // gray-100
+            // Let CSS variables handle the Natural Frost Light Mode background
+            body.style.backgroundColor = ''; // Remove inline style to let CSS take over
         } else {
             body.style.backgroundColor = '#0f0f0f'; // background-dark
         }
@@ -303,12 +304,17 @@ const App: React.FC = () => {
     { view: 'advanced', label: t('nav_advanced'), icon: <Rocket size={20} /> },
   ];
   
-  const navStyle = {
-      backgroundColor: theme === 'dark' 
-          ? `rgba(0, 0, 0, ${1 - personalization.uiTransparency})` 
-          : `rgba(255, 255, 255, ${1 - personalization.uiTransparency})`,
-      backdropFilter: `blur(${personalization.uiBlur}px)`,
-  };
+  const navStyle = theme === 'dark' 
+      ? {
+          backgroundColor: `rgba(0, 0, 0, ${1 - personalization.uiTransparency})`,
+          backdropFilter: `blur(${personalization.uiBlur}px)`,
+        }
+      : {
+          backgroundColor: 'rgba(255, 255, 255, 0.4)',
+          backdropFilter: 'blur(12px)',
+          WebkitBackdropFilter: 'blur(12px)',
+          borderRight: '1px solid rgba(255, 255, 255, 0.4)',
+        };
 
   return (
     <div 
@@ -347,7 +353,7 @@ const App: React.FC = () => {
           ? 'border-gray-700/30 text-on-surface-dark' 
           : 'border-gray-200/50 text-gray-900'
         }
-        border-r transition-all duration-300 flex flex-col
+        ${theme === 'light' ? '' : 'border-r'} transition-all duration-300 flex flex-col
       `}>
         <div className={`p-6 flex items-center ${sidebarCollapsed ? 'justify-center' : 'justify-between'} border-b ${theme === 'dark' ? 'border-gray-700/30' : 'border-gray-200/50'}`}>
           {!sidebarCollapsed && (
@@ -375,7 +381,7 @@ const App: React.FC = () => {
               title={sidebarCollapsed ? item.label : undefined}
               className={`
                 w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 transform
-                ${sidebarCollapsed ? 'justify-center' : ''}
+                ${sidebarCollapsed ? 'justify-center' : ''} ${theme === 'light' ? 'frost-nav-item' : ''}
                 ${currentView === item.view
                   ? 'bg-gradient-to-r from-gray-800 to-black text-white shadow-lg shadow-gray-800/30 scale-[1.02]'
                   : theme === 'dark'
@@ -454,7 +460,7 @@ const App: React.FC = () => {
           ? 'bg-transparent' 
           : theme === 'dark' 
             ? 'bg-background-dark' 
-            : 'bg-gray-50'
+            : 'bg-transparent'
       }`}>
         <Suspense fallback={<div className={`text-sm ${theme === 'dark' ? 'text-on-surface-dark-secondary' : 'text-gray-600'}`}>Loading…</div>}>
           {renderView()}

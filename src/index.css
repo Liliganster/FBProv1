@@ -1,6 +1,105 @@
 @import "tailwindcss";
 
-/* Force dark background for entire document */
+/* 🌿 Natural Frost Light Mode Variables - Only applied in light theme */
+:root {
+  /* Color palette inspired by nature */
+  --color-bg-light: #F4F6F5;              /* Main background: stone white */
+  --color-card-light: rgba(255, 255, 255, 0.55);  /* Frosted glass background */
+  --color-border-light: rgba(255, 255, 255, 0.4);
+  --color-green-light: #A8C3A0;           /* Soft leaf green */
+  --color-sand-light: #E9E2D0;            /* Sand beige */
+  --color-sky-light: #A3C9E2;             /* Sky blue */
+  --color-text-light: #2F3A3A;            /* Neutral dark text */
+  --color-shadow-light: rgba(0, 0, 0, 0.05);
+
+  /* Typography */
+  --font-family-frost: 'Inter', 'Poppins', system-ui, sans-serif;
+  --font-size-base-frost: 15px;
+  --font-weight-regular-frost: 400;
+  --font-weight-bold-frost: 600;
+
+  /* Frost and depth */
+  --frost-blur: 14px;
+  --frost-saturate: 160%;
+  --radius-card-frost: 20px;
+  --shadow-soft-frost: 0 4px 20px var(--color-shadow-light);
+}
+
+/* Natural Frost Light Mode Styles - Applied only when body has light theme class */
+body.theme-light {
+  background: #F4F6F5 !important;
+  font-family: 'Inter', 'Poppins', system-ui, sans-serif !important;
+  color: #2F3A3A !important;
+  line-height: 1.5;
+}
+
+
+
+/* Frosted glass cards in light mode */
+body.theme-light .frost-card {
+  background: rgba(255, 255, 255, 0.55) !important;
+  backdrop-filter: blur(14px) saturate(160%) !important;
+  -webkit-backdrop-filter: blur(14px) saturate(160%) !important;
+  border-radius: 20px !important;
+  border: 1px solid rgba(255, 255, 255, 0.4) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05) !important;
+  transition: all 0.25s ease !important;
+}
+
+body.theme-light .frost-card:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* Frosted sidebar in light mode */
+body.theme-light .frost-sidebar {
+  background: rgba(255, 255, 255, 0.4) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.4) !important;
+  color: #2F3A3A !important;
+}
+
+/* Sidebar navigation in light mode */
+body.theme-light .frost-sidebar .frost-nav-item {
+  color: #2F3A3A !important;
+  transition: background 0.2s ease, transform 0.2s ease !important;
+}
+
+body.theme-light .frost-sidebar .frost-nav-item:hover {
+  background: rgba(168, 195, 160, 0.15) !important; /* soft green tint */
+  transform: translateX(2px) !important;
+}
+
+/* Dashboard metrics in light mode */
+body.theme-light .frost-metric {
+  font-size: 1.5rem;
+  font-weight: var(--font-weight-bold-frost);
+  color: var(--color-text-light);
+}
+
+body.theme-light .frost-metric-label {
+  font-size: 0.85rem;
+  color: #5E6E6E;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Header in light mode */
+body.theme-light .frost-header {
+  background: rgba(255, 255, 255, 0.35);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--color-border-light);
+  font-weight: var(--font-weight-bold-frost);
+}
+
+/* Animations and transitions in light mode */
+body.theme-light * {
+  transition: background 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Force dark background for entire document in dark mode */
 html, body {
   background-color: #0f0f0f !important;
   color: #e5e5e5;

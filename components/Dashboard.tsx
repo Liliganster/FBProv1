@@ -108,15 +108,25 @@ const Dashboard: React.FC<DashboardProps> = ({ setCurrentView, personalization, 
     
     const PIE_COLORS = ['#007aff', '#34c759', '#ff9500', '#ff3b30', '#5856d6', '#5ac8fa'];
     
-    const contentStyle = {
-        backgroundColor: theme === 'dark'
-            ? `rgba(30, 30, 30, ${1 - personalization.uiTransparency})`
-            : `rgba(243, 244, 246, ${1 - personalization.uiTransparency})`,
-        backdropFilter: `blur(${personalization.uiBlur}px)`,
-    };
+    const contentStyle = theme === 'dark' 
+        ? {
+            backgroundColor: `rgba(30, 30, 30, ${1 - personalization.uiTransparency})`,
+            backdropFilter: `blur(${personalization.uiBlur}px)`,
+          }
+        : {
+            backgroundColor: 'rgba(255, 255, 255, 0.55)',
+            backdropFilter: 'blur(14px) saturate(160%)',
+            WebkitBackdropFilter: 'blur(14px) saturate(160%)',
+            borderRadius: '20px',
+            border: '1px solid rgba(255, 255, 255, 0.4)',
+            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.05)',
+          };
 
     const StatCard = ({ title, value, cta, onClick, children }: { title: string, value: string, cta?: string, onClick?: () => void, children?: React.ReactNode }) => (
-        <div style={contentStyle} className="p-6 rounded-lg shadow-lg flex flex-col justify-between min-h-[140px]">
+        <div 
+            style={contentStyle} 
+            className="p-6 flex flex-col justify-between min-h-[140px] transition-all duration-300 hover:transform hover:translate-y-[-2px]"
+        >
             <div>
                 <div className="flex items-start justify-between">
                     <h3 className="text-sm font-medium text-on-surface-dark-secondary uppercase tracking-wider">{title}</h3>
@@ -180,7 +190,10 @@ const Dashboard: React.FC<DashboardProps> = ({ setCurrentView, personalization, 
             </div>
             
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div style={contentStyle} className="lg:col-span-2 p-6 rounded-lg shadow-lg">
+                <div 
+                    style={contentStyle} 
+                    className="lg:col-span-2 p-6"
+                >
                     <div className="flex justify-between items-center mb-4">
                         <h3 className={`text-lg font-semibold ${theme === 'dark' ? 'text-[rgba(135,206,235,1)]' : 'text-gray-900'}`}>{t('dashboard_visualAnalysis')}</h3>
 
@@ -196,7 +209,10 @@ const Dashboard: React.FC<DashboardProps> = ({ setCurrentView, personalization, 
                         </BarChart>
                     </ResponsiveContainer>
                 </div>
-                <div style={contentStyle} className="p-6 rounded-lg shadow-lg">
+                <div 
+                    style={contentStyle} 
+                    className="p-6"
+                >
                     <h3 className={`text-lg font-semibold mb-4 ${theme === 'dark' ? 'text-[rgba(135,206,235,1)]' : 'text-gray-900'}`}>{t('dashboard_recentTrips')}</h3>
                     <div className="space-y-3">
                         {recentTrips.length > 0 ? recentTrips.map(trip => (
