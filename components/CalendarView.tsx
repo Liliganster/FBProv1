@@ -148,7 +148,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ setCurrentView, personaliza
             <li key={cal.id}>
               <label className="flex items-center p-2 rounded-md hover:bg-background-dark/50 cursor-pointer">
                 <input type="checkbox" checked={selectedCalendars.includes(cal.id)} onChange={() => handleCalendarSelection(cal.id)} className="h-4 w-4 rounded border-gray-500 bg-background-dark text-brand-primary focus:ring-brand-primary" style={{ accentColor: cal.backgroundColor }}/>
-                <span className="ml-3 text-sm font-medium truncate text-gray-200">{cal.summary}</span>
+                <span className="ml-3 text-sm font-medium truncate !text-white">{cal.summary}</span>
               </label>
             </li>
           ))}
