@@ -178,7 +178,7 @@ const ProjectsView: React.FC<ProjectsViewProps> = ({ setCurrentView, personaliza
         )}
       </div>
       
-      <div style={contentStyle} className="rounded-gentle shadow-lg overflow-hidden">
+      <div style={contentStyle} className="bg-frost-glass rounded-gentle shadow-lg overflow-hidden">
         <table className="w-full text-left">
           <thead className="bg-gray-700/50">
             <tr>

@@ -47,8 +47,8 @@ const EventActionModal: React.FC<EventActionModalProps> = ({ event, onClose }) =
   return (
     <>
       <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-start justify-center p-4 pt-20 z-50" onClick={onClose}>
-        <div 
-          className="bg-background-dark/95 border border-gray-700/60 rounded-lg shadow-2xl w-full max-w-xs sm:max-w-md md:max-w-lg flex flex-col overflow-hidden animate-fadeIn"
+        <div
+          className="bg-frost-glass border border-gray-700/60 rounded-lg shadow-2xl w-full max-w-xs sm:max-w-md md:max-w-lg flex flex-col overflow-hidden animate-fadeIn"
           onClick={e => e.stopPropagation()}
         >
           <header className="px-6 py-4 border-b border-gray-700/70 flex items-center justify-between gap-4 bg-background-dark/70 backdrop-blur-sm">

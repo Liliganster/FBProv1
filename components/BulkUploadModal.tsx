@@ -455,8 +455,8 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
   const mapsLoading = !!userProfile?.googleMapsApiKey && !isMapsScriptLoaded;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center p-4 pt-16 bg-black/60 backdrop-blur-sm">
-      <div className="bg-background-dark/95 border border-gray-700/60 rounded-lg shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden animate-fadeIn">
+    <div className="fixed inset-0 z-50 flex items-start justify-center p-4 pt-16 bg-black/60 backdrop-blur-sm" onClick={onClose}>
+      <div className="bg-frost-glass border border-gray-700/60 rounded-lg shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden animate-fadeIn" onClick={(e) => e.stopPropagation()}>
         <header className="px-6 py-4 border-b border-gray-700/70 flex items-center justify-between gap-4 bg-background-dark/70 backdrop-blur-sm">
           <h2 className="text-lg font-semibold tracking-tight text-white">{t('bulk_title')}</h2>
           <div className="flex items-center gap-2 bg-background-dark/60 p-1 rounded-md border border-gray-700/60">

@@ -256,7 +256,7 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
                   ))}
                 </select>
               </div>
-              <button onClick={() => setIsBulkModalOpen(true)} className="flex items-center bg-gradient-to-r from-success-dark to-green-600 hover:shadow-md hover:shadow-green-500/30 hover:scale-[1.02] text-white font-bold py-2 px-4 rounded-smooth transition-all duration-200">
+              <button onClick={() => setIsBulkModalOpen(true)} className="btn-success flex items-center hover:scale-[1.02] font-bold py-2 px-4 rounded-smooth transition-all duration-200">
                 <UploadCloudIcon className="w-5 h-5 mr-2"/>
                 {t('trips_bulkUpload')}
               </button>
@@ -269,7 +269,7 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
         )}
       </div>
 
-      <div className="bg-gradient-glass border-glass rounded-fluid shadow-glass overflow-hidden backdrop-blur-glass">
+      <div className="bg-frost-glass border-glass rounded-fluid shadow-glass overflow-hidden backdrop-blur-glass">
         <table className="w-full text-left">
           <thead className="bg-gradient-surface border-b border-glass">
             <tr>
@@ -336,7 +336,7 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
                 <td className="p-4 whitespace-nowrap cursor-pointer" onClick={() => handleViewTrip(trip)}>
                   <div className="flex items-center gap-2">
 {/* FIX: Wrap LockIcon in a span with a title attribute to fix prop assignment error. */}
-                      {isLocked && <span title={t('trips_locked_tooltip')}><LockIcon className="w-4 h-4 text-yellow-400" /></span>}
+                      {isLocked && <span title={t('trips_locked_tooltip')} className="cursor-pointer hover:scale-110 transition-transform"><LockIcon className="w-4 h-4 text-yellow-400 hover:text-yellow-300" /></span>}
                       {formatDateForDisplay(trip.date)}
                   </div>
                 </td>
@@ -345,8 +345,8 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
                     <span className="truncate max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg">{trip.locations.join(' → ')}</span>
                     <SpecialOriginTag originType={trip.specialOrigin} />
                     {allWarnings.length > 0 && (
-                      <div className="ml-2" title={allWarnings.join('\n')}>
-                        <WarningIcon className="w-5 h-5 text-yellow-400" />
+                      <div className="ml-2 cursor-pointer hover:scale-110 transition-transform" title={allWarnings.join('\n')}>
+                        <WarningIcon className="w-5 h-5 text-yellow-400 hover:text-yellow-300" />
                       </div>
                     )}
                   </div>

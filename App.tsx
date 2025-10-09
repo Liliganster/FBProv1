@@ -227,14 +227,14 @@ const App: React.FC = () => {
 
     body.style.transition = 'all 0.3s ease-in-out';
 
-    if (personalization.backgroundImage) {
+    if (personalization.backgroundImage && personalization.backgroundBlur === 0) {
       body.style.backgroundImage = `url(${personalization.backgroundImage})`;
       body.style.backgroundSize = 'cover';
       body.style.backgroundPosition = 'center';
       body.style.backgroundAttachment = 'fixed';
       body.style.backgroundColor = '#0a0a0a';
     } else {
-      body.style.backgroundImage = 'linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%)';
+      body.style.backgroundImage = 'linear-gradient(135deg, #111827 0%, #8fbf99 100%)';
       body.style.backgroundAttachment = 'fixed';
       body.style.backgroundColor = '#0a0a0a';
     }
@@ -292,36 +292,42 @@ const App: React.FC = () => {
       className="relative flex h-screen font-sans bg-gradient-dark"
       style={{
         background: personalization.backgroundImage
-          ? `linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.7)), url(${personalization.backgroundImage})`
-          : 'linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%)',
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundAttachment: 'fixed',
+          ? (personalization.backgroundBlur > 0
+              ? 'linear-gradient(135deg, #111827 0%, #8fbf99 100%)'
+              : `linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.7)), url(${personalization.backgroundImage})`)
+          : 'linear-gradient(135deg, #111827 0%, #8fbf99 100%)',
+        backgroundSize: personalization.backgroundImage && personalization.backgroundBlur === 0 ? 'cover, cover' : 'cover',
+        backgroundPosition: personalization.backgroundImage && personalization.backgroundBlur === 0 ? 'center, center' : 'center',
+        backgroundAttachment: personalization.backgroundImage && personalization.backgroundBlur === 0 ? 'fixed, fixed' : 'fixed',
+        backgroundRepeat: personalization.backgroundImage && personalization.backgroundBlur === 0 ? 'no-repeat, no-repeat' : 'no-repeat',
       }}
     >
       {/* Overlay for blur effect when needed */}
       {personalization.backgroundImage && personalization.backgroundBlur > 0 && (
         <div 
-          className="absolute inset-0"
+          className="absolute inset-0 z-0 pointer-events-none"
           style={{
-            background: `url(${personalization.backgroundImage})`,
+            backgroundImage: `url(${personalization.backgroundImage})`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
             backgroundAttachment: 'fixed',
+            backgroundRepeat: 'no-repeat',
             filter: `blur(${personalization.backgroundBlur}px)`,
-            zIndex: -1
           }}
         />
       )}
-      <nav 
-        className={`
+      <nav
+        className={`relative z-10 
         ${sidebarCollapsed ? 'w-20' : 'w-72'}
-        bg-gradient-glass border-glass text-on-surface-dark border-r 
-        transition-all duration-300 flex flex-col shadow-glass backdrop-blur-glass
+        text-on-surface-dark border-r
+        transition-all duration-300 flex flex-col shadow-glass
+        bg-gradient-to-br from-white/5 via-blue-400/8 to-blue-500/5
+        backdrop-blur-xl backdrop-saturate-150
+        border-white/10
       `}>
         <div className={`p-6 flex items-center ${sidebarCollapsed ? 'justify-center' : 'justify-between'} border-b border-glass`}>
           {!sidebarCollapsed && (
-            <h1 className="text-xl font-bold bg-gradient-to-r from-white via-blue-100 to-brand-primary bg-clip-text text-transparent">
+            <h1 className="text-xl font-bold text-white">
               FahrtenBuch Pro
             </h1>
           )}
@@ -344,10 +350,11 @@ const App: React.FC = () => {
                 ${sidebarCollapsed ? 'justify-center' : ''}
                 ${
                   currentView === item.view
-                    ? 'bg-gradient-brand text-white shadow-brand scale-[1.02] shadow-lg'
-                    : 'hover:bg-gradient-surface text-on-surface-secondary hover:text-on-surface-dark hover:scale-[1.02] hover:shadow-glass'
+                    ? 'text-white scale-[1.02] shadow-lg'
+                    : 'hover:bg-gradient-surface text-on-surface-secondary hover:text-on-surface-dark hover:scale-[1.02] hover:shadow-lg hover:shadow-blue-500/20'
                 }
               `}
+              style={currentView === item.view ? { backgroundColor: 'rgba(26, 26, 26, 0.8)' } : undefined}
             >
               {item.icon}
               {!sidebarCollapsed && <span className="font-medium">{item.label}</span>}
@@ -361,9 +368,10 @@ const App: React.FC = () => {
                 title={sidebarCollapsed ? t('nav_settings') : undefined}
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-smooth transition-all duration-300 transform ${sidebarCollapsed ? 'justify-center' : ''} ${
                     currentView === 'settings'
-                    ? 'bg-gradient-brand text-white shadow-brand scale-[1.02] shadow-lg'
-                    : 'hover:bg-gradient-surface text-on-surface-secondary hover:text-on-surface-dark hover:scale-[1.02] hover:shadow-glass'
+                    ? 'text-white scale-[1.02] shadow-lg'
+                    : 'hover:bg-gradient-surface text-on-surface-secondary hover:text-on-surface-dark hover:scale-[1.02] hover:shadow-lg hover:shadow-blue-500/20'
                 }`}
+                style={currentView === 'settings' ? { backgroundColor: 'rgba(26, 26, 26, 0.8)' } : undefined}
             >
                 <Settings size={20} />
                 {!sidebarCollapsed && <span className="font-medium">{t('nav_settings')}</span>}
@@ -379,8 +387,8 @@ const App: React.FC = () => {
                 {!sidebarCollapsed && <span className="font-medium">{t('logout_btn')}</span>}
             </button>
 
-            <div 
-                className={`w-full flex items-center gap-3 px-4 pt-4 mt-2 border-t border-glass ${sidebarCollapsed ? 'justify-center' : ''}`}
+            <div
+                className={`w-full flex items-center gap-3 px-4 pt-4 mt-2 ${sidebarCollapsed ? 'justify-center' : ''}`}
             >
                 {userProfile && (
                     <>
@@ -396,7 +404,7 @@ const App: React.FC = () => {
             </div>
         </div>
       </nav>
-      <main className="flex-1 p-8 overflow-y-auto bg-transparent">
+      <main className="relative z-10 flex-1 p-8 overflow-y-auto bg-transparent">
         <Suspense fallback={<div className="text-sm text-on-surface-dark-secondary">Loading…</div>}>
           {renderView()}
         </Suspense>

@@ -77,7 +77,7 @@ const LoginView: React.FC = () => {
       <div className="absolute inset-0 z-10 bg-gradient-to-br from-black/60 via-black/40 to-black/60" />
       
       {/* Login form */}
-      <div className="w-full max-w-md p-8 space-y-8 bg-gradient-glass backdrop-blur-glass rounded-organic shadow-glass border-glass relative z-20">
+      <div className="w-full max-w-md p-8 space-y-8 bg-frost-glass backdrop-blur-glass rounded-organic shadow-glass border-glass relative z-20">
         <div className="text-center">
           <div className="mb-6">
             <h1 className="text-4xl font-bold bg-gradient-to-r from-white via-blue-100 to-brand-primary bg-clip-text text-transparent mb-2 tracking-wide">Fahrtenbuch Pro</h1>

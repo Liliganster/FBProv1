@@ -24,7 +24,7 @@ const TripDetailModal: React.FC<TripDetailModalProps> = ({ trip, project, onClos
       onClick={onClose}
     >
       <div
-        className="relative w-full max-w-5xl bg-gradient-glass border-glass rounded-fluid shadow-glass-lg flex flex-col h-[82vh] overflow-hidden backdrop-blur-glass"
+        className="relative w-full max-w-5xl bg-frost-glass border-glass rounded-fluid shadow-glass-lg flex flex-col h-[82vh] overflow-hidden backdrop-blur-glass"
         onClick={e => e.stopPropagation()}
       >
         <header className="flex items-start justify-between px-6 py-4 border-b border-glass flex-shrink-0">

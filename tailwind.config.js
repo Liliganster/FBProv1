@@ -40,16 +40,12 @@ export default {
       },
       backgroundImage: {
         // Professional Dark Gradients
-        'gradient-dark': 'linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%)',
+        'gradient-dark': 'linear-gradient(135deg, #111827 0%, #8fbf99 100%)',
         'gradient-surface': 'linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%)',
         'gradient-brand': 'linear-gradient(135deg, #007aff 0%, #5856d6 100%)',
         'gradient-brand-subtle': 'linear-gradient(135deg, #007aff20 0%, #5856d620 100%)',
         'gradient-glass': 'linear-gradient(135deg, rgba(26, 26, 26, 0.8) 0%, rgba(42, 42, 42, 0.8) 100%)',
         'gradient-overlay': 'linear-gradient(135deg, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0.8) 100%)',
-        // Title gradient - right to left, with 15% darkness on the left
-        'gradient-title': 'linear-gradient(to left, #ffffff 0%, #ffffff 75%, #F2F2F2 90%, #D9D9D9 100%)',
-      },
-      placeholderColor: {
         'on-surface-dark-secondary': '#a3a3a3',
         'on-surface-tertiary': '#6b7280',
       },

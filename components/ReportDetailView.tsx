@@ -189,7 +189,7 @@ const ReportDetailView: React.FC<ReportDetailViewProps> = ({ report, projects, o
         </div>
       </div>
       
-      <div style={contentStyle} className="printable-content p-6 rounded-lg">
+      <div style={contentStyle} className="bg-frost-glass printable-content p-6 rounded-lg">
         <div className="mb-4 text-center">
           <h3 className="text-2xl font-bold text-white">{t('report_preview_title')}</h3>
           <p className="text-on-surface-dark-secondary">

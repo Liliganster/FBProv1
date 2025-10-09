@@ -126,10 +126,11 @@ const CO2AnalysisSettings: React.FC<CO2AnalysisSettingsProps> = ({
   const panelBgClass = 'bg-background-dark/80';
 
   return (
-    <div className="fixed inset-0 bg-black/60 flex items-start justify-center z-50 p-4 pt-20 backdrop-blur-sm">
-      <div 
+    <div className="fixed inset-0 flex items-start justify-center z-50 p-4 pt-20 bg-black/60 backdrop-blur-sm" onClick={handleClose}>
+      <div
         style={modalStyle}
-        className="bg-background-dark rounded-lg shadow-2xl max-w-4xl w-full max-h-[80vh] overflow-hidden flex flex-col animate-fadeIn border border-gray-700/60"
+        className="bg-frost-glass rounded-lg shadow-2xl max-w-4xl w-full max-h-[80vh] overflow-hidden flex flex-col animate-fadeIn border border-gray-700/60"
+        onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div className="flex-shrink-0 px-6 py-5 border-b border-gray-700/70 bg-background-dark/70 backdrop-blur-sm">

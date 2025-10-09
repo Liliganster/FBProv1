@@ -112,7 +112,7 @@ const RouteTemplatesView: React.FC<RouteTemplatesViewProps> = ({ onBack, theme, 
   const containerBg = theme === 'dark' ? `rgba(18,18,18,${1 - personalization.uiTransparency})` : `rgba(229,231,235,${1 - personalization.uiTransparency})`;
 
   return (
-    <div style={{ backgroundColor: containerBg, backdropFilter: `blur(${personalization.uiBlur}px)` }} className="p-8 rounded-lg -m-8 min-h-full">
+    <div className="p-8 rounded-lg -m-8 min-h-full">
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-4">
           <button onClick={onBack} className="flex items-center bg-gray-700 hover:bg-gray-600 text-white font-bold p-3 rounded-lg transition-colors shadow-md">
@@ -203,8 +203,8 @@ const RouteTemplatesView: React.FC<RouteTemplatesViewProps> = ({ onBack, theme, 
       )}
 
       {showModal && (
-        <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 p-4 z-50">
-          <div 
+        <div className="fixed inset-0 flex items-center justify-center p-4 z-50" onClick={() => setShowModal(false)}>
+          <div
             style={{
               backgroundColor: theme === 'dark'
                 ? `rgba(30, 30, 30, ${1 - personalization.uiTransparency})`
@@ -212,7 +212,8 @@ const RouteTemplatesView: React.FC<RouteTemplatesViewProps> = ({ onBack, theme, 
               backdropFilter: `blur(${personalization.uiBlur}px)`,
             }}
             className="rounded-lg shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col"
-            >
+            onClick={e => e.stopPropagation()}
+          >
             <header className="flex items-center justify-between p-4 border-b border-gray-700/50 flex-shrink-0">
               <h2 className="text-xl font-bold text-white">
                 {editing ? t('route_templates_modal_edit_title') : t('route_templates_modal_create_title')}

@@ -16,7 +16,7 @@ const Auth: React.FC = () => {
   if (configError) {
     return (
       <div className="min-h-screen w-full flex items-center justify-center bg-gradient-dark text-on-surface-dark px-4">
-        <div className="max-w-md w-full bg-gradient-glass border-glass rounded-organic p-8 shadow-glass text-center space-y-4 backdrop-blur-glass">
+        <div className="max-w-md w-full bg-frost-glass border-glass rounded-organic p-8 shadow-glass text-center space-y-4 backdrop-blur-glass">
           <LoaderIcon className="mx-auto h-10 w-10 animate-spin text-brand-primary" />
           <h1 className="text-xl font-semibold text-white">Configuración requerida</h1>
           <p className="text-sm text-on-surface-secondary">

@@ -189,7 +189,7 @@ const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({ projectId, trip
       onClick={onClose}
     >
       <div
-        className="relative w-full max-w-5xl bg-background-dark/95 border border-gray-700/60 rounded-lg shadow-2xl flex flex-col max-h-[88vh] overflow-hidden"
+        className="relative w-full max-w-5xl bg-frost-glass border border-gray-700/60 rounded-lg shadow-2xl flex flex-col max-h-[88vh] overflow-hidden"
         onClick={e => e.stopPropagation()}
       >
         <header className="flex items-start justify-between px-6 py-4 border-b border-gray-700/60">

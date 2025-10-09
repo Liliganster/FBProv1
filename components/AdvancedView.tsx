@@ -315,16 +315,9 @@ const CostAnalysisDashboard: React.FC<{
           : `rgba(229, 231, 235, ${1 - personalization.uiTransparency})`,
       backdropFilter: `blur(${personalization.uiBlur}px)`,
     };
-    
-    const cardStyle = {
-      backgroundColor: theme === 'dark'
-          ? `rgba(30, 30, 30, ${1 - personalization.uiTransparency})`
-          : `rgba(243, 244, 246, ${1 - personalization.uiTransparency})`,
-      backdropFilter: `blur(${personalization.uiBlur}px)`,
-    };
 
     return (
-        <div style={dashboardStyle} className="p-8 rounded-fluid -m-8">
+        <div className="p-8 rounded-fluid -m-8">
             <header className="flex justify-between items-start mb-6">
                 <div className="flex items-center gap-4">
                      <button onClick={() => setViewMode('main')} className="flex items-center bg-gray-700 hover:bg-gray-600 text-white font-bold p-3 rounded-smooth">
@@ -381,7 +374,7 @@ const CostAnalysisDashboard: React.FC<{
                     // Vista de Resumen con barras de progreso
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                         {/* Desglose de costos con barras de progreso */}
-                        <div style={cardStyle} className="p-6 rounded-gentle">
+                        <div className="bg-frost-glass p-6 rounded-gentle">
                             <h3 className="text-lg font-semibold mb-6 text-white">{t('cost_basic_breakdown')}</h3>
                             
                             <div className="space-y-4">
@@ -438,7 +431,7 @@ const CostAnalysisDashboard: React.FC<{
                         </div>
 
                         {/* Supuestos de costos */}
-                        <div style={cardStyle} className="p-6 rounded-lg">
+                        <div className="bg-frost-glass p-6 rounded-lg">
                             <h3 className="text-lg font-semibold mb-6 text-white">{t('cost_assumptions')}</h3>
                             
                             <div className="space-y-3">
@@ -466,9 +459,9 @@ const CostAnalysisDashboard: React.FC<{
                                             <span className="w-2 h-2 bg-gray-400 rounded-full mr-3"></span>
                                             <span>
                                                 {t('cost_note_personal')}{' '}
-                                                <button 
+                                                <button
                                                     onClick={() => setShowVehicleModal(true)}
-                                                    className="text-brand-primary hover:text-blue-300 underline cursor-pointer"
+                                                    className="text-green-500 hover:text-green-400 underline cursor-pointer"
                                                 >
                                                     {t('cost_note_personal_cta')}
                                                 </button>
@@ -481,7 +474,7 @@ const CostAnalysisDashboard: React.FC<{
                     </div>
                 ) : (
                     // Vista Mensual con tabla
-                    <div style={cardStyle} className="p-6 rounded-lg">
+                    <div className="bg-frost-glass p-6 rounded-lg">
                         <h3 className="text-lg font-semibold mb-4 text-white">{t('cost_monthly_summary')}</h3>
                         <div className="overflow-x-auto">
                             <table className="w-full text-left text-sm">
@@ -518,7 +511,7 @@ const CostAnalysisDashboard: React.FC<{
 
                 {/* Análisis por Proyecto - solo en vista Resumen */}
                 {costView === 'summary' && (
-                    <div style={cardStyle} className="p-6 rounded-lg mt-8">
+                    <div className="bg-frost-glass p-6 rounded-lg mt-8">
                         <div className="flex justify-between items-center mb-6">
                             <h3 className="text-lg font-semibold text-white">{t('cost_project_analysis_title')}</h3>
                             <div className="flex items-center gap-2">
@@ -607,7 +600,7 @@ const CostAnalysisDashboard: React.FC<{
 
             {/* Modal de Configuración de Vehículo */}
             {showVehicleModal && vehicleForm && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
                     <div 
                         style={{
                             backgroundColor: theme === 'dark'
@@ -615,7 +608,7 @@ const CostAnalysisDashboard: React.FC<{
                                 : `rgba(243, 244, 246, ${1 - personalization.uiTransparency})`,
                             backdropFilter: `blur(${personalization.uiBlur}px)`,
                         }}
-                        className="bg-background-dark rounded-organic shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
+                        className="bg-frost-glass rounded-organic shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
                     >
                         <div className="p-6">
                             <div className="flex items-center justify-between mb-6">
@@ -767,7 +760,7 @@ const CostAnalysisDashboard: React.FC<{
 };
 
 const StatCard: React.FC<{ title: string; value: string; theme: 'light' | 'dark'; }> = ({ title, value, theme }) => (
-    <div className="bg-background-dark p-4 rounded-lg">
+    <div className="bg-frost-glass p-4 rounded-lg">
         <h3 className="text-sm font-medium text-on-surface-dark-secondary">{title}</h3>
         <p className="text-3xl font-bold mt-1 text-white">{value}</p>
     </div>
@@ -1080,17 +1073,15 @@ const ActionCard: React.FC<{
     personalization: PersonalizationSettings;
 }> = ({ title, description, icon, onClick, theme, personalization }) => {
     const cardStyle = {
-      backgroundColor: theme === 'dark'
-          ? `rgba(30, 30, 30, ${1 - personalization.uiTransparency})`
-          : `rgba(243, 244, 246, ${1 - personalization.uiTransparency})`,
       backdropFilter: `blur(${personalization.uiBlur}px)`,
-    };
+      WebkitBackdropFilter: `blur(${personalization.uiBlur}px)`,
+    } as React.CSSProperties;
     
     return (
-        <div 
-            style={cardStyle} 
-            className="p-6 rounded-lg shadow-lg flex items-center gap-6 cursor-pointer hover:ring-2 hover:ring-brand-primary transition-all duration-200"
+        <div
+            className="bg-frost-glass p-6 rounded-lg shadow-lg flex items-center gap-6 cursor-pointer hover:ring-2 hover:ring-brand-primary transition-all duration-200"
             onClick={onClick}
+            style={cardStyle}
         >
             <div className="flex-shrink-0">
                 {icon}

@@ -46,7 +46,7 @@ const StatCard: React.FC<{
   icon?: React.ReactNode;
   color?: string;
 }> = ({ title, value, icon, color = 'text-white' }) => (
-  <div className="bg-background-dark p-6 rounded-lg">
+  <div className="bg-frost-glass p-6 rounded-lg">
     <div className="flex items-center justify-between">
       <div>
         <h3 className="text-sm font-medium text-on-surface-dark-secondary">{title}</h3>
@@ -67,7 +67,7 @@ const ProjectRow: React.FC<{
   formatCurrency: (value: number) => string;
   t: (key: string) => string;
 }> = ({ project, rank, formatCurrency, t }) => (
-  <div className="bg-background-dark p-6 rounded-lg">
+  <div className="bg-frost-glass p-6 rounded-lg">
     <div className="flex items-center justify-between mb-4">
       <div className="flex items-center gap-4">
         <div className={`w-10 h-10 rounded-full flex items-center justify-center text-lg font-bold ${
@@ -339,7 +339,7 @@ const CO2RankingView: React.FC<CO2RankingViewProps> = ({
   };
 
   return (
-    <div style={dashboardStyle} className="p-8 rounded-lg -m-8">
+    <div className="p-8 rounded-lg -m-8">
       {/* Header */}
       <header className="flex justify-between items-start mb-6">
         <div className="flex items-center gap-4">

@@ -112,6 +112,7 @@ const Dashboard: React.FC<DashboardProps> = ({ setCurrentView, personalization, 
         ? {
             backgroundColor: `rgba(30, 30, 30, ${1 - personalization.uiTransparency})`,
             backdropFilter: `blur(${personalization.uiBlur}px)`,
+            WebkitBackdropFilter: `blur(${personalization.uiBlur}px)`,
           }
         : {
             backgroundColor: 'rgba(255, 255, 255, 0.55)',
@@ -122,8 +123,8 @@ const Dashboard: React.FC<DashboardProps> = ({ setCurrentView, personalization, 
             boxShadow: '0 4px 20px rgba(0, 0, 0, 0.05)',
           };
 
-    const StatCard = ({ title, value, cta, onClick, children }: { title: string, value: string, cta?: string, onClick?: () => void, children?: React.ReactNode }) => (
-        <div className="bg-gradient-glass border-glass rounded-fluid p-6 flex flex-col justify-between min-h-[140px] transition-all duration-300 hover:transform hover:translate-y-[-2px] hover:shadow-glass backdrop-blur-glass">
+const StatCard = ({ title, value, cta, onClick, children }: { title: string, value: string, cta?: string, onClick?: () => void, children?: React.ReactNode }) => (
+    <div style={contentStyle} className="bg-frost-glass border-glass rounded-fluid p-6 flex flex-col justify-between min-h-[140px] transition-all duration-300 hover:transform hover:translate-y-[-2px] hover:shadow-glass backdrop-blur-glass">
             <div>
                 <div className="flex items-start justify-between">
                     <h3 className="text-sm font-medium text-on-surface-secondary uppercase tracking-wider">{title}</h3>
@@ -158,17 +159,17 @@ const Dashboard: React.FC<DashboardProps> = ({ setCurrentView, personalization, 
                 <div className="relative" ref={alertsRef}>
                     <button onClick={() => setIsAlertsOpen(!isAlertsOpen)} className="relative p-2 rounded-smooth hover:bg-gradient-surface transition-all duration-200">
                         <BellIcon className="w-6 h-6 text-on-surface-secondary"/>
-                        {alerts.length > 0 && <span className="absolute top-0 right-0 h-3 w-3 rounded-full bg-error-dark border-2 border-surface-dark animate-pulse"></span>}
+                        {alerts.length > 0 && <span className="absolute top-0 right-0 h-3 w-3 rounded-full bg-red-600 border-2 border-surface-dark animate-pulse"></span>}
                     </button>
                     {isAlertsOpen && (
-                        <div className="absolute right-0 mt-2 w-80 bg-gradient-glass border-glass rounded-gentle shadow-glass z-20 backdrop-blur-glass">
+                        <div className="absolute right-0 mt-2 w-80 bg-frost-glass border-glass rounded-gentle shadow-glass z-20 backdrop-blur-glass">
                             <div className="p-3 font-semibold border-b border-glass text-white">{t('dashboard_proactive_alerts_title')}</div>
                             <div className="max-h-80 overflow-y-auto">
                                 {alerts.length > 0 ? (
                                     alerts.slice(0, 10).map((alert, index) => (
                                         <div key={index} className="p-3 border-b border-glass hover:bg-gradient-surface transition-colors duration-200">
                                             <p className="text-sm text-on-surface-medium">{alert.message}</p>
-                                            <button onClick={() => { setViewingTrip(alert.trip); setIsAlertsOpen(false); }} className="text-xs text-brand-primary hover:text-white transition-colors duration-200 mt-1">{t('dashboard_alert_view_trip_cta')}</button>
+                                            <button onClick={() => { setViewingTrip(alert.trip); setIsAlertsOpen(false); }} className="text-xs text-yellow-400 hover:text-yellow-300 transition-colors duration-200 mt-1 cursor-pointer underline">{t('dashboard_alert_view_trip_cta')}</button>
                                         </div>
                                     ))
                                 ) : (
@@ -187,7 +188,7 @@ const Dashboard: React.FC<DashboardProps> = ({ setCurrentView, personalization, 
             </div>
             
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div className="lg:col-span-2 bg-gradient-glass border-glass rounded-fluid p-6 backdrop-blur-glass">
+                <div style={contentStyle} className="lg:col-span-2 bg-frost-glass border-glass rounded-fluid p-6 backdrop-blur-glass">
                     <div className="flex justify-between items-center mb-4">
                         <h3 className="text-lg font-semibold text-white">{t('dashboard_visualAnalysis')}</h3>
                     </div>
@@ -207,7 +208,7 @@ const Dashboard: React.FC<DashboardProps> = ({ setCurrentView, personalization, 
                         </BarChart>
                     </ResponsiveContainer>
                 </div>
-                <div className="bg-gradient-glass border-glass rounded-fluid p-6 backdrop-blur-glass">
+                <div style={contentStyle} className="bg-frost-glass border-glass rounded-fluid p-6 backdrop-blur-glass">
                     <h3 className="text-lg font-semibold mb-4 text-white">{t('dashboard_recentTrips')}</h3>
                     <div className="space-y-3">
                         {recentTrips.length > 0 ? recentTrips.map(trip => (

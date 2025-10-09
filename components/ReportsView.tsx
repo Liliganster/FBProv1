@@ -105,7 +105,7 @@ const ReportsView: React.FC<ReportsViewProps> = ({ personalization, theme }) => 
         )}
       </div>
 
-      <div style={contentStyle} className="rounded-lg shadow-lg overflow-hidden">
+      <div style={contentStyle} className="bg-frost-glass rounded-lg shadow-lg overflow-hidden">
         <table className="w-full text-left">
           <thead className="bg-gray-700/50">
             <tr>

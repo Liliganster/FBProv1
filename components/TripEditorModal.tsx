@@ -559,8 +559,8 @@ const TripEditorModal: React.FC<TripEditorModalProps> = ({ trip, projects, trips
   }));
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center px-4 py-16 overflow-y-auto bg-black/60 backdrop-blur-sm">
-      <div className="relative w-full max-w-2xl bg-background-dark/95 border border-gray-700/60 rounded-lg shadow-2xl flex flex-col max-h-[88vh] overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-start justify-center px-4 py-16 overflow-y-auto bg-black/60 backdrop-blur-sm" onClick={handleClose}>
+      <div className="relative w-full max-w-2xl bg-frost-glass border border-gray-700/60 rounded-lg shadow-2xl flex flex-col max-h-[88vh] overflow-hidden" onClick={(e) => e.stopPropagation()}>
         <header className="flex items-start justify-between px-6 py-4 border-b border-gray-700/60">
           <div className="flex items-center gap-3 pr-6">
             <h2 className="text-lg font-semibold tracking-tight text-white">{trip ? t('tripEditor_title_edit') : t('tripEditor_title_add')}</h2>
