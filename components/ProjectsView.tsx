@@ -136,14 +136,14 @@ const ProjectsView: React.FC<ProjectsViewProps> = ({ setCurrentView, personaliza
   };
 
   return (
-    <div className={`${theme === 'dark' ? 'text-on-surface-dark' : 'text-gray-900'}`}>
+    <div className="text-on-surface-dark">
       <div className="flex justify-between items-center mb-8">
         {selectedProjectIds.length > 0 ? (
           <div className="flex items-center gap-4 w-full">
-            <h2 className={`text-xl font-semibold ${theme === 'dark' ? 'text-[rgba(135,206,235,1)]' : 'text-gray-900'}`}>{t('projects_selected_count', { count: selectedProjectIds.length })}</h2>
+            <h2 className="text-xl font-semibold text-white">{t('projects_selected_count', { count: selectedProjectIds.length })}</h2>
             <button
               onClick={handleDeleteSelected}
-              className="flex items-center bg-red-600 hover:bg-red-500 text-white font-bold py-2 px-4 rounded-lg transition-colors ml-auto"
+              className="flex items-center bg-red-600 hover:bg-red-500 text-white font-bold py-2 px-4 rounded-smooth transition-colors ml-auto"
             >
               <TrashIcon className="w-5 h-5 mr-2" />
               {t('projects_delete_selected_btn')}
@@ -152,7 +152,7 @@ const ProjectsView: React.FC<ProjectsViewProps> = ({ setCurrentView, personaliza
         ) : (
           <>
             <div>
-              <h1 className={`text-3xl font-bold ${theme === 'dark' ? 'text-[rgba(135,206,235,1)]' : 'text-gray-900'}`}>{t('projects_title')}</h1>
+              <h1 className="text-3xl font-bold bg-gradient-title bg-clip-text text-transparent">{t('projects_title')}</h1>
               {userProfile && <h2 className="text-lg font-semibold text-brand-primary">{userProfile.name}</h2>}
             </div>
             <div className="flex items-center gap-4">
@@ -162,13 +162,13 @@ const ProjectsView: React.FC<ProjectsViewProps> = ({ setCurrentView, personaliza
                       placeholder={t('projects_search_placeholder')}
                       value={searchQuery}
                       onChange={e => setSearchQuery(e.target.value)}
-                      className="bg-surface-dark border border-gray-600 rounded-lg py-2 pl-10 pr-4 focus:ring-2 focus:ring-brand-primary focus:outline-none text-on-surface-dark"
+                      className="bg-surface-dark border border-gray-600 rounded-soft py-2 pl-10 pr-4 focus:ring-2 focus:ring-brand-primary focus:outline-none text-on-surface-dark"
                   />
                   <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-on-surface-dark-secondary" />
               </div>
               <button 
                 onClick={handleAddNew} 
-                className="flex items-center bg-brand-primary hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition-colors"
+                className="flex items-center bg-brand-primary hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-smooth transition-colors"
               >
                 <PlusIcon className="w-5 h-5 mr-2" />
                 {t('projects_addNew')}
@@ -178,7 +178,7 @@ const ProjectsView: React.FC<ProjectsViewProps> = ({ setCurrentView, personaliza
         )}
       </div>
       
-      <div style={contentStyle} className="rounded-lg shadow-lg overflow-hidden">
+      <div style={contentStyle} className="rounded-gentle shadow-lg overflow-hidden">
         <table className="w-full text-left">
           <thead className="bg-gray-700/50">
             <tr>
@@ -218,7 +218,7 @@ const ProjectsView: React.FC<ProjectsViewProps> = ({ setCurrentView, personaliza
                     className="bg-background-dark border-gray-600 rounded text-brand-primary focus:ring-brand-primary focus:ring-2 h-5 w-5"
                   />
                 </td>
-                <td className={`p-4 font-semibold ${theme === 'dark' ? 'text-[rgba(135,206,235,1)]' : 'text-gray-900'}`}>{project.name}</td>
+                <td className="p-4 font-semibold bg-gradient-to-r from-brand-primary to-brand-secondary bg-clip-text text-transparent">{project.name}</td>
                 <td className="p-4">{project.producer}</td>
                 <td className="p-4">{project.tripCount}</td>
                 <td className="p-4">{project.documentCount}</td>
@@ -228,7 +228,7 @@ const ProjectsView: React.FC<ProjectsViewProps> = ({ setCurrentView, personaliza
                     <button 
                         onClick={() => toggleProjectVisibility(project.id)}
                         title={t('projects_dashboard_toggle_tooltip')}
-                        className="p-2 rounded-full hover:bg-gray-700/50 transition-colors"
+                        className="p-2 rounded-smooth hover:bg-gray-700/50 transition-colors"
                     >
                         <StarIcon className={`w-6 h-6 mx-auto transition-all duration-150 transform hover:scale-125 ${
                             visibleProjectIds.includes(project.id) 

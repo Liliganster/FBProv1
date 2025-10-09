@@ -123,7 +123,7 @@ const CO2AnalysisSettings: React.FC<CO2AnalysisSettingsProps> = ({
   };
 
   // Visual consistency with Settings modal: rely on predefined bg tokens and tailwind classes
-  const panelBgClass = theme === 'dark' ? 'bg-background-dark/80' : 'bg-gray-100/70';
+  const panelBgClass = 'bg-background-dark/80';
 
   return (
     <div className="fixed inset-0 bg-black/60 flex items-start justify-center z-50 p-4 pt-20 backdrop-blur-sm">

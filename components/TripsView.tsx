@@ -32,7 +32,7 @@ const SpecialOriginTag: React.FC<{ originType: SpecialOrigin }> = ({ originType 
   if (originType === SpecialOrigin.HOME) return null;
 
   return (
-    <span className={`ml-2 px-2 py-0.5 rounded-full text-xs font-semibold ${styles[originType]}`}>
+    <span className={`ml-2 px-2 py-0.5 rounded-smooth text-xs font-semibold ${styles[originType]}`}>
       {t(textKey[originType])}
     </span>
   );
@@ -213,22 +213,22 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
   };
 
   return (
-    <div className={`${theme === 'dark' ? 'text-on-surface-dark' : 'text-gray-900'}`}>
+    <div className="text-on-surface-dark">
       <div className="flex justify-between items-center mb-8">
         {selectedTripIds.length > 0 ? (
           <div className="flex items-center gap-4 w-full">
-            <h2 className={`text-xl font-semibold ${theme === 'dark' ? 'text-[rgba(135,206,235,1)]' : 'text-gray-900'}`}>{t('trips_selected_count', { count: selectedTripIds.length })}</h2>
+            <h2 className="text-xl font-semibold text-white">{t('trips_selected_count', { count: selectedTripIds.length })}</h2>
             <div className="ml-auto flex items-center gap-2">
               <button
                 onClick={() => setIsBatchEditModalOpen(true)}
-                className="flex items-center bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded-lg transition-colors"
+                className="flex items-center bg-gradient-brand hover:shadow-brand hover:scale-[1.02] text-white font-bold py-2 px-4 rounded-smooth transition-all duration-200"
               >
                 <EditIcon className="w-5 h-5 mr-2" />
                 {t('trips_edit_selected_btn')}
               </button>
               <button
                 onClick={handleDeleteSelected}
-                className="flex items-center bg-red-600 hover:bg-red-500 text-white font-bold py-2 px-4 rounded-lg transition-colors"
+                className="flex items-center bg-gradient-to-r from-red-600 to-red-700 hover:shadow-md hover:shadow-red-500/30 hover:scale-[1.02] text-white font-bold py-2 px-4 rounded-smooth transition-all duration-200"
               >
                 <TrashIcon className="w-5 h-5 mr-2" />
                 {t('trips_delete_selected_btn')}
@@ -238,7 +238,7 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
         ) : (
           <>
             <div>
-                <h1 className={`text-3xl font-bold ${theme === 'dark' ? 'text-[rgba(135,206,235,1)]' : 'text-gray-900'}`}>{t('trips_title')}</h1>
+                <h1 className="text-3xl font-bold bg-gradient-title bg-clip-text text-transparent">{t('trips_title')}</h1>
                 {userProfile && <h2 className="text-lg font-semibold text-brand-primary">{userProfile.name}</h2>}
             </div>
             <div className="flex items-center gap-4">
@@ -248,19 +248,19 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
                   id="project-filter"
                   value={projectFilter}
                   onChange={(e) => setProjectFilter(e.target.value)}
-                  className="bg-surface-dark border border-gray-600 rounded-lg py-2 px-4 focus:ring-2 focus:ring-brand-primary focus:outline-none text-white"
+                  className="bg-gradient-surface border-surface rounded-smooth py-2 px-4 focus:ring-2 focus:ring-brand-primary focus:outline-none text-white transition-all duration-200"
                 >
-                  <option value="all" className="bg-surface-dark text-white">{t('trips_filter_all_projects')}</option>
+                  <option value="all">{t('trips_filter_all_projects')}</option>
                   {projects.map(p => (
-                    <option key={p.id} value={p.id} className="bg-surface-dark text-white">{p.name}</option>
+                    <option key={p.id} value={p.id}>{p.name}</option>
                   ))}
                 </select>
               </div>
-              <button onClick={() => setIsBulkModalOpen(true)} className="flex items-center bg-brand-secondary hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition-colors">
+              <button onClick={() => setIsBulkModalOpen(true)} className="flex items-center bg-gradient-to-r from-success-dark to-green-600 hover:shadow-md hover:shadow-green-500/30 hover:scale-[1.02] text-white font-bold py-2 px-4 rounded-smooth transition-all duration-200">
                 <UploadCloudIcon className="w-5 h-5 mr-2"/>
                 {t('trips_bulkUpload')}
               </button>
-              <button onClick={handleAddTrip} className="flex items-center bg-brand-primary hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition-colors">
+              <button onClick={handleAddTrip} className="flex items-center bg-gradient-brand hover:shadow-brand hover:scale-[1.02] text-white font-bold py-2 px-4 rounded-smooth transition-all duration-200">
                 <PlusIcon className="w-5 h-5 mr-2"/>
                 {t('trips_addTrip')}
               </button>
@@ -269,9 +269,9 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
         )}
       </div>
 
-      <div style={contentStyle} className="rounded-lg shadow-lg overflow-hidden">
+      <div className="bg-gradient-glass border-glass rounded-fluid shadow-glass overflow-hidden backdrop-blur-glass">
         <table className="w-full text-left">
-          <thead className="bg-gray-700/50">
+          <thead className="bg-gradient-surface border-b border-glass">
             <tr>
               <th className="p-4 w-12">
                 <input
@@ -279,15 +279,15 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
                   checked={isAllSelected}
                   onChange={handleSelectAll}
                   disabled={filteredTrips.length === 0}
-                  className="bg-background-dark border-gray-600 rounded text-brand-primary focus:ring-brand-primary focus:ring-2 h-5 w-5"
+                  className="bg-gradient-surface border-surface rounded text-brand-primary focus:ring-brand-primary focus:ring-2 h-5 w-5 transition-all duration-200"
                 />
               </th>
-              <th className="p-4 text-sm font-semibold text-on-surface-dark-secondary uppercase tracking-wider">
-                <button onClick={handleSortByDate} className="uppercase flex items-center gap-1 hover:text-white transition-colors">
+              <th className="p-4 text-sm font-semibold text-on-surface-secondary uppercase tracking-wider">
+                <button onClick={handleSortByDate} className="uppercase flex items-center gap-1 hover:text-white transition-colors duration-200">
                   {t('trips_col_date')}
                   <div className="flex flex-col -space-y-2">
-                    <ChevronUpIcon className={`w-4 h-4 transition-colors ${sortOrder === 'asc' ? 'text-white' : 'text-gray-500'}`} />
-                    <ChevronDownIcon className={`w-4 h-4 transition-colors ${sortOrder === 'desc' ? 'text-white' : 'text-gray-500'}`} />
+                    <ChevronUpIcon className={`w-4 h-4 transition-colors ${sortOrder === 'asc' ? 'text-brand-primary' : 'text-on-surface-tertiary'}`} />
+                    <ChevronDownIcon className={`w-4 h-4 transition-colors ${sortOrder === 'desc' ? 'text-brand-primary' : 'text-on-surface-tertiary'}`} />
                   </div>
                 </button>
               </th>
@@ -322,14 +322,14 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
               return (
               <tr 
                 key={trip.id} 
-                className={`${isSelected ? 'bg-brand-primary/20' : ''} hover:bg-gray-800/40 transition-colors ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}
+                className={`${isSelected ? 'bg-brand-primary/20' : ''} hover:bg-gradient-surface/50 transition-all duration-200 text-white border-b border-glass/20 last:border-b-0`}
               >
                 <td className="p-4" onClick={(e) => e.stopPropagation()}>
                   <input
                     type="checkbox"
                     checked={isSelected}
                     onChange={() => handleSelectTrip(trip.id)}
-                    className="bg-background-dark border-gray-600 rounded text-brand-primary focus:ring-brand-primary focus:ring-2 h-5 w-5"
+                    className="bg-gradient-surface border-surface rounded text-brand-primary focus:ring-brand-primary focus:ring-2 h-5 w-5 transition-all duration-200"
                     disabled={isLocked}
                   />
                 </td>

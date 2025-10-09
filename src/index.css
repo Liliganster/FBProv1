@@ -1,111 +1,54 @@
 @import "tailwindcss";
 
-/* 🌿 Natural Frost Light Mode Variables - Only applied in light theme */
 :root {
-  /* Color palette inspired by nature */
-  --color-bg-light: #F4F6F5;              /* Main background: stone white */
-  --color-card-light: rgba(255, 255, 255, 0.55);  /* Frosted glass background */
-  --color-border-light: rgba(255, 255, 255, 0.4);
-  --color-green-light: #A8C3A0;           /* Soft leaf green */
-  --color-sand-light: #E9E2D0;            /* Sand beige */
-  --color-sky-light: #A3C9E2;             /* Sky blue */
-  --color-text-light: #2F3A3A;            /* Neutral dark text */
-  --color-shadow-light: rgba(0, 0, 0, 0.05);
-
-  /* Typography */
-  --font-family-frost: 'Inter', 'Poppins', system-ui, sans-serif;
-  --font-size-base-frost: 15px;
-  --font-weight-regular-frost: 400;
-  --font-weight-bold-frost: 600;
-
-  /* Frost and depth */
-  --frost-blur: 14px;
-  --frost-saturate: 160%;
-  --radius-card-frost: 20px;
-  --shadow-soft-frost: 0 4px 20px var(--color-shadow-light);
+  --app-radius: 12px;
+  --app-button-radius: 8px;
+  --gradient-dark: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+  --gradient-surface: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+  --gradient-glass: linear-gradient(135deg, rgba(26, 26, 26, 0.8) 0%, rgba(42, 42, 42, 0.8) 100%);
+  --shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.3), 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
-/* Natural Frost Light Mode Styles - Applied only when body has light theme class */
-body.theme-light {
-  background: #F4F6F5 !important;
-  font-family: 'Inter', 'Poppins', system-ui, sans-serif !important;
-  color: #2F3A3A !important;
-  line-height: 1.5;
+/* Force professional dark background for entire document */
+html, body, #root {
+  background: var(--gradient-dark) !important;
+  color: #ffffff !important;
+  min-height: 100vh;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
 }
 
-
-
-/* Frosted glass cards in light mode */
-body.theme-light .frost-card {
-  background: rgba(255, 255, 255, 0.55) !important;
-  backdrop-filter: blur(14px) saturate(160%) !important;
-  -webkit-backdrop-filter: blur(14px) saturate(160%) !important;
-  border-radius: 20px !important;
-  border: 1px solid rgba(255, 255, 255, 0.4) !important;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05) !important;
-  transition: all 0.25s ease !important;
+/* Homogeneous border radius */
+[class*="rounded"]:not([class*="rounded-full"]):not([class*="rounded-none"]) {
+  border-radius: var(--app-radius) !important;
 }
 
-body.theme-light .frost-card:hover {
-  transform: translateY(-2px) !important;
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08) !important;
+/* Buttons use a slightly tighter radius */
+button:not([class*="rounded-full"]) {
+  border-radius: var(--app-button-radius) !important;
 }
 
-/* Frosted sidebar in light mode */
-body.theme-light .frost-sidebar {
-  background: rgba(255, 255, 255, 0.4) !important;
-  backdrop-filter: blur(12px) !important;
-  -webkit-backdrop-filter: blur(12px) !important;
-  border-right: 1px solid rgba(255, 255, 255, 0.4) !important;
-  color: #2F3A3A !important;
+/* PROFESSIONAL DARK THEME FORM ELEMENTS */
+input, textarea, select {
+  background: rgba(26, 26, 26, 0.8) !important;
+  border: 1px solid rgba(64, 64, 64, 0.5) !important;
+  color: #ffffff !important;
+  border-radius: var(--app-button-radius) !important;
+  transition: all 0.2s ease-in-out;
+  backdrop-filter: blur(8px);
 }
 
-/* Sidebar navigation in light mode */
-body.theme-light .frost-sidebar .frost-nav-item {
-  color: #2F3A3A !important;
-  transition: background 0.2s ease, transform 0.2s ease !important;
+input:focus, textarea:focus, select:focus {
+  outline: none !important;
+  border-color: #007aff !important;
+  box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1) !important;
+  background: rgba(42, 42, 42, 0.9) !important;
 }
 
-body.theme-light .frost-sidebar .frost-nav-item:hover {
-  background: rgba(168, 195, 160, 0.15) !important; /* soft green tint */
-  transform: translateX(2px) !important;
+input:hover, textarea:hover, select:hover {
+  border-color: rgba(82, 82, 82, 0.8) !important;
 }
 
-/* Dashboard metrics in light mode */
-body.theme-light .frost-metric {
-  font-size: 1.5rem;
-  font-weight: var(--font-weight-bold-frost);
-  color: var(--color-text-light);
-}
-
-body.theme-light .frost-metric-label {
-  font-size: 0.85rem;
-  color: #5E6E6E;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-/* Header in light mode */
-body.theme-light .frost-header {
-  background: rgba(255, 255, 255, 0.35);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border-bottom: 1px solid var(--color-border-light);
-  font-weight: var(--font-weight-bold-frost);
-}
-
-/* Animations and transitions in light mode */
-body.theme-light * {
-  transition: background 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
-}
-
-/* Force dark background for entire document in dark mode */
-html, body {
-  background-color: #0f0f0f !important;
-  color: #e5e5e5;
-}
-
-/* PLACEHOLDER COLORS - Maximum specificity for dark theme */
+/* PLACEHOLDER COLORS - Professional dark theme */
 input::placeholder,
 textarea::placeholder,
 input::-webkit-input-placeholder,
@@ -114,8 +57,8 @@ input::-ms-input-placeholder,
 textarea::-webkit-input-placeholder,
 textarea::-moz-placeholder,
 textarea::-ms-input-placeholder {
-  color: #9ca3af !important; /* Gray-400 - good contrast on dark */
-  opacity: 1 !important;
+  color: #a3a3a3 !important;
+  opacity: 0.8 !important;
 }
 
 /* All dark backgrounds - most specific selectors */
@@ -165,31 +108,43 @@ textarea.bg-gray-100::placeholder {
   opacity: 1 !important;
 }
 
-/* Ensure input text is visible - dark theme default */
-input, textarea, select {
-  color: #e5e5e5 !important;
+/* PROFESSIONAL BUTTONS */
+button {
+  border-radius: var(--app-button-radius) !important;
+  transition: all 0.2s ease-in-out;
+  font-weight: 500;
 }
 
-/* Light theme input text - override for light backgrounds */
-.bg-white input,
-.bg-white textarea,
-.bg-white select,
-.bg-gray-50 input,
-.bg-gray-50 textarea,
-.bg-gray-50 select,
-.bg-gray-100 input,
-.bg-gray-100 textarea,
-.bg-gray-100 select,
-input.bg-white,
-textarea.bg-white,
-select.bg-white,
-input.bg-gray-50,
-textarea.bg-gray-50,
-select.bg-gray-50,
-input.bg-gray-100,
-textarea.bg-gray-100,
-select.bg-gray-100 {
-  color: #1f2937 !important; /* Dark text for light backgrounds */
+.btn-primary {
+  background: linear-gradient(135deg, #007aff 0%, #5856d6 100%) !important;
+  color: white !important;
+  border: none !important;
+  box-shadow: 0 4px 16px rgba(0, 122, 255, 0.2) !important;
+}
+
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(0, 122, 255, 0.3) !important;
+}
+
+.btn-secondary {
+  background: var(--gradient-surface) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(64, 64, 64, 0.5) !important;
+  backdrop-filter: blur(8px);
+}
+
+.btn-secondary:hover {
+  background: linear-gradient(135deg, #2a2a2a 0%, #3a3a3a 100%) !important;
+  border-color: rgba(82, 82, 82, 0.8) !important;
+}
+
+/* GLASS MORPHISM EFFECTS */
+.glass-surface {
+  background: var(--gradient-glass) !important;
+  backdrop-filter: blur(12px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  box-shadow: var(--shadow-glass) !important;
 }
 
 /* Fix Recharts tooltip styles */
@@ -233,17 +188,44 @@ body textarea::placeholder {
   opacity: 1 !important;
 }
 
-/* Fix select dropdowns in dark mode */
+/* PROFESSIONAL SELECT DROPDOWNS */
 select option {
-  background-color: #1a1a1a !important;
+  background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%) !important;
   color: #ffffff !important;
+  padding: 8px 12px;
 }
 
 select {
   color: #ffffff !important;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23a3a3a3' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e") !important;
+  background-position: right 8px center !important;
+  background-repeat: no-repeat !important;
+  background-size: 16px 16px !important;
+  padding-right: 40px !important;
 }
 
-/* Ensure no white flashes */
+/* SCROLLBARS */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(26, 26, 26, 0.5);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #3a3a3a 0%, #4a4a4a 100%);
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #4a4a4a 0%, #5a5a5a 100%);
+}
+
+/* GLOBAL RESET */
 * {
   box-sizing: border-box;
 }
@@ -261,3 +243,103 @@ select {
 .animate-toast-in {
   animation: toast-in 0.5s ease-out forwards;
 }
+
+/* Enhanced Border Radius for Frost Effects */
+body.theme-light .rounded-gentle {
+  backdrop-filter: blur(12px) saturate(160%);
+  box-shadow: 
+    0 8px 32px rgba(51, 143, 255, 0.12),
+    0 2px 8px rgba(51, 143, 255, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+body.theme-light .rounded-organic {
+  backdrop-filter: blur(16px) saturate(180%);
+  box-shadow: 
+    0 16px 48px rgba(51, 143, 255, 0.15),
+    0 4px 12px rgba(51, 143, 255, 0.10),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+body.theme-light .rounded-fluid {
+  backdrop-filter: blur(10px) saturate(140%);
+  box-shadow: 
+    0 6px 24px rgba(51, 143, 255, 0.10),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+/* PROFESSIONAL UTILITY CLASSES */
+@layer utilities {
+  .rounded-micro {
+    border-radius: 2px !important;
+  }
+  
+  .rounded-subtle {
+    border-radius: 4px !important;
+  }
+  
+  .rounded-soft {
+    border-radius: 6px !important;
+  }
+  
+  .rounded-smooth {
+    border-radius: 8px !important;
+  }
+  
+  .rounded-gentle {
+    border-radius: 12px !important;
+  }
+  
+  .rounded-fluid {
+    border-radius: 16px !important;
+  }
+  
+  .rounded-organic {
+    border-radius: 20px !important;
+  }
+  
+  .rounded-natural {
+    border-radius: 24px !important;
+  }
+
+  /* GRADIENT BACKGROUNDS */
+  .bg-gradient-dark {
+    background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%) !important;
+  }
+  
+  .bg-gradient-surface {
+    background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%) !important;
+  }
+  
+  .bg-gradient-brand {
+    background: linear-gradient(135deg, #007aff 0%, #5856d6 100%) !important;
+  }
+  
+  .bg-gradient-glass {
+    background: linear-gradient(135deg, rgba(26, 26, 26, 0.8) 0%, rgba(42, 42, 42, 0.8) 100%) !important;
+    backdrop-filter: blur(12px) !important;
+  }
+
+  /* SHADOW UTILITIES */
+  .shadow-glass {
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+  }
+  
+  .shadow-glass-lg {
+    box-shadow: 0 16px 64px rgba(0, 0, 0, 0.4), 0 4px 16px rgba(0, 0, 0, 0.3) !important;
+  }
+  
+  .shadow-brand {
+    box-shadow: 0 4px 16px rgba(0, 122, 255, 0.2) !important;
+  }
+
+  /* BORDER UTILITIES */
+  .border-glass {
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  }
+  
+  .border-surface {
+    border: 1px solid rgba(64, 64, 64, 0.5) !important;
+  }
+}
+

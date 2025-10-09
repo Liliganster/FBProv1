@@ -5,8 +5,6 @@ import {
   LuFolderOpen as FolderOpen,
   LuFileText as FileText,
   LuStar as Star,
-  LuSun as Sun,
-  LuMoon as Moon,
   LuMenu as Menu,
   LuX as X,
   LuCalendarDays as CalendarDays,
@@ -99,12 +97,8 @@ const App: React.FC = () => {
     if (!user) return false;
     return localStorage.getItem(`fahrtenbuch_sidebarCollapsed_${user.id}`) === 'true';
   });
-  
-  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
-    if (!user) return 'dark';
-    const savedTheme = localStorage.getItem(`fahrtenbuch_theme_${user.id}`) as 'light' | 'dark';
-    return savedTheme || 'dark';
-  });
+
+  const theme: 'dark' = 'dark';
   
   const { t } = useTranslation();
   const { userProfile } = useUserProfile();
@@ -225,42 +219,26 @@ const App: React.FC = () => {
     }
   }, [sidebarCollapsed, user]);
 
-  // Consolidated effect to manage all <body> styling for theme and background
+  // Professional dark theme styling
   useEffect(() => {
     const body = document.body;
-    if (user) {
-      localStorage.setItem(`fahrtenbuch_theme_${user.id}`, theme);
-    }
+    body.classList.remove('text-gray-900', 'theme-light');
+    body.classList.add('text-on-surface-dark', 'theme-dark');
 
-    // 1. Set base theme classes for text color and Natural Frost Light Mode
-    if (theme === 'light') {
-        body.classList.remove('text-on-surface-dark', 'theme-dark');
-        body.classList.add('text-gray-900', 'theme-light');
-    } else {
-        body.classList.remove('text-gray-900', 'theme-light');
-        body.classList.add('text-on-surface-dark', 'theme-dark');
-    }
-
-    // 2. Handle the background (image or color)
-    body.style.transition = 'background 0.5s ease-in-out';
+    body.style.transition = 'all 0.3s ease-in-out';
 
     if (personalization.backgroundImage) {
-        // When there's an image, clear all body backgrounds to let the app container handle it
-        body.classList.remove('bg-background-dark', 'bg-gray-100');
-        body.style.backgroundImage = 'none';
-        body.style.backgroundColor = 'transparent';
+      body.style.backgroundImage = `url(${personalization.backgroundImage})`;
+      body.style.backgroundSize = 'cover';
+      body.style.backgroundPosition = 'center';
+      body.style.backgroundAttachment = 'fixed';
+      body.style.backgroundColor = '#0a0a0a';
     } else {
-        // When there's no image, apply theme background color directly
-        body.style.backgroundImage = 'none';
-        body.classList.remove('bg-background-dark', 'bg-gray-100');
-        if (theme === 'light') {
-            // Let CSS variables handle the Natural Frost Light Mode background
-            body.style.backgroundColor = ''; // Remove inline style to let CSS take over
-        } else {
-            body.style.backgroundColor = '#0f0f0f'; // background-dark
-        }
+      body.style.backgroundImage = 'linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%)';
+      body.style.backgroundAttachment = 'fixed';
+      body.style.backgroundColor = '#0a0a0a';
     }
-  }, [theme, personalization.backgroundImage, personalization.backgroundBlur, user]);
+  }, [personalization.backgroundImage, personalization.backgroundBlur]);
 
 
   const renderView = () => {
@@ -304,31 +282,21 @@ const App: React.FC = () => {
     { view: 'advanced', label: t('nav_advanced'), icon: <Rocket size={20} /> },
   ];
   
-  const navStyle = theme === 'dark' 
-      ? {
-          backgroundColor: `rgba(0, 0, 0, ${1 - personalization.uiTransparency})`,
-          backdropFilter: `blur(${personalization.uiBlur}px)`,
-        }
-      : {
-          backgroundColor: 'rgba(255, 255, 255, 0.4)',
-          backdropFilter: 'blur(12px)',
-          WebkitBackdropFilter: 'blur(12px)',
-          borderRight: '1px solid rgba(255, 255, 255, 0.4)',
-        };
+  const navStyle = {
+    backgroundColor: `rgba(0, 0, 0, ${1 - personalization.uiTransparency})`,
+    backdropFilter: `blur(${personalization.uiBlur}px)`,
+  };
 
   return (
     <div 
-      className={`relative flex h-screen font-sans`}
+      className="relative flex h-screen font-sans bg-gradient-dark"
       style={{
-        background: personalization.backgroundImage 
-          ? `url(${personalization.backgroundImage})` 
-          : theme === 'dark' 
-            ? '#0f0f0f' 
-            : '#f3f4f6',
-        backgroundSize: personalization.backgroundImage ? 'cover' : 'auto',
-        backgroundPosition: personalization.backgroundImage ? 'center' : 'initial',
-        backgroundAttachment: personalization.backgroundImage ? 'fixed' : 'initial',
-        filter: personalization.backgroundImage && personalization.backgroundBlur > 0 ? `blur(${personalization.backgroundBlur}px)` : 'none'
+        background: personalization.backgroundImage
+          ? `linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.7)), url(${personalization.backgroundImage})`
+          : 'linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%)',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundAttachment: 'fixed',
       }}
     >
       {/* Overlay for blur effect when needed */}
@@ -346,28 +314,20 @@ const App: React.FC = () => {
         />
       )}
       <nav 
-        style={navStyle}
         className={`
         ${sidebarCollapsed ? 'w-20' : 'w-72'}
-        ${theme === 'dark' 
-          ? 'border-gray-700/30 text-on-surface-dark' 
-          : 'border-gray-200/50 text-gray-900'
-        }
-        ${theme === 'light' ? '' : 'border-r'} transition-all duration-300 flex flex-col
+        bg-gradient-glass border-glass text-on-surface-dark border-r 
+        transition-all duration-300 flex flex-col shadow-glass backdrop-blur-glass
       `}>
-        <div className={`p-6 flex items-center ${sidebarCollapsed ? 'justify-center' : 'justify-between'} border-b ${theme === 'dark' ? 'border-gray-700/30' : 'border-gray-200/50'}`}>
+        <div className={`p-6 flex items-center ${sidebarCollapsed ? 'justify-center' : 'justify-between'} border-b border-glass`}>
           {!sidebarCollapsed && (
-            <h1 className={`text-xl font-bold ${theme === 'dark' ? 'bg-gradient-to-r from-gray-100 to-gray-300 bg-clip-text text-transparent' : 'text-gray-900'}`}>
+            <h1 className="text-xl font-bold bg-gradient-to-r from-white via-blue-100 to-brand-primary bg-clip-text text-transparent">
               FahrtenBuch Pro
             </h1>
           )}
           <button
             onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-            className={`p-2 rounded-lg transition-all duration-300 transform hover:scale-105 ${
-              theme === 'dark' 
-                ? 'hover:bg-surface-dark/80 hover:shadow-md hover:shadow-gray-500/20' 
-                : 'hover:bg-gray-100 hover:shadow-md hover:shadow-gray-500/20'
-            }`}
+            className="p-2 rounded-smooth transition-all duration-300 transform hover:scale-105 hover:bg-gradient-surface hover:shadow-brand/20 hover:shadow-md"
           >
             {sidebarCollapsed ? <Menu size={20} /> : <X size={20} />}
           </button>
@@ -380,13 +340,12 @@ const App: React.FC = () => {
               onClick={() => setCurrentView(item.view as View)}
               title={sidebarCollapsed ? item.label : undefined}
               className={`
-                w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 transform
-                ${sidebarCollapsed ? 'justify-center' : ''} ${theme === 'light' ? 'frost-nav-item' : ''}
-                ${currentView === item.view
-                  ? 'bg-gradient-to-r from-gray-800 to-black text-white shadow-lg shadow-gray-800/30 scale-[1.02]'
-                  : theme === 'dark'
-                    ? 'hover:bg-surface-dark/80 text-on-surface-dark-secondary hover:text-on-surface-dark hover:scale-[1.02] hover:shadow-md hover:shadow-gray-500/20'
-                    : 'hover:bg-gray-100 text-gray-600 hover:text-gray-900 hover:scale-[1.02] hover:shadow-md hover:shadow-gray-500/20'
+                w-full flex items-center gap-3 px-4 py-3 rounded-smooth transition-all duration-300 transform
+                ${sidebarCollapsed ? 'justify-center' : ''}
+                ${
+                  currentView === item.view
+                    ? 'bg-gradient-brand text-white shadow-brand scale-[1.02] shadow-lg'
+                    : 'hover:bg-gradient-surface text-on-surface-secondary hover:text-on-surface-dark hover:scale-[1.02] hover:shadow-glass'
                 }
               `}
             >
@@ -396,29 +355,14 @@ const App: React.FC = () => {
           ))}
         </div>
 
-        <div className={`p-4 space-y-2 border-t ${theme === 'dark' ? 'border-gray-700/30' : 'border-gray-200/50'}`}>
-          <button
-            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-            title={sidebarCollapsed ? t(theme === 'dark' ? 'theme_toggle_light' : 'theme_toggle_dark') : undefined}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 transform hover:scale-105 ${sidebarCollapsed ? 'justify-center' : ''} ${
-              theme === 'dark' 
-                ? 'hover:bg-surface-dark/80 text-on-surface-dark-secondary hover:text-on-surface-dark hover:shadow-lg hover:shadow-yellow-500/30' 
-                : 'hover:bg-gray-100 text-gray-600 hover:text-gray-900 hover:shadow-lg hover:shadow-blue-500/30'
-            }`}
-          >
-            {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
-            {!sidebarCollapsed && <span className="font-medium">{t(theme === 'dark' ? 'theme_toggle_light' : 'theme_toggle_dark')}</span>}
-          </button>
-          
+        <div className="p-4 space-y-2 border-t border-glass">
           <button
                 onClick={() => setCurrentView('settings')}
                 title={sidebarCollapsed ? t('nav_settings') : undefined}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 transform ${sidebarCollapsed ? 'justify-center' : ''} ${
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-smooth transition-all duration-300 transform ${sidebarCollapsed ? 'justify-center' : ''} ${
                     currentView === 'settings'
-                    ? 'bg-gradient-to-r from-gray-800 to-black text-white shadow-lg shadow-gray-800/30 scale-[1.02]'
-                    : theme === 'dark'
-                        ? 'hover:bg-surface-dark/80 text-on-surface-dark-secondary hover:text-on-surface-dark hover:scale-[1.02] hover:shadow-md hover:shadow-gray-500/20'
-                        : 'hover:bg-gray-100 text-gray-600 hover:text-gray-900 hover:scale-[1.02] hover:shadow-md hover:shadow-gray-500/20'
+                    ? 'bg-gradient-brand text-white shadow-brand scale-[1.02] shadow-lg'
+                    : 'hover:bg-gradient-surface text-on-surface-secondary hover:text-on-surface-dark hover:scale-[1.02] hover:shadow-glass'
                 }`}
             >
                 <Settings size={20} />
@@ -428,26 +372,23 @@ const App: React.FC = () => {
             <button
                 onClick={logout}
                 title={sidebarCollapsed ? t('logout_btn') : undefined}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 transform hover:scale-[1.02] ${sidebarCollapsed ? 'justify-center' : ''} ${
-                    theme === 'dark'
-                        ? 'hover:bg-red-600/80 text-on-surface-dark-secondary hover:text-white hover:shadow-md hover:shadow-red-500/30'
-                        : 'hover:bg-red-50 text-gray-600 hover:text-red-600 hover:shadow-md hover:shadow-red-500/30'
-                }`}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-smooth transition-all duration-300 transform hover:scale-[1.02] ${sidebarCollapsed ? 'justify-center' : ''} 
+                hover:bg-gradient-to-r hover:from-red-600/80 hover:to-red-700/80 text-on-surface-secondary hover:text-white hover:shadow-md hover:shadow-red-500/30`}
             >
                 <LogOut size={20} />
                 {!sidebarCollapsed && <span className="font-medium">{t('logout_btn')}</span>}
             </button>
 
             <div 
-                className={`w-full flex items-center gap-3 px-4 pt-4 mt-2 border-t ${theme === 'dark' ? 'border-gray-700/30' : 'border-gray-200/50'} ${sidebarCollapsed ? 'justify-center' : ''}`}
+                className={`w-full flex items-center gap-3 px-4 pt-4 mt-2 border-t border-glass ${sidebarCollapsed ? 'justify-center' : ''}`}
             >
                 {userProfile && (
                     <>
                         <Avatar profile={userProfile} className="w-10 h-10 flex-shrink-0" />
                         {!sidebarCollapsed && (
                             <div className="flex flex-col items-start overflow-hidden">
-                                <p className="font-semibold text-sm truncate w-full text-left">{userProfile.name}</p>
-                                <p className={`text-xs ${theme === 'dark' ? 'text-on-surface-dark-secondary' : 'text-gray-600'}`}>{userProfile.licensePlate || 'N/A'}</p>
+                                <p className="font-semibold text-sm truncate w-full text-left text-on-surface-dark">{userProfile.name}</p>
+                                <p className="text-xs text-on-surface-secondary">{userProfile.licensePlate || 'N/A'}</p>
                             </div>
                         )}
                     </>
@@ -455,14 +396,8 @@ const App: React.FC = () => {
             </div>
         </div>
       </nav>
-      <main className={`flex-1 p-8 overflow-y-auto ${
-        personalization.backgroundImage 
-          ? 'bg-transparent' 
-          : theme === 'dark' 
-            ? 'bg-background-dark' 
-            : 'bg-transparent'
-      }`}>
-        <Suspense fallback={<div className={`text-sm ${theme === 'dark' ? 'text-on-surface-dark-secondary' : 'text-gray-600'}`}>Loading…</div>}>
+      <main className="flex-1 p-8 overflow-y-auto bg-transparent">
+        <Suspense fallback={<div className="text-sm text-on-surface-dark-secondary">Loading…</div>}>
           {renderView()}
         </Suspense>
       </main>
@@ -471,3 +406,4 @@ const App: React.FC = () => {
 };
 
 export default App;
+

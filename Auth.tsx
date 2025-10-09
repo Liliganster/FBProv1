@@ -15,15 +15,15 @@ const Auth: React.FC = () => {
 
   if (configError) {
     return (
-      <div className="min-h-screen w-full flex items-center justify-center bg-background-dark text-on-surface-dark px-4">
-        <div className="max-w-md w-full bg-black/30 border border-white/10 rounded-xl p-8 shadow-xl text-center space-y-4">
-          <LoaderIcon className="mx-auto h-10 w-10 animate-spin text-blue-400" />
-          <h1 className="text-xl font-semibold">Configuracion requerida</h1>
-          <p className="text-sm text-on-surface-dark-secondary">
+      <div className="min-h-screen w-full flex items-center justify-center bg-gradient-dark text-on-surface-dark px-4">
+        <div className="max-w-md w-full bg-gradient-glass border-glass rounded-organic p-8 shadow-glass text-center space-y-4 backdrop-blur-glass">
+          <LoaderIcon className="mx-auto h-10 w-10 animate-spin text-brand-primary" />
+          <h1 className="text-xl font-semibold text-white">Configuración requerida</h1>
+          <p className="text-sm text-on-surface-secondary">
             {configError}
           </p>
-          <p className="text-xs text-on-surface-dark-secondary">
-            Define las variables <code className="font-mono">VITE_SUPABASE_URL</code> y <code className="font-mono">VITE_SUPABASE_ANON_KEY</code> en tu <code className="font-mono">.env.local</code> o en las variables de entorno de Vercel y vuelve a recargar.
+          <p className="text-xs text-on-surface-tertiary">
+            Define las variables <code className="font-mono bg-surface-dark px-2 py-1 rounded-subtle">VITE_SUPABASE_URL</code> y <code className="font-mono bg-surface-dark px-2 py-1 rounded-subtle">VITE_SUPABASE_ANON_KEY</code> en tu <code className="font-mono bg-surface-dark px-2 py-1 rounded-subtle">.env.local</code> o en las variables de entorno de Vercel y vuelve a recargar.
           </p>
         </div>
       </div>

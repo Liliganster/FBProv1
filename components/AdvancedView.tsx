@@ -324,18 +324,18 @@ const CostAnalysisDashboard: React.FC<{
     };
 
     return (
-        <div style={dashboardStyle} className="p-8 rounded-lg -m-8">
+        <div style={dashboardStyle} className="p-8 rounded-fluid -m-8">
             <header className="flex justify-between items-start mb-6">
                 <div className="flex items-center gap-4">
-                     <button onClick={() => setViewMode('main')} className="flex items-center bg-gray-700 hover:bg-gray-600 text-white font-bold p-3 rounded-lg">
+                     <button onClick={() => setViewMode('main')} className="flex items-center bg-gray-700 hover:bg-gray-600 text-white font-bold p-3 rounded-smooth">
                         <ArrowLeftIcon className="w-5 h-5" />
                     </button>
                     <div>
-                        <h1 className={`text-2xl font-bold ${theme === 'dark' ? 'text-[rgba(135,206,235,1)]' : 'text-gray-900'}`}>{t('cost_analysis_title')}</h1>
+                        <h1 className="text-2xl font-bold bg-gradient-title bg-clip-text text-transparent">{t('cost_analysis_title')}</h1>
                         <p className="text-sm text-on-surface-dark-secondary">{t('cost_analysis_description_personal')}</p>
                     </div>
                 </div>
-                 <select value={timeRange} onChange={(e) => setTimeRange(e.target.value as any)} className="bg-surface-dark border border-gray-600 rounded-lg py-2 px-4 focus:ring-2 focus:ring-brand-primary focus:outline-none text-on-surface-dark">
+                 <select value={timeRange} onChange={(e) => setTimeRange(e.target.value as any)} className="bg-surface-dark border border-gray-600 rounded-soft py-2 px-4 focus:ring-2 focus:ring-brand-primary focus:outline-none text-on-surface-dark">
                     <option value="3m">{t('cost_analysis_time_range_3m')}</option>
                     <option value="6m">{t('cost_analysis_time_range_6m')}</option>
                     <option value="1y">{t('cost_analysis_time_range_1y')}</option>
@@ -348,7 +348,7 @@ const CostAnalysisDashboard: React.FC<{
                 <div className="flex items-center gap-2 mb-6">
                     <button 
                         onClick={() => setCostView('summary')} 
-                        className={`px-6 py-2 rounded-lg font-semibold transition-colors ${
+                        className={`px-6 py-2 rounded-smooth font-semibold transition-colors ${
                             costView === 'summary' 
                                 ? 'bg-brand-primary text-white' 
                                 : 'bg-surface-dark text-on-surface-dark-secondary hover:bg-gray-700/50'
@@ -358,7 +358,7 @@ const CostAnalysisDashboard: React.FC<{
                     </button>
                     <button 
                         onClick={() => setCostView('monthly')} 
-                        className={`px-6 py-2 rounded-lg font-semibold transition-colors ${
+                        className={`px-6 py-2 rounded-smooth font-semibold transition-colors ${
                             costView === 'monthly' 
                                 ? 'bg-brand-primary text-white' 
                                 : 'bg-surface-dark text-on-surface-dark-secondary hover:bg-gray-700/50'
@@ -381,7 +381,7 @@ const CostAnalysisDashboard: React.FC<{
                     // Vista de Resumen con barras de progreso
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                         {/* Desglose de costos con barras de progreso */}
-                        <div style={cardStyle} className="p-6 rounded-lg">
+                        <div style={cardStyle} className="p-6 rounded-gentle">
                             <h3 className="text-lg font-semibold mb-6 text-white">{t('cost_basic_breakdown')}</h3>
                             
                             <div className="space-y-4">
@@ -615,7 +615,7 @@ const CostAnalysisDashboard: React.FC<{
                                 : `rgba(243, 244, 246, ${1 - personalization.uiTransparency})`,
                             backdropFilter: `blur(${personalization.uiBlur}px)`,
                         }}
-                        className="bg-background-dark rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
+                        className="bg-background-dark rounded-organic shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
                     >
                         <div className="p-6">
                             <div className="flex items-center justify-between mb-6">
@@ -769,7 +769,7 @@ const CostAnalysisDashboard: React.FC<{
 const StatCard: React.FC<{ title: string; value: string; theme: 'light' | 'dark'; }> = ({ title, value, theme }) => (
     <div className="bg-background-dark p-4 rounded-lg">
         <h3 className="text-sm font-medium text-on-surface-dark-secondary">{title}</h3>
-        <p className={`text-3xl font-bold mt-1 ${theme === 'dark' ? 'text-[rgba(135,206,235,1)]' : 'text-gray-900'}`}>{value}</p>
+        <p className="text-3xl font-bold mt-1 text-white">{value}</p>
     </div>
 );
 
@@ -987,7 +987,7 @@ const AdvancedView: React.FC<AdvancedViewProps> = ({ personalization, theme }) =
     
     const renderMainView = () => (
          <div>
-            <h1 className={`text-3xl font-bold mb-8 ${theme === 'dark' ? 'text-[rgba(135,206,235,1)]' : 'text-gray-900'}`}>{t('advanced_title')}</h1>
+            <h1 className="text-3xl font-bold mb-8 bg-gradient-title bg-clip-text text-transparent">{t('advanced_title')}</h1>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <ActionCard
                     title={t('advanced_route_templates_title')}

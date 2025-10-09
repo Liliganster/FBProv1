@@ -36,8 +36,7 @@ export const translations = {
     nav_advanced: 'Advanced',
     logout_btn: 'Log Out',
 
-    theme_toggle_light: 'Light Mode',
-    theme_toggle_dark: 'Dark Mode',
+    
 
     login_title: 'Sign in to your account',
     register_title: 'Create a new account',
@@ -593,8 +592,7 @@ export const translations = {
     nav_advanced: 'Erweitert',
     logout_btn: 'Abmelden',
 
-    theme_toggle_light: 'Heller Modus',
-    theme_toggle_dark: 'Dunkler Modus',
+    
 
     login_title: 'Melden Sie sich bei Ihrem Konto an',
     register_title: 'Neues Konto erstellen',
@@ -1148,8 +1146,7 @@ export const translations = {
     nav_advanced: 'Avanzado',
     logout_btn: 'Cerrar Sesión',
 
-    theme_toggle_light: 'Modo Claro',
-    theme_toggle_dark: 'Modo Oscuro',
+    
 
     login_title: 'Inicia sesión en tu cuenta',
     register_title: 'Crear una cuenta nueva',

@@ -56,17 +56,14 @@ const UndoToast: React.FC<UndoToastProps> = ({
         flex items-center gap-3 px-4 py-3 rounded-lg shadow-2xl
         transition-all duration-300 ease-in-out border
         ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-2 opacity-0'}
-        ${theme === 'dark' 
-          ? 'bg-gray-800/95 border-gray-600/50 text-white backdrop-blur-sm' 
-          : 'bg-white/95 border-gray-200 text-gray-900 backdrop-blur-sm'
-        }
+        bg-background-dark/95 border-gray-600/50 text-white backdrop-blur-sm
       `}
       style={{ maxWidth: '400px', minWidth: '300px' }}
     >
       <div className="flex-1 flex items-center gap-2">
         <RotateCcw 
           size={16} 
-          className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`} 
+          className="text-gray-400" 
         />
         <span className="text-sm">
           {t('undo_toast_message', { action: action.description })}
@@ -79,10 +76,7 @@ const UndoToast: React.FC<UndoToastProps> = ({
           className={`
             px-3 py-1.5 text-sm font-medium rounded-md 
             transition-colors duration-200
-            ${theme === 'dark'
-              ? 'bg-blue-600 hover:bg-blue-500 text-white'
-              : 'bg-blue-600 hover:bg-blue-700 text-white'
-            }
+            bg-brand-primary hover:brightness-110 text-white
           `}
         >
           {t('undo_toast_button')}
@@ -92,10 +86,7 @@ const UndoToast: React.FC<UndoToastProps> = ({
           onClick={onDismiss}
           className={`
             p-1.5 rounded-md transition-colors duration-200
-            ${theme === 'dark'
-              ? 'hover:bg-gray-700 text-gray-400 hover:text-gray-300'
-              : 'hover:bg-gray-100 text-gray-500 hover:text-gray-700'
-            }
+            hover:bg-gray-700 text-gray-400 hover:text-gray-300
           `}
         >
           <X size={14} />

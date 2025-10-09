@@ -483,7 +483,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
            <label htmlFor="csv-upload" className="bg-brand-primary hover:brightness-110 text-white font-medium text-sm py-2.5 px-4 rounded-md cursor-pointer inline-flex items-center justify-center gap-2 transition-colors shadow-sm">
                         <UploadCloudIcon className="w-5 h-5"/> {t('bulk_csv_upload_selectBtn')}
                      </label>
-           <button onClick={handleDriveImport} disabled={isProcessing} className="bg-white hover:bg-gray-200 text-gray-800 font-medium text-sm py-2.5 px-4 rounded-md cursor-pointer inline-flex items-center justify-center gap-2 transition-colors disabled:opacity-50 shadow-sm">
+           <button onClick={handleDriveImport} disabled={isProcessing} className="bg-surface-dark hover:bg-surface-dark/80 text-on-surface-dark font-medium text-sm py-2.5 px-4 rounded-md cursor-pointer inline-flex items-center justify-center gap-2 transition-colors disabled:opacity-50 shadow-sm border border-gray-600/50">
                          {isProcessing ? <LoaderIcon className="w-5 h-5 animate-spin"/> : <DriveIcon className="w-5 h-5 text-[#0F9D58]" />} {t('bulk_drive_upload_selectBtn')}
                      </button>
                   </div>
@@ -567,7 +567,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
                       <p className="text-on-surface-dark-secondary text-sm">or click to select files (Image, PDF, EML, TXT)</p>
                       <input type="file" multiple accept="image/*,application/pdf,.txt,.eml,message/rfc822" onChange={handleAiFileSelected} id="ai-upload" className="hidden" />
                   </div>
-                   <button onClick={handleDriveImport} disabled={isProcessing} className="w-full bg-white hover:bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded-lg cursor-pointer inline-flex items-center justify-center gap-2 transition-colors disabled:opacity-50">
+                   <button onClick={handleDriveImport} disabled={isProcessing} className="w-full bg-surface-dark hover:bg-surface-dark/80 text-on-surface-dark font-bold py-2 px-4 rounded-lg cursor-pointer inline-flex items-center justify-center gap-2 transition-colors disabled:opacity-50 border border-gray-600/50">
                         {isProcessing ? <LoaderIcon className="w-5 h-5 animate-spin"/> : <DriveIcon className="w-5 h-5 text-[#0F9D58]" />} {t('bulk_drive_upload_selectBtn')}
                   </button>
                   {aiFiles.length > 0 && (

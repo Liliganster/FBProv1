@@ -20,26 +20,26 @@ const TripDetailModal: React.FC<TripDetailModalProps> = ({ trip, project, onClos
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center px-4 py-16 overflow-y-auto bg-black/60 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-start justify-center px-4 py-16 overflow-y-auto bg-gradient-overlay backdrop-blur-glass"
       onClick={onClose}
     >
       <div
-        className="relative w-full max-w-5xl bg-background-dark/95 border border-gray-700/60 rounded-lg shadow-2xl flex flex-col h-[82vh] overflow-hidden"
+        className="relative w-full max-w-5xl bg-gradient-glass border-glass rounded-fluid shadow-glass-lg flex flex-col h-[82vh] overflow-hidden backdrop-blur-glass"
         onClick={e => e.stopPropagation()}
       >
-        <header className="flex items-start justify-between px-6 py-4 border-b border-gray-700/60 flex-shrink-0">
+        <header className="flex items-start justify-between px-6 py-4 border-b border-glass flex-shrink-0">
           <h2 className="text-lg font-semibold tracking-tight text-white">{t('detail_title')}</h2>
           <button
             onClick={onClose}
             aria-label={t('common_close')}
-            className="p-2 text-gray-400 hover:text-white hover:bg-white/5 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-primary/50 transition-colors"
+            className="p-2 text-on-surface-secondary hover:text-white hover:bg-gradient-surface rounded-smooth focus:outline-none focus:ring-2 focus:ring-brand-primary transition-all duration-200"
           >
             <XIcon className="w-5 h-5" />
           </button>
         </header>
         <main className="flex-1 flex flex-col md:flex-row min-h-0">
           {/* Sidebar */}
-          <div className="w-full md:w-1/3 px-6 py-6 space-y-4 overflow-y-auto border-r border-gray-700/60 bg-background-dark/60">
+          <div className="w-full md:w-1/3 px-6 py-6 space-y-4 overflow-y-auto border-r border-glass bg-gradient-surface/30">
             <InfoItem label={t('detail_date')} value={formatDateForDisplay(trip.date)} />
             <InfoItem label={t('detail_project')} value={project?.name || t('detail_unknown')} />
             <InfoItem label={t('detail_driver')} value={userProfile?.name || t('detail_unknown')} />

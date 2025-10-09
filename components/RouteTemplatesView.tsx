@@ -119,7 +119,7 @@ const RouteTemplatesView: React.FC<RouteTemplatesViewProps> = ({ onBack, theme, 
             <ArrowLeft className="w-5 h-5" />
           </button>
           <div>
-            <h1 className="text-2xl font-bold text-white">{t('route_templates_title')}</h1>
+            <h1 className="text-2xl font-bold bg-gradient-title bg-clip-text text-transparent">{t('route_templates_title')}</h1>
             <p className="text-sm text-on-surface-dark-secondary">{t('route_templates_subtitle')}</p>
           </div>
         </div>

@@ -140,7 +140,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ setCurrentView, personaliza
   }
 
   return (
-    <div className={`flex h-full -m-8 ${theme === 'dark' ? 'text-on-surface-dark' : 'text-gray-900'}`}>
+    <div className="flex h-full -m-8 text-on-surface-dark">
       <div style={contentStyle} className="w-64 p-4 border-r border-gray-700/50 flex flex-col">
         <h2 className="text-xl font-semibold mb-4">{t('calendar_calendars_title')}</h2>
         <ul className="space-y-2 overflow-y-auto">
@@ -162,7 +162,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ setCurrentView, personaliza
           <div className="flex items-center gap-2">
             <button onClick={() => changeMonth(-1)} className="p-2 rounded-full hover:bg-surface-dark"><ChevronLeftIcon className="w-6 h-6"/></button>
             <button onClick={() => changeMonth(1)} className="p-2 rounded-full hover:bg-surface-dark"><ChevronRightIcon className="w-6 h-6"/></button>
-            <h1 className={`text-2xl font-bold ml-2 ${theme === 'dark' ? 'text-[rgba(135,206,235,1)]' : 'text-gray-900'}`}>
+            <h1 className="text-2xl font-bold ml-2 bg-gradient-title bg-clip-text text-transparent">
               {currentDate.toLocaleDateString(language, { month: 'long', year: 'numeric' })}
             </h1>
           </div>

@@ -123,21 +123,18 @@ const Dashboard: React.FC<DashboardProps> = ({ setCurrentView, personalization, 
           };
 
     const StatCard = ({ title, value, cta, onClick, children }: { title: string, value: string, cta?: string, onClick?: () => void, children?: React.ReactNode }) => (
-        <div 
-            style={contentStyle} 
-            className="p-6 flex flex-col justify-between min-h-[140px] transition-all duration-300 hover:transform hover:translate-y-[-2px]"
-        >
+        <div className="bg-gradient-glass border-glass rounded-fluid p-6 flex flex-col justify-between min-h-[140px] transition-all duration-300 hover:transform hover:translate-y-[-2px] hover:shadow-glass backdrop-blur-glass">
             <div>
                 <div className="flex items-start justify-between">
-                    <h3 className="text-sm font-medium text-on-surface-dark-secondary uppercase tracking-wider">{title}</h3>
+                    <h3 className="text-sm font-medium text-on-surface-secondary uppercase tracking-wider">{title}</h3>
                     {children && !cta && <div className="text-right">{children}</div>}
                 </div>
-                <p className={`text-3xl font-bold mt-2 ${theme === 'dark' ? 'text-[rgba(135,206,235,1)]' : 'text-gray-900'}`}>{value}</p>
+                <p className="text-3xl font-bold mt-2 text-white">{value}</p>
             </div>
             <div className="flex-grow flex flex-col justify-end">
                 {children && cta && <div className="mt-4">{children}</div>}
                 {cta && onClick && (
-                    <button onClick={onClick} className="text-sm text-brand-primary hover:underline mt-2 block text-left">
+                    <button onClick={onClick} className="text-sm text-brand-primary hover:text-white transition-colors duration-200 mt-2 block text-left">
                         {cta}
                     </button>
                 )}
@@ -146,36 +143,36 @@ const Dashboard: React.FC<DashboardProps> = ({ setCurrentView, personalization, 
     );
     
     const renderChart = () => {
-        return <Bar dataKey="km" fill="#a9adb1" name={t('dashboard_tooltip_kms')} />;
+        return <Bar dataKey="km" fill="url(#brandGradient)" name={t('dashboard_tooltip_kms')} />;
     };
     
     const chartData = kmByProject;
 
     return (
-        <div className={`${theme === 'dark' ? 'text-on-surface-dark' : 'text-gray-900'}`}>
+        <div className="text-on-surface-dark">
             <div className="flex justify-between items-start mb-8">
                 <div>
-                    <h1 className={`text-3xl font-bold ${theme === 'dark' ? 'text-[rgba(135,206,235,1)]' : 'text-gray-900'}`}>{t('dashboard_title')}</h1>
+                    <h1 className="text-3xl font-bold bg-gradient-title bg-clip-text text-transparent">{t('dashboard_title')}</h1>
                     {userProfile && <h2 className="text-lg font-semibold text-brand-primary">{userProfile.name}</h2>}
                 </div>
                 <div className="relative" ref={alertsRef}>
-                    <button onClick={() => setIsAlertsOpen(!isAlertsOpen)} className="relative p-2 rounded-full hover:bg-surface-dark">
-                        <BellIcon className="w-6 h-6"/>
-                        {alerts.length > 0 && <span className="absolute top-0 right-0 h-3 w-3 rounded-full bg-red-500 border-2 border-background-dark"></span>}
+                    <button onClick={() => setIsAlertsOpen(!isAlertsOpen)} className="relative p-2 rounded-smooth hover:bg-gradient-surface transition-all duration-200">
+                        <BellIcon className="w-6 h-6 text-on-surface-secondary"/>
+                        {alerts.length > 0 && <span className="absolute top-0 right-0 h-3 w-3 rounded-full bg-error-dark border-2 border-surface-dark animate-pulse"></span>}
                     </button>
                     {isAlertsOpen && (
-                        <div style={contentStyle} className="absolute right-0 mt-2 w-80 rounded-lg shadow-2xl z-20 border border-gray-700/50">
-                            <div className="p-3 font-semibold border-b border-gray-700/50">{t('dashboard_proactive_alerts_title')}</div>
+                        <div className="absolute right-0 mt-2 w-80 bg-gradient-glass border-glass rounded-gentle shadow-glass z-20 backdrop-blur-glass">
+                            <div className="p-3 font-semibold border-b border-glass text-white">{t('dashboard_proactive_alerts_title')}</div>
                             <div className="max-h-80 overflow-y-auto">
                                 {alerts.length > 0 ? (
                                     alerts.slice(0, 10).map((alert, index) => (
-                                        <div key={index} className="p-3 border-b border-gray-700/50 hover:bg-gray-800/40">
-                                            <p className="text-sm">{alert.message}</p>
-                                            <button onClick={() => { setViewingTrip(alert.trip); setIsAlertsOpen(false); }} className="text-xs text-brand-primary hover:underline mt-1">{t('dashboard_alert_view_trip_cta')}</button>
+                                        <div key={index} className="p-3 border-b border-glass hover:bg-gradient-surface transition-colors duration-200">
+                                            <p className="text-sm text-on-surface-medium">{alert.message}</p>
+                                            <button onClick={() => { setViewingTrip(alert.trip); setIsAlertsOpen(false); }} className="text-xs text-brand-primary hover:text-white transition-colors duration-200 mt-1">{t('dashboard_alert_view_trip_cta')}</button>
                                         </div>
                                     ))
                                 ) : (
-                                    <p className="p-4 text-sm text-on-surface-dark-secondary">{t('dashboard_alert_no_alerts')}</p>
+                                    <p className="p-4 text-sm text-on-surface-secondary">{t('dashboard_alert_no_alerts')}</p>
                                 )}
                             </div>
                         </div>
@@ -190,46 +187,44 @@ const Dashboard: React.FC<DashboardProps> = ({ setCurrentView, personalization, 
             </div>
             
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div 
-                    style={contentStyle} 
-                    className="lg:col-span-2 p-6"
-                >
+                <div className="lg:col-span-2 bg-gradient-glass border-glass rounded-fluid p-6 backdrop-blur-glass">
                     <div className="flex justify-between items-center mb-4">
-                        <h3 className={`text-lg font-semibold ${theme === 'dark' ? 'text-[rgba(135,206,235,1)]' : 'text-gray-900'}`}>{t('dashboard_visualAnalysis')}</h3>
-
+                        <h3 className="text-lg font-semibold text-white">{t('dashboard_visualAnalysis')}</h3>
                     </div>
                     <ResponsiveContainer width="100%" height={300}>
                         <BarChart data={chartData}>
-                            <CartesianGrid strokeDasharray="3 3" stroke="#4a4a4a" />
-                            <XAxis dataKey="name" stroke="#a0a0a0" />
-                            <YAxis stroke="#a0a0a0" />
-                            {/* Tooltip removed: only bar hover color change remains */}
+                            <defs>
+                                <linearGradient id="brandGradient" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="0%" stopColor="#007aff" />
+                                    <stop offset="100%" stopColor="#5856d6" />
+                                </linearGradient>
+                            </defs>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#404040" />
+                            <XAxis dataKey="name" stroke="#a3a3a3" />
+                            <YAxis stroke="#a3a3a3" />
                             <Legend />
                             {renderChart()}
                         </BarChart>
                     </ResponsiveContainer>
                 </div>
-                <div 
-                    style={contentStyle} 
-                    className="p-6"
-                >
-                    <h3 className={`text-lg font-semibold mb-4 ${theme === 'dark' ? 'text-[rgba(135,206,235,1)]' : 'text-gray-900'}`}>{t('dashboard_recentTrips')}</h3>
+                <div className="bg-gradient-glass border-glass rounded-fluid p-6 backdrop-blur-glass">
+                    <h3 className="text-lg font-semibold mb-4 text-white">{t('dashboard_recentTrips')}</h3>
                     <div className="space-y-3">
                         {recentTrips.length > 0 ? recentTrips.map(trip => (
-                             <div key={trip.id} onClick={() => setViewingTrip(trip)} className="flex items-center p-2 rounded-lg hover:bg-gray-800/40 cursor-pointer">
+                             <div key={trip.id} onClick={() => setViewingTrip(trip)} className="flex items-center p-3 rounded-smooth hover:bg-gradient-surface cursor-pointer transition-all duration-200 hover:shadow-glass">
                                 <div className="flex-shrink-0 mr-3">
-                                    <div className={`p-2 rounded-full ${trip.specialOrigin === 'HOME' ? 'bg-brand-primary/20' : 'bg-brand-secondary/20'}`}>
+                                    <div className={`p-2 rounded-smooth ${trip.specialOrigin === 'HOME' ? 'bg-brand-primary/20' : 'bg-brand-secondary/20'}`}>
                                        {trip.specialOrigin === 'HOME' ? <ListIcon className="w-5 h-5 text-brand-primary"/> : <FolderIcon className="w-5 h-5 text-brand-secondary"/>}
                                     </div>
                                 </div>
                                 <div className="flex-1 overflow-hidden">
-                                    <p className="font-semibold text-sm truncate">{getProjectName(trip.projectId)}</p>
-                                    <p className="text-xs text-on-surface-dark-secondary">{formatDateForDisplay(trip.date)}</p>
+                                    <p className="font-semibold text-sm truncate text-white">{getProjectName(trip.projectId)}</p>
+                                    <p className="text-xs text-on-surface-secondary">{formatDateForDisplay(trip.date)}</p>
                                 </div>
                                 <p className="font-bold text-brand-primary">{trip.distance.toFixed(1)} km</p>
                             </div>
                         )) : (
-                            <p className="text-sm text-on-surface-dark-secondary">{t('dashboard_noRecentTrips')}</p>
+                            <p className="text-sm text-on-surface-secondary">{t('dashboard_noRecentTrips')}</p>
                         )}
                     </div>
                 </div>
@@ -249,10 +244,10 @@ const Dashboard: React.FC<DashboardProps> = ({ setCurrentView, personalization, 
 const ChartButton: React.FC<{ type: ChartType, label: string, icon: React.ReactNode, current: ChartType, setType: (type: ChartType) => void }> = ({ type, label, icon, current, setType }) => (
     <button
         onClick={() => setType(type)}
-        className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+        className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-smooth transition-all duration-200 ${
             current === type
-                ? 'bg-brand-primary/20 text-brand-primary'
-                : 'text-on-surface-dark-secondary hover:bg-gray-700/50'
+                ? 'bg-gradient-brand text-white shadow-brand'
+                : 'text-on-surface-secondary hover:bg-gradient-surface hover:text-white'
         }`}
     >
         {icon}
