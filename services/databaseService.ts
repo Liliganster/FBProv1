@@ -21,6 +21,7 @@ import {
   DbReportUpdate
 } from '../types/database'
 import { Project, CallsheetFile, TripLedgerEntry, TripLedgerBatch, UserProfile, RouteTemplate, Report } from '../types'
+import logger from '../lib/logger'
 
 class DatabaseService {
   
@@ -41,10 +42,10 @@ class DatabaseService {
         .order('created_at', { ascending: false })
 
       if (error) {
-        console.warn('Database access error (possibly RLS policy issue):', error);
+        logger.warn('Database access error (possibly RLS policy issue):', error);
         // Return empty array if RLS blocks access - app should still work
         if (error.code === 'PGRST116' || error.code === '42501') {
-          console.warn('RLS policy blocking access, returning empty projects list');
+          logger.warn('RLS policy blocking access, returning empty projects list');
           return [];
         }
         throw error;
@@ -71,7 +72,7 @@ class DatabaseService {
 
       return projects
     } catch (error) {
-      console.error('Error fetching user projects:', error)
+      logger.error('Error fetching user projects:', error)
       throw new Error('Failed to fetch projects')
     }
   }
@@ -102,7 +103,7 @@ class DatabaseService {
       .single()
 
     if (error) {
-      console.error('createProject error', error)
+      logger.error('createProject error', error)
       throw error
     }
 
@@ -166,7 +167,7 @@ class DatabaseService {
 
       return project
     } catch (error) {
-      console.error('Error updating project:', error)
+      logger.error('Error updating project:', error)
       throw new Error('Failed to update project')
     }
   }
@@ -192,7 +193,7 @@ class DatabaseService {
 
       if (error) throw error
     } catch (error) {
-      console.error('Error deleting project:', error)
+      logger.error('Error deleting project:', error)
       throw new Error('Failed to delete project')
     }
   }
@@ -218,7 +219,7 @@ class DatabaseService {
 
       if (error) throw error
     } catch (error) {
-      console.error('Error deleting multiple projects:', error)
+      logger.error('Error deleting multiple projects:', error)
       throw new Error('Failed to delete projects')
     }
   }
@@ -333,12 +334,12 @@ class DatabaseService {
 
             // Don't throw on storage error, just log it - the file might already be deleted
             if (storageError) {
-              console.warn('Could not delete file from storage:', storageError.message)
+              logger.warn('Could not delete file from storage:', storageError.message)
             }
           }
         } catch (urlError) {
           // If URL parsing fails, continue with database deletion
-          console.warn('Could not parse storage URL:', urlError)
+          logger.warn('Could not parse storage URL:', urlError)
         }
       }
 
@@ -397,7 +398,7 @@ class DatabaseService {
 
       return project
     } catch (error) {
-      console.error('Error fetching project:', error)
+      logger.error('Error fetching project:', error)
       throw new Error('Failed to fetch project')
     }
   }
@@ -418,7 +419,7 @@ class DatabaseService {
   await this.createProject(userId, { name: project.name })
       }
     } catch (error) {
-      console.error('Error replacing all projects:', error)
+      logger.error('Error replacing all projects:', error)
       throw new Error('Failed to replace projects')
     }
   }
@@ -435,7 +436,7 @@ class DatabaseService {
 
       if (error) throw error
     } catch (error) {
-      console.error('Error deleting all user projects:', error)
+      logger.error('Error deleting all user projects:', error)
       throw new Error('Failed to delete all projects')
     }
   }
@@ -458,7 +459,7 @@ class DatabaseService {
       // Transform to legacy TripLedgerEntry format
       return data.map(this.transformDbLedgerToLegacy)
     } catch (error) {
-      console.error('Error fetching user ledger entries:', error)
+      logger.error('Error fetching user ledger entries:', error)
       throw new Error('Failed to fetch ledger entries')
     }
   }
@@ -497,7 +498,7 @@ class DatabaseService {
       return this.transformDbLedgerToLegacy(data)
     } catch (error) {
       const err = error as any
-      console.error('Error adding ledger entry (detailed):', {
+      logger.error('Error adding ledger entry (detailed):', {
         message: err?.message,
         name: err?.name,
         code: err?.code,
@@ -550,7 +551,7 @@ class DatabaseService {
 
       return data.map(this.transformDbLedgerToLegacy)
     } catch (error) {
-      console.error('Error adding ledger entries:', error)
+      logger.error('Error adding ledger entries:', error)
       throw new Error('Failed to add ledger entries')
     }
   }
@@ -570,7 +571,7 @@ class DatabaseService {
 
       return data.map(this.transformDbLedgerToLegacy)
     } catch (error) {
-      console.error('Error fetching batch ledger entries:', error)
+      logger.error('Error fetching batch ledger entries:', error)
       throw new Error('Failed to fetch batch ledger entries')
     }
   }
@@ -601,7 +602,7 @@ class DatabaseService {
 
       return this.transformDbBatchToLegacy(data)
     } catch (error) {
-      console.error('Error creating ledger batch:', error)
+      logger.error('Error creating ledger batch:', error)
       throw new Error('Failed to create ledger batch')
     }
   }
@@ -621,7 +622,7 @@ class DatabaseService {
 
       return data.map(this.transformDbBatchToLegacy)
     } catch (error) {
-      console.error('Error fetching user ledger batches:', error)
+      logger.error('Error fetching user ledger batches:', error)
       throw new Error('Failed to fetch ledger batches')
     }
   }
@@ -640,7 +641,7 @@ class DatabaseService {
         await this.addLedgerEntries(userId, entries)
       }
     } catch (error) {
-      console.error('Error replacing all ledger entries:', error)
+      logger.error('Error replacing all ledger entries:', error)
       throw new Error('Failed to replace ledger entries')
     }
   }
@@ -654,7 +655,7 @@ class DatabaseService {
       await supabase.from('trip_ledger').delete().eq('user_id', userId)
   await supabase.from('trip_batches').delete().eq('user_id', userId)
     } catch (error) {
-      console.error('Error deleting all user ledger entries:', error)
+      logger.error('Error deleting all user ledger entries:', error)
       throw new Error('Failed to delete all ledger entries')
     }
   }
@@ -723,7 +724,7 @@ class DatabaseService {
 
       return this.transformDbProfileToLegacy(data)
     } catch (error) {
-      console.error('Error fetching user profile:', error)
+      logger.error('Error fetching user profile:', error)
       throw new Error('Failed to fetch user profile')
     }
   }
@@ -754,7 +755,7 @@ class DatabaseService {
 
       return this.transformDbProfileToLegacy(data)
     } catch (error) {
-      console.error('Error creating user profile:', error)
+      logger.error('Error creating user profile:', error)
       throw new Error('Failed to create user profile')
     }
   }
@@ -785,7 +786,7 @@ class DatabaseService {
 
       return this.transformDbProfileToLegacy(data)
     } catch (error) {
-      console.error('Error updating user profile:', error)
+      logger.error('Error updating user profile:', error)
       throw new Error('Failed to update user profile')
     }
   }
@@ -802,7 +803,7 @@ class DatabaseService {
 
       if (error) throw error
     } catch (error) {
-      console.error('Error deleting user profile:', error)
+      logger.error('Error deleting user profile:', error)
       throw new Error('Failed to delete user profile')
     }
   }
@@ -859,7 +860,7 @@ class DatabaseService {
         .order('created_at', { ascending: false })
 
       if (error) {
-        console.warn('Route templates access error:', error)
+        logger.warn('Route templates access error:', error)
         if (error.code === 'PGRST116' || error.code === '42501' || error.code === '42P01') {
           return []
         }
@@ -868,7 +869,7 @@ class DatabaseService {
 
       return data.map(this.transformDbRouteTemplateToLegacy)
     } catch (error) {
-      console.error('Error fetching route templates:', error)
+      logger.error('Error fetching route templates:', error)
       throw new Error('Failed to fetch route templates')
     }
   }
@@ -903,7 +904,7 @@ class DatabaseService {
 
       return this.transformDbRouteTemplateToLegacy(data)
     } catch (error) {
-      console.error('Error creating route template:', error)
+      logger.error('Error creating route template:', error)
       throw new Error('Failed to create route template')
     }
   }
@@ -938,7 +939,7 @@ class DatabaseService {
 
       return this.transformDbRouteTemplateToLegacy(data)
     } catch (error) {
-      console.error('Error updating route template:', error)
+      logger.error('Error updating route template:', error)
       throw new Error('Failed to update route template')
     }
   }
@@ -955,7 +956,7 @@ class DatabaseService {
 
       if (error) throw error
     } catch (error) {
-      console.error('Error deleting route template:', error)
+      logger.error('Error deleting route template:', error)
       throw new Error('Failed to delete route template')
     }
   }
@@ -984,7 +985,7 @@ class DatabaseService {
 
       if (updateError) throw updateError
     } catch (error) {
-      console.error('Error incrementing template use:', error)
+      logger.error('Error incrementing template use:', error)
       throw new Error('Failed to increment template use')
     }
   }
@@ -1001,7 +1002,7 @@ class DatabaseService {
 
       if (error) throw error
     } catch (error) {
-      console.error('Error deleting all route templates:', error)
+      logger.error('Error deleting all route templates:', error)
       throw new Error('Failed to delete all route templates')
     }
   }
@@ -1039,7 +1040,7 @@ class DatabaseService {
         .order('created_at', { ascending: false })
 
       if (error) {
-        console.warn('Reports access error:', error)
+        logger.warn('Reports access error:', error)
         if (error.code === 'PGRST116' || error.code === '42501' || error.code === '42P01') {
           return []
         }
@@ -1048,7 +1049,7 @@ class DatabaseService {
 
       return data.map(this.transformDbReportToLegacy)
     } catch (error) {
-      console.error('Error fetching reports:', error)
+      logger.error('Error fetching reports:', error)
       throw new Error('Failed to fetch reports')
     }
   }
@@ -1087,7 +1088,7 @@ class DatabaseService {
 
       return this.transformDbReportToLegacy(data)
     } catch (error) {
-      console.error('Error creating report:', error)
+      logger.error('Error creating report:', error)
       throw new Error('Failed to create report')
     }
   }
@@ -1112,7 +1113,7 @@ class DatabaseService {
 
       return this.transformDbReportToLegacy(data)
     } catch (error) {
-      console.error('Error fetching report:', error)
+      logger.error('Error fetching report:', error)
       throw new Error('Failed to fetch report')
     }
   }
@@ -1129,7 +1130,7 @@ class DatabaseService {
 
       if (error) throw error
     } catch (error) {
-      console.error('Error deleting report:', error)
+      logger.error('Error deleting report:', error)
       throw new Error('Failed to delete report')
     }
   }
@@ -1146,7 +1147,7 @@ class DatabaseService {
 
       if (error) throw error
     } catch (error) {
-      console.error('Error deleting all reports:', error)
+      logger.error('Error deleting all reports:', error)
       throw new Error('Failed to delete all reports')
     }
   }
