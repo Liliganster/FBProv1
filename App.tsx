@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
+import logger from './lib/logger';
 import {
   LuLayoutDashboard as LayoutDashboard,
   LuCar as Car,
@@ -128,7 +129,7 @@ const App: React.FC = () => {
                     throw new Error("Invalid settings format");
                 }
             } catch (e) {
-                console.error("Failed to parse personalization settings, resetting to default.", e);
+                logger.error("Failed to parse personalization settings, resetting to default.", e);
                 setPersonalization({ backgroundImage: '', uiTransparency: 0.2, uiBlur: 16, backgroundBlur: 0 });
             }
         } else {

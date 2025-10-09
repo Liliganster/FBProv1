@@ -1,4 +1,5 @@
-﻿import { createClient, type SupabaseClient } from '@supabase/supabase-js'
+import { createClient, type SupabaseClient } from '@supabase/supabase-js'
+import logger from './logger'
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
@@ -25,7 +26,7 @@ if (isSupabaseConfigured && supabaseUrl && supabaseAnonKey) {
     }
   })
 } else if (typeof window !== 'undefined') {
-  console.warn(SUPABASE_CONFIG_ERROR)
+  logger.warn(SUPABASE_CONFIG_ERROR)
 }
 
 const getClientOrThrow = (): SupabaseClient<any, any, any> => {

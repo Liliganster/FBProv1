@@ -8,6 +8,7 @@ import {
 } from '../types';
 import { generateHash, createTripCanonicalString, generateRootHash } from './hashService';
 import { databaseService } from './databaseService';
+import logger from '../lib/logger';
 
 /**
  * Generate hash for a trip using canonical string representation
@@ -61,13 +62,13 @@ export class TripLedgerService {
       
       return entries;
     } catch (error) {
-      console.error('Error fetching ledger entries:', error);
+      logger.error('Error fetching ledger entries:', error);
       
       // Fallback to localStorage for backward compatibility
       const stored = localStorage.getItem(`tripLedger_${this.userId}`);
       if (stored) {
         const localEntries = JSON.parse(stored) as TripLedgerEntry[];
-        console.warn('Using localStorage fallback for ledger entries');
+        logger.warn('Using localStorage fallback for ledger entries');
         return localEntries;
       }
       
@@ -90,7 +91,7 @@ export class TripLedgerService {
       // Keep localStorage as backup
       localStorage.setItem(`tripLedger_${this.userId}`, JSON.stringify(entries));
     } catch (error) {
-      console.error('Error saving ledger entries to Supabase:', error);
+      logger.error('Error saving ledger entries to Supabase:', error);
       
       // Fallback to localStorage only
       localStorage.setItem(`tripLedger_${this.userId}`, JSON.stringify(entries));
@@ -110,7 +111,7 @@ export class TripLedgerService {
       this.entriesCache = null;
       this.cacheExpiry = 0;
     } catch (error) {
-      console.error('Error adding ledger entry to Supabase:', error);
+      logger.error('Error adding ledger entry to Supabase:', error);
       
       // Fallback: append to localStorage
       const entries = await this.getLedgerEntries();
@@ -423,7 +424,7 @@ export class TripLedgerService {
     try {
       return await databaseService.getLedgerEntriesByBatch(batchId);
     } catch (error) {
-      console.error('Error fetching batch entries from Supabase:', error);
+      logger.error('Error fetching batch entries from Supabase:', error);
       
       // Fallback to filtering all entries
       const entries = await this.getLedgerEntries();
@@ -438,7 +439,7 @@ export class TripLedgerService {
     try {
       return await databaseService.getUserLedgerBatches(this.userId);
     } catch (error) {
-      console.error('Error fetching batches from Supabase:', error);
+      logger.error('Error fetching batches from Supabase:', error);
       
       // Fallback: extract batches from entries
       const entries = await this.getLedgerEntries();
@@ -511,7 +512,7 @@ export class TripLedgerService {
       const existingEntries = await databaseService.getUserLedgerEntries(this.userId);
       
       if (existingEntries.length > 0) {
-        console.warn('Supabase already has entries, skipping migration');
+        logger.warn('Supabase already has entries, skipping migration');
         return { migrated: false, entriesCount: existingEntries.length };
       }
 
@@ -521,14 +522,14 @@ export class TripLedgerService {
       // Clear localStorage after successful migration
       localStorage.removeItem(localStorageKey);
       
-      console.log(`Successfully migrated ${localEntries.length} entries from localStorage to Supabase`);
+      logger.log(`Successfully migrated ${localEntries.length} entries from localStorage to Supabase`);
       
       // Clear cache to force refresh from Supabase
       this.clearCache();
       
       return { migrated: true, entriesCount: localEntries.length };
     } catch (error) {
-      console.error('Error migrating from localStorage:', error);
+      logger.error('Error migrating from localStorage:', error);
       return { migrated: false, entriesCount: 0 };
     }
   }

@@ -1,6 +1,7 @@
 import { supabase } from '../lib/supabase'
 import { User, Session, AuthError } from '@supabase/supabase-js'
 import { DbProfile, DbProfileInsert, DbProfileUpdate } from '../types/database'
+import logger from '../lib/logger'
 
 export interface AuthResponse {
   user: User | null
@@ -36,7 +37,7 @@ class AuthService {
         try {
           await this.createUserProfile(data.user, metadata)
         } catch (profileError) {
-          console.warn('Could not create user profile, continuing without:', profileError);
+          logger.warn('Could not create user profile, continuing without:', profileError);
           // Continue without profile - signup should still succeed
         }
       }
@@ -152,7 +153,7 @@ class AuthService {
     try {
       await this.signOut();
     } catch (error) {
-      console.warn('Error during session clearing:', error);
+      logger.warn('Error during session clearing:', error);
       // Still try to clear storage even if signOut fails
       if (typeof window !== 'undefined') {
         const keysToRemove = [];
@@ -175,7 +176,7 @@ class AuthService {
       const { data, error } = await supabase.auth.getSession()
       
       if (error) {
-        console.warn('Session error, may need to re-login:', error);
+        logger.warn('Session error, may need to re-login:', error);
         // Don't throw for session errors, just return null
         return {
           user: null,
@@ -188,7 +189,7 @@ class AuthService {
         session: data.session
       }
     } catch (error) {
-      console.warn('Error getting session, returning null:', error)
+      logger.warn('Error getting session, returning null:', error)
       return {
         user: null,
         session: null
@@ -206,7 +207,7 @@ class AuthService {
       if (error) throw error
       return data.user
     } catch (error) {
-      console.error('Error getting current user:', error)
+      logger.error('Error getting current user:', error)
       return null
     }
   }
@@ -270,13 +271,13 @@ class AuthService {
         .single()
 
       if (error) {
-        console.error('Error creating user profile:', error)
+        logger.error('Error creating user profile:', error)
         return null
       }
 
       return data
     } catch (error) {
-      console.error('Error creating user profile:', error)
+      logger.error('Error creating user profile:', error)
       return null
     }
   }
@@ -293,10 +294,10 @@ class AuthService {
         .single()
 
       if (error) {
-        console.warn('Could not fetch user profile:', error);
+        logger.warn('Could not fetch user profile:', error);
         // Return null if RLS blocks access or record doesn't exist
         if (error.code === 'PGRST116' || error.code === '42501' || error.code === 'PGRST204') {
-          console.warn('Profile not accessible/found, user can still use app without profile');
+          logger.warn('Profile not accessible/found, user can still use app without profile');
           return null;
         }
         return null;
@@ -304,7 +305,7 @@ class AuthService {
 
       return data
     } catch (error) {
-      console.warn('Error fetching user profile, continuing without:', error)
+      logger.warn('Error fetching user profile, continuing without:', error)
       return null
     }
   }
@@ -325,13 +326,13 @@ class AuthService {
         .single()
 
       if (error) {
-        console.error('Error updating user profile:', error)
+        logger.error('Error updating user profile:', error)
         return null
       }
 
       return data
     } catch (error) {
-      console.error('Error updating user profile:', error)
+      logger.error('Error updating user profile:', error)
       return null
     }
   }
