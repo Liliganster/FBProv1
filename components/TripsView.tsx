@@ -1,11 +1,11 @@
 import React, { useState, useMemo } from 'react';
 import useTrips from '../hooks/useTrips';
-import { Trip, SpecialOrigin, UserProfile, PersonalizationSettings } from '../types';
+import { Trip, SpecialOrigin, UserProfile, PersonalizationSettings, ExpenseDocument } from '../types';
 import TripEditorModal from './TripEditorModal';
 import BulkUploadModal from './BulkUploadModal';
 import TripDetailModal from './TripDetailModal';
 import BatchEditModal from './BatchEditModal';
-import { PlusIcon, EditIcon, TrashIcon, UploadCloudIcon, MapIcon, ChevronUpIcon, ChevronDownIcon, WarningIcon, LockIcon, CalendarPlusIcon } from './Icons';
+import { PlusIcon, EditIcon, TrashIcon, UploadCloudIcon, MapIcon, ChevronUpIcon, ChevronDownIcon, WarningIcon, LockIcon, CalendarPlusIcon, FileTextIcon } from './Icons';
 import useTranslation from '../hooks/useTranslation';
 import useUserProfile from '../hooks/useUserProfile';
 import { formatDateForDisplay } from '../i18n/translations';
@@ -14,6 +14,7 @@ import useGoogleCalendar from '../hooks/useGoogleCalendar';
 import useToast from '../hooks/useToast';
 import useUndoRedo from '../hooks/useUndoRedo';
 import UndoToast from './UndoToast';
+import useExpenses from '../hooks/useExpenses';
 
 const SpecialOriginTag: React.FC<{ originType: SpecialOrigin }> = ({ originType }) => {
   const { t } = useTranslation();
@@ -49,6 +50,7 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
   const { isSignedIn, createCalendarEvent } = useGoogleCalendar();
   const { showToast } = useToast();
   const { addAction, undo, getLastAction } = useUndoRedo();
+  const { expenses } = useExpenses();
   const [showUndoToast, setShowUndoToast] = useState(false);
   const [isEditorModalOpen, setIsEditorModalOpen] = useState(false);
   const [isBulkModalOpen, setIsBulkModalOpen] = useState(false);
@@ -60,6 +62,49 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
   const [projectFilter, setProjectFilter] = useState<string>('all');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const { t } = useTranslation();
+
+  const expensesByTrip = useMemo<Record<string, ExpenseDocument[]>>(() => {
+    const map: Record<string, ExpenseDocument[]> = {};
+    expenses.forEach(expense => {
+      if (!expense.tripId) return;
+      if (!map[expense.tripId]) {
+        map[expense.tripId] = [];
+      }
+      map[expense.tripId].push(expense);
+    });
+    return map;
+  }, [expenses]);
+
+  const formatCurrency = (value: number, currency?: string | null) => {
+    try {
+      return new Intl.NumberFormat(undefined, {
+        style: 'currency',
+        currency: currency || 'EUR',
+      }).format(value);
+    } catch {
+      return `${value.toFixed(2)} ${currency || 'EUR'}`;
+    }
+  };
+
+  const buildExpenseTooltip = (items: ExpenseDocument[]) => {
+    if (!items.length) return '';
+    return items
+      .map(expense => {
+        const label =
+          expense.category === 'fuel'
+            ? t('expense_category_fuel') || 'Fuel'
+            : t('expense_category_maintenance') || 'Maintenance';
+        const formattedDate = expense.invoiceDate ? formatDateForDisplay(expense.invoiceDate) : '';
+        const parts = [
+          formatCurrency(expense.amount, expense.currency),
+          label,
+          formattedDate,
+          expense.description || '',
+        ].filter(Boolean);
+        return parts.join(' • ');
+      })
+      .join('\n');
+  };
 
   const getProjectName = (projectId: string) => {
     return projects.find(p => p.id === projectId)?.name || t('trips_unknownProject');
@@ -270,7 +315,8 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
       </div>
 
       <div className="bg-frost-glass border-glass rounded-fluid shadow-glass overflow-hidden backdrop-blur-glass">
-        <table className="w-full text-left">
+        <div className="overflow-x-auto">
+        <table className="w-full min-w-[960px] text-left">
           <thead className="bg-gradient-surface border-b border-glass">
             <tr>
               <th className="p-4 w-12">
@@ -293,6 +339,7 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
               </th>
               <th className="p-4 text-sm font-semibold text-on-surface-dark-secondary uppercase tracking-wider">{t('trips_col_route')}</th>
               <th className="p-4 text-sm font-semibold text-on-surface-dark-secondary uppercase tracking-wider">{t('trips_col_project')}</th>
+              <th className="p-4 text-sm font-semibold text-on-surface-dark-secondary uppercase tracking-wider">{t('trips_col_invoices')}</th>
               <th className="p-4 text-sm font-semibold text-on-surface-dark-secondary uppercase tracking-wider">{t('trips_col_distance')}</th>
               <th className="p-4 text-sm font-semibold text-on-surface-dark-secondary uppercase tracking-wider">{t('trips_col_emissions')}</th>
               <th className="p-4 text-sm font-semibold text-on-surface-dark-secondary uppercase tracking-wider">{t('trips_col_earnings')}</th>
@@ -318,6 +365,11 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
               const project = projects.find(p => p.id === trip.projectId);
               const reimbursement = calculateTripReimbursement(trip, userProfile, project);
               const emissions = (trip.distance * EMISSION_FACTOR_G_PER_KM) / 1000;
+              const tripExpenses = expensesByTrip[trip.id] ?? [];
+              const invoiceCount = tripExpenses.length;
+              const invoiceTooltip = buildExpenseTooltip(tripExpenses);
+              const invoiceLabel = t(invoiceCount === 1 ? 'expense_badge_single' : 'expense_badge_plural');
+              const invoiceAriaLabel = t('expense_badge_aria_trip', { count: invoiceCount, label: invoiceLabel });
 
               return (
               <tr 
@@ -352,6 +404,20 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
                   </div>
                 </td>
                 <td className="p-4 whitespace-nowrap cursor-pointer" onClick={() => handleViewTrip(trip)}>{getProjectName(trip.projectId)}</td>
+                <td className="p-4 whitespace-nowrap cursor-pointer" onClick={() => handleViewTrip(trip)}>
+                  {invoiceCount > 0 ? (
+                    <span
+                      className="inline-flex items-center gap-2 rounded-full bg-brand-secondary/10 px-3 py-1 text-xs font-semibold text-brand-secondary"
+                      title={invoiceTooltip}
+                      aria-label={invoiceAriaLabel}
+                    >
+                      <FileTextIcon className="h-4 w-4" />
+                      <span className="text-sm font-semibold">{invoiceCount}</span>
+                    </span>
+                  ) : (
+                    <span className="text-on-surface-dark-secondary">—</span>
+                  )}
+                </td>
                 <td className="p-4 whitespace-nowrap text-brand-primary font-bold cursor-pointer" onClick={() => handleViewTrip(trip)}>{trip.distance.toFixed(1)} km</td>
                 <td className="p-4 whitespace-nowrap cursor-pointer" onClick={() => handleViewTrip(trip)}>
                   <span className="font-semibold">{emissions.toFixed(1)}</span>
@@ -379,11 +445,12 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
               );
             }) : (
               <tr>
-                <td colSpan={8} className="text-center p-8 text-on-surface-dark-secondary">{t('trips_noTrips')}</td>
+                <td colSpan={9} className="text-center p-8 text-on-surface-dark-secondary">{t('trips_noTrips')}</td>
               </tr>
             )}
           </tbody>
         </table>
+        </div>
       </div>
 
       {isEditorModalOpen && (
