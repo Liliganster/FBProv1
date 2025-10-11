@@ -106,7 +106,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
   
   const { t } = useTranslation();
   const { showToast } = useToast();
-  const { isLoaded: isMapsScriptLoaded, error: mapsScriptError } = useGoogleMapsScript({ apiKey: userProfile?.googleMapsApiKey });
+  const { isLoaded: isMapsScriptLoaded, error: mapsScriptError } = useGoogleMapsScript();
   const { showPicker, gapiClient, isSignedIn, signIn } = useGoogleCalendar();
 
   const findHeaderIndex = (headers: string[], validNames: string[]): number => {
@@ -136,12 +136,6 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
   const handleProcessAi = async () => {
       if (!userProfile) {
           showToast(t('report_alert_missingData'), 'error');
-          return;
-      }
-      
-      if (userProfile.googleMapsApiKey && !isMapsScriptLoaded) {
-          const message = mapsScriptError ? `Failed to load Google Maps: ${mapsScriptError.message}` : 'Google Maps service is still loading. Please wait a moment and try again.';
-          showToast(message, mapsScriptError ? 'error' : 'info');
           return;
       }
       
@@ -452,7 +446,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
     </button>
   );
 
-  const mapsLoading = !!userProfile?.googleMapsApiKey && !isMapsScriptLoaded;
+  const mapsLoading = !isMapsScriptLoaded && !mapsScriptError;
 
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center p-4 pt-16 bg-black/60 backdrop-blur-sm" onClick={onClose}>
@@ -618,7 +612,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
               <>
                   <button onClick={onClose} className="px-4 py-2 text-sm bg-gray-700 hover:bg-gray-600 text-white rounded-md font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-brand-primary/60 mr-3">{t('common_cancel')}</button>
                  {mode === 'ai' && (
-                    <button onClick={handleProcessAi} disabled={isProcessing || (aiFiles.length === 0 && aiText.trim().length === 0) || mapsLoading} className="flex items-center justify-center bg-brand-primary hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-lg disabled:opacity-50 w-60">
+                    <button onClick={handleProcessAi} disabled={isProcessing || (aiFiles.length === 0 && aiText.trim().length === 0)} className="flex items-center justify-center bg-brand-primary hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-lg disabled:opacity-50 w-60">
                         {isProcessing ? (
                             <><LoaderIcon className="w-5 h-5 mr-2 animate-spin"/> Processing...</>
                         ) : mapsLoading ? (

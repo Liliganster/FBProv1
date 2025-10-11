@@ -35,7 +35,6 @@ class ExtractorError extends Error {
 }
 
 export type ProviderCredentials = {
-  geminiApiKey?: string | null;
   openRouterApiKey?: string | null;
   openRouterModel?: string | null;
 };
@@ -100,9 +99,8 @@ function resolveProvider(
   creds?: ProviderCredentials
 ): { provider: 'gemini' | 'openrouter'; creds: ProviderCredentials } {
   const c: ProviderCredentials = {
-    geminiApiKey: creds?.geminiApiKey ?? ((import.meta as any).env?.VITE_GEMINI_API_KEY || (window as any)?.GEMINI_API_KEY || null),
-    openRouterApiKey: creds?.openRouterApiKey ?? ((import.meta as any).env?.VITE_OPENROUTER_API_KEY || null),
-    openRouterModel: creds?.openRouterModel ?? ((import.meta as any).env?.VITE_OPENROUTER_MODEL || null),
+    openRouterApiKey: creds?.openRouterApiKey ?? null,
+    openRouterModel: creds?.openRouterModel ?? null,
   };
   if (provider === 'gemini') return { provider: 'gemini', creds: c };
   if (provider === 'openrouter') return { provider: 'openrouter', creds: c };
@@ -110,8 +108,6 @@ function resolveProvider(
   if (c.openRouterApiKey && (c.openRouterModel || true)) {
     return { provider: 'openrouter', creds: c };
   }
-  if (c.geminiApiKey) return { provider: 'gemini', creds: c };
-  // Default to Gemini when no keys found (will error if missing API key)
   return { provider: 'gemini', creds: c };
 }
 

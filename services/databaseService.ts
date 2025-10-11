@@ -23,8 +23,55 @@ import {
   DbExpenseDocumentInsert
 } from '../types/database'
 import { Project, CallsheetFile, TripLedgerEntry, TripLedgerBatch, UserProfile, RouteTemplate, Report, ExpenseDocument, ExpenseCategory } from '../types'
+import { apiKeyEncryption, type EncryptionResult } from './apiKeyEncryptionService'
+import { ownershipValidation, OwnershipError } from './ownershipValidationService'
 
 class DatabaseService {
+  
+  // ===== API KEY ENCRYPTION HELPERS =====
+  
+  /**
+   * Safely encrypt an API key for storage
+   */
+  private encryptApiKey(apiKey: string | null | undefined): string | null {
+    if (!apiKey || apiKey.trim() === '') {
+      return null;
+    }
+    
+    try {
+      const encrypted = apiKeyEncryption.encryptApiKey(apiKey);
+      // Store as JSON string in database
+      return JSON.stringify(encrypted);
+    } catch (error) {
+      console.error('[DatabaseService] Failed to encrypt API key:', error);
+      throw new Error('Failed to encrypt API key');
+    }
+  }
+
+  /**
+   * Safely decrypt an API key from storage
+   */
+  private decryptApiKey(encryptedData: string | null | undefined): string | null {
+    if (!encryptedData) {
+      return null;
+    }
+
+    try {
+      // Handle both old (plain text) and new (encrypted JSON) formats
+      // If it looks like JSON, try to decrypt it
+      if (encryptedData.startsWith('{') && encryptedData.includes('"encryptedData"')) {
+        const parsedData = JSON.parse(encryptedData);
+        return apiKeyEncryption.safeDecrypt(parsedData);
+      } else {
+        // Legacy plain text - return as is but log warning
+        console.warn('[DatabaseService] Found unencrypted API key in database');
+        return encryptedData;
+      }
+    } catch (error) {
+      console.error('[DatabaseService] Failed to decrypt API key:', error);
+      return null; // Return null instead of throwing to maintain compatibility
+    }
+  }
   
   // ===== PROJECT OPERATIONS =====
   
@@ -126,10 +173,18 @@ class DatabaseService {
   }
 
   /**
-   * Update a project
+   * Update a project (with explicit ownership validation)
    */
-  async updateProject(projectId: string, updates: Partial<Omit<Project, 'id' | 'callsheets'>>): Promise<Project> {
+  async updateProject(projectId: string, userId: string, updates: Partial<Omit<Project, 'id' | 'callsheets'>>): Promise<Project> {
     try {
+      // Validate ownership before allowing update
+      await ownershipValidation.validateOwnershipAndThrow(
+        'project',
+        projectId,
+        userId,
+        () => ownershipValidation.validateProjectOwnership(projectId, userId)
+      );
+
       const updateData: DbProjectUpdate = {
         updated_at: new Date().toISOString()
       }
@@ -174,10 +229,18 @@ class DatabaseService {
   }
 
   /**
-   * Delete a project
+   * Delete a project (with explicit ownership validation)
    */
-  async deleteProject(projectId: string): Promise<void> {
+  async deleteProject(projectId: string, userId: string): Promise<void> {
     try {
+      // Validate ownership before allowing deletion
+      await ownershipValidation.validateOwnershipAndThrow(
+        'project',
+        projectId,
+        userId,
+        () => ownershipValidation.validateProjectOwnership(projectId, userId)
+      );
+
       // First delete all associated callsheets
       const { error: callsheetsError } = await supabase
         .from('callsheets')
@@ -200,10 +263,18 @@ class DatabaseService {
   }
 
   /**
-   * Delete multiple projects
+   * Delete multiple projects (with explicit ownership validation)
    */
-  async deleteMultipleProjects(projectIds: string[]): Promise<void> {
+  async deleteMultipleProjects(projectIds: string[], userId: string): Promise<void> {
     try {
+      // Validate ownership of all projects before deletion
+      await ownershipValidation.validateOwnershipAndThrow(
+        'projects',
+        projectIds.join(','),
+        userId,
+        () => ownershipValidation.validateMultipleProjectsOwnership(projectIds, userId)
+      );
+
       // Delete all associated callsheets first
       const { error: callsheetsError } = await supabase
         .from('callsheets')
@@ -239,6 +310,14 @@ class DatabaseService {
       if (authErr) throw new Error('No se pudo obtener usuario autenticado')
       const userId = authData?.user?.id
       if (!userId) throw new Error('Usuario no autenticado')
+
+      // Validate ownership before allowing callsheet addition to project
+      await ownershipValidation.validateOwnershipAndThrow(
+        'project',
+        projectId,
+        userId,
+        () => ownershipValidation.validateProjectOwnership(projectId, userId)
+      );
 
       // Upload files to Supabase Storage and create database records
       const uploadResults = await Promise.all(
@@ -307,10 +386,18 @@ class DatabaseService {
   }
 
   /**
-   * Delete a callsheet from a project
+   * Delete a callsheet from a project (with explicit ownership validation)
    */
-  async deleteCallsheetFromProject(callsheetId: string): Promise<void> {
+  async deleteCallsheetFromProject(callsheetId: string, userId: string): Promise<void> {
     try {
+      // Validate ownership before allowing deletion
+      await ownershipValidation.validateOwnershipAndThrow(
+        'callsheet',
+        callsheetId,
+        userId,
+        () => ownershipValidation.validateCallsheetOwnership(callsheetId, userId)
+      );
+
       // Get callsheet record to extract file path from URL
       const { data: callsheet, error: fetchError } = await supabase
         .from('callsheets')
@@ -450,8 +537,16 @@ class DatabaseService {
     }
   }
 
-  async deleteExpenseDocument(expenseId: string): Promise<void> {
+  async deleteExpenseDocument(expenseId: string, userId: string): Promise<void> {
     try {
+      // Validate ownership before allowing deletion
+      await ownershipValidation.validateOwnershipAndThrow(
+        'expense',
+        expenseId,
+        userId,
+        () => ownershipValidation.validateExpenseOwnership(expenseId, userId)
+      );
+
       const { data: expense, error: fetchError } = await supabase
         .from('expense_documents')
         .select('storage_path')
@@ -580,8 +675,16 @@ class DatabaseService {
   /**
    * Get a single project by ID
    */
-  async getProject(projectId: string): Promise<Project | null> {
+  async getProject(projectId: string, userId: string): Promise<Project | null> {
     try {
+      // Validate ownership before allowing access
+      await ownershipValidation.validateOwnershipAndThrow(
+        'project',
+        projectId,
+        userId,
+        () => ownershipValidation.validateProjectOwnership(projectId, userId)
+      );
+
       const { data, error } = await supabase
         .from('projects')
         .select(`
@@ -779,8 +882,16 @@ class DatabaseService {
   /**
    * Get ledger entries by batch ID
    */
-  async getLedgerEntriesByBatch(batchId: string): Promise<TripLedgerEntry[]> {
+  async getLedgerEntriesByBatch(batchId: string, userId: string): Promise<TripLedgerEntry[]> {
     try {
+      // Validate that the batch belongs to the user before accessing entries
+      await ownershipValidation.validateOwnershipAndThrow(
+        'ledgerBatch',
+        batchId,
+        userId,
+        () => ownershipValidation.validateTripLedgerOwnership(batchId, userId)
+      );
+
       const { data, error } = await supabase
         .from('trip_ledger')
         .select('*')
@@ -925,10 +1036,12 @@ class DatabaseService {
   // ===== USER PROFILE OPERATIONS =====
 
   /**
-   * Get user profile by user ID
+   * Get user profile by user ID (inherently secure - users can only access their own profile)
    */
   async getUserProfile(userId: string): Promise<UserProfile | null> {
     try {
+      // Note: This method is inherently secure since it filters by userId parameter
+      // The caller must ensure userId matches the authenticated user
       const { data, error } = await supabase
         .from('user_profiles')
         .select('*')
@@ -968,8 +1081,8 @@ class DatabaseService {
         profile_picture: profileData.profilePicture || null,
         color: profileData.color || null,
         rate_per_km: profileData.ratePerKm ?? null,
-        google_maps_api_key: profileData.googleMapsApiKey || null,
-        open_router_api_key: profileData.openRouterApiKey || null,
+        google_maps_api_key: null,
+        open_router_api_key: this.encryptApiKey(profileData.openRouterApiKey),
         open_router_model: profileData.openRouterModel || null,
         locked_until_date: profileData.lockedUntilDate || null,
         vehicle_type: profileData.vehicleType || null,
@@ -1002,10 +1115,15 @@ class DatabaseService {
   }
 
   /**
-   * Update user profile
+   * Update user profile (with explicit ownership validation)
    */
   async updateUserProfile(userId: string, updates: Partial<UserProfile>): Promise<UserProfile> {
     try {
+      // Validate that user can only update their own profile
+      if (updates.id && updates.id !== userId) {
+        ownershipValidation.validateUserConsistency(updates.id, userId);
+      }
+
       const updateData: DbProfileUpdate = {
         updated_at: new Date().toISOString()
       }
@@ -1022,8 +1140,7 @@ class DatabaseService {
       if (updates.profilePicture !== undefined) updateData.profile_picture = updates.profilePicture
       if (updates.color !== undefined) updateData.color = updates.color
       if (updates.ratePerKm !== undefined) updateData.rate_per_km = updates.ratePerKm
-      if (updates.googleMapsApiKey !== undefined) updateData.google_maps_api_key = updates.googleMapsApiKey
-      if (updates.openRouterApiKey !== undefined) updateData.open_router_api_key = updates.openRouterApiKey
+      if (updates.openRouterApiKey !== undefined) updateData.open_router_api_key = this.encryptApiKey(updates.openRouterApiKey)
       if (updates.openRouterModel !== undefined) updateData.open_router_model = updates.openRouterModel
       if (updates.lockedUntilDate !== undefined) updateData.locked_until_date = updates.lockedUntilDate
       if (updates.vehicleType !== undefined) updateData.vehicle_type = updates.vehicleType
@@ -1088,8 +1205,8 @@ class DatabaseService {
       profilePicture: dbProfile.profile_picture,
       color: dbProfile.color,
       ratePerKm: dbProfile.rate_per_km ?? null,
-      googleMapsApiKey: dbProfile.google_maps_api_key,
-      openRouterApiKey: dbProfile.open_router_api_key,
+      googleMapsApiKey: null,
+      openRouterApiKey: this.decryptApiKey(dbProfile.open_router_api_key),
       openRouterModel: dbProfile.open_router_model,
       lockedUntilDate: dbProfile.locked_until_date,
       vehicleType: dbProfile.vehicle_type ?? null,
@@ -1171,10 +1288,18 @@ class DatabaseService {
   }
 
   /**
-   * Update a route template
+   * Update a route template (with explicit ownership validation)
    */
-  async updateRouteTemplate(templateId: string, updates: Partial<Omit<RouteTemplate, 'id'>>): Promise<RouteTemplate> {
+  async updateRouteTemplate(templateId: string, userId: string, updates: Partial<Omit<RouteTemplate, 'id'>>): Promise<RouteTemplate> {
     try {
+      // Validate ownership before allowing update
+      await ownershipValidation.validateOwnershipAndThrow(
+        'route_template',
+        templateId,
+        userId,
+        () => ownershipValidation.validateRouteTemplateOwnership(templateId, userId)
+      );
+
       const updateData: DbRouteTemplateUpdate = {
         updated_at: new Date().toISOString()
       }
@@ -1206,10 +1331,18 @@ class DatabaseService {
   }
 
   /**
-   * Delete a route template
+   * Delete a route template (with explicit ownership validation)
    */
-  async deleteRouteTemplate(templateId: string): Promise<void> {
+  async deleteRouteTemplate(templateId: string, userId: string): Promise<void> {
     try {
+      // Validate ownership before allowing deletion
+      await ownershipValidation.validateOwnershipAndThrow(
+        'route_template',
+        templateId,
+        userId,
+        () => ownershipValidation.validateRouteTemplateOwnership(templateId, userId)
+      );
+
       const { error } = await supabase
         .from('route_templates')
         .delete()
@@ -1357,8 +1490,16 @@ class DatabaseService {
   /**
    * Get a single report by ID
    */
-  async getReport(reportId: string): Promise<Report | null> {
+  async getReport(reportId: string, userId: string): Promise<Report | null> {
     try {
+      // Validate ownership before allowing access
+      await ownershipValidation.validateOwnershipAndThrow(
+        'report',
+        reportId,
+        userId,
+        () => ownershipValidation.validateReportOwnership(reportId, userId)
+      );
+
       const { data, error } = await supabase
         .from('reports')
         .select('*')
@@ -1380,10 +1521,18 @@ class DatabaseService {
   }
 
   /**
-   * Delete a report
+   * Delete a report (with explicit ownership validation)
    */
-  async deleteReport(reportId: string): Promise<void> {
+  async deleteReport(reportId: string, userId: string): Promise<void> {
     try {
+      // Validate ownership before allowing deletion
+      await ownershipValidation.validateOwnershipAndThrow(
+        'report',
+        reportId,
+        userId,
+        () => ownershipValidation.validateReportOwnership(reportId, userId)
+      );
+
       const { error } = await supabase
         .from('reports')
         .delete()

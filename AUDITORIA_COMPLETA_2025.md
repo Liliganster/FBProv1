@@ -36,8 +36,8 @@ Se ha realizado una auditoría exhaustiva de la aplicación **FahrtenbuchPro** p
 
 ```typescript
 // CÓDIGO ACTUAL - INSEGURO:
-geminiApiKey: (import.meta as any).env?.VITE_GEMINI_API_KEY || null,
-openRouterApiKey: userProfile.openRouterApiKey || (import.meta as any).env?.VITE_OPENROUTER_API_KEY || null,
+geminiApiKey: (import.meta as any).env?.VITE_GEMINI_API_KEY || null, // ANTES: expuesto en bundle
+openRouterApiKey: userProfile.openRouterApiKey || (import.meta as any).env?.VITE_OPENROUTER_API_KEY || null, // ANTES: fallback inseguro
 ```
 
 **Impacto**:

@@ -1,16 +1,16 @@
-﻿# ðŸš€ Despliegue en Vercel - Fahrtenbuch Pro
+# 🚀 Despliegue en Vercel - Fahrtenbuch Pro
 
 ## URL del proyecto
-- **ProducciÃ³n:** https://fb-prov1.vercel.app
+- **Producción:** https://fb-prov1.vercel.app
 - **Repositorio:** https://github.com/Liliganster/FBProv1.git
 
-## âœ… Archivos de configuraciÃ³n creados
+## ✅ Archivos de configuración creados
 
-- âœ… vercel.json - ConfiguraciÃ³n optimizada para Vite
-- âœ… .env.example - Plantilla de variables de entorno
-- âœ… .gitignore actualizado - Excluye carpeta .vercel
+- ✅ vercel.json - Configuración optimizada para Vite
+- ✅ .env.example - Plantilla de variables de entorno
+- ✅ .gitignore actualizado - Excluye carpeta .vercel
 
-## ðŸ“‹ Pasos para desplegar
+## 📋 Pasos para desplegar
 
 ### 1. Push a GitHub
 
@@ -31,17 +31,22 @@ VITE_SUPABASE_URL=https://tu-proyecto.supabase.co
 VITE_SUPABASE_ANON_KEY=tu_supabase_anon_key
 VITE_GOOGLE_MAPS_API_KEY=tu_google_maps_key
 VITE_GOOGLE_CALENDAR_CLIENT_ID=tu_client_id
-VITE_OPENROUTER_API_KEY=tu_openrouter_key
+GOOGLE_MAPS_API_KEY=tu_maps_server_key
+GOOGLE_CALENDAR_API_KEY=tu_calendar_server_key
 GEMINI_API_KEY=tu_gemini_key
+OPENROUTER_API_KEY=tu_openrouter_key
+OPENROUTER_MODEL=google/gemini-2.0-flash-001
+OPENROUTER_HTTP_REFERER=https://fb-prov1.vercel.app
+OPENROUTER_TITLE=Fahrtenbuch Pro
 ```
 
 ### 3. Redeploy
 
-DespuÃ©s de agregar las variables:
+Después de agregar las variables:
 1. Ve a: https://vercel.com/liliganster/fbprov1/deployments
-2. Click en el Ãºltimo deployment â†’ ... â†’ Redeploy
+2. Click en el último deployment → ... → Redeploy
 
-## ðŸ”§ Configurar Supabase para producciÃ³n
+## 🔧 Configurar Supabase para producción
 
 En tu Supabase Dashboard:
 
@@ -50,7 +55,7 @@ En tu Supabase Dashboard:
    - **Site URL:** https://fb-prov1.vercel.app
    - **Redirect URLs:** https://fb-prov1.vercel.app/**
 
-## ðŸ”‘ Configurar Google OAuth (si aplica)
+## 🔑 Configurar Google OAuth (si aplica)
 
 En Google Cloud Console:
 
@@ -61,23 +66,23 @@ En Google Cloud Console:
 4. **Authorized redirect URIs:**
    - https://fb-prov1.vercel.app
 
-## ðŸš€ Actualizaciones futuras
+## 🚀 Actualizaciones futuras
 
 Cada vez que hagas cambios:
 
 ```bash
 git add .
-git commit -m "DescripciÃ³n de cambios"
+git commit -m "Descripción de cambios"
 git push origin main
 ```
 
-Vercel automÃ¡ticamente:
-- âœ… Detecta el cambio
-- âœ… Ejecuta el build  
-- âœ… Despliega a producciÃ³n
-- âœ… Te notifica por email
+Vercel automáticamente:
+- ✅ Detecta el cambio
+- ✅ Ejecuta el build  
+- ✅ Despliega a producción
+- ✅ Te notifica por email
 
-## ðŸ“Š Monitoreo
+## 📊 Monitoreo
 
 URLs importantes:
 - **Dashboard:** https://vercel.com/liliganster/fbprov1
@@ -85,19 +90,19 @@ URLs importantes:
 - **Analytics:** https://vercel.com/liliganster/fbprov1/analytics
 - **Logs:** https://vercel.com/liliganster/fbprov1/logs
 
-## âš¡ Build optimizado
+## ⚡ Build optimizado
 
-Tu configuraciÃ³n actual genera:
+Tu configuración actual genera:
 
 ```
-dist/index.html                         2.40 kB â”‚ gzip:  0.94 kB
-dist/assets/supabase-BAcc0x8N.js      131.69 kB â”‚ gzip: 34.57 kB
-dist/assets/react-vendor-aS3p4E6Q.js  140.34 kB â”‚ gzip: 45.02 kB
-dist/assets/charts-DHRA5yCg.js        362.44 kB â”‚ gzip: 95.50 kB
-dist/assets/index-34iN-phQ.js         386.34 kB â”‚ gzip: 92.10 kB
+dist/index.html                         2.40 kB │ gzip:  0.94 kB
+dist/assets/supabase-BAcc0x8N.js      131.69 kB │ gzip: 34.57 kB
+dist/assets/react-vendor-aS3p4E6Q.js  140.34 kB │ gzip: 45.02 kB
+dist/assets/charts-DHRA5yCg.js        362.44 kB │ gzip: 95.50 kB
+dist/assets/index-34iN-phQ.js         386.34 kB │ gzip: 92.10 kB
 ```
 
-## âœ… Checklist post-despliegue
+## ✅ Checklist post-despliegue
 
 - [ ] Push realizado a GitHub
 - [ ] Variables de entorno configuradas en Vercel
@@ -107,7 +112,7 @@ dist/assets/index-34iN-phQ.js         386.34 kB â”‚ gzip: 92.10 kB
 - [ ] Supabase conecta correctamente
 - [ ] Google OAuth funciona (si aplica)
 
-## ðŸ†˜ Troubleshooting
+## 🆘 Troubleshooting
 
 ### Build falla
 
@@ -117,18 +122,19 @@ npm run build  # Prueba local primero
 
 ### Variables de entorno no funcionan
 
-AsegÃºrate que:
-- Comiencen con VITE_ (excepto GEMINI_API_KEY)
-- EstÃ©n marcadas para Production, Preview y Development
-- Hayas hecho Redeploy despuÃ©s de agregarlas
+Asegurate que:
+- Las variables de cliente usan el prefijo VITE_
+- GEMINI_API_KEY y OPENROUTER_* se definen sin prefijo VITE_ (solo backend)
+- Estan marcadas para Production, Preview y Development
+- Has ejecutado Redeploy despues de agregarlas
 
 ### Error 404 en rutas (al hacer refresh)
 
-**Síntoma:** Error 404 NOT_FOUND al hacer refresh en rutas como `/trips`, `/projects`
+**S�ntoma:** Error 404 NOT_FOUND al hacer refresh en rutas como `/trips`, `/projects`
 
-**Causa:** Vercel no encuentra el archivo físico y no está redirigiendo a `index.html`
+**Causa:** Vercel no encuentra el archivo f�sico y no est� redirigiendo a `index.html`
 
-**Solución Rápida:**
+**Soluci�n R�pida:**
 
 1. **Verifica que `vercel.json` existe y tiene el contenido correcto:**
    ```json
@@ -155,41 +161,41 @@ AsegÃºrate que:
 
 2. **Fuerza un redeploy en Vercel:**
    - Ve a: https://vercel.com/liliganster/fbprov1/deployments
-   - Click en el último deployment (el de arriba)
-   - Click en el botón "..." (tres puntos)
+   - Click en el �ltimo deployment (el de arriba)
+   - Click en el bot�n "..." (tres puntos)
    - Selecciona **"Redeploy"**
-   - Marca la opción **"Use existing Build Cache"** como **OFF** ❌
+   - Marca la opci�n **"Use existing Build Cache"** como **OFF** ?
    - Click "Redeploy"
 
 3. **Espera 2-3 minutos** y prueba de nuevo
 
 4. **Si el problema persiste:**
    ```bash
-   # Haz un commit vacío para forzar rebuild
+   # Haz un commit vac�o para forzar rebuild
    git commit --allow-empty -m "fix: Force Vercel redeploy for routing"
    git push origin main
    ```
 
-5. **Limpia la caché del navegador:**
-   - Chrome: Ctrl+Shift+Delete → Borrar caché
-   - O prueba en modo incógnito (Ctrl+Shift+N)
+5. **Limpia la cach� del navegador:**
+   - Chrome: Ctrl+Shift+Delete ? Borrar cach�
+   - O prueba en modo inc�gnito (Ctrl+Shift+N)
 
-**Prevención:** 
-- ✅ El archivo `vercel.json` YA EXISTE y está bien configurado
-- ⚠️ NUNCA lo borres o modifiques sin saber qué haces
-- El problema es que Vercel necesita hacer rebuild para aplicar la configuración
+**Prevenci�n:** 
+- ? El archivo `vercel.json` YA EXISTE y est� bien configurado
+- ?? NUNCA lo borres o modifiques sin saber qu� haces
+- El problema es que Vercel necesita hacer rebuild para aplicar la configuraci�n
 
-**SOLUCIÓN APLICADA - 2025-10-06:**
+**SOLUCI�N APLICADA - 2025-10-06:**
 
-✅ **vercel.json actualizado con:**
-- `buildCommand` y `outputDirectory` explícitos
+? **vercel.json actualizado con:**
+- `buildCommand` y `outputDirectory` expl�citos
 - `framework: "vite"` especificado
-- Doble configuración: `rewrites` + `routes` para máxima compatibilidad
+- Doble configuraci�n: `rewrites` + `routes` para m�xima compatibilidad
 - Headers de seguridad adicionales
 
-✅ **public/_redirects creado** como fallback
+? **public/_redirects creado** como fallback
 
-**SIGUIENTE PASO CRÍTICO:**
+**SIGUIENTE PASO CR�TICO:**
 ```bash
 # Ejecuta AHORA en tu terminal:
 git add .
@@ -199,10 +205,10 @@ git push origin main
 
 **Luego:**
 1. Ve a Vercel Deployments: https://vercel.com/liliganster/fbprov1/deployments
-2. Espera que termine el deploy automático (2-3 min)
-3. **SI PERSISTE EL ERROR:** Haz redeploy manual sin caché (botón "..." → Redeploy → Desmarcar "Use existing Build Cache")
+2. Espera que termine el deploy autom�tico (2-3 min)
+3. **SI PERSISTE EL ERROR:** Haz redeploy manual sin cach� (bot�n "..." ? Redeploy ? Desmarcar "Use existing Build Cache")
 
-**Estado:** ✅ Configuración completa aplicada | ⏳ Esperando commit + push
+**Estado:** ? Configuraci�n completa aplicada | ? Esperando commit + push
 
 ---
 

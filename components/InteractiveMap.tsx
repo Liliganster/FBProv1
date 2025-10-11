@@ -11,12 +11,11 @@ declare global {
 
 interface InteractiveMapProps {
   locations: string[];
-  apiKey: string | undefined;
   region?: string;
 }
 
-const InteractiveMap: React.FC<InteractiveMapProps> = ({ locations, apiKey, region }) => {
-  const { isLoaded, error } = useGoogleMapsScript({ apiKey });
+const InteractiveMap: React.FC<InteractiveMapProps> = ({ locations, region }) => {
+  const { isLoaded, error } = useGoogleMapsScript();
   const mapRef = useRef<HTMLDivElement>(null);
   const [status, setStatus] = useState<'loading' | 'error' | 'success'>('loading');
   const [errorMessage, setErrorMessage] = useState('');
@@ -103,10 +102,6 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({ locations, apiKey, regi
     return <div className="flex items-center justify-center w-full h-full bg-red-900/50 text-red-300">Error al cargar el script de Google Maps.</div>;
   }
   
-  if (!apiKey) {
-      return <div className="flex items-center justify-center w-full h-full bg-yellow-900/50 text-yellow-300">Falta la clave de API de Google Maps en la configuración.</div>;
-  }
-
   return (
     <div className="relative w-full h-full bg-gray-800 rounded-lg">
       {status !== 'success' && (

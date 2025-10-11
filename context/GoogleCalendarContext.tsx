@@ -15,6 +15,8 @@ declare global {
 interface GoogleApiContextType {
   isInitialized: boolean;
   isSignedIn: boolean;
+  calendarProxyReady: boolean;
+  calendarProxyChecked: boolean;
   signIn: () => void;
   signOut: () => void;
   calendars: any[];
@@ -32,14 +34,14 @@ const DISCOVERY_DOCS = [
     'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'
 ];
 
-// Get Google Calendar credentials from environment variables
-const GOOGLE_CALENDAR_API_KEY = import.meta.env.VITE_GOOGLE_CALENDAR_API_KEY;
 const GOOGLE_CALENDAR_CLIENT_ID = import.meta.env.VITE_GOOGLE_CALENDAR_CLIENT_ID;
 
 export const GoogleCalendarProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const { userProfile } = useUserProfile();
   const [isInitialized, setIsInitialized] = useState(false);
   const [isSignedIn, setIsSignedIn] = useState(false);
+  const [calendarProxyReady, setCalendarProxyReady] = useState<boolean>(false);
+  const [calendarProxyChecked, setCalendarProxyChecked] = useState<boolean>(false);
   const [calendars, setCalendars] = useState<any[]>([]);
   const [gapiClient, setGapiClient] = useState<any>(null);
   const [tokenClient, setTokenClient] = useState<any>(null);
@@ -50,6 +52,31 @@ export const GoogleCalendarProvider: React.FC<{ children: ReactNode }> = ({ chil
   const hasStartedInit = useRef(false); // Prevent double initialization
   
   const GOOGLE_AUTH_STATE_KEY = userProfile ? `fahrtenbuch_google_auth_state_${userProfile.id}` : null;
+
+  useEffect(() => {
+    let cancelled = false;
+    const checkProxy = async () => {
+      try {
+        const res = await fetch('/api/google/calendar/events?health=1');
+        if (!res.ok) throw new Error(`status ${res.status}`);
+        const data = await res.json();
+        if (!cancelled) {
+          setCalendarProxyReady(Boolean(data?.ready));
+          setCalendarProxyChecked(true);
+        }
+      } catch (e) {
+        console.warn('[Google Calendar] Backend proxy health check failed:', e);
+        if (!cancelled) {
+          setCalendarProxyReady(false);
+          setCalendarProxyChecked(true);
+        }
+      }
+    };
+    checkProxy();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const signOut = useCallback(() => {
     if (!gapiClient) return;
@@ -68,9 +95,8 @@ export const GoogleCalendarProvider: React.FC<{ children: ReactNode }> = ({ chil
 
   useEffect(() => {
     // Skip initialization if Google Calendar credentials are not configured
-    if (!GOOGLE_CALENDAR_API_KEY || !GOOGLE_CALENDAR_CLIENT_ID || !userProfile) {
+    if (!GOOGLE_CALENDAR_CLIENT_ID || !userProfile) {
       console.log('[Google Calendar] Skipping init:', {
-        hasApiKey: !!GOOGLE_CALENDAR_API_KEY,
         hasClientId: !!GOOGLE_CALENDAR_CLIENT_ID,
         hasUserProfile: !!userProfile
       });
@@ -78,7 +104,14 @@ export const GoogleCalendarProvider: React.FC<{ children: ReactNode }> = ({ chil
       hasStartedInit.current = false;
       return;
     }
-    
+
+    if (!calendarProxyReady) {
+      console.log('[Google Calendar] Waiting for backend proxy to be ready...');
+      setIsInitialized(false);
+      hasStartedInit.current = false;
+      return;
+    }
+
     // Prevent double initialization (React StrictMode triggers useEffect twice)
     if (hasStartedInit.current) {
       console.log('[Google Calendar] Already initializing, skipping...');
@@ -101,7 +134,6 @@ export const GoogleCalendarProvider: React.FC<{ children: ReactNode }> = ({ chil
 
         console.log('[Google Calendar] Initializing gapi client...');
         await window.gapi.client.init({
-          apiKey: GOOGLE_CALENDAR_API_KEY,
           discoveryDocs: DISCOVERY_DOCS,
         });
         setGapiClient(window.gapi.client);
@@ -176,7 +208,7 @@ export const GoogleCalendarProvider: React.FC<{ children: ReactNode }> = ({ chil
     
     checkScriptsAndInit();
 
-  }, [userProfile, showToast, t]);
+  }, [userProfile, showToast, t, calendarProxyReady]);
 
   useEffect(() => {
     // This effect should run only once when the client is ready to perform the initial check.
@@ -197,17 +229,31 @@ export const GoogleCalendarProvider: React.FC<{ children: ReactNode }> = ({ chil
   
   const listCalendars = useCallback(async () => {
     if (!gapiClient || !isSignedIn) return;
+    const token = gapiClient.getToken()?.access_token;
+    if (!token) return;
     try {
-        const response = await gapiClient.calendar.calendarList.list();
-        setCalendars(response.result.items);
+        const res = await fetch('/api/google/calendar/calendars', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        if (!res.ok) {
+            if (res.status === 401 || res.status === 403) {
+                showToast('Permission denied to list calendars. Please sign in again to grant access.', 'error');
+                signOut();
+                return;
+            }
+            throw new Error(`status ${res.status}`);
+        }
+        const data = await res.json();
+        if (Array.isArray(data?.calendars)) {
+            setCalendars(data.calendars);
+        } else {
+            setCalendars([]);
+        }
     } catch (err: any) {
         console.error('Error fetching calendars:', err);
-        if (err.status === 403 || err.result?.error?.code === 403) {
-            showToast('Permission denied to list calendars. Please sign in again to grant access.', 'error');
-            signOut();
-        } else {
-            showToast('Could not fetch calendar list. You may need to sign in again.', 'error');
-        }
+        showToast('Could not fetch calendar list. You may need to sign in again.', 'error');
     }
   }, [gapiClient, isSignedIn, showToast, signOut]);
   
@@ -226,64 +272,48 @@ export const GoogleCalendarProvider: React.FC<{ children: ReactNode }> = ({ chil
   
   const fetchEvents = async (calendarIds: string[], timeMin: string, timeMax: string): Promise<any[]> => {
     if (!gapiClient || !isSignedIn || calendarIds.length === 0) return [];
-    
+    const token = gapiClient.getToken()?.access_token;
+    if (!token) return [];
+
     try {
-      const batch = gapiClient.newBatch();
-      calendarIds.forEach(calId => {
-        batch.add(gapiClient.calendar.events.list({
-          'calendarId': calId,
-          'timeMin': timeMin,
-          'timeMax': timeMax,
-          'showDeleted': false,
-          'singleEvents': true,
-          'maxResults': 100,
-          'orderBy': 'startTime'
-        }));
+      const res = await fetch('/api/google/calendar/events', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          action: 'list',
+          calendarIds,
+          timeMin,
+          timeMax,
+        }),
       });
 
-      const response = await batch;
-      let allEvents: any[] = [];
-      Object.values(response.result).forEach((res: any) => {
-        if (res.result.items) {
-          allEvents = [...allEvents, ...res.result.items];
+      if (!res.ok) {
+        if (res.status === 401 || res.status === 403) {
+          showToast('Permission denied to fetch calendar events. Please sign in again.', 'error');
+          signOut();
+          return [];
         }
-      });
-      return allEvents;
+        throw new Error(`status ${res.status}`);
+      }
 
+      const data = await res.json();
+      return Array.isArray(data?.events) ? data.events : [];
     } catch (err: any) {
         console.error('Error fetching events:', err);
-        if (err.status === 403 || err.result?.error?.code === 403) {
-            showToast('Permission denied to fetch calendar events. Please sign in again.', 'error');
-            signOut();
-        } else {
-            showToast('Could not fetch calendar events.', 'error');
-        }
+        showToast('Could not fetch calendar events.', 'error');
         return [];
     }
   };
   
-  const showPicker = (callback: (data: any) => void) => {
-    if (!gapiClient || !isSignedIn || !GOOGLE_CALENDAR_API_KEY || !window.google?.picker) {
-      showToast('Google Picker API is not ready.', 'error');
+  const showPicker = (_callback: (data: any) => void) => {
+    if (!gapiClient || !isSignedIn) {
+      showToast('Google Picker requires a valid Google session.', 'error');
       return;
     }
-    const token = gapiClient.getToken().access_token;
-
-    const view = new window.google.picker.View(window.google.picker.ViewId.DOCS);
-    view.setMimeTypes("image/png,image/jpeg,application/pdf,text/plain,text/csv,application/vnd.ms-excel");
-    
-    try {
-        const picker = new window.google.picker.PickerBuilder()
-            .addView(view)
-            .setOAuthToken(token)
-            .setDeveloperKey(GOOGLE_CALENDAR_API_KEY)
-            .setCallback(callback)
-            .build();
-        picker.setVisible(true);
-    } catch (e) {
-        console.error("Error creating Google Picker:", e);
-        showToast("Error opening Google Drive Picker. Please check your API Key and ensure the 'Google Picker API' is enabled in your Google Cloud project.", 'error');
-    }
+    showToast('Google Drive Picker is disabled because the API key is now stored exclusively on the server. Please download files manually.', 'warning');
   };
   
   const createCalendarEvent = useCallback(async (trip: Trip, projectName: string) => {
@@ -304,22 +334,47 @@ export const GoogleCalendarProvider: React.FC<{ children: ReactNode }> = ({ chil
       },
     };
 
+    const token = gapiClient.getToken()?.access_token;
+    if (!token) {
+      throw new Error('Missing Google access token');
+    }
+
     try {
-        // Use 'primary' to automatically use the user's primary calendar
-        const response = await gapiClient.calendar.events.insert({
-          'calendarId': 'primary',
-          'resource': event
+        const res = await fetch('/api/google/calendar/events', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            action: 'create',
+            calendarId: 'primary',
+            event,
+          }),
         });
-        return response;
+
+        if (!res.ok) {
+          if (res.status === 401 || res.status === 403) {
+            showToast('Permission denied to create calendar events. Please sign in again.', 'error');
+            signOut();
+            throw new Error('Unauthorized');
+          }
+          throw new Error(`status ${res.status}`);
+        }
+
+        const data = await res.json();
+        return data?.event;
     } catch (err) {
         console.error('Error creating calendar event:', err);
         throw new Error('Failed to create event. Check console for details.');
     }
-  }, [gapiClient, isSignedIn]);
+  }, [gapiClient, isSignedIn, showToast, signOut]);
 
   const value = {
     isInitialized,
     isSignedIn,
+    calendarProxyReady,
+    calendarProxyChecked,
     signIn,
     signOut,
     calendars,

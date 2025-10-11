@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Trip, Project, SpecialOrigin, UserProfile } from '../types';
-import { getStaticMapUrl, calculateDistance, getCountryCode } from '../services/googleMapsService';
+import { getStaticMapUrlViaBackend, calculateDistanceViaBackend, getCountryCode } from '../services/googleMapsService';
 import { XIcon, LoaderIcon, RouteIcon, PlusIcon, TrashIcon, HomeIcon, MapPinIcon } from './Icons';
 import useTranslation from '../hooks/useTranslation';
 import useGoogleMapsScript from '../hooks/useGoogleMapsScript';
@@ -54,11 +54,13 @@ const TripEditorModal: React.FC<TripEditorModalProps> = ({ trip, projects, trips
   const suggestionsRef = useRef<HTMLUListElement>(null);
   const autocompleteService = useRef<any | null>(null);
   const sessionToken = useRef<any | null>(null);
+  const [staticMapUrl, setStaticMapUrl] = useState<string>('');
+  const [isStaticMapLoading, setIsStaticMapLoading] = useState<boolean>(false);
   
   const { t } = useTranslation();
   const { showToast } = useToast();
   
-  const { isLoaded: isMapsScriptLoaded, error: mapsScriptError } = useGoogleMapsScript({ apiKey: userProfile?.googleMapsApiKey });
+  const { isLoaded: isMapsScriptLoaded, error: mapsScriptError } = useGoogleMapsScript();
   
   // Initialize unsaved changes tracker
   const { hasUnsavedChanges, markAsSaved, checkUnsavedChanges, resetInitialData } = useUnsavedChanges(
@@ -120,6 +122,34 @@ const TripEditorModal: React.FC<TripEditorModalProps> = ({ trip, projects, trips
       sessionToken.current = new window.google.maps.places.AutocompleteSessionToken();
     }
   }, [isMapsScriptLoaded]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const loadStaticMap = async () => {
+      setIsStaticMapLoading(true);
+      try {
+        const locations = Array.isArray(formData.locations) ? formData.locations : [];
+        const url = await getStaticMapUrlViaBackend(locations);
+        if (!cancelled) {
+          setStaticMapUrl(url);
+        }
+      } catch (error) {
+        console.error('[TripEditor] Failed to load static map preview:', error);
+        if (!cancelled) {
+          const seed = Array.isArray(formData.locations) && formData.locations[0] ? formData.locations[0] : 'trip';
+          setStaticMapUrl(`https://picsum.photos/seed/${encodeURIComponent(seed)}/800/200`);
+        }
+      } finally {
+        if (!cancelled) {
+          setIsStaticMapLoading(false);
+        }
+      }
+    };
+    loadStaticMap();
+    return () => {
+      cancelled = true;
+    };
+  }, [formData.locations]);
   
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -318,30 +348,23 @@ const TripEditorModal: React.FC<TripEditorModalProps> = ({ trip, projects, trips
       setIsCalculatingDist(true);
       try {
         const regionCode = getCountryCode(userProfile?.country);
-        const distance = await calculateDistance(finalLocationsForCalc, userProfile?.googleMapsApiKey || '', regionCode);
+        const distance = await calculateDistanceViaBackend(finalLocationsForCalc, regionCode);
         if (distance !== null) {
-            // Only mark as interacted for new trips
-            if (!trip?.id) {
-              setHasUserInteracted(true);
-            }
-            setFormData(prev => ({ ...prev, distance }));
-            if (distance > 1000) {
-              setDistanceWarning(t('tripEditor_alert_improbable_distance'));
-            } else {
-              setDistanceWarning('');
-            }
+          if (!trip?.id) {
+            setHasUserInteracted(true);
+          }
+          setFormData(prev => ({ ...prev, distance }));
+          if (distance > 1000) {
+            setDistanceWarning(t('tripEditor_alert_improbable_distance'));
+          } else {
+            setDistanceWarning('');
+          }
+        } else {
+          showToast(t('tripEditor_alert_distanceError'), 'error');
         }
       } catch (error) {
         const message = error instanceof Error ? error.message : t('tripEditor_alert_distanceError');
-        if (message.includes("Google Maps API key is missing")) {
-            showToast(t('tripEditor_alert_gmapsKeyMissing'), 'error');
-        } else if (message.includes("not available")) {
-            showToast(t('tripEditor_alert_gmaps_not_available'), 'error');
-        } else if (message.includes("Could not calculate distance")) {
-             showToast(`${t('tripEditor_alert_distanceError')} ${message.split('Reason: ')[1]}`, 'error');
-        } else {
-            showToast(message, 'error');
-        }
+        showToast(message, 'error');
       } finally {
         setIsCalculatingDist(false);
       }
@@ -550,9 +573,6 @@ const TripEditorModal: React.FC<TripEditorModalProps> = ({ trip, projects, trips
       setDragOverIndex(null);
   };
   
-  const apiKey = userProfile?.googleMapsApiKey || '';
-  const mapUrl = getStaticMapUrl(formData.locations || [], apiKey);
-
   const specialOriginOptions = Object.values(SpecialOrigin).map(so => ({
       value: so,
       label: t(`specialOrigin_${so.toLowerCase()}`)
@@ -576,7 +596,18 @@ const TripEditorModal: React.FC<TripEditorModalProps> = ({ trip, projects, trips
 
         <main className="flex-1 overflow-y-auto px-6 py-6">
           <>
-              <img src={mapUrl} alt={t('tripEditor_mapAlt')} className="rounded-lg mb-6 h-40 w-full object-cover bg-gray-800 ring-1 ring-gray-700/60" />
+              <div className="relative mb-6 h-40 w-full">
+                <img
+                  src={staticMapUrl || `https://picsum.photos/seed/${encodeURIComponent(formData.locations?.[0] || 'trip')}/800/200`}
+                  alt={t('tripEditor_mapAlt')}
+                  className="rounded-lg h-full w-full object-cover bg-gray-800 ring-1 ring-gray-700/60"
+                />
+                {isStaticMapLoading && (
+                  <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-black/40 backdrop-blur-sm">
+                    <LoaderIcon className="w-6 h-6 animate-spin text-white" />
+                  </div>
+                )}
+              </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <InputField label={t('tripEditor_form_date')} type="date" name="date" value={formData.date} onChange={handleChange} />
                   
@@ -711,7 +742,7 @@ const TripEditorModal: React.FC<TripEditorModalProps> = ({ trip, projects, trips
                       <label className="block text-[11px] font-semibold uppercase tracking-wide text-gray-300/90 mb-1">{t('tripEditor_form_distance')}</label>
                       <div className="flex items-center">
                         <input type="number" min="0.01" step="0.1" name="distance" value={formData.distance || ''} onChange={handleChange} className="w-full bg-background-dark/70 border border-gray-600/70 rounded-md px-3 py-2 text-sm text-on-surface-dark placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-primary/50" />
-                        <button onClick={handleCalculateDistance} disabled={!isMapsScriptLoaded || isCalculatingDist} className="ml-2 p-2 bg-brand-primary/15 text-brand-primary rounded-md hover:bg-brand-primary/25 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-brand-primary/40" title={!isMapsScriptLoaded ? 'Google Maps script is loading...' : 'Calculate distance'}>
+                        <button onClick={handleCalculateDistance} disabled={isCalculatingDist} className="ml-2 p-2 bg-brand-primary/15 text-brand-primary rounded-md hover:bg-brand-primary/25 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-brand-primary/40" title="Calculate distance">
                           {isCalculatingDist ? <LoaderIcon className="w-5 h-5 animate-spin" /> : <RouteIcon className="w-5 h-5"/>}
                         </button>
                       </div>

@@ -2,8 +2,9 @@
 
 import { SpecialOrigin, UserProfile, Trip, AiModelInfo, DocumentType } from '../types';
 import { formatDateForStorage } from '../i18n/translations';
-import { calculateDistance, getCountryCode } from './googleMapsService';
+import { calculateDistanceViaBackend, getCountryCode } from './googleMapsService';
 import { extractUniversalStructured, type ExtractMode } from './extractor-universal/index';
+import { fetchWithRateLimit, withRateLimitHandling } from '../lib/rate-limit-client';
 
 
 declare const pdfjsLib: any;
@@ -208,16 +209,54 @@ const extractFirstPageHalfTextFromPdf = async (file: File): Promise<string> => {
     return pageText.substring(0, Math.floor(pageText.length / 2));
 };
 
-async function runOpenRouterAgent(c: { mimeType: string; data: string } | string, s: Partial<UserProfile>, systemPrompt: string, userAction: string, parser: (r: string) => any): Promise<any> {
-    if (!s.openRouterApiKey || !s.openRouterModel) throw new Error("OpenRouter API Key or Model is not configured.");
-    const content = typeof c === 'string' ? [{ type: "text", text: `${userAction}\n\n**Text:**\n"${c}"` }] : [{ type: "text", text: userAction }, { type: "image_url", image_url: { url: `data:${c.mimeType};base64,${c.data}` } }];
+async function runOpenRouterAgent(
+    contentSource: { mimeType: string; data: string } | string,
+    profile: Partial<UserProfile>,
+    systemPrompt: string,
+    userAction: string,
+    parser: (response: string) => any
+): Promise<any> {
+    const userMessage = typeof contentSource === 'string'
+        ? [{ type: "text", text: `${userAction}\n\n**Text:**\n"${contentSource}"` }]
+        : [
+            { type: "text", text: userAction },
+            { type: "image_url", image_url: { url: `data:${contentSource.mimeType};base64,${contentSource.data}` } }
+        ];
+
+    const payload = {
+        model: profile.openRouterModel || 'google/gemini-2.0-flash-001',
+        apiKey: profile.openRouterApiKey || undefined,
+        messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: userMessage }
+        ],
+        temperature: 0.1,
+        response_format: { type: "json_object" }
+    };
+
+    if (!payload.model) {
+        throw new Error("OpenRouter model is not configured.");
+    }
+
     try {
-        const res = await fetch("https://openrouter.ai/api/v1/chat/completions", { method: "POST", headers: { "Content-Type": "application/json", "Authorization": `Bearer ${s.openRouterApiKey}`, "HTTP-Referer": "http://localhost:3000", "X-Title": "Fahrtenbuch Pro" }, body: JSON.stringify({ model: s.openRouterModel, messages: [{ role: "system", content: systemPrompt }, { role: "user", content }], temperature: 0.1, response_format: { type: "json_object" } }) });
-        if (!res.ok) throw new Error(`OpenRouter API Error: ${res.status} ${await res.text()}`);
+        const res = await fetchWithRateLimit("/api/ai/openrouter/chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+        });
+        if (!res.ok) {
+            throw new Error(`OpenRouter API Error: ${res.status} ${await res.text()}`);
+        }
         const data = await res.json();
-        return parser(data.choices[0].message.content);
+        const content = data?.choices?.[0]?.message?.content;
+        if (!content) throw new Error("OpenRouter response is missing content.");
+        return parser(content);
     } catch (error) {
         console.error("OpenRouter request failed:", error);
+        // Don't override rate limit error messages
+        if (error instanceof Error && error.message.includes('rate limit')) {
+            throw error;
+        }
         throw new Error("Failed to connect to OpenRouter. Please check your network connection, API key, and browser extensions (like ad-blockers).");
     }
 }
@@ -226,19 +265,24 @@ const runProjectAgentOpenRouter = (c: any, s: any) => runOpenRouterAgent(c, s, P
 const runLocationAgentOpenRouter = (c: any, s: any, docType: DocumentType) => runOpenRouterAgent(c, s, docType === DocumentType.EMAIL ? LOCATION_AGENT_SYSTEM_PROMPT_EMAIL : LOCATION_AGENT_SYSTEM_PROMPT, "Extract locations.", parseLocationAgentResponse);
 
 
-export async function fetchOpenRouterModels(apiKey: string): Promise<AiModelInfo[]> {
-    if (!apiKey) throw new Error("OpenRouter API Key is required.");
-    try {
-        const res = await fetch("https://openrouter.ai/api/v1/models", { headers: { "Authorization": `Bearer ${apiKey}`, "HTTP-Referer": "http://localhost:3000", "X-Title": "Fahrtenbuch Pro" } });
-        if (!res.ok) throw new Error(`Failed to fetch models: ${res.status} - ${(await res.json()).error?.message || 'Unknown error'}`);
-        const data = await res.json();
-        return data.data
-            .map((m: any) => ({ id: m.id, name: m.name || m.id }))
-            .sort((a: any, b: any) => a.name.localeCompare(b.name));
-    } catch (e) {
-        console.error("Error fetching OpenRouter models:", e);
-        throw new Error("Failed to connect to OpenRouter. Please check your network connection and API key.");
-    }
+export async function fetchOpenRouterModels(apiKey?: string | null): Promise<AiModelInfo[]> {
+    return withRateLimitHandling(async () => {
+        try {
+            const query = apiKey ? `?apiKey=${encodeURIComponent(apiKey)}` : '';
+            const res = await fetchWithRateLimit(`/api/ai/openrouter/models${query}`);
+            if (!res.ok) {
+                throw new Error(`Failed to fetch models: ${res.status} ${await res.text()}`);
+            }
+            const data = await res.json();
+            const models = Array.isArray(data?.models) ? data.models : [];
+            return models
+                .map((m: any) => ({ id: m.id, name: m.name || m.id }))
+                .sort((a: AiModelInfo, b: AiModelInfo) => (a.name || '').localeCompare(b.name || ''));
+        } catch (e) {
+            console.error("Error fetching OpenRouter models:", e);
+            throw new Error("Failed to connect to OpenRouter. Please check your network connection and API key.");
+        }
+    }, 'fetchOpenRouterModels');
 }
 
 async function _extractRawTripData(file: File, userProfile: UserProfile, documentType: DocumentType): Promise<ExtractedTripData> {
@@ -275,7 +319,7 @@ async function _extractRawTripData(file: File, userProfile: UserProfile, documen
   
     const [dateResult, projectResult, locationResult] = await Promise.all([dateAgentPromise, projectAgentPromise, locationAgentPromise]);
 
-    const cleanedLocations = userProfile.googleMapsApiKey ? await cleanAndVerifyAddresses(locationResult) : locationResult;
+    const cleanedLocations = await cleanAndVerifyAddresses(locationResult);
 
     return {
         date: formatDateForStorage(dateResult),
@@ -295,14 +339,12 @@ export async function processFileForTrip(file: File, userProfile: UserProfile, d
     const finalLocations = [userHomeAddress, ...extractedData.locations, userHomeAddress];
   
     let distance = 0;
-    if (userProfile.googleMapsApiKey && window.google) {
-      try {
-        const regionCode = getCountryCode(userProfile?.country);
-        const calculatedDist = await calculateDistance(finalLocations, userProfile.googleMapsApiKey, regionCode);
-        distance = calculatedDist ?? 0;
-      } catch (e) {
-        console.warn(`Could not calculate distance for trip. Reason:`, e instanceof Error ? e.message : e);
-      }
+    try {
+      const regionCode = getCountryCode(userProfile?.country);
+      const calculatedDist = await calculateDistanceViaBackend(finalLocations, regionCode);
+      distance = calculatedDist ?? 0;
+    } catch (e) {
+      console.warn(`Could not calculate distance for trip. Reason:`, e instanceof Error ? e.message : e);
     }
   
     const tripData: Omit<Trip, 'id' | 'projectId'> = {
@@ -334,22 +376,19 @@ export async function processFileForTripUniversal(
     input: { file: input.file, text: input.text },
     provider: 'auto',
     credentials: {
-      geminiApiKey: (import.meta as any).env?.VITE_GEMINI_API_KEY || (window as any)?.GEMINI_API_KEY || null,
-      openRouterApiKey: userProfile.openRouterApiKey || (import.meta as any).env?.VITE_OPENROUTER_API_KEY || null,
-      openRouterModel: userProfile.openRouterModel || (import.meta as any).env?.VITE_OPENROUTER_MODEL || null,
+      openRouterApiKey: userProfile.openRouterApiKey || null,
+      openRouterModel: userProfile.openRouterModel || null,
     },
   });
   const locations = [userHomeAddress, ...extraction.locations, userHomeAddress];
 
   let distance = 0;
-  if (userProfile.googleMapsApiKey && (window as any).google) {
-    try {
-      const regionCode = getCountryCode(userProfile?.country);
-      const calculatedDist = await calculateDistance(locations, userProfile.googleMapsApiKey!, regionCode);
-      distance = calculatedDist ?? 0;
-    } catch (e) {
-      console.warn(`Could not calculate distance for trip. Reason:`, e instanceof Error ? e.message : e);
-    }
+  try {
+    const regionCode = getCountryCode(userProfile?.country);
+    const calculatedDist = await calculateDistanceViaBackend(locations, regionCode);
+    distance = calculatedDist ?? 0;
+  } catch (e) {
+    console.warn(`Could not calculate distance for trip. Reason:`, e instanceof Error ? e.message : e);
   }
 
   const date = extraction.date || new Date().toISOString().split('T')[0];

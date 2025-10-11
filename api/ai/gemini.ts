@@ -1,0 +1,175 @@
+import { GoogleGenAI } from '@google/genai';
+import type { CallsheetExtraction } from '../../services/extractor-universal/config/schema';
+import { buildDirectPrompt as buildCallsheetPrompt, sanitizeModelText } from '../../services/extractor-universal/prompts/callsheet';
+import { isCallsheetExtraction } from '../../services/extractor-universal/verify';
+import { SYSTEM_INSTRUCTION_AGENT, buildDirectPrompt as buildAgentPrompt } from '../../lib/gemini/prompt';
+import { isCrewFirstCallsheet } from '../../lib/guards';
+import { withRateLimit } from '../../lib/rate-limiter';
+
+type Mode = 'direct' | 'agent';
+
+const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-2.0-flash-001';
+
+function toJsonResponse(res: any, status: number, payload: unknown) {
+  res.status(status).setHeader('Content-Type', 'application/json').send(JSON.stringify(payload));
+}
+
+async function readJsonBody(req: any): Promise<any> {
+  if (req.body) return req.body;
+  return await new Promise((resolve, reject) => {
+    let data = '';
+    req.on('data', (chunk: Buffer) => {
+      data += chunk.toString('utf8');
+    });
+    req.on('end', () => {
+      if (!data.trim()) {
+        resolve({});
+        return;
+      }
+      try {
+        resolve(JSON.parse(data));
+      } catch (error) {
+        reject(error);
+      }
+    });
+    req.on('error', reject);
+  });
+}
+
+function normalizeExtraction(raw: CallsheetExtraction): CallsheetExtraction {
+  return {
+    ...raw,
+    locations: Array.from(new Set((raw.locations || []).map((loc) => loc.trim()).filter(Boolean))),
+  };
+}
+
+async function runDirect(text: string, ai: GoogleGenAI): Promise<CallsheetExtraction> {
+  const prompt = buildCallsheetPrompt(sanitizeModelText(text));
+  const result: any = await ai.models.generateContent({
+    model: GEMINI_MODEL,
+    contents: [{ role: 'user', parts: [{ text: prompt }] }],
+  } as any);
+
+  const output =
+    typeof result.text === 'function'
+      ? result.text()
+      : result?.response?.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
+
+  if (!output) {
+    throw new Error('Empty response from Gemini');
+  }
+
+  const parsed = JSON.parse(output);
+  if (!isCallsheetExtraction(parsed)) {
+    throw new Error('Invalid JSON schema returned by Gemini');
+  }
+
+  return normalizeExtraction(parsed);
+}
+
+type ToolFn = (args: Record<string, unknown>) => Promise<Record<string, unknown>>;
+
+async function runAgent(text: string, ai: GoogleGenAI): Promise<CallsheetExtraction> {
+  const tools: Record<string, ToolFn> = {
+    geocode_address: async ({ address }) => ({
+      lat: 40.4168,
+      lng: -3.7038,
+      confidence: 0.4,
+      address,
+    }),
+    address_normalize: async ({ address }) => ({
+      normalized: typeof address === 'string' ? address.trim() : '',
+    }),
+  };
+
+  const messages: any[] = [
+    { role: 'system', content: SYSTEM_INSTRUCTION_AGENT },
+    { role: 'user', content: buildAgentPrompt(text) },
+  ];
+
+  for (let attempt = 0; attempt < 4; attempt++) {
+    const response: any = await ai.models.generateContent({
+      model: GEMINI_MODEL,
+      messages,
+      tools: [{ functionDeclarations: Object.keys(tools).map((name) => ({ name, description: `Tool ${name}`, parameters: { type: 'object' } })) }],
+      toolConfig: { functionCallingConfig: { mode: 'AUTO' } },
+      temperature: 0,
+    } as any);
+
+    const parts = response?.response?.candidates?.[0]?.content?.parts || [];
+    const fnCall = parts.find((p: any) => p?.functionCall);
+
+    if (fnCall?.functionCall) {
+      const { name, args } = fnCall.functionCall;
+      const tool = tools[name];
+      if (!tool) continue;
+      try {
+        const result = await tool(args || {});
+        messages.push({ role: 'tool', name, content: JSON.stringify(result) });
+      } catch (error) {
+        messages.push({ role: 'tool', name, content: JSON.stringify({ error: (error as Error).message }) });
+      }
+      continue;
+    }
+
+    const output =
+      typeof response.text === 'function'
+        ? response.text()
+        : response?.response?.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
+
+    if (!output) continue;
+
+    try {
+      const data = JSON.parse(output);
+      if (!isCrewFirstCallsheet(data)) {
+        continue;
+      }
+      return normalizeExtraction(data as CallsheetExtraction);
+    } catch {
+      // ignore parse errors and continue loop
+    }
+  }
+
+  // Fallback to direct mode if agent loop fails
+  return await runDirect(text, ai);
+}
+
+async function geminiHandler(req: any, res: any) {
+  if (req.method !== 'POST') {
+    toJsonResponse(res, 405, { error: 'Method Not Allowed' });
+    return;
+  }
+
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) {
+    toJsonResponse(res, 500, { error: 'Gemini API key is not configured' });
+    return;
+  }
+
+  let body: any;
+  try {
+    body = await readJsonBody(req);
+  } catch (error) {
+    toJsonResponse(res, 400, { error: 'Invalid JSON body', details: (error as Error).message });
+    return;
+  }
+
+  const mode: Mode = body?.mode === 'agent' ? 'agent' : 'direct';
+  const text = body?.text;
+
+  if (typeof text !== 'string' || !text.trim()) {
+    toJsonResponse(res, 400, { error: 'Request body must include a non-empty text field' });
+    return;
+  }
+
+  try {
+    const ai = new GoogleGenAI({ apiKey });
+    const extraction = mode === 'agent' ? await runAgent(text, ai) : await runDirect(text, ai);
+    toJsonResponse(res, 200, extraction);
+  } catch (error) {
+    console.error('[api/ai/gemini] Error:', error);
+    toJsonResponse(res, 500, { error: 'Gemini request failed', details: (error as Error).message });
+  }
+}
+
+export default withRateLimit(geminiHandler);

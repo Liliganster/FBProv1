@@ -202,7 +202,6 @@ const TripDetailModal: React.FC<TripDetailModalProps> = ({ trip, project, onClos
           <div className="w-full md:w-2/3 flex-grow bg-background-dark">
             <InteractiveMap
               locations={trip.locations}
-              apiKey={userProfile?.googleMapsApiKey}
               region={regionCode}
             />
           </div>

@@ -23,7 +23,7 @@ Ve a **APIs & Services** → **Library** y habilita:
 2. Click **+ CREATE CREDENTIALS** → **API Key**
 3. Copia el API Key
 4. (Opcional) Restringir a Calendar API y Picker API
-5. **Guarda este valor:** `VITE_GOOGLE_CALENDAR_API_KEY`
+5. **Guarda este valor:** `GOOGLE_CALENDAR_API_KEY`
 
 ### 1.4 Crear OAuth 2.0 Client ID
 
@@ -100,7 +100,7 @@ Ve a: Vercel Dashboard → Tu Proyecto → Settings → Environment Variables
 Agrega estas variables:
 
 ```bash
-VITE_GOOGLE_CALENDAR_API_KEY=AIzaSy...tu_api_key
+GOOGLE_CALENDAR_API_KEY=AIzaSy...tu_api_key
 VITE_GOOGLE_CALENDAR_CLIENT_ID=123456789-abc.apps.googleusercontent.com
 ```
 

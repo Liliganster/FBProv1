@@ -19,7 +19,7 @@ interface CalendarViewProps {
 const CalendarView: React.FC<CalendarViewProps> = ({ setCurrentView, personalization, theme }) => {
   const { t, language } = useTranslation();
   const { userProfile } = useUserProfile();
-  const { isInitialized, isSignedIn, signIn, signOut, calendars, fetchEvents } = useGoogleCalendar();
+  const { isInitialized, isSignedIn, signIn, signOut, calendars, fetchEvents, calendarProxyReady, calendarProxyChecked } = useGoogleCalendar();
   
   const [currentDate, setCurrentDate] = useState(new Date());
   const [events, setEvents] = useState<any[]>([]);
@@ -27,9 +27,8 @@ const CalendarView: React.FC<CalendarViewProps> = ({ setCurrentView, personaliza
   const [selectedCalendars, setSelectedCalendars] = useState<string[]>([]);
   const [selectedEvent, setSelectedEvent] = useState<any | null>(null);
 
-  // Google Calendar is configured via environment variables
-  // isInitialized will be true only if VITE_GOOGLE_CALENDAR_API_KEY and VITE_GOOGLE_CALENDAR_CLIENT_ID are set
-  const isConfigured = isInitialized;
+  const hasClientId = !!import.meta.env.VITE_GOOGLE_CALENDAR_CLIENT_ID;
+  const calendarConfigured = calendarProxyReady && hasClientId;
 
   useEffect(() => {
     if (calendars.length > 0 && selectedCalendars.length === 0) {
@@ -109,36 +108,52 @@ const CalendarView: React.FC<CalendarViewProps> = ({ setCurrentView, personaliza
     );
   }
 
-  if (!isConfigured) {
-    // Debug info for troubleshooting
-    const hasApiKey = !!import.meta.env.VITE_GOOGLE_CALENDAR_API_KEY;
-    const hasClientId = !!import.meta.env.VITE_GOOGLE_CALENDAR_CLIENT_ID;
-    
+  if (!calendarProxyChecked) {
+    return (
+      <div style={contentStyle} className="p-8 rounded-lg text-center flex flex-col items-center justify-center min-h-[20rem]">
+        <LoaderIcon className="w-12 h-12 mb-4 animate-spin text-gray-300" />
+        <p className="text-lg text-gray-400">Verificando proxy seguro de Google Calendar...</p>
+      </div>
+    );
+  }
+
+  if (!calendarConfigured) {
     return (
       <div style={contentStyle} className="p-8 rounded-lg text-center flex flex-col items-center justify-center min-h-[20rem]">
         <SettingsIcon className="w-16 h-16 mb-4 text-gray-600" />
         <h2 className="text-2xl font-bold mb-2">Google Calendar no disponible</h2>
         <p className="text-lg mb-4 max-w-md text-gray-400">
-          La integración con Google Calendar no está configurada. Las credenciales se configuran a nivel de servidor mediante variables de entorno.
+          La integración requiere un OAuth Client ID en el cliente y un proxy seguro en el backend con la variable <code className="bg-gray-800 px-2 py-1 rounded">GOOGLE_CALENDAR_API_KEY</code>.
         </p>
-        
-        {/* Debug info */}
-        <div className="mt-4 p-4 bg-gray-800/50 rounded-lg text-left text-sm max-w-md">
-          <p className="font-bold mb-2">Estado de configuración:</p>
-          <p className="text-gray-400">
-            ✓ VITE_GOOGLE_CALENDAR_API_KEY: {hasApiKey ? '✅ Configurada' : '❌ Falta'}
-          </p>
-          <p className="text-gray-400">
-            ✓ VITE_GOOGLE_CALENDAR_CLIENT_ID: {hasClientId ? '✅ Configurada' : '❌ Falta'}
-          </p>
-          <p className="text-gray-400 mt-2 text-xs">
-            {!hasApiKey || !hasClientId ? 'Configura las variables en Vercel y haz redeploy' : 'Variables configuradas pero no inicializadas'}
+        <div className="mt-4 p-4 bg-gray-800/50 rounded-lg text-left text-sm max-w-md space-y-2">
+          <div className="flex items-center">
+            <span className={`w-6 h-6 inline-flex items-center justify-center rounded-full mr-3 ${hasClientId ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
+              {hasClientId ? 'OK' : 'X'}
+            </span>
+            <span>Cliente: <code className="bg-gray-800 px-2 py-1 rounded">VITE_GOOGLE_CALENDAR_CLIENT_ID</code> {hasClientId ? 'detectado' : 'faltante'}.</span>
+          </div>
+          <div className="flex items-center">
+            <span className={`w-6 h-6 inline-flex items-center justify-center rounded-full mr-3 ${calendarProxyReady ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
+              {calendarProxyReady ? 'OK' : 'X'}
+            </span>
+            <span>Backend: proxy `/api/google/calendar` {calendarProxyReady ? 'activo' : 'sin clave en el servidor'}.</span>
+          </div>
+          <p className="text-gray-500 text-xs">
+            Configura <code className="bg-gray-800 px-1 rounded">GOOGLE_CALENDAR_API_KEY</code> en el backend (Vercel) y limita el dominio desde Google Cloud.
           </p>
         </div>
       </div>
     );
   }
 
+  if (!isInitialized) {
+    return (
+      <div style={contentStyle} className="p-8 rounded-lg text-center flex flex-col items-center justify-center min-h-[20rem]">
+        <LoaderIcon className="w-12 h-12 mb-4 animate-spin text-gray-300" />
+        <p className="text-lg text-gray-400">Inicializando Google Calendar...</p>
+      </div>
+    );
+  }
   return (
     <div className="flex h-full -m-8 text-on-surface-dark">
       <div style={contentStyle} className="w-64 p-4 border-r border-gray-700/50 flex flex-col">

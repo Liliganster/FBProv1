@@ -33,7 +33,7 @@ const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({ projectId, trip
   const { t } = useTranslation();
   const { showToast } = useToast();
   
-  const { isLoaded: isMapsScriptLoaded, error: mapsScriptError } = useGoogleMapsScript({ apiKey: userProfile?.googleMapsApiKey });
+  useGoogleMapsScript();
   const { expenses, getExpensesForProject, deleteExpense, loading: expensesLoading } = useExpenses();
   const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
 
@@ -196,11 +196,6 @@ const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({ projectId, trip
 
   const handleProcessFile = async (file: CallsheetFile) => {
     if (!userProfile) return;
-     if (userProfile.googleMapsApiKey && !isMapsScriptLoaded) {
-          const message = mapsScriptError ? `Failed to load Google Maps: ${mapsScriptError.message}` : 'Google Maps service is still loading. Please wait a moment and try again.';
-          showToast(message, mapsScriptError ? 'error' : 'info');
-          return;
-      }
     setProcessingFileId(file.id);
     setIsProcessing(true);
     try {
