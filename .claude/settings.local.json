@@ -3,7 +3,8 @@
     "allow": [
       "Bash(where code)",
       "Bash(npm run build:*)",
-      "Bash(dir /b supabasemigrations)"
+      "Bash(dir /b supabasemigrations)",
+      "Bash(git add:*)"
     ],
     "deny": [],
     "ask": []

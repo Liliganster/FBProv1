@@ -1,8 +1,8 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 // FIX: Import View type for stronger prop typing.
-import { Project, Trip, View, PersonalizationSettings } from '../types';
+import { Project, Trip, View, PersonalizationSettings, ExpenseDocument } from '../types';
 import useTrips from '../hooks/useTrips';
-import { EditIcon, TrashIcon, PlusIcon, SearchIcon, StarIcon } from './Icons';
+import { EditIcon, TrashIcon, PlusIcon, SearchIcon, StarIcon, FileTextIcon } from './Icons';
 import useTranslation from '../hooks/useTranslation';
 import useUserProfile from '../hooks/useUserProfile';
 import ProjectEditorModal from './ProjectEditorModal';
@@ -11,6 +11,8 @@ import { calculateTripReimbursement } from '../services/taxService';
 import useDashboardSettings from '../hooks/useDashboardSettings';
 import useUndoRedo from '../hooks/useUndoRedo';
 import UndoToast from './UndoToast';
+import useExpenses from '../hooks/useExpenses';
+import { formatDateForDisplay } from '../i18n/translations';
 
 interface ProjectsViewProps {
     setCurrentView: (view: View) => void;
@@ -30,27 +32,108 @@ const ProjectsView: React.FC<ProjectsViewProps> = ({ setCurrentView, personaliza
   const [selectedProjectIds, setSelectedProjectIds] = useState<string[]>([]);
   const { addAction, undo, getLastAction } = useUndoRedo();
   const [showUndoToast, setShowUndoToast] = useState(false);
+  const { expenses } = useExpenses();
   
   const { t } = useTranslation();
 
+  const projectsById = useMemo(() => {
+    const map = new Map<string, Project>();
+    projects.forEach(project => {
+      map.set(project.id, project);
+    });
+    return map;
+  }, [projects]);
+
+  const tripsByProject = useMemo(() => {
+    const grouped = new Map<string, Trip[]>();
+    trips.forEach(trip => {
+      if (!trip.projectId) return;
+      if (!grouped.has(trip.projectId)) {
+        grouped.set(trip.projectId, []);
+      }
+      grouped.get(trip.projectId)!.push(trip);
+    });
+    return grouped;
+  }, [trips]);
+
+  const expensesByProject = useMemo<Record<string, ExpenseDocument[]>>(() => {
+    const map: Record<string, ExpenseDocument[]> = {};
+    const tripToProject = new Map<string, string>();
+    trips.forEach(trip => {
+      if (trip.projectId) {
+        tripToProject.set(trip.id, trip.projectId);
+      }
+    });
+
+    expenses.forEach(expense => {
+      let targetProjectId: string | undefined | null = expense.projectId;
+      if (!targetProjectId && expense.tripId) {
+        targetProjectId = tripToProject.get(expense.tripId) ?? null;
+      }
+      if (!targetProjectId) return;
+      if (!map[targetProjectId]) {
+        map[targetProjectId] = [];
+      }
+      map[targetProjectId].push(expense);
+    });
+
+    return map;
+  }, [expenses, trips]);
+
+  const formatCurrency = useCallback((value: number, currency?: string | null) => {
+    try {
+      return new Intl.NumberFormat(undefined, {
+        style: 'currency',
+        currency: currency || 'EUR',
+      }).format(value);
+    } catch {
+      return `${value.toFixed(2)} ${currency || 'EUR'}`;
+    }
+  }, []);
+
+  const buildExpenseTooltip = useCallback((items: ExpenseDocument[]) => {
+    if (!items.length) return '';
+    return items
+      .map(expense => {
+        const label =
+          expense.category === 'fuel'
+            ? t('expense_category_fuel') || 'Fuel'
+            : t('expense_category_maintenance') || 'Maintenance';
+        const formattedDate = expense.invoiceDate ? formatDateForDisplay(expense.invoiceDate) : '';
+        const parts = [
+          formatCurrency(expense.amount, expense.currency),
+          label,
+          formattedDate,
+          expense.description || '',
+        ].filter(Boolean);
+        return parts.join(' • ');
+      })
+      .join('\n');
+  }, [formatCurrency, t]);
+
   const userProjects = useMemo(() => {
     if (!userProfile) return [];
+    const uniqueProjects = Array.from(projectsById.values());
 
-    return projects
-      .map(project => {
-        const projectTrips = trips.filter(trip => trip.projectId === project.id);
-        const totalKm = projectTrips.reduce((sum, trip) => sum + trip.distance, 0);
-        const totalReimbursement = projectTrips.reduce((sum, trip) => sum + calculateTripReimbursement(trip, userProfile, project), 0);
+    return uniqueProjects.map(project => {
+      const projectTrips = tripsByProject.get(project.id) ?? [];
+      const totalKm = projectTrips.reduce((sum, trip) => sum + trip.distance, 0);
+      const totalReimbursement = projectTrips.reduce((sum, trip) => sum + calculateTripReimbursement(trip, userProfile, project), 0);
+      const projectExpenses = expensesByProject[project.id] ?? [];
+      const expenseCount = projectExpenses.length;
+      const expensesTooltip = buildExpenseTooltip(projectExpenses);
 
-        return {
-          ...project,
-          tripCount: projectTrips.length,
-          documentCount: project.callsheets?.length || 0,
-          totalKm,
-          totalReimbursement
-        };
-      });
-  }, [projects, trips, userProfile]);
+      return {
+        ...project,
+        tripCount: projectTrips.length,
+        documentCount: project.callsheets?.length || 0,
+        totalKm,
+        totalReimbursement,
+        expenseCount,
+        expensesTooltip,
+      };
+    });
+  }, [projectsById, tripsByProject, userProfile, expensesByProject, buildExpenseTooltip]);
 
   const filteredProjects = useMemo(() => {
     if (!searchQuery) return userProjects;
@@ -179,10 +262,10 @@ const ProjectsView: React.FC<ProjectsViewProps> = ({ setCurrentView, personaliza
       </div>
       
       <div style={contentStyle} className="bg-frost-glass rounded-gentle shadow-lg overflow-hidden">
-        <table className="w-full text-left">
+        <table className="w-full text-left text-sm">
           <thead className="bg-gray-700/50">
             <tr>
-              <th className="p-4 w-12">
+              <th className="p-3 w-12">
                 <input
                   type="checkbox"
                   checked={isAllSelected}
@@ -191,26 +274,31 @@ const ProjectsView: React.FC<ProjectsViewProps> = ({ setCurrentView, personaliza
                   className="bg-background-dark border border-gray-600 rounded text-brand-primary focus:ring-brand-primary focus:ring-2 h-5 w-5"
                 />
               </th>
-              <th className="p-4 text-sm font-semibold text-on-surface-dark-secondary uppercase tracking-wider">{t('projects_col_name')}</th>
-              <th className="p-4 text-sm font-semibold text-on-surface-dark-secondary uppercase tracking-wider">{t('projects_col_producer')}</th>
-              <th className="p-4 text-sm font-semibold text-on-surface-dark-secondary uppercase tracking-wider">{t('projects_col_trips')}</th>
-              <th className="p-4 text-sm font-semibold text-on-surface-dark-secondary uppercase tracking-wider">{t('projects_col_documents')}</th>
-              <th className="p-4 text-sm font-semibold text-on-surface-dark-secondary uppercase tracking-wider">{t('projects_col_total_km')}</th>
-              <th className="p-4 text-sm font-semibold text-on-surface-dark-secondary uppercase tracking-wider">{t('projects_col_est_cost')}</th>
-              <th className="p-4 text-sm font-semibold text-on-surface-dark-secondary uppercase tracking-wider text-center">{t('projects_col_dashboard')}</th>
-              <th className="p-4 text-sm font-semibold text-on-surface-dark-secondary uppercase tracking-wider text-right">{t('trips_col_actions')}</th>
+              <th className="p-3 text-[11px] font-semibold text-on-surface-dark-secondary uppercase tracking-wider">{t('projects_col_name')}</th>
+              <th className="p-3 text-[11px] font-semibold text-on-surface-dark-secondary uppercase tracking-wider">{t('projects_col_producer')}</th>
+              <th className="p-3 text-[11px] font-semibold text-on-surface-dark-secondary uppercase tracking-wider">{t('projects_col_trips')}</th>
+              <th className="p-3 text-[11px] font-semibold text-on-surface-dark-secondary uppercase tracking-wider">{t('projects_col_documents')}</th>
+              <th className="p-3 text-[11px] font-semibold text-on-surface-dark-secondary uppercase tracking-wider">{t('projects_col_invoices')}</th>
+              <th className="p-3 text-[11px] font-semibold text-on-surface-dark-secondary uppercase tracking-wider">{t('projects_col_total_km')}</th>
+              <th className="p-3 text-[11px] font-semibold text-on-surface-dark-secondary uppercase tracking-wider">{t('projects_col_est_cost')}</th>
+              <th className="p-3 text-[11px] font-semibold text-on-surface-dark-secondary uppercase tracking-wider text-center">{t('projects_col_dashboard')}</th>
+              <th className="p-3 text-[11px] font-semibold text-on-surface-dark-secondary uppercase tracking-wider text-right">{t('trips_col_actions')}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-700/50">
             {filteredProjects.length > 0 ? filteredProjects.map(project => {
               const isSelected = selectedProjectIds.includes(project.id);
+              const invoiceCount = project.expenseCount || 0;
+              const invoiceTooltip = project.expensesTooltip as string | undefined;
+              const invoiceLabel = t(invoiceCount === 1 ? 'expense_badge_single' : 'expense_badge_plural');
+              const invoiceAriaLabel = t('expense_badge_aria_project', { count: invoiceCount, label: invoiceLabel });
               return (
-              <tr 
-                key={project.id} 
+              <tr
+                key={project.id}
                 className={`${isSelected ? 'bg-brand-primary/20' : ''} hover:bg-gray-800/40 transition-colors cursor-pointer`}
                 onClick={() => handleViewDetails(project)}
               >
-                <td className="p-4" onClick={(e) => e.stopPropagation()}>
+                <td className="p-3" onClick={(e) => e.stopPropagation()}>
                   <input
                     type="checkbox"
                     checked={isSelected}
@@ -218,34 +306,48 @@ const ProjectsView: React.FC<ProjectsViewProps> = ({ setCurrentView, personaliza
                     className="bg-background-dark border-gray-600 rounded text-brand-primary focus:ring-brand-primary focus:ring-2 h-5 w-5"
                   />
                 </td>
-                <td className="p-4 font-semibold bg-gradient-to-r from-brand-primary to-brand-secondary bg-clip-text text-transparent">{project.name}</td>
-                <td className="p-4">{project.producer}</td>
-                <td className="p-4">{project.tripCount}</td>
-                <td className="p-4">{project.documentCount}</td>
-                <td className="p-4 font-semibold text-brand-primary">{project.totalKm.toFixed(1)} km</td>
-                <td className="p-4 font-semibold text-brand-secondary">€{project.totalReimbursement.toFixed(2)}</td>
-                <td className="p-4 text-center" onClick={(e) => e.stopPropagation()}>
-                    <button 
+                <td className="p-3 font-semibold text-white text-sm">{project.name}</td>
+                <td className="p-3 text-sm">{project.producer}</td>
+                <td className="p-3 text-sm">{project.tripCount}</td>
+                <td className="p-3 text-sm">{project.documentCount}</td>
+                <td className="p-3">
+                  {invoiceCount > 0 ? (
+                    <span
+                      className="inline-flex items-center gap-1.5 rounded-full bg-brand-secondary/10 px-2.5 py-1 text-[11px] font-semibold text-brand-secondary"
+                      title={invoiceTooltip}
+                      aria-label={invoiceAriaLabel}
+                    >
+                      <FileTextIcon className="h-3.5 w-3.5" />
+                      <span>{invoiceCount}</span>
+                    </span>
+                  ) : (
+                    <span className="text-on-surface-dark-secondary">—</span>
+                  )}
+                </td>
+                <td className="p-3 font-semibold text-brand-primary text-sm">{project.totalKm.toFixed(1)} km</td>
+                <td className="p-3 font-semibold text-brand-secondary text-sm">€{project.totalReimbursement.toFixed(2)}</td>
+                <td className="p-3 text-center" onClick={(e) => e.stopPropagation()}>
+                    <button
                         onClick={() => toggleProjectVisibility(project.id)}
                         title={t('projects_dashboard_toggle_tooltip')}
                         className="p-2 rounded-smooth hover:bg-gray-700/50 transition-colors"
                     >
-                        <StarIcon className={`w-6 h-6 mx-auto transition-all duration-150 transform hover:scale-125 ${
-                            visibleProjectIds.includes(project.id) 
-                            ? 'text-yellow-400 fill-current' 
+                        <StarIcon className={`w-5 h-5 mx-auto transition-all duration-150 transform hover:scale-125 ${
+                            visibleProjectIds.includes(project.id)
+                            ? 'text-yellow-400 fill-current'
                             : 'text-gray-600 hover:text-yellow-500'
                         }`} />
                     </button>
                 </td>
-                <td className="p-4 text-right" onClick={(e) => e.stopPropagation()}>
-                  <button onClick={(e) => { e.stopPropagation(); handleEdit(project); }} className="text-blue-400 hover:text-blue-300 mr-4"><EditIcon className="w-5 h-5"/></button>
-                  <button onClick={(e) => handleDelete(e, project)} className="text-red-400 hover:text-red-300"><TrashIcon className="w-5 h-5"/></button>
+                <td className="p-3 text-right" onClick={(e) => e.stopPropagation()}>
+                  <button onClick={(e) => { e.stopPropagation(); handleEdit(project); }} className="text-blue-400 hover:text-blue-300 mr-3"><EditIcon className="w-4 h-4"/></button>
+                  <button onClick={(e) => handleDelete(e, project)} className="text-red-400 hover:text-red-300"><TrashIcon className="w-4 h-4"/></button>
                 </td>
               </tr>
               );
             }) : (
               <tr>
-                <td colSpan={9} className="text-center p-8 text-on-surface-dark-secondary">
+                <td colSpan={10} className="text-center p-8 text-on-surface-dark-secondary">
                   {searchQuery ? t('projects_no_search_results') : t('projects_no_projects')}
                 </td>
               </tr>

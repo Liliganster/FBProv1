@@ -55,7 +55,7 @@ const TripDetailModal: React.FC<TripDetailModalProps> = ({ trip, project, onClos
     window.open(url, '_blank', 'noopener');
   };
 
-  const projectId = project?.id ?? null;
+  const projectId = project?.id ?? trip.projectId ?? null;
 
   return (
     <div
@@ -87,7 +87,7 @@ const TripDetailModal: React.FC<TripDetailModalProps> = ({ trip, project, onClos
               <InfoItem label={t('detail_passengers')} value={trip.passengers.toString()} />
             )}
             <div className="border-t border-gray-700/60 pt-4 mt-4">
-              <h3 className="text-[11px] font-semibold uppercase tracking-wide text-gray-300/90 mb-3 flex items-center gap-2">
+              <h3 className="text-xs font-semibold uppercase tracking-wide text-gray-300/90 mb-3 flex items-center gap-2">
                 <MapPinIcon className="w-4 h-4" />
                 {t('detail_route')}
               </h3>
@@ -103,7 +103,7 @@ const TripDetailModal: React.FC<TripDetailModalProps> = ({ trip, project, onClos
                           : 'bg-gray-500'
                       } rounded-full mt-1.5 -left-1.5 border border-background-dark`}
                     ></div>
-                    <p className="text-xs text-gray-200 leading-snug">{location}</p>
+                    <p className="text-sm text-gray-200 leading-snug">{location}</p>
                   </li>
                 ))}
               </ol>
@@ -113,20 +113,20 @@ const TripDetailModal: React.FC<TripDetailModalProps> = ({ trip, project, onClos
             </div>
             <div className="border-t border-gray-700/60 pt-4 mt-4 space-y-3">
               <div className="flex items-center justify-between">
-                <h3 className="text-[11px] font-semibold uppercase tracking-wide text-gray-300/90 flex items-center gap-2">
+                <h3 className="text-xs font-semibold uppercase tracking-wide text-gray-300/90 flex items-center gap-2">
                   <FileTextIcon className="w-4 h-4" />
                   {t('expense_section_title') || 'Fuel & maintenance invoices'}
                 </h3>
                 <button
                   type="button"
                   onClick={() => setIsExpenseModalOpen(true)}
-                  className="flex items-center gap-1 rounded-md bg-brand-primary/80 px-2 py-1 text-xs font-medium text-white transition hover:bg-brand-primary"
+                  className="flex items-center gap-1 rounded-md bg-brand-primary/80 px-2.5 py-1.5 text-xs font-medium text-white transition hover:bg-brand-primary"
                 >
                   <UploadCloudIcon className="h-4 w-4" />
                   {t('expense_attach_btn') || 'Attach'}
                 </button>
               </div>
-              <p className="text-xs text-on-surface-secondary">
+              <p className="text-sm text-on-surface-secondary">
                 {t('expense_section_total') || 'Total documented'}:{' '}
                 <span className="font-semibold text-white">
                   {formatCurrency(totalExpense, totalExpenseCurrency)}
@@ -134,12 +134,12 @@ const TripDetailModal: React.FC<TripDetailModalProps> = ({ trip, project, onClos
               </p>
               <div className="space-y-3">
                 {expensesLoading && (
-                  <p className="text-xs text-on-surface-secondary">
+                  <p className="text-sm text-on-surface-secondary">
                     {t('expense_loading') || 'Loading invoices…'}
                   </p>
                 )}
                 {!expensesLoading && tripExpenses.length === 0 && (
-                  <p className="text-xs text-on-surface-secondary italic">
+                  <p className="text-sm text-on-surface-secondary italic">
                     {t('expense_list_empty') || 'No invoices attached to this trip yet.'}
                   </p>
                 )}
@@ -155,29 +155,29 @@ const TripDetailModal: React.FC<TripDetailModalProps> = ({ trip, project, onClos
                     return (
                       <div
                         key={expense.id}
-                        className="flex items-start justify-between rounded-md border border-glass bg-background-dark/70 px-3 py-2"
+                        className="flex items-start justify-between rounded-md border border-glass bg-background-dark/70 px-3 py-2.5"
                       >
                         <div className="flex flex-1 gap-3">
-                          <FileTextIcon className="mt-1 h-4 w-4 text-brand-secondary" />
-                          <div className="space-y-1 text-xs">
+                          <FileTextIcon className="mt-1 h-4 w-4 text-brand-secondary flex-shrink-0" />
+                          <div className="space-y-1 text-sm">
                             <div className="flex flex-wrap items-center gap-2">
-                              <span className="text-sm font-semibold text-white">
+                              <span className="font-semibold text-white">
                                 {formatCurrency(expense.amount, expense.currency)}
                               </span>
-                              <span className="rounded-sm bg-brand-secondary/20 px-2 py-[2px] text-[10px] font-semibold uppercase tracking-wide text-brand-secondary">
+                              <span className="rounded-sm bg-brand-secondary/20 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-brand-secondary">
                                 {categoryLabel}
                               </span>
                               {invoiceDateLabel && (
-                                <span className="text-on-surface-secondary">{invoiceDateLabel}</span>
+                                <span className="text-xs text-on-surface-secondary">{invoiceDateLabel}</span>
                               )}
                             </div>
                             {expense.description && (
-                              <p className="text-on-surface-secondary">{expense.description}</p>
+                              <p className="text-sm text-on-surface-secondary">{expense.description}</p>
                             )}
                             <button
                               type="button"
                               onClick={() => openInvoice(expense.url)}
-                              className="text-[11px] font-medium text-brand-primary transition hover:text-white"
+                              className="text-xs font-medium text-brand-primary transition hover:text-white"
                             >
                               {t('expense_open_document') || 'View invoice'}
                             </button>
@@ -186,7 +186,7 @@ const TripDetailModal: React.FC<TripDetailModalProps> = ({ trip, project, onClos
                         <button
                           type="button"
                           onClick={() => handleDeleteExpense(expense.id)}
-                          className="ml-3 rounded-md p-1 text-on-surface-secondary transition hover:text-red-400 disabled:opacity-50"
+                          className="ml-3 rounded-md p-1 text-on-surface-secondary transition hover:text-red-400 disabled:opacity-50 flex-shrink-0"
                           aria-label={t('expense_delete_btn') || 'Delete invoice'}
                           disabled={expensesLoading}
                         >
@@ -220,8 +220,8 @@ const TripDetailModal: React.FC<TripDetailModalProps> = ({ trip, project, onClos
 
 const InfoItem: React.FC<{label: string, value: string, highlight?: boolean}> = ({label, value, highlight}) => (
     <div>
-        <h3 className="text-sm font-medium text-on-surface-dark-secondary">{label}</h3>
-        <p className={`text-lg ${highlight ? 'font-bold text-brand-primary' : 'text-white'}`}>{value}</p>
+        <h3 className="text-xs font-medium text-on-surface-dark-secondary uppercase tracking-wide">{label}</h3>
+        <p className={`text-base mt-1 ${highlight ? 'font-bold text-brand-primary' : 'text-white'}`}>{value}</p>
     </div>
 );
 

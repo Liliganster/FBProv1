@@ -315,11 +315,10 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
       </div>
 
       <div className="bg-frost-glass border-glass rounded-fluid shadow-glass overflow-hidden backdrop-blur-glass">
-        <div className="overflow-x-auto">
-        <table className="w-full min-w-[960px] text-left">
+        <table className="w-full text-left text-sm">
           <thead className="bg-gradient-surface border-b border-glass">
             <tr>
-              <th className="p-4 w-12">
+              <th className="p-3 w-12">
                 <input
                   type="checkbox"
                   checked={isAllSelected}
@@ -328,7 +327,7 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
                   className="bg-gradient-surface border-surface rounded text-brand-primary focus:ring-brand-primary focus:ring-2 h-5 w-5 transition-all duration-200"
                 />
               </th>
-              <th className="p-4 text-sm font-semibold text-on-surface-secondary uppercase tracking-wider">
+              <th className="p-3 text-[11px] font-semibold text-on-surface-secondary uppercase tracking-wider">
                 <button onClick={handleSortByDate} className="uppercase flex items-center gap-1 hover:text-white transition-colors duration-200">
                   {t('trips_col_date')}
                   <div className="flex flex-col -space-y-2">
@@ -337,13 +336,13 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
                   </div>
                 </button>
               </th>
-              <th className="p-4 text-sm font-semibold text-on-surface-dark-secondary uppercase tracking-wider">{t('trips_col_route')}</th>
-              <th className="p-4 text-sm font-semibold text-on-surface-dark-secondary uppercase tracking-wider">{t('trips_col_project')}</th>
-              <th className="p-4 text-sm font-semibold text-on-surface-dark-secondary uppercase tracking-wider">{t('trips_col_invoices')}</th>
-              <th className="p-4 text-sm font-semibold text-on-surface-dark-secondary uppercase tracking-wider">{t('trips_col_distance')}</th>
-              <th className="p-4 text-sm font-semibold text-on-surface-dark-secondary uppercase tracking-wider">{t('trips_col_emissions')}</th>
-              <th className="p-4 text-sm font-semibold text-on-surface-dark-secondary uppercase tracking-wider">{t('trips_col_earnings')}</th>
-              <th className="p-4 text-sm font-semibold text-on-surface-dark-secondary uppercase tracking-wider text-right">{t('trips_col_actions')}</th>
+              <th className="p-3 text-[11px] font-semibold text-on-surface-dark-secondary uppercase tracking-wider">{t('trips_col_route')}</th>
+              <th className="p-3 text-[11px] font-semibold text-on-surface-dark-secondary uppercase tracking-wider">{t('trips_col_project')}</th>
+              <th className="p-3 text-[11px] font-semibold text-on-surface-dark-secondary uppercase tracking-wider">{t('trips_col_invoices')}</th>
+              <th className="p-3 text-[11px] font-semibold text-on-surface-dark-secondary uppercase tracking-wider">{t('trips_col_distance')}</th>
+              <th className="p-3 text-[11px] font-semibold text-on-surface-dark-secondary uppercase tracking-wider">{t('trips_col_emissions')}</th>
+              <th className="p-3 text-[11px] font-semibold text-on-surface-dark-secondary uppercase tracking-wider">{t('trips_col_earnings')}</th>
+              <th className="p-3 text-[11px] font-semibold text-on-surface-dark-secondary uppercase tracking-wider text-right">{t('trips_col_actions')}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-700/50">
@@ -372,11 +371,11 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
               const invoiceAriaLabel = t('expense_badge_aria_trip', { count: invoiceCount, label: invoiceLabel });
 
               return (
-              <tr 
-                key={trip.id} 
+              <tr
+                key={trip.id}
                 className={`${isSelected ? 'bg-brand-primary/20' : ''} hover:bg-gradient-surface/50 transition-all duration-200 text-white border-b border-glass/20 last:border-b-0`}
               >
-                <td className="p-4" onClick={(e) => e.stopPropagation()}>
+                <td className="p-3" onClick={(e) => e.stopPropagation()}>
                   <input
                     type="checkbox"
                     checked={isSelected}
@@ -385,61 +384,61 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
                     disabled={isLocked}
                   />
                 </td>
-                <td className="p-4 whitespace-nowrap cursor-pointer" onClick={() => handleViewTrip(trip)}>
+                <td className="p-3 whitespace-nowrap cursor-pointer text-sm" onClick={() => handleViewTrip(trip)}>
                   <div className="flex items-center gap-2">
 {/* FIX: Wrap LockIcon in a span with a title attribute to fix prop assignment error. */}
                       {isLocked && <span title={t('trips_locked_tooltip')} className="cursor-pointer hover:scale-110 transition-transform"><LockIcon className="w-4 h-4 text-yellow-400 hover:text-yellow-300" /></span>}
                       {formatDateForDisplay(trip.date)}
                   </div>
                 </td>
-                <td className="p-4 cursor-pointer" onClick={() => handleViewTrip(trip)}>
-                  <div className="flex items-center">
-                    <span className="truncate max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg">{trip.locations.join(' → ')}</span>
+                <td className="p-3 cursor-pointer text-sm" onClick={() => handleViewTrip(trip)}>
+                  <div className="flex items-center gap-1">
+                    <span className="truncate max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg" title={trip.locations.join(' → ')}>{trip.locations.join(' → ')}</span>
                     <SpecialOriginTag originType={trip.specialOrigin} />
                     {allWarnings.length > 0 && (
-                      <div className="ml-2 cursor-pointer hover:scale-110 transition-transform" title={allWarnings.join('\n')}>
+                      <div className="ml-1 cursor-pointer hover:scale-110 transition-transform flex-shrink-0" title={allWarnings.join('\n')}>
                         <WarningIcon className="w-5 h-5 text-yellow-400 hover:text-yellow-300" />
                       </div>
                     )}
                   </div>
                 </td>
-                <td className="p-4 whitespace-nowrap cursor-pointer" onClick={() => handleViewTrip(trip)}>{getProjectName(trip.projectId)}</td>
-                <td className="p-4 whitespace-nowrap cursor-pointer" onClick={() => handleViewTrip(trip)}>
+                <td className="p-3 whitespace-nowrap cursor-pointer text-sm" onClick={() => handleViewTrip(trip)}>{getProjectName(trip.projectId)}</td>
+                <td className="p-3 whitespace-nowrap cursor-pointer" onClick={() => handleViewTrip(trip)}>
                   {invoiceCount > 0 ? (
                     <span
-                      className="inline-flex items-center gap-2 rounded-full bg-brand-secondary/10 px-3 py-1 text-xs font-semibold text-brand-secondary"
+                      className="inline-flex items-center gap-1.5 rounded-full bg-brand-secondary/10 px-2.5 py-1 text-[11px] font-semibold text-brand-secondary"
                       title={invoiceTooltip}
                       aria-label={invoiceAriaLabel}
                     >
-                      <FileTextIcon className="h-4 w-4" />
-                      <span className="text-sm font-semibold">{invoiceCount}</span>
+                      <FileTextIcon className="h-3.5 w-3.5" />
+                      <span>{invoiceCount}</span>
                     </span>
                   ) : (
                     <span className="text-on-surface-dark-secondary">—</span>
                   )}
                 </td>
-                <td className="p-4 whitespace-nowrap text-brand-primary font-bold cursor-pointer" onClick={() => handleViewTrip(trip)}>{trip.distance.toFixed(1)} km</td>
-                <td className="p-4 whitespace-nowrap cursor-pointer" onClick={() => handleViewTrip(trip)}>
+                <td className="p-3 whitespace-nowrap text-brand-primary font-semibold text-sm cursor-pointer" onClick={() => handleViewTrip(trip)}>{trip.distance.toFixed(1)} km</td>
+                <td className="p-3 whitespace-nowrap cursor-pointer text-sm" onClick={() => handleViewTrip(trip)}>
                   <span className="font-semibold">{emissions.toFixed(1)}</span>
                   <span className="text-xs text-on-surface-dark-secondary ml-1">kg</span>
                 </td>
-                <td className="p-4 whitespace-nowrap font-semibold text-brand-secondary cursor-pointer" onClick={() => handleViewTrip(trip)}>€{reimbursement.toFixed(2)}</td>
+                <td className="p-3 whitespace-nowrap font-semibold text-sm text-brand-secondary cursor-pointer" onClick={() => handleViewTrip(trip)}>EUR {reimbursement.toFixed(2)}</td>
 
-                <td 
-                  className="p-4 whitespace-nowrap text-right"
+                <td
+                  className="p-3 whitespace-nowrap text-right"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <button onClick={() => handleViewTrip(trip)} className="text-gray-400 hover:text-white mr-4"><MapIcon className="w-5 h-5"/></button>
-                  <button 
-                      onClick={() => handleAddToCalendar(trip)} 
-                      className="text-green-400 hover:text-green-300 mr-4 disabled:text-gray-600 disabled:cursor-not-allowed" 
+                  <button onClick={() => handleViewTrip(trip)} className="text-gray-400 hover:text-white mr-2"><MapIcon className="w-4 h-4"/></button>
+                  <button
+                      onClick={() => handleAddToCalendar(trip)}
+                      className="text-green-400 hover:text-green-300 mr-2 disabled:text-gray-600 disabled:cursor-not-allowed"
                       disabled={isLocked || !isSignedIn}
                       title={isSignedIn ? t('trips_col_actions_add_to_calendar') : t('trips_col_actions_add_to_calendar_disabled')}
                   >
-                      <CalendarPlusIcon className="w-5 h-5"/>
+                      <CalendarPlusIcon className="w-4 h-4"/>
                   </button>
-                  <button onClick={() => handleEditTrip(trip)} className="text-blue-400 hover:text-blue-300 mr-4 disabled:text-gray-600 disabled:cursor-not-allowed" disabled={isLocked}><EditIcon className="w-5 h-5"/></button>
-                  <button onClick={() => handleDeleteTrip(trip.id)} className="text-red-400 hover:text-red-300 disabled:text-gray-600 disabled:cursor-not-allowed" disabled={isLocked}><TrashIcon className="w-5 h-5"/></button>
+                  <button onClick={() => handleEditTrip(trip)} className="text-blue-400 hover:text-blue-300 mr-2 disabled:text-gray-600 disabled:cursor-not-allowed" disabled={isLocked}><EditIcon className="w-4 h-4"/></button>
+                  <button onClick={() => handleDeleteTrip(trip.id)} className="text-red-400 hover:text-red-300 disabled:text-gray-600 disabled:cursor-not-allowed" disabled={isLocked}><TrashIcon className="w-4 h-4"/></button>
                 </td>
               </tr>
               );
@@ -450,7 +449,6 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
             )}
           </tbody>
         </table>
-        </div>
       </div>
 
       {isEditorModalOpen && (

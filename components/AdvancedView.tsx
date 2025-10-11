@@ -146,24 +146,30 @@ const CostAnalysisDashboard: React.FC<{
             costFuelEnergy = totalKm * (userProfile.energyConsumption / 100) * userProfile.energyPrice;
         }
 
+        // Calcular total de facturas de combustible
         const fuelInvoicesTotal = expensesForRange
             .filter(expense => expense.category === 'fuel')
             .reduce((sum, expense) => sum + (expense.amount || 0), 0);
 
+        // Calcular total de facturas de mantenimiento
         const maintenanceInvoicesTotal = expensesForRange
             .filter(expense => expense.category === 'maintenance')
             .reduce((sum, expense) => sum + (expense.amount || 0), 0);
 
+        // Usar facturas reales si existen, sino usar estimación
         if (fuelInvoicesTotal > 0) {
             costFuelEnergy = fuelInvoicesTotal;
         }
 
-        const maintenanceBaseline = userProfile.maintenanceCostPerKm ?? 0;
-        const costMaintenance = maintenanceInvoicesTotal > 0 ? maintenanceInvoicesTotal : maintenanceBaseline;
-        const costParking = userProfile.parkingCostPerKm ?? 0;
-        const costTolls = userProfile.tollsCostPerKm ?? 0;
-        const costFines = userProfile.finesCostPerKm ?? 0;
-        const costMisc = userProfile.miscCostPerKm ?? 0;
+        // Calcular costo de mantenimiento: facturas reales o estimación por km
+        const maintenanceEstimated = totalKm * (userProfile.maintenanceCostPerKm ?? 0);
+        const costMaintenance = maintenanceInvoicesTotal > 0 ? maintenanceInvoicesTotal : maintenanceEstimated;
+
+        // Otros costos basados en km totales
+        const costParking = totalKm * (userProfile.parkingCostPerKm ?? 0);
+        const costTolls = totalKm * (userProfile.tollsCostPerKm ?? 0);
+        const costFines = totalKm * (userProfile.finesCostPerKm ?? 0);
+        const costMisc = totalKm * (userProfile.miscCostPerKm ?? 0);
 
         const totalCost = costFuelEnergy + costMaintenance + costParking + costTolls + costFines + costMisc;
         const documentedCost = fuelInvoicesTotal + maintenanceInvoicesTotal;
@@ -304,6 +310,8 @@ const CostAnalysisDashboard: React.FC<{
             }));
 
     }, [costData, userProfile, filteredTrips, projects, selectedProjectId]);
+
+    const selectedProjectIdForUpload = selectedProjectId && selectedProjectId !== 'unassigned' ? selectedProjectId : null;
 
     const monthlyTableData = useMemo(() => {
         if (!costData || !userProfile) return [];
@@ -542,30 +550,30 @@ const CostAnalysisDashboard: React.FC<{
                     <div className="bg-frost-glass p-6 rounded-lg">
                         <h3 className="text-lg font-semibold mb-4 text-white">{t('cost_monthly_summary')}</h3>
                         <div className="overflow-x-auto">
-                            <table className="w-full text-left text-sm">
+                            <table className="w-full text-left">
                                 <thead className="bg-gray-700/50">
                                     <tr>
-                                        <th className="p-3 font-semibold uppercase tracking-wider">{t('cost_month')}</th>
-                                        <th className="p-3 font-semibold uppercase tracking-wider text-right">{t('cost_distance')}</th>
-                                        <th className="p-3 font-semibold uppercase tracking-wider text-right">{t('nav_trips')}</th>
-                                        <th className="p-3 font-semibold uppercase tracking-wider text-right">{t('cost_fuel')}</th>
-                                        <th className="p-3 font-semibold uppercase tracking-wider text-right">{t('cost_maintenance')}</th>
-                                        <th className="p-3 font-semibold uppercase tracking-wider text-right">{t('cost_other')}</th>
-                                        <th className="p-3 font-semibold uppercase tracking-wider text-right">{t('cost_total')}</th>
-                                        <th className="p-3 font-semibold uppercase tracking-wider text-right">{t('cost_avg_cost_km')}</th>
+                                        <th className="p-3 font-semibold uppercase tracking-wider text-[11px]">{t('cost_month')}</th>
+                                        <th className="p-3 font-semibold uppercase tracking-wider text-right text-[11px]">{t('cost_distance')}</th>
+                                        <th className="p-3 font-semibold uppercase tracking-wider text-right text-[11px]">{t('nav_trips')}</th>
+                                        <th className="p-3 font-semibold uppercase tracking-wider text-right text-[11px]">{t('cost_fuel')}</th>
+                                        <th className="p-3 font-semibold uppercase tracking-wider text-right text-[11px]">{t('cost_maintenance')}</th>
+                                        <th className="p-3 font-semibold uppercase tracking-wider text-right text-[11px]">{t('cost_other')}</th>
+                                        <th className="p-3 font-semibold uppercase tracking-wider text-right text-[11px]">{t('cost_total')}</th>
+                                        <th className="p-3 font-semibold uppercase tracking-wider text-right text-[11px]">{t('cost_avg_cost_km')}</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-700/50">
                                     {monthlyTableData.map(row => (
                                         <tr key={row.month} className="hover:bg-gray-800/40">
-                                            <td className="p-3 font-semibold">{row.month}</td>
-                                            <td className="p-3 text-right">{row.distance.toFixed(1)} km</td>
-                                            <td className="p-3 text-right">{row.trips}</td>
-                                            <td className="p-3 text-right">{formatCurrency(row.fuel)}</td>
-                                            <td className="p-3 text-right">{formatCurrency(row.maintenance)}</td>
-                                            <td className="p-3 text-right">{formatCurrency(row.other)}</td>
-                                            <td className="p-3 text-right font-bold text-brand-primary">{formatCurrency(row.total)}</td>
-                                            <td className="p-3 text-right">{formatCurrency(row.avg_cost_km)}</td>
+                                            <td className="p-3 font-semibold text-sm">{row.month}</td>
+                                            <td className="p-3 text-right text-sm">{row.distance.toFixed(1)} km</td>
+                                            <td className="p-3 text-right text-sm">{row.trips}</td>
+                                            <td className="p-3 text-right text-sm">{formatCurrency(row.fuel)}</td>
+                                            <td className="p-3 text-right text-sm">{formatCurrency(row.maintenance)}</td>
+                                            <td className="p-3 text-right text-sm">{formatCurrency(row.other)}</td>
+                                            <td className="p-3 text-right font-bold text-brand-primary text-sm">{formatCurrency(row.total)}</td>
+                                            <td className="p-3 text-right text-sm">{formatCurrency(row.avg_cost_km)}</td>
                                         </tr>
                                     ))}
                                 </tbody>
@@ -628,26 +636,26 @@ const CostAnalysisDashboard: React.FC<{
                                 
                                 {/* Tabla a la derecha del gráfico */}
                                 <div className="overflow-x-auto">
-                                    <table className="w-full text-left text-sm">
+                                    <table className="w-full text-left">
                                         <thead className="bg-gray-700/50">
                                             <tr>
-                                                <th className="p-2 font-semibold uppercase tracking-wider text-xs">Proyecto</th>
-                                                <th className="p-2 font-semibold uppercase tracking-wider text-right text-xs">Dist.</th>
-                                                <th className="p-2 font-semibold uppercase tracking-wider text-right text-xs">Viajes</th>
-                                                <th className="p-2 font-semibold uppercase tracking-wider text-right text-xs">Total</th>
-                                                <th className="p-2 font-semibold uppercase tracking-wider text-right text-xs">€/km</th>
+                                                <th className="p-2.5 font-semibold uppercase tracking-wider text-[11px]">Proyecto</th>
+                                                <th className="p-2.5 font-semibold uppercase tracking-wider text-right text-[11px]">Dist.</th>
+                                                <th className="p-2.5 font-semibold uppercase tracking-wider text-right text-[11px]">Viajes</th>
+                                                <th className="p-2.5 font-semibold uppercase tracking-wider text-right text-[11px]">Total</th>
+                                                <th className="p-2.5 font-semibold uppercase tracking-wider text-right text-[11px]">€/km</th>
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-gray-700/50">
                                             {projectChartData.map((project, index) => (
                                                 <tr key={project.name} className="hover:bg-gray-800/40">
-                                                    <td className="p-2 font-medium text-xs" title={project.name}>
-                                                        {project.name.length > 12 ? project.name.substring(0, 12) + '...' : project.name}
+                                                    <td className="p-2.5 font-medium text-sm" title={project.name}>
+                                                        {project.name.length > 15 ? project.name.substring(0, 15) + '...' : project.name}
                                                     </td>
-                                                    <td className="p-2 text-right text-xs">{project.distance.toFixed(0)} km</td>
-                                                    <td className="p-2 text-right text-xs">{project.trips}</td>
-                                                    <td className="p-2 text-right font-bold text-brand-primary text-xs">{formatCurrency(project.cost)}</td>
-                                                    <td className="p-2 text-right text-xs">{formatCurrency(project.distance > 0 ? project.cost / project.distance : 0)}</td>
+                                                    <td className="p-2.5 text-right text-sm">{project.distance.toFixed(0)} km</td>
+                                                    <td className="p-2.5 text-right text-sm">{project.trips}</td>
+                                                    <td className="p-2.5 text-right font-bold text-brand-primary text-sm">{formatCurrency(project.cost)}</td>
+                                                    <td className="p-2.5 text-right text-sm">{formatCurrency(project.distance > 0 ? project.cost / project.distance : 0)}</td>
                                                 </tr>
                                             ))}
                                         </tbody>
@@ -825,7 +833,7 @@ const CostAnalysisDashboard: React.FC<{
             <ExpenseUploadModal
                 isOpen={isExpenseModalOpen}
                 onClose={() => setIsExpenseModalOpen(false)}
-                defaultProjectId={selectedProjectId || null}
+                defaultProjectId={selectedProjectIdForUpload}
             />
         </div>
     );

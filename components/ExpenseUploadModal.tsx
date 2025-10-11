@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import useTranslation from '../hooks/useTranslation';
 import useExpenses from '../hooks/useExpenses';
+import useTrips from '../hooks/useTrips';
 import { ExpenseCategory } from '../types';
 import { XIcon, UploadCloudIcon } from './Icons';
 
@@ -21,6 +22,7 @@ const ExpenseUploadModal: React.FC<ExpenseUploadModalProps> = ({
 }) => {
   const { t } = useTranslation();
   const { addExpense, loading } = useExpenses();
+  const { trips } = useTrips();
 
   const [category, setCategory] = useState<ExpenseCategory>('fuel');
   const [amount, setAmount] = useState<string>('');
@@ -72,8 +74,15 @@ const ExpenseUploadModal: React.FC<ExpenseUploadModalProps> = ({
     setError(null);
     setIsSubmitting(true);
     try {
+      const sanitizedProjectId =
+        defaultProjectId && defaultProjectId !== 'unassigned' ? defaultProjectId : null;
+      const tripProjectId = defaultTripId
+        ? trips.find(trip => trip.id === defaultTripId)?.projectId ?? null
+        : null;
+      const projectIdToUse = sanitizedProjectId ?? tripProjectId ?? null;
+
       await addExpense({
-        projectId: defaultProjectId,
+        projectId: projectIdToUse,
         tripId: defaultTripId,
         category,
         amount: Number(amount),
@@ -107,17 +116,17 @@ const ExpenseUploadModal: React.FC<ExpenseUploadModalProps> = ({
         >
           <XIcon className="h-5 w-5" />
         </button>
-        <h2 className="mb-4 text-xl font-semibold text-white">
+        <h2 className="mb-5 text-xl font-semibold text-white">
           {t('expense_upload_title') || 'Upload Invoice'}
         </h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="mb-1 block text-sm font-medium text-on-surface-secondary">
+            <label className="mb-2 block text-sm font-medium text-on-surface-secondary">
               {t('expense_upload_category') || 'Category'}
             </label>
             <select
-              className="w-full rounded-md border border-glass bg-background-dark/80 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-brand-primary"
+              className="w-full rounded-md border border-glass bg-background-dark/80 px-3 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-brand-primary"
               value={category}
               onChange={event => setCategory(event.target.value as ExpenseCategory)}
             >
@@ -131,9 +140,9 @@ const ExpenseUploadModal: React.FC<ExpenseUploadModalProps> = ({
             </select>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="mb-1 block text-sm font-medium text-on-surface-secondary">
+              <label className="mb-2 block text-sm font-medium text-on-surface-secondary">
                 {t('expense_upload_amount') || 'Amount'}
               </label>
               <input
@@ -142,12 +151,12 @@ const ExpenseUploadModal: React.FC<ExpenseUploadModalProps> = ({
                 step="0.01"
                 value={amount}
                 onChange={event => setAmount(event.target.value)}
-                className="w-full rounded-md border border-glass bg-background-dark/80 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-brand-primary"
+                className="w-full rounded-md border border-glass bg-background-dark/80 px-3 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-brand-primary"
                 required
               />
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium text-on-surface-secondary">
+              <label className="mb-2 block text-sm font-medium text-on-surface-secondary">
                 {t('expense_upload_currency') || 'Currency'}
               </label>
               <input
@@ -155,25 +164,25 @@ const ExpenseUploadModal: React.FC<ExpenseUploadModalProps> = ({
                 maxLength={3}
                 value={currency}
                 onChange={event => setCurrency(event.target.value.toUpperCase())}
-                className="w-full rounded-md border border-glass bg-background-dark/80 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-brand-primary"
+                className="w-full rounded-md border border-glass bg-background-dark/80 px-3 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-brand-primary"
               />
             </div>
           </div>
 
-  <div className="grid grid-cols-2 gap-3">
+  <div className="grid grid-cols-2 gap-4">
     <div>
-      <label className="mb-1 block text-sm font-medium text-on-surface-secondary">
+      <label className="mb-2 block text-sm font-medium text-on-surface-secondary">
         {t('expense_upload_date') || 'Invoice Date'}
       </label>
       <input
         type="date"
         value={invoiceDate}
         onChange={event => setInvoiceDate(event.target.value)}
-        className="w-full rounded-md border border-glass bg-background-dark/80 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-brand-primary"
+        className="w-full rounded-md border border-glass bg-background-dark/80 px-3 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-brand-primary"
       />
     </div>
     <div>
-      <label className="mb-1 block text-sm font-medium text-on-surface-secondary">
+      <label className="mb-2 block text-sm font-medium text-on-surface-secondary">
         {t('expense_upload_description') || 'Description'}
       </label>
       <input
@@ -181,18 +190,18 @@ const ExpenseUploadModal: React.FC<ExpenseUploadModalProps> = ({
         value={description}
         onChange={event => setDescription(event.target.value)}
         placeholder={t('expense_upload_description_placeholder') || 'Optional note'}
-        className="w-full rounded-md border border-glass bg-background-dark/80 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-brand-primary"
+        className="w-full rounded-md border border-glass bg-background-dark/80 px-3 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-brand-primary"
       />
     </div>
   </div>
 
           <div>
-            <label className="mb-1 block text-sm font-medium text-on-surface-secondary">
+            <label className="mb-2 block text-sm font-medium text-on-surface-secondary">
               {t('expense_upload_document') || 'Invoice Document'}
             </label>
-            <label className="flex cursor-pointer items-center gap-3 rounded-md border border-dashed border-glass bg-background-dark/60 px-4 py-3 text-sm text-on-surface-secondary transition hover:border-brand-primary hover:text-white">
-              <UploadCloudIcon className="h-5 w-5" />
-              <span>{file ? file.name : (t('expense_upload_select') || 'Click to select invoice file')}</span>
+            <label className="flex cursor-pointer items-center gap-3 rounded-md border border-dashed border-glass bg-background-dark/60 px-4 py-3.5 text-sm text-on-surface-secondary transition hover:border-brand-primary hover:text-white">
+              <UploadCloudIcon className="h-5 w-5 flex-shrink-0" />
+              <span className="truncate">{file ? file.name : (t('expense_upload_select') || 'Click to select invoice file')}</span>
               <input
                 type="file"
                 className="hidden"
@@ -202,21 +211,21 @@ const ExpenseUploadModal: React.FC<ExpenseUploadModalProps> = ({
             </label>
           </div>
 
-          {error && <p className="text-sm text-red-400">{error}</p>}
+          {error && <p className="text-sm text-red-400 mt-2">{error}</p>}
 
-          <div className="flex justify-end gap-3 pt-2">
+          <div className="flex justify-end gap-3 pt-3">
             <button
               type="button"
               onClick={handleClose}
               disabled={isSubmitting}
-              className="rounded-md border border-glass px-4 py-2 text-sm font-medium text-on-surface-secondary transition hover:text-white"
+              className="rounded-md border border-glass px-5 py-2.5 text-sm font-medium text-on-surface-secondary transition hover:text-white hover:bg-surface-light/40"
             >
               {t('common_cancel')}
             </button>
             <button
               type="submit"
               disabled={isSubmitting || loading}
-              className="flex items-center gap-2 rounded-md bg-brand-primary px-4 py-2 text-sm font-semibold text-white transition hover:brightness-110 disabled:opacity-60"
+              className="flex items-center gap-2 rounded-md bg-brand-primary px-5 py-2.5 text-sm font-semibold text-white transition hover:brightness-110 disabled:opacity-60"
             >
               <UploadCloudIcon className="h-4 w-4" />
               {isSubmitting

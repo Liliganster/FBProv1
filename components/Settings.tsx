@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { UserProfile, AiModelInfo, View, PersonalizationSettings } from '../types';
-import { SaveIcon, LockIcon, XIcon, UserCircleIcon, SparklesIcon } from './Icons';
+import { SaveIcon, LockIcon, XIcon, UserCircleIcon, SparklesIcon, TrashIcon, LoaderIcon } from './Icons';
 import useTranslation from '../hooks/useTranslation';
 import useToast from '../hooks/useToast';
 import useUnsavedChanges from '../hooks/useUnsavedChanges';
@@ -8,6 +8,7 @@ import { fetchOpenRouterModels } from '../services/aiService';
 import { getRateForCountry, getPassengerSurchargeForCountry } from '../services/taxService';
 import useUserProfile from '../hooks/useUserProfile';
 import { useAuth } from '../hooks/useAuth';
+import { databaseService } from '../services/databaseService';
 import LanguageSwitcher from './LanguageSwitcher';
 import {
   LuPalette as Palette,
@@ -27,7 +28,7 @@ const SettingsView: React.FC<{
     theme: 'light' | 'dark';
 }> = ({ setCurrentView, personalization, setPersonalization, theme }) => {
     const { userProfile, setUserProfile } = useUserProfile();
-    const { user } = useAuth();
+    const { user, logout } = useAuth();
     const [localProfile, setLocalProfile] = useState<UserProfile | null>(userProfile);
     const { t } = useTranslation();
     const { showToast } = useToast();
@@ -36,7 +37,10 @@ const SettingsView: React.FC<{
     const [isFetchingOrModels, setIsFetchingOrModels] = useState(false);
     const [fetchOrModelsError, setFetchOrModelsError] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState<Tab>('profile');
-    
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [deleteConfirmation, setDeleteConfirmation] = useState('');
+    const [isDeletingAccount, setIsDeletingAccount] = useState(false);
+
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     // Initialize unsaved changes tracker for profile data
@@ -161,10 +165,42 @@ const SettingsView: React.FC<{
         setPersonalization(prev => ({ ...prev, backgroundImage: '' }));
     };
 
+    const openDeleteModal = () => {
+        setDeleteConfirmation('');
+        setIsDeleteModalOpen(true);
+    };
+
+    const closeDeleteModal = () => {
+        if (isDeletingAccount) return;
+        setIsDeleteModalOpen(false);
+        setDeleteConfirmation('');
+    };
+
+    const handleDeleteAccount = async () => {
+        if (!user?.id) return;
+        setIsDeletingAccount(true);
+        try {
+            await databaseService.deleteUserAccountData(user.id);
+            showToast(t('settings_delete_account_success'), 'success');
+            setIsDeleteModalOpen(false);
+            setDeleteConfirmation('');
+            await logout();
+        } catch (error) {
+            const message = error instanceof Error
+                ? error.message
+                : t('settings_delete_account_error') || 'Failed to delete account';
+            showToast(message, 'error');
+        } finally {
+            setIsDeletingAccount(false);
+        }
+    };
+
 
     if (!localProfile) {
         return null; // Don't render if profile isn't loaded
     }
+
+    const isDeleteConfirmationValid = deleteConfirmation.trim().toUpperCase() === 'DELETE';
 
     const renderTabContent = () => {
         switch (activeTab) {
@@ -185,6 +221,22 @@ const SettingsView: React.FC<{
                                 <InputField label={t('settings_profile_city')} name="city" value={localProfile.city} onChange={handleProfileChange} />
                                 <InputField label={t('settings_profile_country')} name="country" value={localProfile.country} onChange={handleProfileChange} />
                             </div>
+                        </section>
+                        <section className="border border-red-500/40 bg-red-500/10 rounded-md p-4">
+                            <h3 className="text-lg font-semibold text-red-300 mb-2 flex items-center gap-2">
+                                <TrashIcon className="w-5 h-5" />
+                                {t('settings_delete_account_title')}
+                            </h3>
+                            <p className="text-sm text-on-surface-dark-secondary mb-4">
+                                {t('settings_delete_account_description')}
+                            </p>
+                            <button
+                                onClick={openDeleteModal}
+                                className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-500 text-white font-semibold py-2 px-4 rounded-md transition-colors"
+                            >
+                                <TrashIcon className="w-4 h-4" />
+                                {t('settings_delete_account_button')}
+                            </button>
                         </section>
                     </div>
                 );
@@ -368,7 +420,7 @@ const SettingsView: React.FC<{
 
     return (
         <div className="fixed inset-0 bg-gradient-overlay backdrop-blur-glass flex items-center justify-center p-4 z-50" onClick={handleClose}>
-            <div className="bg-frost-glass no-border rounded-organic shadow-glass-lg w-full max-w-4xl max-h-[90vh] flex flex-col backdrop-blur-glass" onClick={e => e.stopPropagation()}>
+            <div className="bg-frost-glass no-border rounded-organic shadow-glass-lg w-full max-w-4xl max-h-[90vh] flex flex-col backdrop-blur-glass relative" onClick={e => e.stopPropagation()}>
                 <header className="flex items-center justify-between p-4 flex-shrink-0">
                     <h2 className="text-xl font-bold bg-gradient-title bg-clip-text text-transparent">{t('settings_title')}</h2>
                     <button onClick={handleClose} className="text-on-surface-secondary hover:text-white hover:bg-gradient-surface rounded-smooth p-1 transition-all duration-200"><XIcon className="w-6 h-6" /></button>
@@ -446,6 +498,57 @@ const SettingsView: React.FC<{
                         </button>
                     </div>
                 </footer>
+
+                {isDeleteModalOpen && (
+                    <div className="absolute inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50">
+                        <div className="bg-surface-dark border border-red-500/40 rounded-lg shadow-lg w-full max-w-md p-6 space-y-4">
+                            <h3 className="text-xl font-semibold text-red-300 flex items-center gap-2">
+                                <TrashIcon className="w-5 h-5" />
+                                {t('settings_delete_account_confirm_title')}
+                            </h3>
+                            <p className="text-sm text-on-surface-dark-secondary">
+                                {t('settings_delete_account_confirm_body')}
+                            </p>
+                            <p className="text-xs text-red-300">
+                                {t('settings_delete_account_confirm_instruction')}
+                            </p>
+                            <input
+                                type="text"
+                                value={deleteConfirmation}
+                                onChange={(e) => setDeleteConfirmation(e.target.value)}
+                                placeholder={t('settings_delete_account_confirm_placeholder')}
+                                className="w-full bg-background-dark border border-red-500/50 rounded-md p-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+                                disabled={isDeletingAccount}
+                            />
+                            <div className="flex justify-end gap-3 pt-2">
+                                <button
+                                    onClick={closeDeleteModal}
+                                    className="px-4 py-2 rounded-md border border-gray-600 text-sm text-on-surface-secondary hover:text-white transition-colors disabled:opacity-60"
+                                    disabled={isDeletingAccount}
+                                >
+                                    {t('common_cancel')}
+                                </button>
+                                <button
+                                    onClick={handleDeleteAccount}
+                                    disabled={!isDeleteConfirmationValid || isDeletingAccount}
+                                    className="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-red-600 hover:bg-red-500 text-sm font-semibold text-white transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                                >
+                                    {isDeletingAccount ? (
+                                        <>
+                                            <LoaderIcon className="w-4 h-4 animate-spin" />
+                                            {t('settings_delete_account_processing')}
+                                        </>
+                                    ) : (
+                                        <>
+                                            <TrashIcon className="w-4 h-4" />
+                                            {t('settings_delete_account_confirm_button')}
+                                        </>
+                                    )}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );

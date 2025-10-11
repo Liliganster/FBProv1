@@ -482,6 +482,99 @@ class DatabaseService {
     }
   }
 
+  async deleteAllUserExpenses(userId: string): Promise<void> {
+    try {
+      const { data: expenses, error: fetchError } = await supabase
+        .from('expense_documents')
+        .select('storage_path')
+        .eq('user_id', userId);
+
+      if (fetchError) throw fetchError;
+
+      const storagePaths = (expenses ?? [])
+        .map(expense => expense.storage_path)
+        .filter((path): path is string => Boolean(path));
+
+      if (storagePaths.length > 0) {
+        const { error: storageError } = await supabase.storage
+          .from('expenses')
+          .remove(storagePaths);
+
+        if (storageError) {
+          console.warn('Unable to remove some expense documents from storage:', storageError.message);
+        }
+      }
+
+      const { error: deleteError } = await supabase
+        .from('expense_documents')
+        .delete()
+        .eq('user_id', userId);
+
+      if (deleteError) throw deleteError;
+    } catch (error) {
+      console.error('Error deleting all expense documents:', error);
+      throw new Error('Failed to delete expenses');
+    }
+  }
+
+  async deleteAllUserCallsheets(userId: string): Promise<void> {
+    try {
+      const { data: callsheets, error: fetchError } = await supabase
+        .from('callsheets')
+        .select('id, url')
+        .eq('user_id', userId);
+
+      if (fetchError) throw fetchError;
+
+      const storagePaths: string[] = [];
+      (callsheets ?? []).forEach(callsheet => {
+        if (!callsheet?.url) return;
+        const parts = callsheet.url.split('/callsheets/');
+        if (parts.length > 1) {
+          const storagePath = decodeURIComponent(parts[1]);
+          if (storagePath) {
+            storagePaths.push(storagePath);
+          }
+        }
+      });
+
+      if (storagePaths.length > 0) {
+        const { error: storageError } = await supabase.storage
+          .from('callsheets')
+          .remove(storagePaths);
+
+        if (storageError) {
+          console.warn('Unable to remove some callsheets from storage:', storageError.message);
+        }
+      }
+
+      const { error: deleteError } = await supabase
+        .from('callsheets')
+        .delete()
+        .eq('user_id', userId);
+
+      if (deleteError) throw deleteError;
+    } catch (error) {
+      console.error('Error deleting all callsheets:', error);
+      throw new Error('Failed to delete callsheets');
+    }
+  }
+
+  async deleteUserAccountData(userId: string): Promise<void> {
+    try {
+      await this.deleteAllUserExpenses(userId);
+      await this.deleteAllUserCallsheets(userId);
+      await this.deleteAllUserLedgerEntries(userId);
+      await this.deleteAllUserReports(userId);
+      await this.deleteAllUserRouteTemplates(userId);
+      await this.deleteAllUserProjects(userId);
+      await this.deleteUserProfile(userId);
+    } catch (error) {
+      console.error('Error deleting user account data:', error);
+      throw new Error('Failed to delete user account');
+    }
+  }
+
   // ===== UTILITY OPERATIONS =====
 
   /**
@@ -1343,13 +1436,14 @@ class DatabaseService {
   }
 
   private transformDbExpenseToLegacy(dbExpense: DbExpenseDocument): ExpenseDocument {
+    const normalizedAmount = Number(dbExpense.amount);
     return {
       id: dbExpense.id,
       userId: dbExpense.user_id,
       projectId: dbExpense.project_id,
       tripId: dbExpense.trip_id,
       category: dbExpense.category,
-      amount: dbExpense.amount,
+      amount: Number.isNaN(normalizedAmount) ? 0 : normalizedAmount,
       currency: dbExpense.currency,
       description: dbExpense.description,
       invoiceDate: dbExpense.invoice_date,
