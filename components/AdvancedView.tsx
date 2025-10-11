@@ -25,6 +25,7 @@ import {
 import { Trip, PersonalizationSettings, UserProfile } from '../types';
 import { formatDateForDisplay } from '../i18n/translations';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Legend, ResponsiveContainer, BarChart, Bar, Tooltip } from 'recharts';
+import ExpenseUploadModal from './ExpenseUploadModal';
 
 type AuditResult = {
     ok: boolean;
@@ -54,6 +55,7 @@ const CostAnalysisDashboard: React.FC<{
     const [showVehicleModal, setShowVehicleModal] = useState(false);
     const [vehicleForm, setVehicleForm] = useState<UserProfile | null>(null);
     const [selectedProjectId, setSelectedProjectId] = useState<string>('');
+    const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
 
     // Inicializar el formulario cuando se abre el modal
     useEffect(() => {
@@ -214,8 +216,8 @@ const CostAnalysisDashboard: React.FC<{
         const sortedKeys = Array.from(allKeys).sort((a, b) => {
             const [m1, y1] = a.split(/[\s'./-]+/);
             const [m2, y2] = b.split(/[\s'./-]+/);
-            const dateA = new Date( 1  );
-            const dateB = new Date( 1  );
+            const dateA = new Date(parseInt(`20${y1}`), new Date(Date.parse(`${m1} 1, 2000`)).getMonth(), 1);
+            const dateB = new Date(parseInt(`20${y2}`), new Date(Date.parse(`${m2} 1, 2000`)).getMonth(), 1);
             return dateA.getTime() - dateB.getTime();
         });
         
@@ -382,12 +384,21 @@ const CostAnalysisDashboard: React.FC<{
                         <p className="text-sm text-on-surface-dark-secondary">{t('cost_analysis_description_personal')}</p>
                     </div>
                 </div>
-                 <select value={timeRange} onChange={(e) => setTimeRange(e.target.value as any)} className="bg-surface-dark border border-gray-600 rounded-soft py-2 px-4 focus:ring-2 focus:ring-brand-primary focus:outline-none text-on-surface-dark">
-                    <option value="3m">{t('cost_analysis_time_range_3m')}</option>
-                    <option value="6m">{t('cost_analysis_time_range_6m')}</option>
-                    <option value="1y">{t('cost_analysis_time_range_1y')}</option>
-                    <option value="all">{t('cost_analysis_time_range_all')}</option>
-                </select>
+                <div className="flex items-center gap-3">
+                    <button
+                        onClick={() => setIsExpenseModalOpen(true)}
+                        className="flex items-center gap-2 bg-brand-primary hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-smooth transition-colors"
+                    >
+                        <UploadIcon className="w-5 h-5" />
+                        {t('expense_upload_title') || 'Upload Invoice'}
+                    </button>
+                    <select value={timeRange} onChange={(e) => setTimeRange(e.target.value as any)} className="bg-surface-dark border border-gray-600 rounded-soft py-2 px-4 focus:ring-2 focus:ring-brand-primary focus:outline-none text-on-surface-dark">
+                        <option value="3m">{t('cost_analysis_time_range_3m')}</option>
+                        <option value="6m">{t('cost_analysis_time_range_6m')}</option>
+                        <option value="1y">{t('cost_analysis_time_range_1y')}</option>
+                        <option value="all">{t('cost_analysis_time_range_all')}</option>
+                    </select>
+                </div>
             </header>
             
             <main>
@@ -809,6 +820,13 @@ const CostAnalysisDashboard: React.FC<{
                     </div>
                 </div>
             )}
+
+            {/* Modal para subir facturas */}
+            <ExpenseUploadModal
+                isOpen={isExpenseModalOpen}
+                onClose={() => setIsExpenseModalOpen(false)}
+                defaultProjectId={selectedProjectId || null}
+            />
         </div>
     );
 };

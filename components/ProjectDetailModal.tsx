@@ -5,6 +5,7 @@ import useTrips from '../hooks/useTrips';
 import useProjects from '../hooks/useProjects';
 import { XIcon, FileTextIcon, EyeIcon, TrashIcon, LoaderIcon, SparklesIcon, LeafIcon, LineChartIcon, UsersIcon, PieChartIcon, CarIcon, UploadCloudIcon } from './Icons';
 import useTranslation from '../hooks/useTranslation';
+import { formatDateForDisplay } from '../i18n/translations';
 import useToast from '../hooks/useToast';
 import { processFileForTrip } from '../services/aiService';
 import useUserProfile from '../hooks/useUserProfile';
