@@ -5,7 +5,8 @@
       "Bash(npm run build:*)",
       "Bash(dir /b supabasemigrations)",
       "Bash(git add:*)",
-      "Bash(dir:*)"
+      "Bash(dir:*)",
+      "Bash(git commit:*)"
     ],
     "deny": [],
     "ask": []
