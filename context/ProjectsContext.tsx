@@ -143,10 +143,15 @@ export function ProjectsProvider({ children }: { children: React.ReactNode }) {
   }, [user?.id, showToast])
 
   const updateProject = useCallback(async (id: string, updates: Partial<Project>) => {
+    if (!user?.id) {
+      showToast('User not authenticated', 'error');
+      return;
+    }
+    
     dispatch({ type: 'SET_LOADING', loading: true })
     
     try {
-      const updatedProject = await databaseService.updateProject(id, updates)
+      const updatedProject = await databaseService.updateProject(id, user.id, updates)
       dispatch({ type: 'UPDATE_PROJECT', project: updatedProject })
       showToast('Project updated successfully', 'success')
     } catch (error) {
@@ -155,13 +160,18 @@ export function ProjectsProvider({ children }: { children: React.ReactNode }) {
       dispatch({ type: 'SET_ERROR', error: errorMessage })
       showToast(errorMessage, 'error')
     }
-  }, [showToast])
+  }, [showToast, user?.id])
 
   const deleteProject = useCallback(async (id: string) => {
+    if (!user?.id) {
+      showToast('User not authenticated', 'error');
+      return;
+    }
+    
     dispatch({ type: 'SET_LOADING', loading: true })
     
     try {
-      await databaseService.deleteProject(id)
+      await databaseService.deleteProject(id, user.id)
       dispatch({ type: 'DELETE_PROJECT', id })
       showToast('Project deleted successfully', 'success')
     } catch (error) {
@@ -175,10 +185,15 @@ export function ProjectsProvider({ children }: { children: React.ReactNode }) {
   const deleteSelectedProjects = useCallback(async (projectIds: string[]) => {
     if (projectIds.length === 0) return
     
+    if (!user?.id) {
+      showToast('User not authenticated', 'error');
+      return;
+    }
+    
     dispatch({ type: 'SET_LOADING', loading: true })
     
     try {
-      await databaseService.deleteMultipleProjects(projectIds)
+      await databaseService.deleteMultipleProjects(projectIds, user.id)
       dispatch({ type: 'DELETE_MULTIPLE_PROJECTS', ids: projectIds })
       showToast(`${projectIds.length} project(s) deleted successfully`, 'success')
     } catch (error) {
@@ -187,7 +202,7 @@ export function ProjectsProvider({ children }: { children: React.ReactNode }) {
       dispatch({ type: 'SET_ERROR', error: errorMessage })
       showToast(errorMessage, 'error')
     }
-  }, [showToast])
+  }, [showToast, user?.id])
 
   const addCallsheetsToProject = useCallback(async (projectId: string, files: File[]) => {
     try {
@@ -212,8 +227,13 @@ export function ProjectsProvider({ children }: { children: React.ReactNode }) {
   }, [state.projects, showToast])
 
   const deleteCallsheetFromProject = useCallback(async (projectId: string, callsheetId: string) => {
+    if (!user?.id) {
+      showToast('User not authenticated', 'error');
+      return;
+    }
+    
     try {
-      await databaseService.deleteCallsheetFromProject(callsheetId)
+      await databaseService.deleteCallsheetFromProject(callsheetId, user.id)
       
       // Update the project by removing the callsheet
       const currentProject = state.projects.find(p => p.id === projectId)

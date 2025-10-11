@@ -1,6 +1,7 @@
 import { supabase } from '../lib/supabase'
 import { User, Session, AuthError } from '@supabase/supabase-js'
 import { DbProfile, DbProfileInsert, DbProfileUpdate } from '../types/database'
+import { authQueueService } from './authQueueService'
 
 export interface AuthResponse {
   user: User | null
@@ -20,61 +21,65 @@ class AuthService {
     full_name?: string
     country?: string 
   } = {}): Promise<AuthResponse> {
-    try {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: metadata
+    return authQueueService.executeAuthOperation(async () => {
+      try {
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: metadata
+          }
+        })
+
+        if (error) throw error
+
+        // Try to create profile entry (optional - may fail if DB not configured)
+        if (data.user) {
+          try {
+            await this.createUserProfile(data.user, metadata)
+          } catch (profileError) {
+            console.warn('Could not create user profile, continuing without:', profileError);
+            // Continue without profile - signup should still succeed
+          }
         }
-      })
 
-      if (error) throw error
-
-      // Try to create profile entry (optional - may fail if DB not configured)
-      if (data.user) {
-        try {
-          await this.createUserProfile(data.user, metadata)
-        } catch (profileError) {
-          console.warn('Could not create user profile, continuing without:', profileError);
-          // Continue without profile - signup should still succeed
+        return {
+          user: data.user,
+          error: null
+        }
+      } catch (error) {
+        return {
+          user: null,
+          error: error as AuthError
         }
       }
-
-      return {
-        user: data.user,
-        error: null
-      }
-    } catch (error) {
-      return {
-        user: null,
-        error: error as AuthError
-      }
-    }
+    }, `signUp_${email}`);
   }
 
   /**
    * Sign in with email and password
    */
   async signIn(email: string, password: string): Promise<AuthResponse> {
-    try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password
-      })
+    return authQueueService.executeAuthOperation(async () => {
+      try {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email,
+          password
+        })
 
-      if (error) throw error
+        if (error) throw error
 
-      return {
-        user: data.user,
-        error: null
+        return {
+          user: data.user,
+          error: null
+        }
+      } catch (error) {
+        return {
+          user: null,
+          error: error as AuthError
+        }
       }
-    } catch (error) {
-      return {
-        user: null,
-        error: error as AuthError
-      }
-    }
+    }, `signIn_${email}`);
   }
 
   /**
@@ -101,70 +106,74 @@ class AuthService {
    * Sign out current user
    */
   async signOut(): Promise<{ error: AuthError | null }> {
-    try {
-      const { error } = await supabase.auth.signOut()
-      
-      // Clear only Supabase-specific storage, not all sessionStorage
-      // to avoid breaking other app functionality (like loop prevention)
-      if (typeof window !== 'undefined') {
-        // Clear localStorage items that might be corrupted
-        const keysToRemove = [];
-        for (let i = 0; i < localStorage.length; i++) {
-          const key = localStorage.key(i);
-          if (key && (key.startsWith('supabase') || key.startsWith('sb-'))) {
-            keysToRemove.push(key);
-          }
-        }
-        keysToRemove.forEach(key => localStorage.removeItem(key));
+    return authQueueService.executeAuthOperation(async () => {
+      try {
+        const { error } = await supabase.auth.signOut()
         
-        // Clear only Supabase-related sessionStorage items
-        const sessionKeysToRemove = [];
-        for (let i = 0; i < sessionStorage.length; i++) {
-          const key = sessionStorage.key(i);
-          if (key && (key.startsWith('supabase') || key.startsWith('sb-'))) {
-            sessionKeysToRemove.push(key);
+        // Clear only Supabase-specific storage, not all sessionStorage
+        // to avoid breaking other app functionality (like loop prevention)
+        if (typeof window !== 'undefined') {
+          // Clear localStorage items that might be corrupted
+          const keysToRemove = [];
+          for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key && (key.startsWith('supabase') || key.startsWith('sb-'))) {
+              keysToRemove.push(key);
+            }
           }
-        }
-        sessionKeysToRemove.forEach(key => sessionStorage.removeItem(key));
-      }
-      
-      return { error }
-    } catch (error) {
-      // Even if signOut fails, try to clear storage
-      if (typeof window !== 'undefined') {
-        const keysToRemove = [];
-        for (let i = 0; i < localStorage.length; i++) {
-          const key = localStorage.key(i);
-          if (key && (key.startsWith('supabase') || key.startsWith('sb-'))) {
-            keysToRemove.push(key);
+          keysToRemove.forEach(key => localStorage.removeItem(key));
+          
+          // Clear only Supabase-related sessionStorage items
+          const sessionKeysToRemove = [];
+          for (let i = 0; i < sessionStorage.length; i++) {
+            const key = sessionStorage.key(i);
+            if (key && (key.startsWith('supabase') || key.startsWith('sb-'))) {
+              sessionKeysToRemove.push(key);
+            }
           }
+          sessionKeysToRemove.forEach(key => sessionStorage.removeItem(key));
         }
-        keysToRemove.forEach(key => localStorage.removeItem(key));
+        
+        return { error }
+      } catch (error) {
+        // Even if signOut fails, try to clear storage
+        if (typeof window !== 'undefined') {
+          const keysToRemove = [];
+          for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key && (key.startsWith('supabase') || key.startsWith('sb-'))) {
+              keysToRemove.push(key);
+            }
+          }
+          keysToRemove.forEach(key => localStorage.removeItem(key));
+        }
+        return { error: error as AuthError }
       }
-      return { error: error as AuthError }
-    }
+    }, 'signOut');
   }
 
   /**
    * Clear all stored authentication data
    */
   async clearSession(): Promise<void> {
-    try {
-      await this.signOut();
-    } catch (error) {
-      console.warn('Error during session clearing:', error);
-      // Still try to clear storage even if signOut fails
-      if (typeof window !== 'undefined') {
-        const keysToRemove = [];
-        for (let i = 0; i < localStorage.length; i++) {
-          const key = localStorage.key(i);
-          if (key && (key.startsWith('supabase') || key.startsWith('sb-'))) {
-            keysToRemove.push(key);
+    return authQueueService.executeAuthOperation(async () => {
+      try {
+        await this.signOut();
+      } catch (error) {
+        console.warn('Error during session clearing:', error);
+        // Still try to clear storage even if signOut fails
+        if (typeof window !== 'undefined') {
+          const keysToRemove = [];
+          for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key && (key.startsWith('supabase') || key.startsWith('sb-'))) {
+              keysToRemove.push(key);
+            }
           }
+          keysToRemove.forEach(key => localStorage.removeItem(key));
         }
-        keysToRemove.forEach(key => localStorage.removeItem(key));
       }
-    }
+    }, 'clearSession');
   }
 
   /**
@@ -313,27 +322,29 @@ class AuthService {
    * Update user profile in database
    */
   async updateUserProfile(userId: string, updates: DbProfileUpdate): Promise<DbProfile | null> {
-    try {
-      const { data, error } = await supabase
-        .from('user_profiles')
-        .update({
-          ...updates,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', userId)
-        .select()
-        .single()
+    return authQueueService.executeStateUpdate(async () => {
+      try {
+        const { data, error } = await supabase
+          .from('user_profiles')
+          .update({
+            ...updates,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', userId)
+          .select()
+          .single()
 
-      if (error) {
+        if (error) {
+          console.error('Error updating user profile:', error)
+          return null
+        }
+
+        return data
+      } catch (error) {
         console.error('Error updating user profile:', error)
         return null
       }
-
-      return data
-    } catch (error) {
-      console.error('Error updating user profile:', error)
-      return null
-    }
+    }, `updateProfile_${userId}`);
   }
 
   // NOTE: Detailed profile mapping removed (handled directly where needed)

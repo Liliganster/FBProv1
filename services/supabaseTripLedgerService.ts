@@ -8,6 +8,7 @@ import {
 } from '../types';
 import { generateHash, createTripCanonicalString, generateRootHash } from './hashService';
 import { databaseService } from './databaseService';
+import { supabase } from '../lib/supabase';
 
 /**
  * Generate hash for a trip using canonical string representation
@@ -421,7 +422,13 @@ export class TripLedgerService {
    */
   async getBatchEntries(batchId: string): Promise<TripLedgerEntry[]> {
     try {
-      return await databaseService.getLedgerEntriesByBatch(batchId);
+      // Get current authenticated user
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError || !user) {
+        throw new Error('User not authenticated');
+      }
+
+      return await databaseService.getLedgerEntriesByBatch(batchId, user.id);
     } catch (error) {
       console.error('Error fetching batch entries from Supabase:', error);
       

@@ -136,9 +136,14 @@ export const RouteTemplatesProvider: React.FC<{ children: React.ReactNode }> = (
   }, [user?.id, refreshTemplates, showToast]);
 
   const updateTemplate = useCallback(async (id: string, data: Partial<Omit<RouteTemplate, 'id'>>): Promise<void> => {
+    if (!user?.id) {
+      showToast('User not authenticated', 'error');
+      return;
+    }
+    
     setLoading(true);
     try {
-      await databaseService.updateRouteTemplate(id, data);
+      await databaseService.updateRouteTemplate(id, user.id, data);
       await refreshTemplates();
       showToast('Template updated successfully', 'success');
     } catch (err) {
@@ -152,9 +157,14 @@ export const RouteTemplatesProvider: React.FC<{ children: React.ReactNode }> = (
   }, [refreshTemplates, showToast]);
 
   const deleteTemplate = useCallback(async (id: string): Promise<void> => {
+    if (!user?.id) {
+      showToast('User not authenticated', 'error');
+      return;
+    }
+    
     setLoading(true);
     try {
-      await databaseService.deleteRouteTemplate(id);
+      await databaseService.deleteRouteTemplate(id, user.id);
       await refreshTemplates();
       showToast('Template deleted successfully', 'success');
     } catch (err) {

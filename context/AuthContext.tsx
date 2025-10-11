@@ -4,6 +4,8 @@ import { User } from '../types';
 import { DbProfile } from '../types/database';
 import { authService } from '../services/authService';
 import { SUPABASE_CONFIG_ERROR, isSupabaseConfigured } from '../lib/supabase';
+import { authQueueService } from '../services/authQueueService';
+import { useMemoryLeakPrevention } from '../hooks/useAbortController';
 
 interface AuthContextType {
   user: User | null;
@@ -28,13 +30,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [isLoading, setIsLoading] = useState(true);
   const [configError, setConfigError] = useState<string | null>(null);
   
+  // Use memory leak prevention hooks
+  const { addCleanup, createController } = useMemoryLeakPrevention('AuthContext');
+  
   // Use ref instead of state to avoid triggering re-renders
   const isProcessingAuth = useRef(false);
   const lastProcessedUserId = useRef<string | null>(null);
 
   useEffect(() => {
     let mounted = true;
-    let authSubscription: { unsubscribe: () => void } | null = null;
+    const controller = createController('authInit');
 
     if (!isSupabaseConfigured) {
       setConfigError(SUPABASE_CONFIG_ERROR);
@@ -50,47 +55,50 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setConfigError(null);
 
     const updateAuthState = async (currentUser: SupabaseUser | null) => {
-      // Prevent concurrent updates and duplicate processing
-      if (!mounted || isProcessingAuth.current) return;
-      
-      // Skip if we already processed this user
-      const userId = currentUser?.id || null;
-      if (userId === lastProcessedUserId.current) return;
-      
-      try {
-        isProcessingAuth.current = true;
-        lastProcessedUserId.current = userId;
+      // Use queue service to prevent race conditions in state updates
+      return authQueueService.executeStateUpdate(async () => {
+        // Prevent concurrent updates and duplicate processing
+        if (!mounted || isProcessingAuth.current || controller.signal.aborted) return;
         
-        if (currentUser) {
-          setSupabaseUser(currentUser);
-          const legacyUser: User = { id: currentUser.id, email: currentUser.email || '' };
-          setUser(legacyUser);
-          const userProfile = await authService.getUserProfile(currentUser.id);
-          setProfile(userProfile);
-        } else {
-          setSupabaseUser(null);
-          setUser(null);
-          setProfile(null);
+        // Skip if we already processed this user
+        const userId = currentUser?.id || null;
+        if (userId === lastProcessedUserId.current) return;
+        
+        try {
+          isProcessingAuth.current = true;
+          lastProcessedUserId.current = userId;
+          
+          if (currentUser) {
+            setSupabaseUser(currentUser);
+            const legacyUser: User = { id: currentUser.id, email: currentUser.email || '' };
+            setUser(legacyUser);
+            const userProfile = await authService.getUserProfile(currentUser.id);
+            setProfile(userProfile);
+          } else {
+            setSupabaseUser(null);
+            setUser(null);
+            setProfile(null);
+          }
+        } catch (e) {
+          console.error('Error updating auth state:', e);
+        } finally {
+          if (mounted && !controller.signal.aborted) {
+            isProcessingAuth.current = false;
+          }
         }
-      } catch (e) {
-        console.error('Error updating auth state:', e);
-      } finally {
-        if (mounted) {
-          isProcessingAuth.current = false;
-        }
-      }
+      }, `updateAuthState_${currentUser?.id || 'null'}`);
     };
 
     const initAuth = async () => {
       try {
         const { user: currentUser, session } = await authService.getSession();
-        if (!mounted) return;
+        if (!mounted || controller.signal.aborted) return;
 
         await updateAuthState(currentUser);
       } catch (e) {
         console.error('Error initializing auth:', e);
       } finally {
-        if (mounted) setIsLoading(false);
+        if (mounted && !controller.signal.aborted) setIsLoading(false);
       }
     };
 
@@ -98,19 +106,22 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     // Subscribe to auth state changes with debouncing and deduplication
     const { data: { subscription } } = authService.onAuthStateChange(async (session) => {
-      if (!mounted || isProcessingAuth.current) return;
+      if (!mounted || isProcessingAuth.current || controller.signal.aborted) return;
       await updateAuthState(session?.user || null);
     });
     
-    authSubscription = subscription;
+    // Register cleanup function for subscription
+    addCleanup(() => {
+      if (subscription) {
+        subscription.unsubscribe();
+      }
+    });
 
     return () => {
       mounted = false;
-      if (authSubscription) {
-        authSubscription.unsubscribe();
-      }
+      controller.abort('AuthContext unmounted');
     };
-  }, []);
+  }, [createController, addCleanup]);
 
   const ensureConfigured = useCallback(() => {
     if (!isSupabaseConfigured) {
@@ -120,66 +131,78 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const login = useCallback(async (email: string, password: string) => {
     ensureConfigured();
-    const { user: authUser, error } = await authService.signIn(email, password);
-    if (error || !authUser) throw new Error(error?.message || 'Login failed');
+    return authQueueService.executeAuthOperation(async () => {
+      const { user: authUser, error } = await authService.signIn(email, password);
+      if (error || !authUser) throw new Error(error?.message || 'Login failed');
+    }, `login_${email}`);
   }, [ensureConfigured]);
 
   const register = useCallback(async (email: string, password: string) => {
     ensureConfigured();
-    const { user: authUser, error } = await authService.signUp(email, password, { full_name: email.split('@')[0] });
-    if (error || !authUser) throw new Error(error?.message || 'Registration failed');
+    return authQueueService.executeAuthOperation(async () => {
+      const { user: authUser, error } = await authService.signUp(email, password, { full_name: email.split('@')[0] });
+      if (error || !authUser) throw new Error(error?.message || 'Registration failed');
+    }, `register_${email}`);
   }, [ensureConfigured]);
 
   const logout = useCallback(async () => {
     ensureConfigured();
     
-    // Immediately set loading state to ensure clean transition
-    setIsLoading(true);
-    
-    try {
-      const { error } = await authService.signOut();
-      if (error) console.error('Error signing out:', error);
-    } finally {
-      // Force clean state regardless of sign-out success
-      setUser(null);
-      setSupabaseUser(null);
-      setProfile(null);
-      setIsLoading(false);
+    return authQueueService.executeAuthOperation(async () => {
+      // Immediately set loading state to ensure clean transition
+      setIsLoading(true);
       
-      // Clear any refs to prevent stale state
-      isProcessingAuth.current = false;
-      lastProcessedUserId.current = null;
-      
-      // Clear any user-specific localStorage to ensure clean login state
-      if (typeof window !== 'undefined') {
-        const userKeys = [];
-        for (let i = 0; i < localStorage.length; i++) {
-          const key = localStorage.key(i);
-          if (key && key.startsWith('fahrtenbuch_')) {
-            userKeys.push(key);
+      try {
+        const { error } = await authService.signOut();
+        if (error) console.error('Error signing out:', error);
+      } finally {
+        // Force clean state regardless of sign-out success
+        setUser(null);
+        setSupabaseUser(null);
+        setProfile(null);
+        setIsLoading(false);
+        
+        // Clear any refs to prevent stale state
+        isProcessingAuth.current = false;
+        lastProcessedUserId.current = null;
+        
+        // Clear any user-specific localStorage to ensure clean login state
+        if (typeof window !== 'undefined') {
+          const userKeys = [];
+          for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key && key.startsWith('fahrtenbuch_')) {
+              userKeys.push(key);
+            }
           }
+          userKeys.forEach(key => localStorage.removeItem(key));
         }
-        userKeys.forEach(key => localStorage.removeItem(key));
       }
-    }
+    }, 'logout');
   }, [ensureConfigured]);
 
   const signInWithOAuth = useCallback(async (provider: 'google' | 'github' | 'apple') => {
     ensureConfigured();
-    const { error } = await authService.signInWithOAuth(provider);
-    if (error) throw new Error(error.message || `${provider} sign-in failed`);
+    return authQueueService.executeAuthOperation(async () => {
+      const { error } = await authService.signInWithOAuth(provider);
+      if (error) throw new Error(error.message || `${provider} sign-in failed`);
+    }, `oauth_${provider}`);
   }, [ensureConfigured]);
 
   const resetPassword = useCallback(async (email: string) => {
     ensureConfigured();
-    const { error } = await authService.resetPassword(email);
-    if (error) throw new Error(error.message || 'Password reset failed');
+    return authQueueService.executeAuthOperation(async () => {
+      const { error } = await authService.resetPassword(email);
+      if (error) throw new Error(error.message || 'Password reset failed');
+    }, `reset_password_${email}`);
   }, [ensureConfigured]);
 
   const updatePassword = useCallback(async (password: string) => {
     ensureConfigured();
-    const { error } = await authService.updatePassword(password);
-    if (error) throw new Error(error.message || 'Password update failed');
+    return authQueueService.executeAuthOperation(async () => {
+      const { error } = await authService.updatePassword(password);
+      if (error) throw new Error(error.message || 'Password update failed');
+    }, 'update_password');
   }, [ensureConfigured]);
 
   const value: AuthContextType = {

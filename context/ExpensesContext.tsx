@@ -79,9 +79,14 @@ export const ExpensesProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   }, [user?.id, showToast]);
 
   const deleteExpense = useCallback(async (expenseId: string) => {
+    if (!user?.id) {
+      showToast('User not authenticated', 'error');
+      return;
+    }
+    
     setLoading(true);
     try {
-      await databaseService.deleteExpenseDocument(expenseId);
+      await databaseService.deleteExpenseDocument(expenseId, user.id);
       setExpenses(prev => prev.filter(expense => expense.id !== expenseId));
       showToast('Invoice deleted', 'success');
     } catch (err) {
