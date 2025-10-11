@@ -6,7 +6,8 @@
       "Bash(dir /b supabasemigrations)",
       "Bash(git add:*)",
       "Bash(dir:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(awk:*)"
     ],
     "deny": [],
     "ask": []
