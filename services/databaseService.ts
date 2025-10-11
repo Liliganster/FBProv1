@@ -18,9 +18,11 @@ import {
   DbRouteTemplateUpdate,
   DbReport,
   DbReportInsert,
-  DbReportUpdate
+  DbReportUpdate,
+  DbExpenseDocument,
+  DbExpenseDocumentInsert
 } from '../types/database'
-import { Project, CallsheetFile, TripLedgerEntry, TripLedgerBatch, UserProfile, RouteTemplate, Report } from '../types'
+import { Project, CallsheetFile, TripLedgerEntry, TripLedgerBatch, UserProfile, RouteTemplate, Report, ExpenseDocument, ExpenseCategory } from '../types'
 
 class DatabaseService {
   
@@ -351,6 +353,132 @@ class DatabaseService {
       if (error) throw error
     } catch (error) {
       throw new Error('Failed to delete callsheet')
+    }
+  }
+
+  // ===== EXPENSE DOCUMENT OPERATIONS =====
+
+  async getUserExpenses(userId: string): Promise<ExpenseDocument[]> {
+    try {
+      const { data, error } = await supabase
+        .from('expense_documents')
+        .select('*')
+        .eq('user_id', userId)
+        .order('invoice_date', { ascending: false })
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      return (data || []).map(this.transformDbExpenseToLegacy);
+    } catch (error) {
+      console.error('Error fetching expense documents:', error);
+      throw new Error('Failed to fetch expense documents');
+    }
+  }
+
+  async addExpenseDocument(userId: string, payload: {
+    projectId?: string | null;
+    tripId?: string | null;
+    category: ExpenseCategory;
+    amount: number;
+    currency?: string | null;
+    description?: string | null;
+    invoiceDate?: string | null;
+    file: File;
+  }): Promise<ExpenseDocument> {
+    const {
+      projectId = null,
+      tripId = null,
+      category,
+      amount,
+      currency = 'EUR',
+      description = null,
+      invoiceDate = null,
+      file,
+    } = payload;
+
+    try {
+      const timestamp = Date.now();
+      const sanitizedName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+      const basePath = projectId || tripId || 'general';
+      const storagePath = `${userId}/${basePath}/${timestamp}_${sanitizedName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('expenses')
+        .upload(storagePath, file, {
+          cacheControl: '3600',
+          upsert: false,
+        });
+
+      if (uploadError) {
+        throw new Error(`Failed to upload expense document: ${uploadError.message}`);
+      }
+
+      const { data: publicData } = supabase.storage
+        .from('expenses')
+        .getPublicUrl(storagePath);
+
+      const insertPayload: DbExpenseDocumentInsert = {
+        user_id: userId,
+        project_id: projectId,
+        trip_id: tripId,
+        category,
+        amount,
+        currency,
+        description,
+        invoice_date: invoiceDate,
+        filename: file.name,
+        url: publicData.publicUrl,
+        storage_path: storagePath,
+      };
+
+      const { data, error } = await supabase
+        .from('expense_documents')
+        .insert(insertPayload)
+        .select()
+        .single();
+
+      if (error || !data) {
+        await supabase.storage.from('expenses').remove([storagePath]);
+        throw error || new Error('Failed to save expense document');
+      }
+
+      return this.transformDbExpenseToLegacy(data);
+    } catch (error) {
+      console.error('Error adding expense document:', error);
+      throw error instanceof Error ? error : new Error('Failed to add expense document');
+    }
+  }
+
+  async deleteExpenseDocument(expenseId: string): Promise<void> {
+    try {
+      const { data: expense, error: fetchError } = await supabase
+        .from('expense_documents')
+        .select('storage_path')
+        .eq('id', expenseId)
+        .single();
+
+      if (fetchError) throw fetchError;
+
+      if (expense?.storage_path) {
+        const { error: storageError } = await supabase.storage
+          .from('expenses')
+          .remove([expense.storage_path]);
+
+        if (storageError) {
+          console.warn('Unable to remove expense document from storage:', storageError.message);
+        }
+      }
+
+      const { error } = await supabase
+        .from('expense_documents')
+        .delete()
+        .eq('id', expenseId);
+
+      if (error) throw error;
+    } catch (error) {
+      console.error('Error deleting expense document:', error);
+      throw new Error('Failed to delete expense document');
     }
   }
 
@@ -1211,6 +1339,25 @@ class DatabaseService {
       lastTripHash: dbReport.last_trip_hash || undefined,
       ledgerVerification: dbReport.ledger_verification || undefined,
       generationTimestamp: dbReport.generation_timestamp || undefined
+    }
+  }
+
+  private transformDbExpenseToLegacy(dbExpense: DbExpenseDocument): ExpenseDocument {
+    return {
+      id: dbExpense.id,
+      userId: dbExpense.user_id,
+      projectId: dbExpense.project_id,
+      tripId: dbExpense.trip_id,
+      category: dbExpense.category,
+      amount: dbExpense.amount,
+      currency: dbExpense.currency,
+      description: dbExpense.description,
+      invoiceDate: dbExpense.invoice_date,
+      filename: dbExpense.filename,
+      url: dbExpense.url,
+      storagePath: dbExpense.storage_path,
+      createdAt: dbExpense.created_at,
+      updatedAt: dbExpense.updated_at
     }
   }
 }

@@ -137,6 +137,56 @@ export interface Database {
           updated_at?: string
         }
       }
+      expense_documents: {
+        Row: {
+          id: string
+          user_id: string
+          project_id: string | null
+          trip_id: string | null
+          category: Database['public']['Enums']['expense_category']
+          amount: number
+          currency: string | null
+          description: string | null
+          invoice_date: string | null
+          filename: string
+          url: string
+          storage_path: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          project_id?: string | null
+          trip_id?: string | null
+          category: Database['public']['Enums']['expense_category']
+          amount: number
+          currency?: string | null
+          description?: string | null
+          invoice_date?: string | null
+          filename: string
+          url: string
+          storage_path: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          project_id?: string | null
+          trip_id?: string | null
+          category?: Database['public']['Enums']['expense_category']
+          amount?: number
+          currency?: string | null
+          description?: string | null
+          invoice_date?: string | null
+          filename?: string
+          url?: string
+          storage_path?: string
+          created_at?: string
+          updated_at?: string
+        }
+      }
       trip_ledger: {
         Row: {
           id: string
@@ -383,6 +433,7 @@ export interface Database {
       trip_source: 'MANUAL' | 'AI_AGENT' | 'CSV_IMPORT' | 'BULK_UPLOAD'
       vehicle_type: 'combustion' | 'electric'
       route_category: 'business' | 'commute' | 'client' | 'other'
+      expense_category: 'fuel' | 'maintenance'
     }
   }
 }
@@ -390,6 +441,7 @@ export interface Database {
 // Type helpers
 export type DbProfile = Database['public']['Tables']['user_profiles']['Row']
 export type DbProject = Database['public']['Tables']['projects']['Row']
+export type DbExpenseDocument = Database['public']['Tables']['expense_documents']['Row']
 export type DbUserProfile = Database['public']['Tables']['user_profiles']['Row']
 export type DbTripLedger = Database['public']['Tables']['trip_ledger']['Row']
 export type DbTripLedgerBatch = Database['public']['Tables']['trip_batches']['Row']
@@ -399,6 +451,7 @@ export type DbReport = Database['public']['Tables']['reports']['Row']
 
 export type DbProfileInsert = Database['public']['Tables']['user_profiles']['Insert']
 export type DbProjectInsert = Database['public']['Tables']['projects']['Insert']
+export type DbExpenseDocumentInsert = Database['public']['Tables']['expense_documents']['Insert']
 export type DbTripLedgerInsert = Database['public']['Tables']['trip_ledger']['Insert']
 export type DbTripLedgerBatchInsert = Database['public']['Tables']['trip_batches']['Insert']
 export type DbCallsheetInsert = Database['public']['Tables']['callsheets']['Insert']
@@ -407,6 +460,7 @@ export type DbReportInsert = Database['public']['Tables']['reports']['Insert']
 
 export type DbProfileUpdate = Database['public']['Tables']['user_profiles']['Update']
 export type DbProjectUpdate = Database['public']['Tables']['projects']['Update']
+export type DbExpenseDocumentUpdate = Database['public']['Tables']['expense_documents']['Update']
 export type DbTripLedgerUpdate = Database['public']['Tables']['trip_ledger']['Update']
 export type DbTripLedgerBatchUpdate = Database['public']['Tables']['trip_batches']['Update']
 export type DbCallsheetUpdate = Database['public']['Tables']['callsheets']['Update']

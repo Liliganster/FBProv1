@@ -1,15 +1,17 @@
 
 import React, { useState, useRef, useMemo } from 'react';
-import { Project, CallsheetFile, SpecialOrigin, UserProfile, Trip, DocumentType } from '../types';
+import { Project, CallsheetFile, SpecialOrigin, Trip, DocumentType, ExpenseDocument } from '../types';
 import useTrips from '../hooks/useTrips';
 import useProjects from '../hooks/useProjects';
-import { XIcon, FileTextIcon, EyeIcon, TrashIcon, LoaderIcon, SparklesIcon, LeafIcon, LineChartIcon, UsersIcon, PieChartIcon, CarIcon } from './Icons';
+import { XIcon, FileTextIcon, EyeIcon, TrashIcon, LoaderIcon, SparklesIcon, LeafIcon, LineChartIcon, UsersIcon, PieChartIcon, CarIcon, UploadCloudIcon } from './Icons';
 import useTranslation from '../hooks/useTranslation';
 import useToast from '../hooks/useToast';
 import { processFileForTrip } from '../services/aiService';
 import useUserProfile from '../hooks/useUserProfile';
 import useGoogleMapsScript from '../hooks/useGoogleMapsScript';
 import { supabase } from '../lib/supabase';
+import useExpenses from '../hooks/useExpenses';
+import ExpenseUploadModal from './ExpenseUploadModal';
 
 interface ProjectDetailModalProps {
   projectId: string,
@@ -31,6 +33,71 @@ const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({ projectId, trip
   const { showToast } = useToast();
   
   const { isLoaded: isMapsScriptLoaded, error: mapsScriptError } = useGoogleMapsScript({ apiKey: userProfile?.googleMapsApiKey });
+  const { expenses, getExpensesForProject, deleteExpense, loading: expensesLoading } = useExpenses();
+  const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
+
+  const tripMap = useMemo(() => {
+    const map = new Map<string, Trip>();
+    trips.forEach(trip => map.set(trip.id, trip));
+    return map;
+  }, [trips]);
+
+  const projectExpenses = useMemo(() => {
+    const directExpenses = getExpensesForProject(projectId);
+    if (directExpenses.length === expenses.length) {
+      return directExpenses;
+    }
+    const projectTripIds = new Set(trips.map(trip => trip.id));
+    const linkedTripExpenses = expenses.filter(expense => expense.tripId && projectTripIds.has(expense.tripId));
+
+    const mergedIds = new Set<string>();
+    const combined: ExpenseDocument[] = [];
+
+    directExpenses.forEach(expense => {
+      mergedIds.add(expense.id);
+      combined.push(expense);
+    });
+
+    linkedTripExpenses.forEach(expense => {
+      if (!mergedIds.has(expense.id)) {
+        combined.push(expense);
+      }
+    });
+
+    return combined;
+  }, [expenses, getExpensesForProject, projectId, trips]);
+
+  const projectExpenseTotal = useMemo(
+    () => projectExpenses.reduce((sum, expense) => sum + (expense.amount || 0), 0),
+    [projectExpenses]
+  );
+  const projectExpenseCurrency = projectExpenses[0]?.currency ?? 'EUR';
+
+  const formatCurrency = (value: number, currency?: string | null) => {
+    try {
+      return new Intl.NumberFormat(undefined, {
+        style: 'currency',
+        currency: currency || 'EUR',
+      }).format(value);
+    } catch {
+      return `${value.toFixed(2)} ${currency || 'EUR'}`;
+    }
+  };
+
+  const handleDeleteExpense = async (expenseId: string) => {
+    if (!window.confirm(t('expense_delete_confirm') || 'Delete this invoice?')) {
+      return;
+    }
+    try {
+      await deleteExpense(expenseId);
+    } catch (error) {
+      // handled via toast
+    }
+  };
+
+  const openInvoice = (url: string) => {
+    window.open(url, '_blank', 'noopener');
+  };
 
   // Get the current project from the projects context (will be updated automatically)
   const project = useMemo(() => {
@@ -319,8 +386,106 @@ const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({ projectId, trip
               )}
             </ul>
           </section>
+          <section className="bg-background-dark/60 border border-gray-700/50 rounded-lg p-5">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+              <h3 className="text-base font-semibold tracking-tight text-white flex items-center gap-2">
+                <FileTextIcon className="w-5 h-5 text-brand-secondary" />
+                {t('expense_section_title_project') || 'Project invoices'}
+              </h3>
+              <button
+                type="button"
+                onClick={() => setIsExpenseModalOpen(true)}
+                className="inline-flex items-center gap-2 rounded-md bg-brand-primary px-4 py-2 text-sm font-medium text-white transition hover:brightness-110"
+              >
+                <UploadCloudIcon className="h-4 w-4" />
+                {t('expense_attach_project_btn') || 'Attach invoice'}
+              </button>
+            </div>
+            <p className="text-sm text-on-surface-secondary mb-3">
+              {t('expense_section_total') || 'Total documented'}:{' '}
+              <span className="font-semibold text-white">
+                {formatCurrency(projectExpenseTotal, projectExpenseCurrency)}
+              </span>
+            </p>
+            <div className="space-y-3 max-h-64 overflow-y-auto pr-1">
+              {expensesLoading && (
+                <p className="text-xs text-on-surface-secondary">
+                  {t('expense_loading') || 'Loading invoices…'}
+                </p>
+              )}
+              {!expensesLoading && projectExpenses.length === 0 && (
+                <p className="text-xs text-on-surface-secondary italic">
+                  {t('expense_list_empty_project') || 'No invoices uploaded for this project yet.'}
+                </p>
+              )}
+              {!expensesLoading &&
+                projectExpenses.map(expense => {
+                  const categoryLabel =
+                    expense.category === 'fuel'
+                      ? t('expense_category_fuel') || 'Fuel'
+                      : t('expense_category_maintenance') || 'Maintenance';
+                  const invoiceDateLabel = expense.invoiceDate
+                    ? formatDateForDisplay(expense.invoiceDate)
+                    : null;
+                  const linkedTrip = expense.tripId ? tripMap.get(expense.tripId) : undefined;
+                  return (
+                    <div
+                      key={expense.id}
+                      className="flex items-start justify-between rounded-md border border-glass bg-background-dark/70 px-3 py-2"
+                    >
+                      <div className="flex flex-1 gap-3">
+                        <FileTextIcon className="mt-1 h-4 w-4 text-brand-secondary" />
+                        <div className="space-y-1 text-xs">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="text-sm font-semibold text-white">
+                              {formatCurrency(expense.amount, expense.currency)}
+                            </span>
+                            <span className="rounded-sm bg-brand-secondary/20 px-2 py-[2px] text-[10px] font-semibold uppercase tracking-wide text-brand-secondary">
+                              {categoryLabel}
+                            </span>
+                            {invoiceDateLabel && (
+                              <span className="text-on-surface-secondary">{invoiceDateLabel}</span>
+                            )}
+                          </div>
+                          {linkedTrip && (
+                            <p className="text-on-surface-secondary">
+                              {t('expense_linked_trip') || 'Trip'}:{' '}
+                              {formatDateForDisplay(linkedTrip.date)}
+                            </p>
+                          )}
+                          {expense.description && (
+                            <p className="text-on-surface-secondary">{expense.description}</p>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => openInvoice(expense.url)}
+                            className="text-[11px] font-medium text-brand-primary transition hover:text-white"
+                          >
+                            {t('expense_open_document') || 'View invoice'}
+                          </button>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteExpense(expense.id)}
+                        className="ml-3 rounded-md p-1 text-on-surface-secondary transition hover:text-red-400 disabled:opacity-50"
+                        aria-label={t('expense_delete_btn') || 'Delete invoice'}
+                        disabled={expensesLoading}
+                      >
+                        <TrashIcon className="h-4 w-4" />
+                      </button>
+                    </div>
+                  );
+                })}
+            </div>
+          </section>
         </main>
       </div>
+      <ExpenseUploadModal
+        isOpen={isExpenseModalOpen}
+        onClose={() => setIsExpenseModalOpen(false)}
+        defaultProjectId={projectId}
+      />
     </div>
   );
 };

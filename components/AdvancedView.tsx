@@ -5,6 +5,7 @@ import useTranslation from '../hooks/useTranslation';
 import useToast from '../hooks/useToast';
 import useUserProfile from '../hooks/useUserProfile';
 import useTrips from '../hooks/useTrips';
+import useExpenses from '../hooks/useExpenses';
 import useReports from '../hooks/useReports';
 import { useAuth } from '../hooks/useAuth';
 import {
@@ -23,7 +24,7 @@ import {
 } from 'react-icons/lu';
 import { Trip, PersonalizationSettings, UserProfile } from '../types';
 import { formatDateForDisplay } from '../i18n/translations';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Legend, ResponsiveContainer, BarChart, Bar } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Legend, ResponsiveContainer, BarChart, Bar, Tooltip } from 'recharts';
 
 type AuditResult = {
     ok: boolean;
@@ -47,6 +48,7 @@ const CostAnalysisDashboard: React.FC<{
     const { showToast } = useToast();
     const { projects } = useTrips();
     const { trips } = useTrips();
+    const { expenses } = useExpenses();
     const [timeRange, setTimeRange] = useState<'3m' | '6m' | '1y' | 'all'>('3m');
     const [costView, setCostView] = useState<'summary' | 'monthly'>('summary');
     const [showVehicleModal, setShowVehicleModal] = useState(false);
@@ -106,6 +108,29 @@ const CostAnalysisDashboard: React.FC<{
         return trips.filter(trip => new Date(trip.date) >= startDate);
     }, [timeRange, trips]);
 
+    const expensesForRange = useMemo(() => {
+        const tripIds = new Set(filteredTrips.map(trip => trip.id));
+        const projectIds = new Set(filteredTrips.map(trip => trip.projectId).filter(Boolean) as string[]);
+
+        return expenses.filter(expense => {
+            if (expense.tripId && tripIds.has(expense.tripId)) return true;
+            if (expense.projectId && projectIds.has(expense.projectId)) return true;
+            return false;
+        });
+    }, [expenses, filteredTrips]);
+
+
+    const tripById = useMemo(() => {
+        const map = new Map<string, Trip>();
+        filteredTrips.forEach(trip => map.set(trip.id, trip));
+        return map;
+    }, [filteredTrips]);
+    const projectNameMap = useMemo(() => {
+        const map = new Map<string, string>();
+        projects.forEach(project => map.set(project.id, project.name));
+        return map;
+    }, [projects]);
+
     const costData = useMemo(() => {
         if (!userProfile) return null;
         
@@ -118,29 +143,45 @@ const CostAnalysisDashboard: React.FC<{
         } else if (userProfile.vehicleType === 'electric' && userProfile.energyConsumption && userProfile.energyPrice) {
             costFuelEnergy = totalKm * (userProfile.energyConsumption / 100) * userProfile.energyPrice;
         }
-        
-    // Ajuste: los costos siguientes ahora se interpretan como montos totales ingresados por el usuario
-    // en lugar de tarifas por kilómetro. Se usan directamente sin multiplicar por distancia.
-    const costMaintenance = (userProfile.maintenanceCostPerKm ?? 0);
-    const costParking = (userProfile.parkingCostPerKm ?? 0);
-    const costTolls = (userProfile.tollsCostPerKm ?? 0);
-    const costFines = (userProfile.finesCostPerKm ?? 0);
-    const costMisc = (userProfile.miscCostPerKm ?? 0);
+
+        const fuelInvoicesTotal = expensesForRange
+            .filter(expense => expense.category === 'fuel')
+            .reduce((sum, expense) => sum + (expense.amount || 0), 0);
+
+        const maintenanceInvoicesTotal = expensesForRange
+            .filter(expense => expense.category === 'maintenance')
+            .reduce((sum, expense) => sum + (expense.amount || 0), 0);
+
+        if (fuelInvoicesTotal > 0) {
+            costFuelEnergy = fuelInvoicesTotal;
+        }
+
+        const maintenanceBaseline = userProfile.maintenanceCostPerKm ?? 0;
+        const costMaintenance = maintenanceInvoicesTotal > 0 ? maintenanceInvoicesTotal : maintenanceBaseline;
+        const costParking = userProfile.parkingCostPerKm ?? 0;
+        const costTolls = userProfile.tollsCostPerKm ?? 0;
+        const costFines = userProfile.finesCostPerKm ?? 0;
+        const costMisc = userProfile.miscCostPerKm ?? 0;
 
         const totalCost = costFuelEnergy + costMaintenance + costParking + costTolls + costFines + costMisc;
+        const documentedCost = fuelInvoicesTotal + maintenanceInvoicesTotal;
 
         return {
             totalKm,
             totalTrips,
             totalCost,
             avgCostPerKm: totalKm > 0 ? totalCost / totalKm : 0,
+            documentedCost,
+            fuelInvoicesTotal,
+            maintenanceInvoicesTotal,
         };
-    }, [userProfile, filteredTrips]);
+    }, [userProfile, filteredTrips, expensesForRange]);
     
     const monthlyChartData = useMemo(() => {
         if (!costData || !userProfile) return [];
 
-        const costsByMonth: { [key: string]: number } = {};
+        const estimatedByMonth: { [key: string]: number } = {};
+        const documentedByMonth: { [key: string]: number } = {};
 
         filteredTrips.forEach(trip => {
             const monthYear = new Date(trip.date).toLocaleDateString(language, { year: '2-digit', month: 'short' });
@@ -151,32 +192,45 @@ const CostAnalysisDashboard: React.FC<{
             } else if (userProfile.vehicleType === 'electric' && userProfile.energyConsumption && userProfile.energyPrice) {
                 tripCost += trip.distance * (userProfile.energyConsumption / 100) * userProfile.energyPrice;
             }
-            // Antes: sumaba (tarifa por km * distancia). Ahora se añade el valor fijo definido por el usuario por cada viaje.
             tripCost += (userProfile.maintenanceCostPerKm ?? 0)
                 + (userProfile.parkingCostPerKm ?? 0)
                 + (userProfile.tollsCostPerKm ?? 0)
                 + (userProfile.finesCostPerKm ?? 0)
                 + (userProfile.miscCostPerKm ?? 0);
             
-            costsByMonth[monthYear] = (costsByMonth[monthYear] || 0) + tripCost;
+            estimatedByMonth[monthYear] = (estimatedByMonth[monthYear] || 0) + tripCost;
+        });
+
+        expensesForRange.forEach(expense => {
+            const rawDate = expense.invoiceDate || expense.createdAt;
+            if (!rawDate) return;
+            const invoiceDate = new Date(rawDate);
+            if (Number.isNaN(invoiceDate.getTime())) return;
+            const monthYear = invoiceDate.toLocaleDateString(language, { year: '2-digit', month: 'short' });
+            documentedByMonth[monthYear] = (documentedByMonth[monthYear] || 0) + (expense.amount || 0);
         });
         
-        const sortedKeys = Object.keys(costsByMonth).sort((a, b) => {
+        const allKeys = new Set([...Object.keys(estimatedByMonth), ...Object.keys(documentedByMonth)]);
+        const sortedKeys = Array.from(allKeys).sort((a, b) => {
             const [m1, y1] = a.split(/[\s'./-]+/);
             const [m2, y2] = b.split(/[\s'./-]+/);
-            const dateA = new Date(`01 ${m1} ${y1}`);
-            const dateB = new Date(`01 ${m2} ${y2}`);
+            const dateA = new Date( 1  );
+            const dateB = new Date( 1  );
             return dateA.getTime() - dateB.getTime();
         });
         
-        return sortedKeys.map(key => ({
-            name: key,
-            cost: parseFloat(costsByMonth[key].toFixed(2)),
-        }));
+        return sortedKeys.map(key => {
+            const estimated = estimatedByMonth[key] || 0;
+            const documented = documentedByMonth[key] || 0;
+            return {
+                name: key,
+                estimated: parseFloat(estimated.toFixed(2)),
+                documented: parseFloat(documented.toFixed(2)),
+                cost: parseFloat((estimated + documented).toFixed(2)),
+            };
+        });
 
-    }, [costData, userProfile, filteredTrips, language]);
-
-    // Lista de proyectos únicos para el selector
+    }, [costData, userProfile, filteredTrips, expensesForRange, language]);    // Lista de proyectos únicos para el selector
     const availableProjects = useMemo(() => {
         const projectIds = [...new Set(filteredTrips.map(trip => trip.projectId).filter(Boolean))];
         const projectList = projectIds.map(id => projects.find(p => p.id === id)).filter(Boolean) as any[];
@@ -1141,3 +1195,7 @@ const VehicleInputField: React.FC<{
 );
 
 export default AdvancedView;
+
+
+
+

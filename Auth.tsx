@@ -7,6 +7,7 @@ import { UserProfileProvider } from './context/SupabaseUserProfileContext';
 import { GoogleCalendarProvider } from './context/GoogleCalendarContext';
 import { ProjectsProvider } from './context/ProjectsContext';
 import { RouteTemplatesProvider } from './context/SupabaseRouteTemplatesContext';
+import { ExpensesProvider } from './context/ExpensesContext';
 import { LoaderIcon } from './components/Icons';
 import LoadingDiagnostics from './components/LoadingDiagnostics';
 
@@ -55,9 +56,11 @@ const Auth: React.FC = () => {
       <GoogleCalendarProvider>
         <ProjectsProvider>
           <RouteTemplatesProvider>
-            <LedgerTripsProvider>
-              <App />
-            </LedgerTripsProvider>
+            <ExpensesProvider>
+              <LedgerTripsProvider>
+                <App />
+              </LedgerTripsProvider>
+            </ExpensesProvider>
           </RouteTemplatesProvider>
         </ProjectsProvider>
       </GoogleCalendarProvider>

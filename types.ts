@@ -31,6 +31,25 @@ export enum DocumentType {
   EMAIL = 'email',
 }
 
+export type ExpenseCategory = 'fuel' | 'maintenance';
+
+export interface ExpenseDocument {
+  id: string;
+  userId: string;
+  projectId?: string | null;
+  tripId?: string | null;
+  category: ExpenseCategory;
+  amount: number;
+  currency?: string | null;
+  description?: string | null;
+  invoiceDate?: string | null;
+  filename: string;
+  url: string;
+  storagePath?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
 // UserProfile merges UserSettings and the old Driver interface
 // Full extended profile (restored fields used across components)
 export interface UserProfile {
