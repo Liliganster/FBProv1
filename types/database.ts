@@ -15,6 +15,27 @@ export interface Database {
           name: string | null
           license_plate: string | null
           avatar_url: string | null
+          uid: string | null
+          address: string | null
+          city: string | null
+          country: string | null
+          profile_picture: string | null
+          color: string | null
+          rate_per_km: number | null
+          google_maps_api_key: string | null
+          open_router_api_key: string | null
+          open_router_model: string | null
+          locked_until_date: string | null
+          vehicle_type: Database['public']['Enums']['vehicle_type'] | null
+          fuel_consumption: number | null
+          fuel_price: number | null
+          energy_consumption: number | null
+          energy_price: number | null
+          maintenance_cost_per_km: number | null
+          parking_cost_per_km: number | null
+          tolls_cost_per_km: number | null
+          fines_cost_per_km: number | null
+          misc_cost_per_km: number | null
           created_at: string
           updated_at: string
         }
@@ -25,6 +46,27 @@ export interface Database {
           name?: string | null
           license_plate?: string | null
           avatar_url?: string | null
+          uid?: string | null
+          address?: string | null
+          city?: string | null
+          country?: string | null
+          profile_picture?: string | null
+          color?: string | null
+          rate_per_km?: number | null
+          google_maps_api_key?: string | null
+          open_router_api_key?: string | null
+          open_router_model?: string | null
+          locked_until_date?: string | null
+          vehicle_type?: Database['public']['Enums']['vehicle_type'] | null
+          fuel_consumption?: number | null
+          fuel_price?: number | null
+          energy_consumption?: number | null
+          energy_price?: number | null
+          maintenance_cost_per_km?: number | null
+          parking_cost_per_km?: number | null
+          tolls_cost_per_km?: number | null
+          fines_cost_per_km?: number | null
+          misc_cost_per_km?: number | null
           created_at?: string
           updated_at?: string
         }
@@ -35,6 +77,27 @@ export interface Database {
           name?: string | null
           license_plate?: string | null
           avatar_url?: string | null
+          uid?: string | null
+          address?: string | null
+          city?: string | null
+          country?: string | null
+          profile_picture?: string | null
+          color?: string | null
+          rate_per_km?: number | null
+          google_maps_api_key?: string | null
+          open_router_api_key?: string | null
+          open_router_model?: string | null
+          locked_until_date?: string | null
+          vehicle_type?: Database['public']['Enums']['vehicle_type'] | null
+          fuel_consumption?: number | null
+          fuel_price?: number | null
+          energy_consumption?: number | null
+          energy_price?: number | null
+          maintenance_cost_per_km?: number | null
+          parking_cost_per_km?: number | null
+          tolls_cost_per_km?: number | null
+          fines_cost_per_km?: number | null
+          misc_cost_per_km?: number | null
           created_at?: string
           updated_at?: string
         }

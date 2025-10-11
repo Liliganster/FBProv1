@@ -740,6 +740,27 @@ class DatabaseService {
         name: profileData.name || null,
         license_plate: profileData.licensePlate || null,
         avatar_url: profileData.avatarUrl || null,
+        uid: profileData.uid || null,
+        address: profileData.address || null,
+        city: profileData.city || null,
+        country: profileData.country || null,
+        profile_picture: profileData.profilePicture || null,
+        color: profileData.color || null,
+        rate_per_km: profileData.ratePerKm ?? null,
+        google_maps_api_key: profileData.googleMapsApiKey || null,
+        open_router_api_key: profileData.openRouterApiKey || null,
+        open_router_model: profileData.openRouterModel || null,
+        locked_until_date: profileData.lockedUntilDate || null,
+        vehicle_type: profileData.vehicleType || null,
+        fuel_consumption: profileData.fuelConsumption ?? null,
+        fuel_price: profileData.fuelPrice ?? null,
+        energy_consumption: profileData.energyConsumption ?? null,
+        energy_price: profileData.energyPrice ?? null,
+        maintenance_cost_per_km: profileData.maintenanceCostPerKm ?? null,
+        parking_cost_per_km: profileData.parkingCostPerKm ?? null,
+        tolls_cost_per_km: profileData.tollsCostPerKm ?? null,
+        fines_cost_per_km: profileData.finesCostPerKm ?? null,
+        misc_cost_per_km: profileData.miscCostPerKm ?? null,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       }
@@ -773,6 +794,27 @@ class DatabaseService {
       if (updates.name !== undefined) updateData.name = updates.name
       if (updates.licensePlate !== undefined) updateData.license_plate = updates.licensePlate
       if (updates.avatarUrl !== undefined) updateData.avatar_url = updates.avatarUrl
+      if (updates.uid !== undefined) updateData.uid = updates.uid
+      if (updates.address !== undefined) updateData.address = updates.address
+      if (updates.city !== undefined) updateData.city = updates.city
+      if (updates.country !== undefined) updateData.country = updates.country
+      if (updates.profilePicture !== undefined) updateData.profile_picture = updates.profilePicture
+      if (updates.color !== undefined) updateData.color = updates.color
+      if (updates.ratePerKm !== undefined) updateData.rate_per_km = updates.ratePerKm
+      if (updates.googleMapsApiKey !== undefined) updateData.google_maps_api_key = updates.googleMapsApiKey
+      if (updates.openRouterApiKey !== undefined) updateData.open_router_api_key = updates.openRouterApiKey
+      if (updates.openRouterModel !== undefined) updateData.open_router_model = updates.openRouterModel
+      if (updates.lockedUntilDate !== undefined) updateData.locked_until_date = updates.lockedUntilDate
+      if (updates.vehicleType !== undefined) updateData.vehicle_type = updates.vehicleType
+      if (updates.fuelConsumption !== undefined) updateData.fuel_consumption = updates.fuelConsumption
+      if (updates.fuelPrice !== undefined) updateData.fuel_price = updates.fuelPrice
+      if (updates.energyConsumption !== undefined) updateData.energy_consumption = updates.energyConsumption
+      if (updates.energyPrice !== undefined) updateData.energy_price = updates.energyPrice
+      if (updates.maintenanceCostPerKm !== undefined) updateData.maintenance_cost_per_km = updates.maintenanceCostPerKm
+      if (updates.parkingCostPerKm !== undefined) updateData.parking_cost_per_km = updates.parkingCostPerKm
+      if (updates.tollsCostPerKm !== undefined) updateData.tolls_cost_per_km = updates.tollsCostPerKm
+      if (updates.finesCostPerKm !== undefined) updateData.fines_cost_per_km = updates.finesCostPerKm
+      if (updates.miscCostPerKm !== undefined) updateData.misc_cost_per_km = updates.miscCostPerKm
 
       const { data, error } = await supabase
         .from('user_profiles')
@@ -818,30 +860,29 @@ class DatabaseService {
       name: dbProfile.name,
       licensePlate: dbProfile.license_plate,
       avatarUrl: dbProfile.avatar_url,
+      uid: dbProfile.uid,
+      address: dbProfile.address,
+      city: dbProfile.city,
+      country: dbProfile.country,
+      profilePicture: dbProfile.profile_picture,
+      color: dbProfile.color,
+      ratePerKm: dbProfile.rate_per_km ?? null,
+      googleMapsApiKey: dbProfile.google_maps_api_key,
+      openRouterApiKey: dbProfile.open_router_api_key,
+      openRouterModel: dbProfile.open_router_model,
+      lockedUntilDate: dbProfile.locked_until_date,
+      vehicleType: dbProfile.vehicle_type ?? null,
+      fuelConsumption: dbProfile.fuel_consumption ?? null,
+      fuelPrice: dbProfile.fuel_price ?? null,
+      energyConsumption: dbProfile.energy_consumption ?? null,
+      energyPrice: dbProfile.energy_price ?? null,
+      maintenanceCostPerKm: dbProfile.maintenance_cost_per_km ?? null,
+      parkingCostPerKm: dbProfile.parking_cost_per_km ?? null,
+      tollsCostPerKm: dbProfile.tolls_cost_per_km ?? null,
+      finesCostPerKm: dbProfile.fines_cost_per_km ?? null,
+      miscCostPerKm: dbProfile.misc_cost_per_km ?? null,
       createdAt: dbProfile.created_at,
-      updatedAt: dbProfile.updated_at,
-      // Fields not in DB but expected in UserProfile type
-      uid: null,
-      address: null,
-      city: null,
-      country: null,
-      profilePicture: null,
-      color: null,
-      ratePerKm: null,
-      googleMapsApiKey: null,
-      openRouterApiKey: null,
-      openRouterModel: null,
-      lockedUntilDate: null,
-      vehicleType: null,
-      fuelConsumption: null,
-      fuelPrice: null,
-      energyConsumption: null,
-      energyPrice: null,
-      maintenanceCostPerKm: null,
-      parkingCostPerKm: null,
-      tollsCostPerKm: null,
-      finesCostPerKm: null,
-      miscCostPerKm: null
+      updatedAt: dbProfile.updated_at
     }
   }
 
