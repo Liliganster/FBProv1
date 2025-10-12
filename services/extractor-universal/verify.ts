@@ -41,6 +41,9 @@ export function isCrewFirstCallsheet(x: any): x is CrewFirstCallsheet {
     x.version === 'parser-crew-1' &&
     typeof x.date === 'string' &&
     typeof x.projectName === 'string' &&
+    (x.productionCompany === undefined || x.productionCompany === null || typeof x.productionCompany === 'string') &&
+    (x.motiv === undefined || x.motiv === null || typeof x.motiv === 'string') &&
+    (x.episode === undefined || x.episode === null || typeof x.episode === 'string') &&
     (x.shootingDay === undefined || x.shootingDay === null || typeof x.shootingDay === 'string') &&
     (x.generalCallTime === undefined || x.generalCallTime === null || typeof x.generalCallTime === 'string') &&
     Array.isArray(x.locations) &&

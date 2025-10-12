@@ -46,8 +46,11 @@ export type CrewFirstLocation = {
 export type CrewFirstCallsheet = {
   version: 'parser-crew-1';
   date: string; // YYYY-MM-DD
-  projectName: string;
-  shootingDay?: string | null;
+  projectName: string; // Título del proyecto/película/serie (ej: "El Reino", "Dark", "Succession")
+  productionCompany?: string | null; // Productora/empresa (ej: "Warner Bros", "Netflix", "UFA Fiction")
+  motiv?: string | null; // Motivo/locación narrativa (ej: "Casa de María", "Oficina del FBI", "Exterior Bosque")
+  episode?: string | null; // Número o título del episodio (para series)
+  shootingDay?: string | null; // Día de rodaje (ej: "DT3", "Día 15", "Tag 8")
   generalCallTime?: string | null; // HH:MM
   locations: CrewFirstLocation[];
   rutas: any[]; // Empty array, generated programmatically later
@@ -67,11 +70,23 @@ export const crewFirstCallsheetSchema = {
     },
     projectName: {
       type: "string",
-      description: "Main project/production name"
+      description: "Title of the project/film/series (e.g., 'El Reino', 'Dark', 'Succession')"
+    },
+    productionCompany: {
+      type: ["string", "null"],
+      description: "Production company/studio name (e.g., 'Warner Bros', 'Netflix', 'UFA Fiction')"
+    },
+    motiv: {
+      type: ["string", "null"],
+      description: "Narrative location/motif (e.g., 'Casa de María', 'FBI Office', 'Forest Exterior')"
+    },
+    episode: {
+      type: ["string", "null"],
+      description: "Episode number or title for series (e.g., 'EP101', 'Pilot', 'Folge 3')"
     },
     shootingDay: {
       type: ["string", "null"],
-      description: "Shooting day number or designation (optional)"
+      description: "Shooting day number or designation (e.g., 'DT3', 'Day 15', 'Tag 8')"
     },
     generalCallTime: {
       type: ["string", "null"],

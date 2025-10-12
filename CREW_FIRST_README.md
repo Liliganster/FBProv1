@@ -41,8 +41,11 @@ La aplicación soporta dos modos de extracción:
 {
   "version": "parser-crew-1",
   "date": "2025-03-15",
-  "projectName": "Mi Película",
-  "shootingDay": "Día 3",
+  "projectName": "Dark",
+  "productionCompany": "Wiedemann & Berg",
+  "motiv": "Höhle - Winden Caves",
+  "episode": "Folge 3",
+  "shootingDay": "DT8",
   "generalCallTime": "07:00",
   "locations": [
     {
@@ -154,23 +157,53 @@ const result = await agenticParse(
 );
 ```
 
+## Diferenciación de Campos Clave
+
+### projectName vs productionCompany vs motiv
+
+Uno de los aspectos más importantes del sistema crew-first es diferenciar correctamente estos tres campos:
+
+| Campo | Descripción | Ejemplos | Términos Clave |
+|-------|-------------|----------|----------------|
+| **projectName** | Título creativo del proyecto | "Dark", "El Reino", "Succession" | Titel:, Title:, Project:, Serie:, Film: |
+| **productionCompany** | Empresa/productora | "Netflix", "Warner Bros", "UFA Fiction" | Produktion:, Production Company:, Productora:, Studio: |
+| **motiv** | Locación narrativa/escena | "Höhle", "Casa de María - Interior", "FBI Office" | Motiv:, Scene:, Escena:, Location: (narrativo) |
+
+**Ejemplo de call sheet típico:**
+```
+DARK - Folge 3
+Produktion: Wiedemann & Berg Television
+Netflix Original Series
+Motiv: Höhle - Winden Caves
+Drehtag: DT8
+```
+
+**Extracción correcta:**
+- projectName: "Dark"
+- productionCompany: "Wiedemann & Berg Television"
+- motiv: "Höhle - Winden Caves"
+- episode: "Folge 3"
+- shootingDay: "DT8"
+
 ## Reglas de Extracción Crew-First
 
-1. **Whitelist de Categorías**: Solo se extraen ubicaciones de las 7 categorías listadas arriba. Se ignoran hospitales, protocolos, políticas, etc.
+1. **Diferenciación de Metadatos**: El sistema distingue entre título del proyecto, productora, motivo narrativo y episodio. Ver tabla arriba.
 
-2. **Direcciones Obligatorias**: El campo `address` es obligatorio. Si no hay dirección, no se incluye la ubicación.
+2. **Whitelist de Categorías**: Solo se extraen ubicaciones de las 7 categorías listadas arriba. Se ignoran hospitales, protocolos, políticas, etc.
 
-3. **Geocodificación Opcional**: Los campos `formatted_address`, `latitude` y `longitude` pueden ser `null` si no se puede geocodificar con certeza.
+3. **Direcciones Obligatorias**: El campo `address` es obligatorio. Si no hay dirección, no se incluye la ubicación.
 
-4. **Notas Limitadas**: Máximo 2 notas logísticas por ubicación (horarios de comida, números de trailer, etc.)
+4. **Geocodificación Opcional**: Los campos `formatted_address`, `latitude` y `longitude` pueden ser `null` si no se puede geocodificar con certeza.
 
-5. **Normalización de Fechas**: Formato YYYY-MM-DD
+5. **Notas Limitadas**: Máximo 2 notas logísticas por ubicación (horarios de comida, números de trailer, etc.)
 
-6. **Normalización de Horas**: Formato HH:MM (24 horas)
+6. **Normalización de Fechas**: Formato YYYY-MM-DD
 
-7. **Campo Version**: Siempre debe ser `"parser-crew-1"`
+7. **Normalización de Horas**: Formato HH:MM (24 horas)
 
-8. **Rutas Vacías**: El array `rutas` siempre es `[]` (se genera programáticamente después)
+8. **Campo Version**: Siempre debe ser `"parser-crew-1"`
+
+9. **Rutas Vacías**: El array `rutas` siempre es `[]` (se genera programáticamente después)
 
 ## Herramientas del Modo Agente
 
@@ -267,8 +300,11 @@ type CrewFirstLocation = {
 type CrewFirstCallsheet = {
   version: 'parser-crew-1';
   date: string;
-  projectName: string;
-  shootingDay?: string | null;
+  projectName: string; // Título del proyecto
+  productionCompany?: string | null; // Productora/empresa
+  motiv?: string | null; // Locación narrativa
+  episode?: string | null; // Número/título episodio
+  shootingDay?: string | null; // Día de rodaje
   generalCallTime?: string | null;
   locations: CrewFirstLocation[];
   rutas: any[];

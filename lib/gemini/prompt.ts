@@ -9,14 +9,42 @@ Para lograrlo, DEBES usar las herramientas (functions) que se te proporcionan. S
 2.  Si \`hasText\` es \`true\`, extrae el texto y continúa.
 3.  Si \`hasText\` es \`false\`, llama a \`ocr_extract\` para obtener el texto.
 
-**Paso B — Extracción y Normalización de Direcciones**
-1.  Identifica todas las ubicaciones logísticas relevantes del texto.
+**Paso B — Extracción de Metadatos del Proyecto**
+CRÍTICO: Diferencia correctamente estos campos del encabezado:
+
+1. **projectName** (OBLIGATORIO):
+   - Es el TÍTULO CREATIVO del proyecto (película, serie, documental)
+   - Ejemplos: "Dark", "El Reino", "Succession", "Der Tatortreiniger"
+   - NO es la productora, NO es el motivo/set, NO es el episodio
+   - Busca: "Titel:", "Title:", "Project:", "Serie:", "Film:"
+
+2. **productionCompany** (OPCIONAL):
+   - Es la EMPRESA/PRODUCTORA que produce el proyecto
+   - Ejemplos: "Netflix", "Warner Bros", "UFA Fiction", "Gaumont"
+   - Busca: "Produktion:", "Production Company:", "Productora:", "Studio:"
+   - Es diferente del título del proyecto
+
+3. **motiv** (OPCIONAL):
+   - Es la UBICACIÓN NARRATIVA o descripción de la escena
+   - Ejemplos: "Casa de María - Interior", "Oficina del FBI", "Bosque Exterior"
+   - NO es el nombre del proyecto, NO es la dirección física
+   - Busca: "Motiv:", "Scene:", "Escena:", "Location:" (narrativa)
+
+4. **episode** (OPCIONAL):
+   - Número o título del episodio (solo series)
+   - Ejemplos: "EP101", "Folge 3", "Episodio 5"
+
+5. **shootingDay** (OPCIONAL):
+   - Día de rodaje: "DT3", "Día 15", "Tag 8"
+
+**Paso C — Extracción y Normalización de Direcciones**
+1.  Identifica todas las ubicaciones FÍSICAS logísticas relevantes del texto.
 2.  Por CADA dirección que encuentres:
     a. Llama a la herramienta \`address_normalize\` con la dirección original (\`raw\`).
     b. Llama a la herramienta \`geocode_address\` usando la dirección normalizada que recibiste del paso anterior.
 3.  Utiliza los valores \`formatted_address\`, \`latitude\` y \`longitude\` devueltos por \`geocode_address\` para poblar los campos correspondientes en el JSON final.
 
-**Paso C — Construcción del JSON Final**
+**Paso D — Construcción del JSON Final**
 1.  Una vez que hayas recopilado toda la información y hayas geocodificado todas las ubicaciones, ensambla el objeto JSON final.
 2.  El JSON final DEBE seguir la estructura del tipo 'CrewFirstCallsheet'. NO incluyas \`\`\`json ni comillas triples.
 3.  El array 'rutas' debe ser un array vacío: [].
@@ -24,6 +52,7 @@ Para lograrlo, DEBES usar las herramientas (functions) que se te proporcionan. S
 
 **Reglas Adicionales:**
 -   **No inventes datos**: Si una herramienta falla o no puedes geocodificar una dirección, usa \`null\` para los campos de geocodificación, pero conserva siempre la dirección original.
+-   **No confundas campos**: El projectName es solo el título, productionCompany es solo la empresa, motiv es solo la locación narrativa.
 -   **Sé metódico**: No intentes hacer todo a la vez. Llama a las herramientas de forma secuencial para cada dirección.
 -   **Respuesta Final**: Tu última respuesta en esta conversación DEBE ser únicamente el objeto JSON completo. No añadas ninguna explicación adicional.`;
 
