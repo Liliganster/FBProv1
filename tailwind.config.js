@@ -79,6 +79,8 @@ export default {
       },
       animation: {
         'fade-in': 'fadeIn 0.3s ease-in-out',
+        'fadeIn': 'fadeIn 0.2s ease-in-out',
+        'slideInLeft': 'slideInLeft 0.3s ease-out',
         'slide-up': 'slideUp 0.3s ease-out',
         'glow': 'glow 2s ease-in-out infinite alternate',
       },
@@ -86,6 +88,10 @@ export default {
         fadeIn: {
           '0%': { opacity: '0' },
           '100%': { opacity: '1' },
+        },
+        slideInLeft: {
+          '0%': { transform: 'translateX(-100%)' },
+          '100%': { transform: 'translateX(0)' },
         },
         slideUp: {
           '0%': { transform: 'translateY(10px)', opacity: '0' },

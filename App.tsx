@@ -448,10 +448,10 @@ const App: React.FC = () => {
       {mobileMenuOpen && (
         <>
           <div
-            className="mobile-nav-overlay md:hidden"
+            className="fixed inset-0 bg-black/50 z-40 md:hidden animate-fadeIn"
             onClick={() => setMobileMenuOpen(false)}
           />
-          <nav className="mobile-sidebar md:hidden text-on-surface-dark flex flex-col shadow-glass bg-gradient-to-br from-white/5 via-blue-400/8 to-blue-500/5 backdrop-blur-xl backdrop-saturate-150 border-white/10">
+          <nav className="fixed top-0 left-0 w-4/5 max-w-sm h-screen z-50 md:hidden text-on-surface-dark flex flex-col shadow-glass bg-gradient-to-br from-white/5 via-blue-400/8 to-blue-500/5 backdrop-blur-xl backdrop-saturate-150 border-white/10 animate-slideInLeft overflow-y-auto">
             {renderSidebarContent()}
           </nav>
         </>
@@ -459,7 +459,7 @@ const App: React.FC = () => {
 
       {/* Desktop Sidebar */}
       <nav
-        className={`sidebar-desktop hidden md:flex relative z-10
+        className={`hidden md:flex relative z-10
         ${sidebarCollapsed ? 'w-20' : 'w-72'}
         text-on-surface-dark border-r
         transition-all duration-300 flex-col shadow-glass

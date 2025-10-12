@@ -25,7 +25,10 @@
       "Bash(git rm:*)",
       "Bash(git reset:*)",
       "Bash(dos2unix:*)",
-      "Bash(unix2dos:*)"
+      "Bash(unix2dos:*)",
+      "Bash(cat:*)",
+      "Bash(curl -s \"https://fbprov1.vercel.app\")",
+      "Bash(git push:*)"
     ],
     "deny": [],
     "ask": []
