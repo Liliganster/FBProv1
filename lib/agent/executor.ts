@@ -34,38 +34,61 @@ export async function executeAddressNormalize(args: AddressNormalizeArgs) {
 export async function executeGeocodeAddress(args: GeocodeAddressArgs) {
   const { address } = args;
 
-  const apiKey = process.env.GOOGLE_MAPS_API_KEY;
+  // Intentar obtener la API key de diferentes fuentes
+  const apiKey = process.env.GOOGLE_MAPS_API_KEY || process.env.VITE_GOOGLE_MAPS_API_KEY;
 
   if (!apiKey) {
-    console.warn('[geocode_address] Google Maps API key not configured');
-    // Fallback: devolver null pero conservar la dirección
+    console.warn('[geocode_address] ⚠️  Google Maps API key NOT configured');
+    console.warn('[geocode_address] Checked: GOOGLE_MAPS_API_KEY, VITE_GOOGLE_MAPS_API_KEY');
+    console.warn('[geocode_address] Please set GOOGLE_MAPS_API_KEY in Vercel environment variables');
+
+    // Fallback: devolver null pero conservar la dirección original
     return {
       latitude: null,
       longitude: null,
-      formatted_address: null,
+      formatted_address: address, // Mantener dirección original
       confidence: 0
     };
   }
+
+  console.log(`[geocode_address] ✓ API Key found: ${apiKey.substring(0, 15)}...`);
 
   try {
     const url = new URL('https://maps.googleapis.com/maps/api/geocode/json');
     url.searchParams.append('address', address);
     url.searchParams.append('key', apiKey);
 
+    console.log(`[geocode_address] Calling Google Maps API for: "${address}"`);
+
     const response = await fetch(url.toString());
 
     if (!response.ok) {
-      throw new Error(`Geocoding API returned ${response.status}`);
+      const errorText = await response.text();
+      console.error(`[geocode_address] ❌ API Error ${response.status}:`, errorText);
+      throw new Error(`Geocoding API returned ${response.status}: ${errorText}`);
     }
 
     const data = await response.json();
 
-    if (data.status !== 'OK' || !data.results || data.results.length === 0) {
-      console.warn(`[geocode_address] No results for: ${address}`);
+    console.log(`[geocode_address] API Response status: ${data.status}`);
+
+    if (data.status === 'REQUEST_DENIED') {
+      console.error('[geocode_address] ❌ REQUEST_DENIED - Check API key validity and restrictions');
+      console.error('[geocode_address] Error message:', data.error_message);
       return {
         latitude: null,
         longitude: null,
-        formatted_address: null,
+        formatted_address: address,
+        confidence: 0
+      };
+    }
+
+    if (data.status !== 'OK' || !data.results || data.results.length === 0) {
+      console.warn(`[geocode_address] ⚠️  No results for: "${address}" (status: ${data.status})`);
+      return {
+        latitude: null,
+        longitude: null,
+        formatted_address: address,
         confidence: 0
       };
     }
@@ -85,6 +108,8 @@ export async function executeGeocodeAddress(args: GeocodeAddressArgs) {
       confidence = 0.4;
     }
 
+    console.log(`[geocode_address] ✓ Success: ${result.formatted_address} (${location.lat}, ${location.lng}) [confidence: ${confidence}]`);
+
     return {
       latitude: location.lat,
       longitude: location.lng,
@@ -93,11 +118,11 @@ export async function executeGeocodeAddress(args: GeocodeAddressArgs) {
     };
 
   } catch (error) {
-    console.error('[geocode_address] Error:', error);
+    console.error('[geocode_address] ❌ Exception:', error);
     return {
       latitude: null,
       longitude: null,
-      formatted_address: null,
+      formatted_address: address,
       confidence: 0
     };
   }
