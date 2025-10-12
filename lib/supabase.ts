@@ -22,6 +22,17 @@ if (isSupabaseConfigured && supabaseUrl && supabaseAnonKey) {
       // Prevenir procesamiento múltiple del mismo hash
       storage: typeof window !== 'undefined' ? window.localStorage : undefined,
       storageKey: 'supabase.auth.token'
+    },
+    global: {
+      headers: {
+        'X-Client-Info': 'fahrtenbuch-pro'
+      }
+    },
+    db: {
+      schema: 'public'
+    },
+    realtime: {
+      timeout: 30000 // 30 seconds timeout for realtime connections
     }
   })
 } else if (typeof window !== 'undefined') {

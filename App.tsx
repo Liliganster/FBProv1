@@ -99,6 +99,20 @@ const App: React.FC = () => {
     return localStorage.getItem(`fahrtenbuch_sidebarCollapsed_${user.id}`) === 'true';
   });
 
+  const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
+
+  // Handle body overflow when mobile menu is open
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.classList.add('mobile-menu-open');
+    } else {
+      document.body.classList.remove('mobile-menu-open');
+    }
+    return () => {
+      document.body.classList.remove('mobile-menu-open');
+    };
+  }, [mobileMenuOpen]);
+
   const theme: 'dark' = 'dark';
   
   const { t } = useTranslation();
@@ -295,9 +309,101 @@ const App: React.FC = () => {
     backdropFilter: `blur(${personalization.uiBlur}px)`,
   };
 
+  const renderSidebarContent = () => (
+    <>
+      <div className={`p-6 flex items-center ${sidebarCollapsed ? 'justify-center' : 'justify-between'} border-b border-glass`}>
+        {!sidebarCollapsed && (
+          <h1 className="text-xl font-bold text-white">
+            FahrtenBuch Pro
+          </h1>
+        )}
+        <button
+          onClick={() => {
+            setSidebarCollapsed(!sidebarCollapsed);
+            setMobileMenuOpen(false);
+          }}
+          className="p-2 rounded-smooth transition-all duration-300 transform hover:scale-105 hover:bg-gradient-surface hover:shadow-brand/20 hover:shadow-md"
+        >
+          {sidebarCollapsed ? <Menu size={20} /> : <X size={20} />}
+        </button>
+      </div>
+
+      <div className="flex-1 p-4 space-y-2 overflow-y-auto">
+        {navItems.map((item) => (
+          <button
+            key={item.view}
+            onClick={() => {
+              setCurrentView(item.view as View);
+              setMobileMenuOpen(false);
+            }}
+            title={sidebarCollapsed ? item.label : undefined}
+            className={`
+              w-full flex items-center gap-3 px-4 py-3 rounded-smooth transition-all duration-300 transform
+              ${sidebarCollapsed ? 'justify-center' : ''}
+              ${
+                currentView === item.view
+                  ? 'text-white scale-[1.02] shadow-lg'
+                  : 'hover:bg-gradient-surface text-on-surface-secondary hover:text-on-surface-dark hover:scale-[1.02] hover:shadow-lg hover:shadow-blue-500/20'
+              }
+            `}
+            style={currentView === item.view ? { backgroundColor: 'rgba(26, 26, 26, 0.8)' } : undefined}
+          >
+            {item.icon}
+            {!sidebarCollapsed && <span className="font-medium">{item.label}</span>}
+          </button>
+        ))}
+      </div>
+
+      <div className="p-4 space-y-2 border-t border-glass">
+        <button
+          onClick={() => {
+            setCurrentView('settings');
+            setMobileMenuOpen(false);
+          }}
+          title={sidebarCollapsed ? t('nav_settings') : undefined}
+          className={`w-full flex items-center gap-3 px-4 py-3 rounded-smooth transition-all duration-300 transform ${sidebarCollapsed ? 'justify-center' : ''} ${
+            currentView === 'settings'
+              ? 'text-white scale-[1.02] shadow-lg'
+              : 'hover:bg-gradient-surface text-on-surface-secondary hover:text-on-surface-dark hover:scale-[1.02] hover:shadow-lg hover:shadow-blue-500/20'
+          }`}
+          style={currentView === 'settings' ? { backgroundColor: 'rgba(26, 26, 26, 0.8)' } : undefined}
+        >
+          <Settings size={20} />
+          {!sidebarCollapsed && <span className="font-medium">{t('nav_settings')}</span>}
+        </button>
+
+        <button
+          onClick={logout}
+          title={sidebarCollapsed ? t('logout_btn') : undefined}
+          className={`w-full flex items-center gap-3 px-4 py-3 rounded-smooth transition-all duration-300 transform hover:scale-[1.02] ${sidebarCollapsed ? 'justify-center' : ''}
+            hover:bg-gradient-to-r hover:from-red-600/80 hover:to-red-700/80 text-on-surface-secondary hover:text-white hover:shadow-md hover:shadow-red-500/30`}
+        >
+          <LogOut size={20} />
+          {!sidebarCollapsed && <span className="font-medium">{t('logout_btn')}</span>}
+        </button>
+
+        <div
+          className={`w-full flex items-center gap-3 px-4 pt-4 mt-2 ${sidebarCollapsed ? 'justify-center' : ''}`}
+        >
+          {userProfile && (
+            <>
+              <Avatar profile={userProfile} className="w-10 h-10 flex-shrink-0" />
+              {!sidebarCollapsed && (
+                <div className="flex flex-col items-start overflow-hidden">
+                  <p className="font-semibold text-sm truncate w-full text-left text-on-surface-dark">{userProfile.name}</p>
+                  <p className="text-xs text-on-surface-secondary">{userProfile.licensePlate || 'N/A'}</p>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      </div>
+    </>
+  );
+
   return (
-    <div 
-      className="relative flex h-screen font-sans bg-gradient-dark"
+    <div
+      className="relative flex flex-col md:flex-row h-screen w-screen overflow-hidden font-sans bg-gradient-dark"
       style={{
         background: personalization.backgroundImage
           ? (personalization.backgroundBlur > 0
@@ -312,7 +418,7 @@ const App: React.FC = () => {
     >
       {/* Overlay for blur effect when needed */}
       {personalization.backgroundImage && personalization.backgroundBlur > 0 && (
-        <div 
+        <div
           className="absolute inset-0 z-0 pointer-events-none"
           style={{
             backgroundImage: `url(${personalization.backgroundImage})`,
@@ -324,98 +430,51 @@ const App: React.FC = () => {
           }}
         />
       )}
+
+      {/* Mobile Header with Hamburger Menu */}
+      <div className="md:hidden fixed top-0 left-0 right-0 z-30 bg-gradient-to-br from-white/5 via-blue-400/8 to-blue-500/5 backdrop-blur-xl backdrop-saturate-150 border-b border-white/10 shadow-glass">
+        <div className="flex items-center justify-between p-4">
+          <h1 className="text-lg font-bold text-white">FahrtenBuch Pro</h1>
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="p-2 rounded-smooth transition-all duration-300 transform hover:scale-105 hover:bg-gradient-surface hover:shadow-brand/20 hover:shadow-md text-white"
+          >
+            <Menu size={24} />
+          </button>
+        </div>
+      </div>
+
+      {/* Mobile Menu Overlay */}
+      {mobileMenuOpen && (
+        <>
+          <div
+            className="mobile-nav-overlay md:hidden"
+            onClick={() => setMobileMenuOpen(false)}
+          />
+          <nav className="mobile-sidebar md:hidden text-on-surface-dark flex flex-col shadow-glass bg-gradient-to-br from-white/5 via-blue-400/8 to-blue-500/5 backdrop-blur-xl backdrop-saturate-150 border-white/10">
+            {renderSidebarContent()}
+          </nav>
+        </>
+      )}
+
+      {/* Desktop Sidebar */}
       <nav
-        className={`relative z-10 
+        className={`sidebar-desktop hidden md:flex relative z-10
         ${sidebarCollapsed ? 'w-20' : 'w-72'}
         text-on-surface-dark border-r
-        transition-all duration-300 flex flex-col shadow-glass
+        transition-all duration-300 flex-col shadow-glass
         bg-gradient-to-br from-white/5 via-blue-400/8 to-blue-500/5
         backdrop-blur-xl backdrop-saturate-150
         border-white/10
       `}>
-        <div className={`p-6 flex items-center ${sidebarCollapsed ? 'justify-center' : 'justify-between'} border-b border-glass`}>
-          {!sidebarCollapsed && (
-            <h1 className="text-xl font-bold text-white">
-              FahrtenBuch Pro
-            </h1>
-          )}
-          <button
-            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-            className="p-2 rounded-smooth transition-all duration-300 transform hover:scale-105 hover:bg-gradient-surface hover:shadow-brand/20 hover:shadow-md"
-          >
-            {sidebarCollapsed ? <Menu size={20} /> : <X size={20} />}
-          </button>
-        </div>
-
-        <div className="flex-1 p-4 space-y-2 overflow-y-auto">
-          {navItems.map((item) => (
-            <button
-              key={item.view}
-              onClick={() => setCurrentView(item.view as View)}
-              title={sidebarCollapsed ? item.label : undefined}
-              className={`
-                w-full flex items-center gap-3 px-4 py-3 rounded-smooth transition-all duration-300 transform
-                ${sidebarCollapsed ? 'justify-center' : ''}
-                ${
-                  currentView === item.view
-                    ? 'text-white scale-[1.02] shadow-lg'
-                    : 'hover:bg-gradient-surface text-on-surface-secondary hover:text-on-surface-dark hover:scale-[1.02] hover:shadow-lg hover:shadow-blue-500/20'
-                }
-              `}
-              style={currentView === item.view ? { backgroundColor: 'rgba(26, 26, 26, 0.8)' } : undefined}
-            >
-              {item.icon}
-              {!sidebarCollapsed && <span className="font-medium">{item.label}</span>}
-            </button>
-          ))}
-        </div>
-
-        <div className="p-4 space-y-2 border-t border-glass">
-          <button
-                onClick={() => setCurrentView('settings')}
-                title={sidebarCollapsed ? t('nav_settings') : undefined}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-smooth transition-all duration-300 transform ${sidebarCollapsed ? 'justify-center' : ''} ${
-                    currentView === 'settings'
-                    ? 'text-white scale-[1.02] shadow-lg'
-                    : 'hover:bg-gradient-surface text-on-surface-secondary hover:text-on-surface-dark hover:scale-[1.02] hover:shadow-lg hover:shadow-blue-500/20'
-                }`}
-                style={currentView === 'settings' ? { backgroundColor: 'rgba(26, 26, 26, 0.8)' } : undefined}
-            >
-                <Settings size={20} />
-                {!sidebarCollapsed && <span className="font-medium">{t('nav_settings')}</span>}
-            </button>
-            
-            <button
-                onClick={logout}
-                title={sidebarCollapsed ? t('logout_btn') : undefined}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-smooth transition-all duration-300 transform hover:scale-[1.02] ${sidebarCollapsed ? 'justify-center' : ''} 
-                hover:bg-gradient-to-r hover:from-red-600/80 hover:to-red-700/80 text-on-surface-secondary hover:text-white hover:shadow-md hover:shadow-red-500/30`}
-            >
-                <LogOut size={20} />
-                {!sidebarCollapsed && <span className="font-medium">{t('logout_btn')}</span>}
-            </button>
-
-            <div
-                className={`w-full flex items-center gap-3 px-4 pt-4 mt-2 ${sidebarCollapsed ? 'justify-center' : ''}`}
-            >
-                {userProfile && (
-                    <>
-                        <Avatar profile={userProfile} className="w-10 h-10 flex-shrink-0" />
-                        {!sidebarCollapsed && (
-                            <div className="flex flex-col items-start overflow-hidden">
-                                <p className="font-semibold text-sm truncate w-full text-left text-on-surface-dark">{userProfile.name}</p>
-                                <p className="text-xs text-on-surface-secondary">{userProfile.licensePlate || 'N/A'}</p>
-                            </div>
-                        )}
-                    </>
-                )}
-            </div>
-        </div>
+        {renderSidebarContent()}
       </nav>
-      <main className="relative z-10 flex-1 p-8 overflow-y-auto bg-transparent">
-        <Suspense fallback={<div className="text-sm text-on-surface-dark-secondary">Loading…</div>}>
-          {renderView()}
-        </Suspense>
+      <main className="relative z-10 flex-1 overflow-y-auto overflow-x-hidden bg-transparent w-full h-full pt-20 md:pt-0 px-4 pb-4 md:p-8">
+        <div className="w-full h-full">
+          <Suspense fallback={<div className="text-sm text-on-surface-dark-secondary">Loading…</div>}>
+            {renderView()}
+          </Suspense>
+        </div>
       </main>
     </div>
   );

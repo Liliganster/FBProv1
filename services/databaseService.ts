@@ -1,7 +1,7 @@
 import { supabase } from '../lib/supabase'
-import { 
-  DbProject, 
-  DbProjectInsert, 
+import {
+  DbProject,
+  DbProjectInsert,
   DbProjectUpdate,
   DbCallsheet,
   DbCallsheetInsert,
@@ -24,9 +24,41 @@ import {
 } from '../types/database'
 import { Project, CallsheetFile, TripLedgerEntry, TripLedgerBatch, UserProfile, RouteTemplate, Report, ExpenseDocument, ExpenseCategory } from '../types'
 import { ownershipValidation, OwnershipError } from './ownershipValidationService'
+import { withTimeout, TIMEOUT_CONFIGS, TimeoutError } from '../lib/timeoutHandler'
 
 class DatabaseService {
-  
+
+  /**
+   * Wrapper para queries de Supabase con timeout automático
+   */
+  private async withDbTimeout<T>(
+    queryBuilder: any,
+    operation: string,
+    timeout: number = TIMEOUT_CONFIGS.DB_READ
+  ): Promise<{ data: T | null; error: any }> {
+    try {
+      // Convert the query builder to a promise if it isn't already
+      const query = typeof queryBuilder.then === 'function'
+        ? queryBuilder
+        : Promise.resolve(queryBuilder);
+
+      return await withTimeout(query, { timeout, operation });
+    } catch (error) {
+      if (error instanceof TimeoutError) {
+        console.error(`Database timeout: ${operation}`, error);
+        return {
+          data: null,
+          error: {
+            message: `Operation timed out after ${timeout}ms: ${operation}`,
+            code: 'TIMEOUT',
+            details: operation
+          }
+        };
+      }
+      throw error;
+    }
+  }
+
   // ===== API KEY ENCRYPTION HELPERS =====
 
   /**
@@ -79,23 +111,31 @@ class DatabaseService {
    */
   async getUserProjects(userId: string): Promise<Project[]> {
     try {
-      const { data, error } = await supabase
-        .from('projects')
-        .select(`
-          *,
-          callsheets (*)
-        `)
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false })
+      const { data, error } = await this.withDbTimeout<any[]>(
+        supabase
+          .from('projects')
+          .select(`
+            *,
+            callsheets (*)
+          `)
+          .eq('user_id', userId)
+          .order('created_at', { ascending: false }),
+        'Get user projects'
+      )
 
       if (error) {
         console.warn('Database access error (possibly RLS policy issue):', error);
         // Return empty array if RLS blocks access - app should still work
-        if (error.code === 'PGRST116' || error.code === '42501') {
-          console.warn('RLS policy blocking access, returning empty projects list');
+        if (error.code === 'PGRST116' || error.code === '42501' || error.code === 'TIMEOUT') {
+          console.warn('RLS policy blocking access or timeout, returning empty projects list');
           return [];
         }
         throw error;
+      }
+
+      // Check if data exists
+      if (!data || data.length === 0) {
+        return [];
       }
 
       // Transform to legacy Project format
