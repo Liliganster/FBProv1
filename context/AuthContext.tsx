@@ -147,36 +147,31 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const logout = useCallback(async () => {
     ensureConfigured();
-    
+
     return authQueueService.executeAuthOperation(async () => {
-      // Immediately set loading state to ensure clean transition
-      setIsLoading(true);
-      
-      try {
-        const { error } = await authService.signOut();
-        if (error) console.error('Error signing out:', error);
-      } finally {
-        // Force clean state regardless of sign-out success
-        setUser(null);
-        setSupabaseUser(null);
-        setProfile(null);
-        setIsLoading(false);
-        
-        // Clear any refs to prevent stale state
-        isProcessingAuth.current = false;
-        lastProcessedUserId.current = null;
-        
-        // Clear any user-specific localStorage to ensure clean login state
-        if (typeof window !== 'undefined') {
-          const userKeys = [];
-          for (let i = 0; i < localStorage.length; i++) {
-            const key = localStorage.key(i);
-            if (key && key.startsWith('fahrtenbuch_')) {
-              userKeys.push(key);
-            }
+      // Immediately clear state before sign-out to prevent UI delays
+      setUser(null);
+      setSupabaseUser(null);
+      setProfile(null);
+      isProcessingAuth.current = false;
+      lastProcessedUserId.current = null;
+
+      // Sign out from Supabase (don't block on this)
+      authService.signOut().catch(err => {
+        console.error('Error signing out:', err);
+      });
+
+      // Clear user-specific localStorage asynchronously
+      if (typeof window !== 'undefined') {
+        setTimeout(() => {
+          try {
+            Object.keys(localStorage)
+              .filter(key => key.startsWith('fahrtenbuch_'))
+              .forEach(key => localStorage.removeItem(key));
+          } catch (err) {
+            console.error('Error clearing localStorage:', err);
           }
-          userKeys.forEach(key => localStorage.removeItem(key));
-        }
+        }, 0);
       }
     }, 'logout');
   }, [ensureConfigured]);

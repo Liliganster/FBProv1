@@ -17,6 +17,7 @@ import {
   withComponentErrorBoundary 
 } from './ComponentErrorBoundaries';
 import { useAsyncErrorHandler } from '../hooks/useAsyncErrorHandler';
+import { withAsyncErrorHandling } from './withAsyncErrorHandling';
 
 /**
  * Example 1: Wrapping Modal Components
@@ -83,10 +84,10 @@ const TripsTable = ({ trips }) => {
 
 // After: Table with error boundary and async error handling
 const TripsTable: React.FC<{ trips: any[] }> = ({ trips }) => {
-  const { executeAsync } = useAsyncErrorHandler();
+  const asyncHandler = useAsyncErrorHandler();
 
   const handleTripAction = async (tripId: string, action: string) => {
-    await executeAsync(
+    await asyncHandler.executeAsync(
       async () => {
         // Simulate API call
         const response = await fetch(`/api/trips/${tripId}/${action}`, {
@@ -207,10 +208,10 @@ const SafeCO2Chart: React.FC<{ data: any[] }> = ({ data }) => {
 
 // Original component
 const ExpenseUploadModal: React.FC<{ onUpload: (file: File) => void }> = ({ onUpload }) => {
-  const { executeAsync } = useAsyncErrorHandler();
+  const asyncHandler = useAsyncErrorHandler();
 
   const handleFileUpload = async (file: File) => {
-    await executeAsync(
+    await asyncHandler.executeAsync(
       async () => {
         const formData = new FormData();
         formData.append('file', file);
@@ -300,48 +301,48 @@ const SafeExpensesProvider: React.FC<{ children: React.ReactNode }> = ({ childre
  * Example 8: Service Integration with Error Handling
  */
 
-// Enhanced service methods with error handling
-const enhancedProjectService = {
-  async getProjects(userId: string) {
-    const { executeAsync } = useAsyncErrorHandler();
-    
-    return executeAsync(
-      async () => {
-        const response = await fetch(`/api/projects?userId=${userId}`);
-        if (!response.ok) throw new Error('Failed to fetch projects');
-        return response.json();
-      },
-      'fetch-projects',
-      {
-        maxRetries: 3,
-        timeout: 10000,
-        onError: (error) => {
-          console.error('Failed to fetch projects:', error);
+// Enhanced service methods with error handling (using hook in components)
+const useEnhancedProjectService = () => {
+  const asyncHandler = useAsyncErrorHandler();
+  
+  return {
+    async getProjects(userId: string) {
+      return asyncHandler.executeAsync(
+        async () => {
+          const response = await fetch(`/api/projects?userId=${userId}`);
+          if (!response.ok) throw new Error('Failed to fetch projects');
+          return response.json();
+        },
+        'fetch-projects',
+        {
+          maxRetries: 3,
+          timeout: 10000,
+          onError: (error) => {
+            console.error('Failed to fetch projects:', error);
+          }
         }
-      }
-    );
-  },
+      );
+    },
 
-  async createProject(projectData: any, userId: string) {
-    const { executeAsync } = useAsyncErrorHandler();
-    
-    return executeAsync(
-      async () => {
-        const response = await fetch('/api/projects', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ...projectData, userId }),
-        });
-        if (!response.ok) throw new Error('Failed to create project');
-        return response.json();
-      },
-      'create-project',
-      {
-        maxRetries: 1,
-        showToast: true,
-      }
-    );
-  },
+    async createProject(projectData: any, userId: string) {
+      return asyncHandler.executeAsync(
+        async () => {
+          const response = await fetch('/api/projects', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ...projectData, userId }),
+          });
+          if (!response.ok) throw new Error('Failed to create project');
+          return response.json();
+        },
+        'create-project',
+        {
+          maxRetries: 1,
+          showToast: true,
+        }
+      );
+    },
+  };
 };
 
 /**
@@ -377,5 +378,5 @@ export {
   SafeCO2Chart,
   SafeExpenseUploadModal,
   SafeExpensesProvider,
-  enhancedProjectService,
+  useEnhancedProjectService,
 };

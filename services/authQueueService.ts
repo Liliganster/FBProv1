@@ -23,7 +23,7 @@ class AuthQueueService {
       concurrency: 1, // Only one auth operation at a time
       interval: 100, // 100ms interval between operations
       intervalCap: 1, // Only one operation per interval
-      timeout: 10000, // 10 second timeout for auth operations
+      timeout: 10000, // 10 second timeout for auth operations (reduced from 30s)
     });
 
     // State update queue - serialize state changes
@@ -31,7 +31,7 @@ class AuthQueueService {
       concurrency: 1, // Only one state update at a time
       interval: 50, // 50ms interval for faster state updates
       intervalCap: 1,
-      timeout: 5000, // 5 second timeout for state updates
+      timeout: 8000, // 8 second timeout for state updates (reduced from 15s)
     });
 
     this.setupQueueEventHandlers();

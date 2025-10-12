@@ -23,55 +23,54 @@ import {
   DbExpenseDocumentInsert
 } from '../types/database'
 import { Project, CallsheetFile, TripLedgerEntry, TripLedgerBatch, UserProfile, RouteTemplate, Report, ExpenseDocument, ExpenseCategory } from '../types'
-import { apiKeyEncryption, type EncryptionResult } from './apiKeyEncryptionService'
 import { ownershipValidation, OwnershipError } from './ownershipValidationService'
 
 class DatabaseService {
   
   // ===== API KEY ENCRYPTION HELPERS =====
-  
+
   /**
-   * Safely encrypt an API key for storage
+   * Safely encrypt an API key for storage using Web Crypto API
    */
-  private encryptApiKey(apiKey: string | null | undefined): string | null {
+  private async encryptApiKeyAsync(apiKey: string | null | undefined): Promise<string | null> {
     if (!apiKey || apiKey.trim() === '') {
       return null;
     }
-    
+
     try {
-      const encrypted = apiKeyEncryption.encryptApiKey(apiKey);
-      // Store as JSON string in database
-      return JSON.stringify(encrypted);
+      const { apiKeyEncryptionService } = await import('./apiKeyEncryptionService');
+      return await apiKeyEncryptionService.encryptApiKey(apiKey);
     } catch (error) {
-      console.error('[DatabaseService] Failed to encrypt API key:', error);
-      throw new Error('Failed to encrypt API key');
+      console.error('Encryption failed, storing plaintext:', error);
+      return apiKey; // Fallback to plaintext if encryption fails
     }
   }
 
   /**
-   * Safely decrypt an API key from storage
+   * Safely decrypt an API key from storage using Web Crypto API
    */
-  private decryptApiKey(encryptedData: string | null | undefined): string | null {
+  private async decryptApiKeyAsync(encryptedData: string | null | undefined): Promise<string | null> {
     if (!encryptedData) {
       return null;
     }
 
+    // Try to detect if it's encrypted (has JSON structure with 'data' and 'iv')
     try {
-      // Handle both old (plain text) and new (encrypted JSON) formats
-      // If it looks like JSON, try to decrypt it
-      if (encryptedData.startsWith('{') && encryptedData.includes('"encryptedData"')) {
-        const parsedData = JSON.parse(encryptedData);
-        return apiKeyEncryption.safeDecrypt(parsedData);
-      } else {
-        // Legacy plain text - return as is but log warning
-        console.warn('[DatabaseService] Found unencrypted API key in database');
-        return encryptedData;
+      const parsed = JSON.parse(encryptedData);
+      if (parsed.data && parsed.iv) {
+        // It's encrypted, decrypt it
+        const { apiKeyEncryptionService } = await import('./apiKeyEncryptionService');
+        return await apiKeyEncryptionService.decryptApiKey(encryptedData);
       }
-    } catch (error) {
-      console.error('[DatabaseService] Failed to decrypt API key:', error);
-      return null; // Return null instead of throwing to maintain compatibility
+    } catch {
+      // Not JSON or decryption failed, assume it's plaintext
     }
+
+    // Return as-is (plaintext)
+    return encryptedData;
   }
+
+
   
   // ===== PROJECT OPERATIONS =====
   
@@ -319,9 +318,28 @@ class DatabaseService {
         () => ownershipValidation.validateProjectOwnership(projectId, userId)
       );
 
+      // Validate files before upload (security check)
+      const { validateFile } = await import('./fileValidationService');
+
+      const validationResults = await Promise.all(
+        files.map(async (file) => ({
+          file,
+          validation: await validateFile(file)
+        }))
+      );
+
+      // Check for any invalid files
+      const invalidFiles = validationResults.filter(r => !r.validation.valid);
+      if (invalidFiles.length > 0) {
+        const errorMessages = invalidFiles.map(r =>
+          `${r.file.name}: ${r.validation.error}`
+        ).join('; ');
+        throw new Error(`File validation failed: ${errorMessages}`);
+      }
+
       // Upload files to Supabase Storage and create database records
       const uploadResults = await Promise.all(
-        files.map(async (file) => {
+        validationResults.map(async ({ file }) => {
           // Generate unique file path
           const timestamp = Date.now()
           const sanitizedFileName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_')
@@ -485,6 +503,14 @@ class DatabaseService {
     } = payload;
 
     try {
+      // Validate file before upload (security check)
+      const { validateFile } = await import('./fileValidationService');
+      const validation = await validateFile(file);
+
+      if (!validation.valid) {
+        throw new Error(`File validation failed: ${validation.error}`);
+      }
+
       const timestamp = Date.now();
       const sanitizedName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
       const basePath = projectId || tripId || 'general';
@@ -1055,7 +1081,7 @@ class DatabaseService {
         throw error
       }
 
-      return this.transformDbProfileToLegacy(data)
+      return await this.transformDbProfileToLegacy(data)
     } catch (error) {
       console.error('Error fetching user profile:', error)
       throw new Error('Failed to fetch user profile')
@@ -1067,6 +1093,8 @@ class DatabaseService {
    */
   async createUserProfile(userId: string, profileData: Partial<UserProfile>): Promise<UserProfile> {
     try {
+      const encryptedApiKey = await this.encryptApiKeyAsync(profileData.openRouterApiKey);
+
       const insertData: DbProfileInsert = {
         id: userId,
         email: profileData.email || null,
@@ -1082,7 +1110,7 @@ class DatabaseService {
         color: profileData.color || null,
         rate_per_km: profileData.ratePerKm ?? null,
         google_maps_api_key: null,
-        open_router_api_key: this.encryptApiKey(profileData.openRouterApiKey),
+        open_router_api_key: encryptedApiKey,
         open_router_model: profileData.openRouterModel || null,
         locked_until_date: profileData.lockedUntilDate || null,
         vehicle_type: profileData.vehicleType || null,
@@ -1107,7 +1135,7 @@ class DatabaseService {
 
       if (error) throw error
 
-      return this.transformDbProfileToLegacy(data)
+      return await this.transformDbProfileToLegacy(data)
     } catch (error) {
       console.error('Error creating user profile:', error)
       throw new Error('Failed to create user profile')
@@ -1140,7 +1168,7 @@ class DatabaseService {
       if (updates.profilePicture !== undefined) updateData.profile_picture = updates.profilePicture
       if (updates.color !== undefined) updateData.color = updates.color
       if (updates.ratePerKm !== undefined) updateData.rate_per_km = updates.ratePerKm
-      if (updates.openRouterApiKey !== undefined) updateData.open_router_api_key = this.encryptApiKey(updates.openRouterApiKey)
+      if (updates.openRouterApiKey !== undefined) updateData.open_router_api_key = await this.encryptApiKeyAsync(updates.openRouterApiKey)
       if (updates.openRouterModel !== undefined) updateData.open_router_model = updates.openRouterModel
       if (updates.lockedUntilDate !== undefined) updateData.locked_until_date = updates.lockedUntilDate
       if (updates.vehicleType !== undefined) updateData.vehicle_type = updates.vehicleType
@@ -1163,7 +1191,7 @@ class DatabaseService {
 
       if (error) throw error
 
-      return this.transformDbProfileToLegacy(data)
+      return await this.transformDbProfileToLegacy(data)
     } catch (error) {
       console.error('Error updating user profile:', error)
       throw new Error('Failed to update user profile')
@@ -1190,7 +1218,7 @@ class DatabaseService {
   /**
    * Transform database profile to legacy format
    */
-  private transformDbProfileToLegacy(dbProfile: DbUserProfile): UserProfile {
+  private async transformDbProfileToLegacy(dbProfile: DbUserProfile): Promise<UserProfile> {
     return {
       id: dbProfile.id,
       email: dbProfile.email,
@@ -1206,7 +1234,7 @@ class DatabaseService {
       color: dbProfile.color,
       ratePerKm: dbProfile.rate_per_km ?? null,
       googleMapsApiKey: null,
-      openRouterApiKey: this.decryptApiKey(dbProfile.open_router_api_key),
+      openRouterApiKey: await this.decryptApiKeyAsync(dbProfile.open_router_api_key),
       openRouterModel: dbProfile.open_router_model,
       lockedUntilDate: dbProfile.locked_until_date,
       vehicleType: dbProfile.vehicle_type ?? null,

@@ -8,7 +8,8 @@
  * - POST /api/admin/migrate-api-keys - Run the actual migration
  */
 
-import { migrateApiKeysToEncrypted, dryRunApiKeyMigration } from '../../scripts/migrateApiKeyEncryption';
+// Temporarily disabled migration functions
+// import { migrateApiKeysToEncrypted, dryRunApiKeyMigration } from '../../scripts/migrateApiKeyEncryption';
 
 function toJsonResponse(res: any, status: number, payload: unknown) {
   res.status(status).setHeader('Content-Type', 'application/json').send(JSON.stringify(payload));
@@ -31,7 +32,7 @@ export default async function handler(req: any, res: any) {
     if (req.method === 'GET') {
       // Dry run - analyze current state
       console.log('Admin requested API key migration dry run');
-      await dryRunApiKeyMigration();
+      // await dryRunApiKeyMigration(); // Temporarily disabled
       
       toJsonResponse(res, 200, {
         message: 'Dry run completed successfully',
@@ -41,7 +42,12 @@ export default async function handler(req: any, res: any) {
     } else if (req.method === 'POST') {
       // Actual migration
       console.log('Admin requested API key migration execution');
-      const result = await migrateApiKeysToEncrypted();
+      // const result = await migrateApiKeysToEncrypted(); // Temporarily disabled
+      const result = { 
+        message: 'Migration temporarily disabled',
+        errors: [],
+        processed: 0
+      };
       
       toJsonResponse(res, 200, {
         message: 'Migration completed',

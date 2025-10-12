@@ -57,6 +57,16 @@ export const GoogleCalendarProvider: React.FC<{ children: ReactNode }> = ({ chil
     let cancelled = false;
     const checkProxy = async () => {
       try {
+        // In development, skip backend proxy check
+        if (import.meta.env.DEV) {
+          console.log('[Google Calendar] Development mode: skipping backend proxy check');
+          if (!cancelled) {
+            setCalendarProxyReady(true);
+            setCalendarProxyChecked(true);
+          }
+          return;
+        }
+
         const res = await fetch('/api/google/calendar/events?health=1');
         if (!res.ok) throw new Error(`status ${res.status}`);
         const data = await res.json();
@@ -67,7 +77,8 @@ export const GoogleCalendarProvider: React.FC<{ children: ReactNode }> = ({ chil
       } catch (e) {
         console.warn('[Google Calendar] Backend proxy health check failed:', e);
         if (!cancelled) {
-          setCalendarProxyReady(false);
+          // In development, allow fallback to true
+          setCalendarProxyReady(import.meta.env.DEV ? true : false);
           setCalendarProxyChecked(true);
         }
       }

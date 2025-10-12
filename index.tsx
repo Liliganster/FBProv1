@@ -8,15 +8,20 @@ import { AppErrorBoundary } from './components/GranularErrorBoundary';
 import { useUnhandledPromiseRejection } from './hooks/useAsyncErrorHandler';
 import './src/index.css';
 
-// Component to initialize global error handling
-const AppWithErrorHandling: React.FC = () => {
+// Component to initialize global error handling inside providers
+const ErrorHandlerInitializer: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   useUnhandledPromiseRejection();
-  
+  return <>{children}</>;
+};
+
+const AppWithErrorHandling: React.FC = () => {
   return (
     <TranslationProvider>
       <ToastProvider>
         <AuthProvider>
-          <Auth />
+          <ErrorHandlerInitializer>
+            <Auth />
+          </ErrorHandlerInitializer>
         </AuthProvider>
       </ToastProvider>
     </TranslationProvider>
@@ -28,7 +33,15 @@ if (!rootElement) {
   throw new Error("Could not find root element to mount to");
 }
 
-const root = ReactDOM.createRoot(rootElement);
+// Avoid creating multiple roots in development
+let root: ReactDOM.Root;
+if ((rootElement as any)._reactRoot) {
+  root = (rootElement as any)._reactRoot;
+} else {
+  root = ReactDOM.createRoot(rootElement);
+  (rootElement as any)._reactRoot = root;
+}
+
 root.render(
   <AppErrorBoundary
     onError={(error, errorInfo, errorDetails) => {
