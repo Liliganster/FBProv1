@@ -6,6 +6,7 @@ import ReportDetailView from './ReportDetailView';
 import GenerateReportModal from './GenerateReportModal';
 import { PlusIcon, TrashIcon, FileTextIcon } from './Icons';
 import useTranslation from '../hooks/useTranslation';
+import { useMobile } from '../hooks/useMediaQuery';
 import { formatDateForDisplay } from '../i18n/translations';
 import useUserProfile from '../hooks/useUserProfile';
 
@@ -19,6 +20,7 @@ const ReportsView: React.FC<ReportsViewProps> = ({ personalization, theme }) => 
   const { trips, projects } = useTrips();
   const { t } = useTranslation();
   const { userProfile } = useUserProfile();
+  const isMobile = useMobile();
 
   const [viewingReport, setViewingReport] = useState<Report | null>(null);
   const [isGeneratorOpen, setIsGeneratorOpen] = useState(false);
@@ -105,64 +107,151 @@ const ReportsView: React.FC<ReportsViewProps> = ({ personalization, theme }) => 
         )}
       </div>
 
-      <div style={contentStyle} className="bg-frost-glass rounded-lg shadow-lg overflow-hidden">
-        <table className="w-full text-left">
-          <thead className="bg-gray-700/50">
-            <tr>
-              <th className="p-4 w-12">
-                <input
-                  type="checkbox"
-                  checked={isAllSelected}
-                  onChange={handleSelectAll}
-                  disabled={reports.length === 0}
-                  className="bg-background-dark border-gray-600 rounded text-brand-primary focus:ring-brand-primary focus:ring-2 h-5 w-5"
-                />
-              </th>
-              <th className="p-4 text-sm font-semibold text-on-surface-dark-secondary uppercase tracking-wider">{t('reports_col_generated')}</th>
-              <th className="p-4 text-sm font-semibold text-on-surface-dark-secondary uppercase tracking-wider">{t('reports_col_period')}</th>
-              <th className="p-4 text-sm font-semibold text-on-surface-dark-secondary uppercase tracking-wider">{t('reports_col_project')}</th>
-              <th className="p-4 text-sm font-semibold text-on-surface-dark-secondary uppercase tracking-wider text-right">{t('reports_col_actions')}</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-700/50">
-            {reports.length > 0 ? reports.map(report => {
-              const isSelected = selectedReportIds.includes(report.id);
-              return (
-              <tr 
-                key={report.id} 
-                onClick={() => setViewingReport(report)}
-                className={`${isSelected ? 'bg-brand-primary/20' : ''} hover:bg-gray-800/40 transition-colors cursor-pointer`}
-              >
-                <td className="p-4" onClick={(e) => e.stopPropagation()}>
+{isMobile ? (
+        // Vista mobile con cards
+        <div className="space-y-4">
+          {reports.length > 0 ? (
+            <>
+              {selectedReportIds.length > 0 && (
+                <div className="bg-frost-glass border-glass rounded-fluid p-4 mb-4 backdrop-blur-glass">
+                  <div className="flex items-center justify-between">
+                    <span className="text-white font-medium">{t('reports_selected_count', { count: selectedReportIds.length })}</span>
+                    <button
+                      onClick={handleDeleteSelected}
+                      className="flex items-center bg-gradient-to-r from-red-600 to-red-700 hover:shadow-md hover:shadow-red-500/30 hover:scale-[1.02] text-white font-bold py-2 px-4 rounded-smooth transition-all duration-200 text-sm"
+                    >
+                      <TrashIcon className="w-4 h-4 mr-1" />
+                      {t('reports_deleteSelected')}
+                    </button>
+                  </div>
+                </div>
+              )}
+              {reports.map(report => {
+                const isSelected = selectedReportIds.includes(report.id);
+                return (
+                  <div
+                    key={report.id}
+                    className={`bg-frost-glass border-glass rounded-fluid p-4 backdrop-blur-glass transition-all duration-200 ${
+                      isSelected ? 'ring-2 ring-brand-primary bg-brand-primary/10' : 'hover:bg-gray-800/40'
+                    }`}
+                  >
+                    {/* Header con checkbox y acciones */}
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-3">
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={() => handleSelectReport(report.id)}
+                          className="bg-background-dark border-gray-600 rounded text-brand-primary focus:ring-brand-primary focus:ring-2 h-5 w-5"
+                        />
+                        <span className="text-on-surface-dark-secondary text-xs uppercase tracking-wider">{t('reports_col_generated')}</span>
+                        <span className="text-white font-medium">{formatDateForDisplay(report.generationDate)}</span>
+                      </div>
+                      
+                      <div className="flex items-center gap-2">
+                        <button 
+                          onClick={() => setViewingReport(report)} 
+                          className="text-blue-400 hover:text-blue-300 font-semibold text-sm transition-colors"
+                        >
+                          {t('reports_viewBtn')}
+                        </button>
+                        <button 
+                          onClick={() => handleDeleteReport(report.id)} 
+                          className="p-1 text-red-400 hover:text-red-300 transition-colors"
+                        >
+                          <TrashIcon className="w-4 h-4"/>
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Contenido principal clickeable */}
+                    <div className="cursor-pointer" onClick={() => setViewingReport(report)}>
+                      {/* Período */}
+                      <div className="mb-2">
+                        <span className="text-on-surface-dark-secondary text-xs uppercase tracking-wider">{t('reports_col_period')}</span>
+                        <p className="text-white">{`${formatDateForDisplay(report.startDate)} - ${formatDateForDisplay(report.endDate)}`}</p>
+                      </div>
+
+                      {/* Proyecto */}
+                      <div>
+                        <span className="text-on-surface-dark-secondary text-xs uppercase tracking-wider">{t('reports_col_project')}</span>
+                        <p className="text-white font-medium">{report.projectName}</p>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </>
+          ) : (
+            <div className="bg-frost-glass border-glass rounded-fluid p-8 backdrop-blur-glass text-center">
+              <div className="flex flex-col items-center">
+                <FileTextIcon className="w-12 h-12 mb-2 text-gray-600"/>
+                <p className="text-on-surface-dark-secondary">{t('reports_noReports')}</p>
+              </div>
+            </div>
+          )}
+        </div>
+      ) : (
+        // Vista desktop con tabla
+        <div style={contentStyle} className="bg-frost-glass rounded-lg shadow-lg overflow-hidden">
+          <table className="w-full text-left">
+            <thead className="bg-gray-700/50">
+              <tr>
+                <th className="p-4 w-12">
                   <input
                     type="checkbox"
-                    checked={isSelected}
-                    onChange={() => handleSelectReport(report.id)}
+                    checked={isAllSelected}
+                    onChange={handleSelectAll}
+                    disabled={reports.length === 0}
                     className="bg-background-dark border-gray-600 rounded text-brand-primary focus:ring-brand-primary focus:ring-2 h-5 w-5"
                   />
-                </td>
-                <td className="p-4 whitespace-nowrap">{formatDateForDisplay(report.generationDate)}</td>
-                <td className="p-4 whitespace-nowrap">{`${formatDateForDisplay(report.startDate)} - ${formatDateForDisplay(report.endDate)}`}</td>
-                <td className="p-4 whitespace-nowrap">{report.projectName}</td>
-                <td className="p-4 whitespace-nowrap text-right" onClick={(e) => e.stopPropagation()}>
-                  <button onClick={() => setViewingReport(report)} className="text-blue-400 hover:text-blue-300 mr-4 font-semibold">{t('reports_viewBtn')}</button>
-                  <button onClick={() => handleDeleteReport(report.id)} className="text-red-400 hover:text-red-300"><TrashIcon className="w-5 h-5"/></button>
-                </td>
+                </th>
+                <th className="p-4 text-sm font-semibold text-on-surface-dark-secondary uppercase tracking-wider">{t('reports_col_generated')}</th>
+                <th className="p-4 text-sm font-semibold text-on-surface-dark-secondary uppercase tracking-wider">{t('reports_col_period')}</th>
+                <th className="p-4 text-sm font-semibold text-on-surface-dark-secondary uppercase tracking-wider">{t('reports_col_project')}</th>
+                <th className="p-4 text-sm font-semibold text-on-surface-dark-secondary uppercase tracking-wider text-right">{t('reports_col_actions')}</th>
               </tr>
-              );
-            }) : (
-              <tr>
-                <td colSpan={5} className="text-center p-8 text-on-surface-dark-secondary">
-                  <div className="flex flex-col items-center">
-                    <FileTextIcon className="w-12 h-12 mb-2 text-gray-600"/>
-                    {t('reports_noReports')}
-                  </div>
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody className="divide-y divide-gray-700/50">
+              {reports.length > 0 ? reports.map(report => {
+                const isSelected = selectedReportIds.includes(report.id);
+                return (
+                <tr 
+                  key={report.id} 
+                  onClick={() => setViewingReport(report)}
+                  className={`${isSelected ? 'bg-brand-primary/20' : ''} hover:bg-gray-800/40 transition-colors cursor-pointer`}
+                >
+                  <td className="p-4" onClick={(e) => e.stopPropagation()}>
+                    <input
+                      type="checkbox"
+                      checked={isSelected}
+                      onChange={() => handleSelectReport(report.id)}
+                      className="bg-background-dark border-gray-600 rounded text-brand-primary focus:ring-brand-primary focus:ring-2 h-5 w-5"
+                    />
+                  </td>
+                  <td className="p-4 whitespace-nowrap">{formatDateForDisplay(report.generationDate)}</td>
+                  <td className="p-4 whitespace-nowrap">{`${formatDateForDisplay(report.startDate)} - ${formatDateForDisplay(report.endDate)}`}</td>
+                  <td className="p-4 whitespace-nowrap">{report.projectName}</td>
+                  <td className="p-4 whitespace-nowrap text-right" onClick={(e) => e.stopPropagation()}>
+                    <button onClick={() => setViewingReport(report)} className="text-blue-400 hover:text-blue-300 mr-4 font-semibold">{t('reports_viewBtn')}</button>
+                    <button onClick={() => handleDeleteReport(report.id)} className="text-red-400 hover:text-red-300"><TrashIcon className="w-5 h-5"/></button>
+                  </td>
+                </tr>
+                );
+              }) : (
+                <tr>
+                  <td colSpan={5} className="text-center p-8 text-on-surface-dark-secondary">
+                    <div className="flex flex-col items-center">
+                      <FileTextIcon className="w-12 h-12 mb-2 text-gray-600"/>
+                      {t('reports_noReports')}
+                    </div>
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
       
       {isGeneratorOpen && (
         <GenerateReportModal

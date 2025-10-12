@@ -105,6 +105,9 @@ export const GoogleCalendarProvider: React.FC<{ children: ReactNode }> = ({ chil
   }, [gapiClient, GOOGLE_AUTH_STATE_KEY]);
 
   useEffect(() => {
+    let cancelled = false;
+    let timeoutIds: NodeJS.Timeout[] = [];
+
     // Skip initialization if Google Calendar credentials are not configured
     if (!GOOGLE_CALENDAR_CLIENT_ID || !userProfile) {
       console.log('[Google Calendar] Skipping init:', {
@@ -134,19 +137,46 @@ export const GoogleCalendarProvider: React.FC<{ children: ReactNode }> = ({ chil
     const GOOGLE_AUTH_STATE_KEY_INIT = `fahrtenbuch_google_auth_state_${userProfile.id}`;
 
     const initClients = async () => {
+      if (cancelled) return;
+      
       try {
         console.log('[Google Calendar] Loading gapi client...');
-        await new Promise<void>((resolve, reject) => window.gapi.load('client:picker', {
-          callback: resolve,
-          onerror: reject,
-          timeout: 5000,
-          ontimeout: reject,
-        }));
+        await new Promise<void>((resolve, reject) => {
+          if (cancelled) {
+            reject(new Error('Cancelled'));
+            return;
+          }
+          
+          const timeoutId = setTimeout(() => {
+            if (!cancelled) reject(new Error('Timeout'));
+          }, 5000);
+          timeoutIds.push(timeoutId);
+          
+          window.gapi.load('client:picker', {
+            callback: () => {
+              clearTimeout(timeoutId);
+              if (!cancelled) resolve();
+            },
+            onerror: (error: any) => {
+              clearTimeout(timeoutId);
+              if (!cancelled) reject(error);
+            },
+            timeout: 5000,
+            ontimeout: () => {
+              clearTimeout(timeoutId);
+              if (!cancelled) reject(new Error('Timeout'));
+            },
+          });
+        });
+
+        if (cancelled) return;
 
         console.log('[Google Calendar] Initializing gapi client...');
         await window.gapi.client.init({
           discoveryDocs: DISCOVERY_DOCS,
         });
+        
+        if (cancelled) return;
         setGapiClient(window.gapi.client);
 
         console.log('[Google Calendar] Initializing token client...');
@@ -155,6 +185,8 @@ export const GoogleCalendarProvider: React.FC<{ children: ReactNode }> = ({ chil
           scope: SCOPES,
           ux_mode: 'popup', // Force popup mode to avoid redirect_uri issues
           callback: (tokenResponse: any) => {
+            if (cancelled) return;
+            
             if (tokenResponse.error) {
               const expectedErrors = ['access_denied', 'user_logged_out', 'consent_required', 'interaction_required', 'login_required'];
               if (expectedErrors.includes(tokenResponse.error)) {
@@ -179,6 +211,8 @@ export const GoogleCalendarProvider: React.FC<{ children: ReactNode }> = ({ chil
             localStorage.setItem(GOOGLE_AUTH_STATE_KEY_INIT, 'signed_in');
           },
           error_callback: (error: any) => {
+            if (cancelled) return;
+            
             console.error('Google Token Client Error:', error);
             if (error?.type === 'popup_closed') {
                 showToast(t('toast_gcal_signin_cancelled'), 'info');
@@ -189,11 +223,14 @@ export const GoogleCalendarProvider: React.FC<{ children: ReactNode }> = ({ chil
             }
           }
         });
+        
+        if (cancelled) return;
         setTokenClient(newtokenClient);
         setIsInitialized(true);
         console.log('[Google Calendar] ✅ Initialization complete!');
 
       } catch (error) {
+        if (cancelled) return;
         console.error('[Google Calendar] ❌ Error during initialization:', error);
         showToast('Failed to initialize Google API integration.', 'error');
       }
@@ -203,21 +240,33 @@ export const GoogleCalendarProvider: React.FC<{ children: ReactNode }> = ({ chil
     const maxAttempts = 50; // 5 seconds total (50 * 100ms)
     
     const checkScriptsAndInit = () => {
+      if (cancelled) return;
+      
       attempts++;
       
       if (window.gapi && window.google?.accounts?.oauth2) {
         console.log('[Google Calendar] Scripts loaded, initializing...');
         initClients();
       } else if (attempts >= maxAttempts) {
-        console.error('[Google Calendar] ❌ Timeout waiting for Google scripts to load');
-        showToast('Google Calendar scripts failed to load. Check your internet connection.', 'error');
+        if (!cancelled) {
+          console.error('[Google Calendar] ❌ Timeout waiting for Google scripts to load');
+          showToast('Google Calendar scripts failed to load. Check your internet connection.', 'error');
+        }
       } else {
         console.log(`[Google Calendar] Waiting for scripts... (${attempts}/${maxAttempts})`);
-        setTimeout(checkScriptsAndInit, 100);
+        const timeoutId = setTimeout(checkScriptsAndInit, 100);
+        timeoutIds.push(timeoutId);
       }
     };
     
     checkScriptsAndInit();
+
+    // Cleanup function
+    return () => {
+      cancelled = true;
+      timeoutIds.forEach(id => clearTimeout(id));
+      hasStartedInit.current = false;
+    };
 
   }, [userProfile, showToast, t, calendarProxyReady]);
 
