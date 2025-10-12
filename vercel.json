@@ -1,4 +1,18 @@
 {
+  "functions": {
+    "api/**/*.ts": {
+      "includeFiles": "api/**"
+    },
+    "api/proxy.ts": {
+      "maxDuration": 30
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "/api/proxy"
+    }
+  ],
   "routes": [
     {
       "src": "/assets/(.*)",
