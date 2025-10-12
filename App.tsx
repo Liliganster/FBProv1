@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
+import { AppErrorBoundary } from './components/GranularErrorBoundary';
 import {
   LuLayoutDashboard as LayoutDashboard,
   LuCar as Car,
@@ -248,28 +249,35 @@ const App: React.FC = () => {
     }
     
     const commonProps = { personalization, theme };
+
+    const withErrorBoundary = (component: React.ReactNode, viewName: string) => (
+      <AppErrorBoundary viewName={viewName}>
+        {component}
+      </AppErrorBoundary>
+    );
+
     switch (currentView) {
       case 'dashboard':
-        return <Dashboard setCurrentView={setCurrentView} {...commonProps} />;
+        return withErrorBoundary(<Dashboard setCurrentView={setCurrentView} {...commonProps} />, 'Dashboard');
       case 'trips':
-        return <TripsView {...commonProps} />;
+        return withErrorBoundary(<TripsView {...commonProps} />, 'Trips');
       case 'projects':
-        return <ProjectsView setCurrentView={setCurrentView} {...commonProps} />;
+        return withErrorBoundary(<ProjectsView setCurrentView={setCurrentView} {...commonProps} />, 'Projects');
       case 'reports':
-        return <ReportsView {...commonProps} />;
+        return withErrorBoundary(<ReportsView {...commonProps} />, 'Reports');
       case 'calendar':
-        return <CalendarView setCurrentView={setCurrentView} {...commonProps} />;
+        return withErrorBoundary(<CalendarView setCurrentView={setCurrentView} {...commonProps} />, 'Calendar');
       case 'settings':
-        return <SettingsView 
+        return withErrorBoundary(<SettingsView 
             setCurrentView={setCurrentView} 
             personalization={personalization}
             setPersonalization={setPersonalization}
             theme={theme}
-        />;
+        />, 'Settings');
       case 'advanced':
-        return <AdvancedView {...commonProps} />;
+        return withErrorBoundary(<AdvancedView {...commonProps} />, 'Advanced');
       default:
-        return <Dashboard setCurrentView={setCurrentView} {...commonProps} />;
+        return withErrorBoundary(<Dashboard setCurrentView={setCurrentView} {...commonProps} />, 'Dashboard');
     }
   };
 
