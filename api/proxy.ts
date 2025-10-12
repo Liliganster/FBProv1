@@ -2,14 +2,12 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 
 // Consolidated API proxy handler for all routes
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  const { path } = req.query;
+  const route = req.query.path as string;
   
-  if (!path || !Array.isArray(path)) {
+  if (!route || typeof route !== 'string') {
     return res.status(400).json({ error: 'Invalid path' });
   }
 
-  const route = path.join('/');
-  
   // CORS headers
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -39,8 +37,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
 async function handleAI(route: string, req: VercelRequest, res: VercelResponse) {
   // Import handlers dynamically from lib/api-handlers
-  if (route === 'gemini-proxy' || route === 'gemini') {
-    const { default: handler } = await import('../lib/api-handlers/ai/gemini-proxy');
+  if (route === 'gemini') {
+    const { default: handler } = await import('../lib/api-handlers/ai/gemini');
     return handler(req, res);
   } else if (route.startsWith('openrouter/')) {
     const subRoute = route.replace('openrouter/', '');
@@ -54,12 +52,6 @@ async function handleAI(route: string, req: VercelRequest, res: VercelResponse) 
       const { default: handler } = await import('../lib/api-handlers/ai/openrouter/structured');
       return handler(req, res);
     }
-  } else if (route === 'openrouter-models') {
-    const { default: handler } = await import('../lib/api-handlers/ai/openrouter-models');
-    return handler(req, res);
-  } else if (route === 'openrouter-proxy') {
-    const { default: handler } = await import('../lib/api-handlers/ai/openrouter-proxy');
-    return handler(req, res);
   } else if (route === 'status') {
     const { default: handler } = await import('../lib/api-handlers/ai/status');
     return handler(req, res);
