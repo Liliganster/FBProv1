@@ -432,7 +432,8 @@ const App: React.FC = () => {
       )}
 
       {/* Mobile Header with Hamburger Menu */}
-      <div className="md:hidden fixed top-0 left-0 right-0 z-30 bg-gradient-to-br from-white/5 via-blue-400/8 to-blue-500/5 backdrop-blur-xl backdrop-saturate-150 border-b border-white/10 shadow-glass">
+      {isMobile && (
+      <div className="fixed top-0 left-0 right-0 z-30 bg-gradient-to-br from-white/5 via-blue-400/8 to-blue-500/5 backdrop-blur-xl backdrop-saturate-150 border-b border-white/10 shadow-glass">
         <div className="flex items-center justify-between p-4">
           <h1 className="text-lg font-bold text-white">FahrtenBuch Pro</h1>
           <button
@@ -443,23 +444,25 @@ const App: React.FC = () => {
           </button>
         </div>
       </div>
+      )}
 
       {/* Mobile Menu Overlay */}
-      {mobileMenuOpen && (
+      {isMobile && mobileMenuOpen && (
         <>
           <div
-            className="fixed inset-0 bg-black/50 z-40 md:hidden animate-fadeIn"
+            className="fixed inset-0 bg-black/50 z-40 animate-fadeIn"
             onClick={() => setMobileMenuOpen(false)}
           />
-          <nav className="fixed top-0 left-0 w-4/5 max-w-sm h-screen z-50 md:hidden text-on-surface-dark flex flex-col shadow-glass bg-gradient-to-br from-white/5 via-blue-400/8 to-blue-500/5 backdrop-blur-xl backdrop-saturate-150 border-white/10 animate-slideInLeft overflow-y-auto">
+          <nav className="fixed top-0 left-0 w-4/5 max-w-sm h-screen z-50 text-on-surface-dark flex flex-col shadow-glass bg-gradient-to-br from-white/5 via-blue-400/8 to-blue-500/5 backdrop-blur-xl backdrop-saturate-150 border-white/10 animate-slideInLeft overflow-y-auto">
             {renderSidebarContent()}
           </nav>
         </>
       )}
 
       {/* Desktop Sidebar */}
+      {!isMobile && (
       <nav
-        className={`hidden md:flex relative z-10
+        className={`relative z-10 flex
         ${sidebarCollapsed ? 'w-20' : 'w-72'}
         text-on-surface-dark border-r
         transition-all duration-300 flex-col shadow-glass
@@ -469,7 +472,8 @@ const App: React.FC = () => {
       `}>
         {renderSidebarContent()}
       </nav>
-      <main className="relative z-10 flex-1 overflow-y-auto overflow-x-hidden bg-transparent w-full h-full pt-20 md:pt-0 px-4 pb-4 md:p-8">
+      )}
+      <main className={`relative z-10 flex-1 overflow-y-auto overflow-x-hidden bg-transparent w-full h-full ${isMobile ? 'pt-20 px-4 pb-4' : 'p-8'}`}>
         <div className="w-full h-full">
           <Suspense fallback={<div className="text-sm text-on-surface-dark-secondary">Loading…</div>}>
             {renderView()}
