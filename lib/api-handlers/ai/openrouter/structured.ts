@@ -1,7 +1,8 @@
-import type { CallsheetExtraction } from '../../../../services/extractor-universal/config/schema';
-import { buildDirectPrompt, sanitizeModelText } from '../../../../services/extractor-universal/prompts/callsheet';
-import { isCallsheetExtraction } from '../../../../services/extractor-universal/verify';
+import type { CallsheetExtraction, CrewFirstCallsheet } from '../../../../services/extractor-universal/config/schema';
+import { buildDirectPrompt, buildCrewFirstDirectPrompt, sanitizeModelText } from '../../../../services/extractor-universal/prompts/callsheet';
+import { isCallsheetExtraction, isCrewFirstCallsheet } from '../../../../services/extractor-universal/verify';
 import { withRateLimit } from '../../../rate-limiter';
+import { runAgentWithOpenRouter } from '../../../agent/orchestrator';
 
 const DEFAULT_MODEL = process.env.OPENROUTER_MODEL || 'google/gemini-2.0-flash-001';
 const APP_REFERER = process.env.OPENROUTER_HTTP_REFERER || 'https://fahrtenbuch-pro.app';
@@ -62,6 +63,8 @@ async function structuredHandler(req: any, res: any) {
     return;
   }
 
+  const mode = body?.mode === 'agent' ? 'agent' : 'direct';
+  const useCrewFirst = body?.useCrewFirst === true;
   const apiKeyFromRequest = typeof body?.apiKey === 'string' && body.apiKey.trim() ? body.apiKey.trim() : null;
   const apiKey = apiKeyFromRequest || defaultKey;
   if (!apiKey) {
@@ -72,7 +75,22 @@ async function structuredHandler(req: any, res: any) {
   const model = typeof body?.model === 'string' && body.model.trim() ? body.model.trim() : DEFAULT_MODEL;
 
   try {
-    const prompt = buildDirectPrompt(sanitizeModelText(text));
+    // Si es modo agente con crew-first, usar el orquestador con function calling
+    if (mode === 'agent' && useCrewFirst) {
+      console.log('[OpenRouter] Using agent mode with function calling');
+      const result = await runAgentWithOpenRouter({
+        apiKey,
+        model,
+        text
+      });
+      toJsonResponse(res, 200, result);
+      return;
+    }
+
+    // Modo directo (sin function calling)
+    const prompt = useCrewFirst
+      ? buildCrewFirstDirectPrompt(sanitizeModelText(text))
+      : buildDirectPrompt(sanitizeModelText(text));
     const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -101,11 +119,17 @@ async function structuredHandler(req: any, res: any) {
     const message = payload?.choices?.[0]?.message?.content;
     const parsed = typeof message === 'string' ? JSON.parse(message) : message;
 
-    if (!isCallsheetExtraction(parsed)) {
-      throw new Error('OpenRouter returned an unexpected JSON structure');
+    if (useCrewFirst) {
+      if (!isCrewFirstCallsheet(parsed)) {
+        throw new Error('OpenRouter returned an unexpected CrewFirst JSON structure');
+      }
+      toJsonResponse(res, 200, parsed);
+    } else {
+      if (!isCallsheetExtraction(parsed)) {
+        throw new Error('OpenRouter returned an unexpected JSON structure');
+      }
+      toJsonResponse(res, 200, normalizeExtraction(parsed));
     }
-
-    toJsonResponse(res, 200, normalizeExtraction(parsed));
   } catch (error) {
     console.error('[api/ai/openrouter/structured] Error:', error);
     toJsonResponse(res, 500, { error: 'OpenRouter request failed', details: (error as Error).message });
