@@ -1,4 +1,4 @@
-import { aiRateLimiter } from '../../lib/rate-limiter';
+import { aiRateLimiter } from '../../rate-limiter';
 
 function toJsonResponse(res: any, status: number, payload: unknown) {
   res.status(status).setHeader('Content-Type', 'application/json').send(JSON.stringify(payload));

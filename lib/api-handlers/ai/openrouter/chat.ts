@@ -1,4 +1,4 @@
-import { withRateLimit } from '../../../lib/rate-limiter';
+import { withRateLimit } from '../../../rate-limiter';
 
 const DEFAULT_MODEL = process.env.OPENROUTER_MODEL || 'google/gemini-2.0-flash-001';
 const APP_REFERER = process.env.OPENROUTER_HTTP_REFERER || 'https://fahrtenbuch-pro.app';

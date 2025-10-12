@@ -1,10 +1,10 @@
 import { GoogleGenAI } from '@google/genai';
-import type { CallsheetExtraction } from '../../services/extractor-universal/config/schema';
-import { buildDirectPrompt as buildCallsheetPrompt, sanitizeModelText } from '../../services/extractor-universal/prompts/callsheet';
-import { isCallsheetExtraction } from '../../services/extractor-universal/verify';
-import { SYSTEM_INSTRUCTION_AGENT, buildDirectPrompt as buildAgentPrompt } from '../../lib/gemini/prompt';
-import { isCrewFirstCallsheet } from '../../lib/guards';
-import { withRateLimit } from '../../lib/rate-limiter';
+import type { CallsheetExtraction } from '../../../services/extractor-universal/config/schema';
+import { buildDirectPrompt as buildCallsheetPrompt, sanitizeModelText } from '../../../services/extractor-universal/prompts/callsheet';
+import { isCallsheetExtraction } from '../../../services/extractor-universal/verify';
+import { SYSTEM_INSTRUCTION_AGENT, buildDirectPrompt as buildAgentPrompt } from '../../gemini/prompt';
+import { isCrewFirstCallsheet } from '../../guards';
+import { withRateLimit } from '../../rate-limiter';
 
 type Mode = 'direct' | 'agent';
 

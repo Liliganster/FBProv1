@@ -22,6 +22,7 @@ const ReportsView = lazy(() => import('./components/ReportsView'));
 const CalendarView = lazy(() => import('./components/CalendarView'));
 const AdvancedView = lazy(() => import('./components/AdvancedView'));
 import useTranslation from './hooks/useTranslation';
+import { useMobile } from './hooks/useMediaQuery';
 import { View, PersonalizationSettings } from './types';
 
 // Extendemos View para incluir la ruta de autenticación
@@ -100,6 +101,9 @@ const App: React.FC = () => {
   });
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
+  
+  // Hook para detectar si es dispositivo móvil
+  const isMobile = useMobile();
 
   // Handle body overflow when mobile menu is open
   useEffect(() => {

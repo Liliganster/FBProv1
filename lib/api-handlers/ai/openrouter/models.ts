@@ -1,4 +1,4 @@
-import { withRateLimit } from '../../../lib/rate-limiter';
+import { withRateLimit } from '../../../rate-limiter';
 
 const APP_REFERER = process.env.OPENROUTER_HTTP_REFERER || 'https://fahrtenbuch-pro.app';
 const APP_TITLE = process.env.OPENROUTER_TITLE || 'Fahrtenbuch Pro';
