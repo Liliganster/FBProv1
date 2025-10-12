@@ -38,30 +38,30 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 }
 
 async function handleAI(route: string, req: VercelRequest, res: VercelResponse) {
-  // Import handlers dynamically
+  // Import handlers dynamically from lib/api-handlers
   if (route === 'gemini-proxy' || route === 'gemini') {
-    const { default: handler } = await import('./ai/gemini-proxy');
+    const { default: handler } = await import('../lib/api-handlers/ai/gemini-proxy');
     return handler(req, res);
   } else if (route.startsWith('openrouter/')) {
     const subRoute = route.replace('openrouter/', '');
     if (subRoute === 'chat') {
-      const { default: handler } = await import('./ai/openrouter/chat');
+      const { default: handler } = await import('../lib/api-handlers/ai/openrouter/chat');
       return handler(req, res);
     } else if (subRoute === 'models') {
-      const { default: handler } = await import('./ai/openrouter/models');
+      const { default: handler } = await import('../lib/api-handlers/ai/openrouter/models');
       return handler(req, res);
     } else if (subRoute === 'structured') {
-      const { default: handler } = await import('./ai/openrouter/structured');
+      const { default: handler } = await import('../lib/api-handlers/ai/openrouter/structured');
       return handler(req, res);
     }
   } else if (route === 'openrouter-models') {
-    const { default: handler } = await import('./ai/openrouter-models');
+    const { default: handler } = await import('../lib/api-handlers/ai/openrouter-models');
     return handler(req, res);
   } else if (route === 'openrouter-proxy') {
-    const { default: handler } = await import('./ai/openrouter-proxy');
+    const { default: handler } = await import('../lib/api-handlers/ai/openrouter-proxy');
     return handler(req, res);
   } else if (route === 'status') {
-    const { default: handler } = await import('./ai/status');
+    const { default: handler } = await import('../lib/api-handlers/ai/status');
     return handler(req, res);
   }
   
@@ -72,22 +72,22 @@ async function handleGoogle(route: string, req: VercelRequest, res: VercelRespon
   if (route.startsWith('calendar/')) {
     const subRoute = route.replace('calendar/', '');
     if (subRoute === 'calendars') {
-      const { default: handler } = await import('./google/calendar/calendars');
+      const { default: handler } = await import('../lib/api-handlers/google/calendar/calendars');
       return handler(req, res);
     } else if (subRoute === 'events') {
-      const { default: handler } = await import('./google/calendar/events');
+      const { default: handler } = await import('../lib/api-handlers/google/calendar/events');
       return handler(req, res);
     }
   } else if (route.startsWith('maps/')) {
     const subRoute = route.replace('maps/', '');
     if (subRoute === 'directions') {
-      const { default: handler } = await import('./google/maps/directions');
+      const { default: handler } = await import('../lib/api-handlers/google/maps/directions');
       return handler(req, res);
     } else if (subRoute === 'script') {
-      const { default: handler } = await import('./google/maps/script');
+      const { default: handler } = await import('../lib/api-handlers/google/maps/script');
       return handler(req, res);
     } else if (subRoute === 'staticmap') {
-      const { default: handler } = await import('./google/maps/staticmap');
+      const { default: handler } = await import('../lib/api-handlers/google/maps/staticmap');
       return handler(req, res);
     }
   }
@@ -97,7 +97,7 @@ async function handleGoogle(route: string, req: VercelRequest, res: VercelRespon
 
 async function handleAdmin(route: string, req: VercelRequest, res: VercelResponse) {
   if (route === 'migrate-api-keys') {
-    const { default: handler } = await import('./admin/migrate-api-keys');
+    const { default: handler } = await import('../lib/api-handlers/admin/migrate-api-keys');
     return handler(req, res);
   }
   
