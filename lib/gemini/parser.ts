@@ -1,5 +1,5 @@
 import { isCrewFirstCallsheet } from '../guards';
-import type { CallsheetExtraction } from '../../services/extractor-universal/config/schema';
+import type { CallsheetExtraction, CrewFirstCallsheet } from '../../services/extractor-universal/config/schema';
 import type { ProviderCredentials } from '../../services/extractor-universal/index';
 import { parseWithGemini, parseWithOpenRouter } from '../../services/extractor-universal/providers';
 
@@ -8,22 +8,29 @@ type ToolMap = Record<string, (args: any) => Promise<any>>;
 export async function directParse(
   text: string,
   provider: 'gemini' | 'openrouter' = 'gemini',
-  creds?: ProviderCredentials
-): Promise<CallsheetExtraction> {
+  creds?: ProviderCredentials,
+  useCrewFirst = false
+): Promise<CallsheetExtraction | CrewFirstCallsheet> {
   if (provider === 'openrouter') {
-    return await parseWithOpenRouter(text, creds?.openRouterApiKey || undefined, creds?.openRouterModel || undefined);
+    return await parseWithOpenRouter(
+      text,
+      creds?.openRouterApiKey || undefined,
+      creds?.openRouterModel || undefined,
+      useCrewFirst
+    );
   }
-  return await parseWithGemini(text);
+  return await parseWithGemini(text, useCrewFirst);
 }
 
 export async function agenticParse(
   text: string,
   tools: ToolMap,
   provider: 'gemini' | 'openrouter' = 'gemini',
-  creds?: ProviderCredentials
-): Promise<CallsheetExtraction> {
+  creds?: ProviderCredentials,
+  useCrewFirst = false
+): Promise<CallsheetExtraction | CrewFirstCallsheet> {
   if (provider === 'openrouter') {
-    return await directParse(text, 'openrouter', creds);
+    return await directParse(text, 'openrouter', creds, useCrewFirst);
   }
 
   // Tool map retained for backwards compatibility; tooling executed server-side.
@@ -32,7 +39,7 @@ export async function agenticParse(
   const res = await fetch('/api/ai/gemini', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ mode: 'agent', text }),
+    body: JSON.stringify({ mode: 'agent', text, useCrewFirst }),
   });
 
   if (!res.ok) {
@@ -44,5 +51,5 @@ export async function agenticParse(
     throw new Error('Gemini agent request returned an unexpected payload');
   }
 
-  return payload as CallsheetExtraction;
+  return payload;
 }

@@ -1,9 +1,16 @@
 import { GoogleGenAI } from '@google/genai';
-import type { CallsheetExtraction } from '../../../services/extractor-universal/config/schema';
-import { buildDirectPrompt as buildCallsheetPrompt, sanitizeModelText } from '../../../services/extractor-universal/prompts/callsheet';
-import { isCallsheetExtraction } from '../../../services/extractor-universal/verify';
-import { SYSTEM_INSTRUCTION_AGENT, buildDirectPrompt as buildAgentPrompt } from '../../gemini/prompt';
-import { isCrewFirstCallsheet } from '../../guards';
+import type { CallsheetExtraction, CrewFirstCallsheet } from '../../../services/extractor-universal/config/schema';
+import {
+  buildDirectPrompt as buildCallsheetPrompt,
+  buildCrewFirstDirectPrompt,
+  sanitizeModelText
+} from '../../../services/extractor-universal/prompts/callsheet';
+import { isCallsheetExtraction, isCrewFirstCallsheet as isCrewFirstCallsheetVerify } from '../../../services/extractor-universal/verify';
+import {
+  SYSTEM_INSTRUCTION_AGENT,
+  SYSTEM_INSTRUCTION_CREW_FIRST_AGENT,
+  buildDirectPrompt as buildAgentPrompt
+} from '../../gemini/prompt';
 import { withRateLimit } from '../../rate-limiter';
 
 type Mode = 'direct' | 'agent';
@@ -43,8 +50,11 @@ function normalizeExtraction(raw: CallsheetExtraction): CallsheetExtraction {
   };
 }
 
-async function runDirect(text: string, ai: GoogleGenAI): Promise<CallsheetExtraction> {
-  const prompt = buildCallsheetPrompt(sanitizeModelText(text));
+async function runDirect(text: string, ai: GoogleGenAI, useCrewFirst = false): Promise<CallsheetExtraction | CrewFirstCallsheet> {
+  const prompt = useCrewFirst
+    ? buildCrewFirstDirectPrompt(sanitizeModelText(text))
+    : buildCallsheetPrompt(sanitizeModelText(text));
+
   const result: any = await ai.models.generateContent({
     model: GEMINI_MODEL,
     contents: [{ role: 'user', parts: [{ text: prompt }] }],
@@ -60,16 +70,23 @@ async function runDirect(text: string, ai: GoogleGenAI): Promise<CallsheetExtrac
   }
 
   const parsed = JSON.parse(output);
-  if (!isCallsheetExtraction(parsed)) {
-    throw new Error('Invalid JSON schema returned by Gemini');
-  }
 
-  return normalizeExtraction(parsed);
+  if (useCrewFirst) {
+    if (!isCrewFirstCallsheetVerify(parsed)) {
+      throw new Error('Invalid CrewFirst JSON schema returned by Gemini');
+    }
+    return parsed;
+  } else {
+    if (!isCallsheetExtraction(parsed)) {
+      throw new Error('Invalid JSON schema returned by Gemini');
+    }
+    return normalizeExtraction(parsed);
+  }
 }
 
 type ToolFn = (args: Record<string, unknown>) => Promise<Record<string, unknown>>;
 
-async function runAgent(text: string, ai: GoogleGenAI): Promise<CallsheetExtraction> {
+async function runAgent(text: string, ai: GoogleGenAI, useCrewFirst = false): Promise<CallsheetExtraction | CrewFirstCallsheet> {
   const tools: Record<string, ToolFn> = {
     geocode_address: async ({ address }) => ({
       lat: 40.4168,
@@ -82,8 +99,10 @@ async function runAgent(text: string, ai: GoogleGenAI): Promise<CallsheetExtract
     }),
   };
 
+  const systemInstruction = useCrewFirst ? SYSTEM_INSTRUCTION_CREW_FIRST_AGENT : SYSTEM_INSTRUCTION_AGENT;
+
   const messages: any[] = [
-    { role: 'system', content: SYSTEM_INSTRUCTION_AGENT },
+    { role: 'system', content: systemInstruction },
     { role: 'user', content: buildAgentPrompt(text) },
   ];
 
@@ -121,17 +140,23 @@ async function runAgent(text: string, ai: GoogleGenAI): Promise<CallsheetExtract
 
     try {
       const data = JSON.parse(output);
-      if (!isCrewFirstCallsheet(data)) {
-        continue;
+
+      if (useCrewFirst) {
+        if (isCrewFirstCallsheetVerify(data)) {
+          return data;
+        }
+      } else {
+        if (isCallsheetExtraction(data)) {
+          return normalizeExtraction(data);
+        }
       }
-      return normalizeExtraction(data as CallsheetExtraction);
     } catch {
       // ignore parse errors and continue loop
     }
   }
 
   // Fallback to direct mode if agent loop fails
-  return await runDirect(text, ai);
+  return await runDirect(text, ai, useCrewFirst);
 }
 
 async function geminiHandler(req: any, res: any) {
@@ -156,6 +181,7 @@ async function geminiHandler(req: any, res: any) {
 
   const mode: Mode = body?.mode === 'agent' ? 'agent' : 'direct';
   const text = body?.text;
+  const useCrewFirst = body?.useCrewFirst === true; // Enable crew-first mode if explicitly set
 
   if (typeof text !== 'string' || !text.trim()) {
     toJsonResponse(res, 400, { error: 'Request body must include a non-empty text field' });
@@ -164,7 +190,9 @@ async function geminiHandler(req: any, res: any) {
 
   try {
     const ai = new GoogleGenAI({ apiKey });
-    const extraction = mode === 'agent' ? await runAgent(text, ai) : await runDirect(text, ai);
+    const extraction = mode === 'agent'
+      ? await runAgent(text, ai, useCrewFirst)
+      : await runDirect(text, ai, useCrewFirst);
     toJsonResponse(res, 200, extraction);
   } catch (error) {
     console.error('[api/ai/gemini] Error:', error);
