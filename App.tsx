@@ -251,7 +251,7 @@ const App: React.FC = () => {
     const commonProps = { personalization, theme };
 
     const withErrorBoundary = (component: React.ReactNode, viewName: string) => (
-      <AppErrorBoundary viewName={viewName}>
+      <AppErrorBoundary onError={(error) => { console.error(`[ErrorBoundary:${viewName}]`, error); }}>
         {component}
       </AppErrorBoundary>
     );
