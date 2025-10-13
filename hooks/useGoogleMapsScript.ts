@@ -8,7 +8,7 @@ declare global {
 }
 
 type GoogleMapsOptions = {
-  libraries?: Array<'marker' | 'geometry'>;
+  libraries?: Array<'marker' | 'geometry' | 'places'>;
   language?: string;
   region?: string;
   version?: string;
@@ -16,7 +16,7 @@ type GoogleMapsOptions = {
 };
 
 export function useGoogleMapsScript({
-  libraries = ['marker'],
+  libraries = ['marker', 'places'],
   language = 'es',
   region = 'AT',
   version = 'weekly',

@@ -117,9 +117,15 @@ const TripEditorModal: React.FC<TripEditorModalProps> = ({ trip, projects, trips
   }, [formData.projectId, projects, userProfile, isRateManuallySet, trip, formData.ratePerKm]);
   
   useEffect(() => {
-    if (isMapsScriptLoaded && window.google) {
-      autocompleteService.current = new window.google.maps.places.AutocompleteService();
-      sessionToken.current = new window.google.maps.places.AutocompleteSessionToken();
+    if (isMapsScriptLoaded && window.google && window.google.maps && window.google.maps.places) {
+      try {
+        autocompleteService.current = new window.google.maps.places.AutocompleteService();
+        sessionToken.current = new window.google.maps.places.AutocompleteSessionToken();
+      } catch (error) {
+        console.warn('AutocompleteService not available:', error);
+        autocompleteService.current = null;
+        sessionToken.current = null;
+      }
     }
   }, [isMapsScriptLoaded]);
 
