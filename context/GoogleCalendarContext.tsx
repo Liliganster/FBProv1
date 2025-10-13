@@ -30,10 +30,13 @@ export const GoogleCalendarContext = createContext<GoogleApiContextType | undefi
 
 const SCOPES = 'https://www.googleapis.com/auth/calendar.events https://www.googleapis.com/auth/calendar.readonly';
 const DISCOVERY_DOCS = [
-    'https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest'
+    'https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest',
+    'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest',
 ];
 
 const GOOGLE_CALENDAR_CLIENT_ID = import.meta.env.VITE_GOOGLE_CALENDAR_CLIENT_ID;
+const GOOGLE_PICKER_DEVELOPER_KEY =
+  import.meta.env.VITE_GOOGLE_PICKER_API_KEY || import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '';
 
 export const GoogleCalendarProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const { userProfile } = useUserProfile();
@@ -179,7 +182,14 @@ export const GoogleCalendarProvider: React.FC<{ children: ReactNode }> = ({ chil
         await window.gapi.client.init({
           discoveryDocs: DISCOVERY_DOCS,
         });
-        
+
+        if (cancelled) return;
+
+        await Promise.all([
+          window.gapi.client.load('calendar', 'v3'),
+          window.gapi.client.load('drive', 'v3'),
+        ]);
+
         if (cancelled) return;
         setGapiClient(window.gapi.client);
 
@@ -327,13 +337,21 @@ export const GoogleCalendarProvider: React.FC<{ children: ReactNode }> = ({ chil
     }
   }, [isSignedIn, listCalendars]);
 
-  const signIn = () => {
-    // Server-side only mode - no client-side OAuth
-    if (import.meta.env.DEV) {
-      console.log('[Google Calendar] Client-side sign-in disabled (server-side only mode)');
+  const signIn = useCallback(() => {
+    if (!tokenClient) {
+      showToast('Google Calendar is still initializing. Please try again in a moment.', 'warning');
+      return;
     }
-    showToast('Google Calendar requiere configuración OAuth adicional', 'info');
-  };
+
+    try {
+      tokenClient.requestAccessToken({
+        prompt: manualSignOut.current ? 'consent' : undefined,
+      });
+    } catch (error) {
+      console.error('Error launching Google sign-in:', error);
+      showToast('Failed to start Google sign-in. Please try again.', 'error');
+    }
+  }, [tokenClient, showToast]);
   
   const fetchEvents = async (calendarIds: string[], timeMin: string, timeMax: string): Promise<any[]> => {
     if (!gapiClient || !isSignedIn || calendarIds.length === 0) return [];
@@ -373,13 +391,47 @@ export const GoogleCalendarProvider: React.FC<{ children: ReactNode }> = ({ chil
     }
   };
   
-  const showPicker = (_callback: (data: any) => void) => {
+  const showPicker = useCallback((callback: (data: any) => void) => {
     if (!gapiClient || !isSignedIn) {
       showToast('Google Picker requires a valid Google session.', 'error');
       return;
     }
-    showToast('Google Drive Picker is disabled because the API key is now stored exclusively on the server. Please download files manually.', 'warning');
-  };
+
+    if (!window.google?.picker) {
+      showToast('Google Picker script is still loading. Please try again shortly.', 'warning');
+      return;
+    }
+
+    if (!GOOGLE_PICKER_DEVELOPER_KEY) {
+      showToast('Configure VITE_GOOGLE_PICKER_API_KEY to enable Google Drive imports.', 'warning');
+      return;
+    }
+
+    const token = gapiClient.getToken()?.access_token;
+    if (!token) {
+      showToast('Your Google session has expired. Please sign in again.', 'error');
+      return;
+    }
+
+    const appId = GOOGLE_CALENDAR_CLIENT_ID?.split('-')[0];
+
+    const docsView = new window.google.picker.DocsView(window.google.picker.ViewId.DOCS)
+      .setIncludeFolders(true)
+      .setSelectFolderEnabled(true);
+
+    const pickerBuilder = new window.google.picker.PickerBuilder()
+      .setOAuthToken(token)
+      .setDeveloperKey(GOOGLE_PICKER_DEVELOPER_KEY)
+      .setCallback(callback)
+      .addView(docsView)
+      .enableFeature(window.google.picker.Feature.MULTISELECT_ENABLED);
+
+    if (appId) {
+      pickerBuilder.setAppId(appId);
+    }
+
+    pickerBuilder.build().setVisible(true);
+  }, [gapiClient, isSignedIn, showToast, GOOGLE_PICKER_DEVELOPER_KEY, GOOGLE_CALENDAR_CLIENT_ID]);
   
   const createCalendarEvent = useCallback(async (trip: Trip, projectName: string) => {
     if (!gapiClient || !isSignedIn) {
