@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Google Maps - Fahrtenbuch Pro</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        // Simulación del hook useGoogleMapsScript
+        function useGoogleMapsScript(options = {}) {
+            const [isLoaded, setIsLoaded] = useState(false);
+            const [error, setError] = useState(null);
+            const timeoutRef = useRef(null);
+
+            const {
+                libraries = ['places', 'marker', 'routes'],
+                language = 'es',
+                region = 'ES',
+                version = 'weekly',
+                timeoutMs = 15000,
+            } = options;
+
+            useEffect(() => {
+                if (typeof window === 'undefined' || typeof document === 'undefined') return;
+
+                if (window.google && window.google.maps) {
+                    setIsLoaded(true);
+                    return;
+                }
+
+                if (!window.__gmapsLoaderPromise) {
+                    window.__gmapsLoaderPromise = new Promise((resolve, reject) => {
+                        const existing = document.getElementById('google-maps-script');
+                        if (existing) {
+                            existing.addEventListener('load', () =>
+                                window.google ? resolve(window.google) : reject(new Error('Google Maps no disponible'))
+                            );
+                            existing.addEventListener('error', () => reject(new Error('Error cargando Google Maps')));
+                            return;
+                        }
+
+                        const script = document.createElement('script');
+                        script.id = 'google-maps-script';
+                        
+                        const params = new URLSearchParams();
+                        if (libraries.length) params.set('libraries', libraries.join(','));
+                        if (language) params.set('language', language);
+                        if (region) params.set('region', region);
+                        if (version) params.set('v', version);
+                        
+                        // Usar directamente la API key
+                        const apiKey = 'AIzaSyDqtRSDKKXUGg6ktVBYwEzHYzHWednAIds';
+                        params.set('key', apiKey);
+                        
+                        script.src = `https://maps.googleapis.com/maps/api/js?${params.toString()}`;
+                        script.async = true;
+                        script.defer = true;
+
+                        script.onload = () =>
+                            window.google ? resolve(window.google) : reject(new Error('Google Maps no disponible'));
+                        script.onerror = () => reject(new Error('Error cargando Google Maps'));
+                        document.head.appendChild(script);
+                    });
+                }
+
+                if (timeoutMs > 0) {
+                    timeoutRef.current = setTimeout(() => {
+                        setError(new Error('Timeout cargando Google Maps'));
+                    }, timeoutMs);
+                }
+
+                window.__gmapsLoaderPromise
+                    .then(() => {
+                        if (timeoutRef.current) {
+                            clearTimeout(timeoutRef.current);
+                            timeoutRef.current = null;
+                        }
+                        setIsLoaded(true);
+                    })
+                    .catch((err) => {
+                        if (timeoutRef.current) {
+                            clearTimeout(timeoutRef.current);
+                            timeoutRef.current = null;
+                        }
+                        setError(err);
+                    });
+
+                return () => {
+                    if (timeoutRef.current) {
+                        clearTimeout(timeoutRef.current);
+                        timeoutRef.current = null;
+                    }
+                };
+            }, [libraries.join(','), language, region, version, timeoutMs]);
+
+            return { isLoaded, error, google: typeof window !== 'undefined' ? window.google : undefined };
+        }
+
+        // Componente de prueba
+        function GoogleMapsTest() {
+            const { isLoaded, error, google } = useGoogleMapsScript({
+                libraries: ['places', 'marker'],
+                language: 'es',
+                region: 'ES'
+            });
+
+            const [results, setResults] = useState('');
+            const mapRef = useRef(null);
+
+            const testGeocode = () => {
+                if (!google || !isLoaded) {
+                    setResults('❌ Google Maps no está cargado aún');
+                    return;
+                }
+
+                setResults('🔍 Probando geocoding...');
+                const geocoder = new google.maps.Geocoder();
+                
+                geocoder.geocode({ address: 'Calle Mayor, Madrid, España' }, (results, status) => {
+                    if (status === 'OK') {
+                        setResults(`✅ Geocoding exitoso:\\n${JSON.stringify({
+                            formatted_address: results[0].formatted_address,
+                            location: results[0].geometry.location.toJSON(),
+                            location_type: results[0].geometry.location_type
+                        }, null, 2)}`);
+                    } else {
+                        setResults(`❌ Error en geocoding: ${status}`);
+                    }
+                });
+            };
+
+            const createMap = () => {
+                if (!google || !isLoaded || !mapRef.current) {
+                    setResults('❌ Google Maps no está cargado o elemento no disponible');
+                    return;
+                }
+
+                try {
+                    const map = new google.maps.Map(mapRef.current, {
+                        center: { lat: 40.4168, lng: -3.7038 },
+                        zoom: 10
+                    });
+
+                    new google.maps.Marker({
+                        position: { lat: 40.4168, lng: -3.7038 },
+                        map: map,
+                        title: 'Madrid, España'
+                    });
+
+                    setResults('✅ Mapa creado exitosamente en Madrid');
+                } catch (error) {
+                    setResults(`❌ Error creando mapa: ${error.message}`);
+                }
+            };
+
+            const testDirections = () => {
+                if (!google || !isLoaded) {
+                    setResults('❌ Google Maps no está cargado aún');
+                    return;
+                }
+
+                setResults('🧭 Probando directions...');
+                const directionsService = new google.maps.DirectionsService();
+                
+                const request = {
+                    origin: 'Madrid, España',
+                    destination: 'Barcelona, España',
+                    travelMode: google.maps.TravelMode.DRIVING
+                };
+
+                directionsService.route(request, (result, status) => {
+                    if (status === 'OK') {
+                        setResults(`✅ Directions exitoso:\\n${JSON.stringify({
+                            distance: result.routes[0].legs[0].distance.text,
+                            duration: result.routes[0].legs[0].duration.text,
+                            start_address: result.routes[0].legs[0].start_address,
+                            end_address: result.routes[0].legs[0].end_address
+                        }, null, 2)}`);
+                    } else {
+                        setResults(`❌ Error en directions: ${status}`);
+                    }
+                });
+            };
+
+            return (
+                <div className="p-6 max-w-4xl mx-auto">
+                    <h1 className="text-3xl font-bold mb-6">🗺️ Prueba Google Maps API - Fahrtenbuch Pro</h1>
+                    
+                    {/* Estado */}
+                    <div className="mb-6 p-4 rounded-lg border">
+                        <h2 className="text-xl font-semibold mb-2">Estado</h2>
+                        {!isLoaded && !error && (
+                            <div className="text-blue-600">⏳ Cargando Google Maps API...</div>
+                        )}
+                        {error && (
+                            <div className="text-red-600">❌ Error: {error.message}</div>
+                        )}
+                        {isLoaded && !error && (
+                            <div className="text-green-600">✅ Google Maps API cargada correctamente</div>
+                        )}
+                    </div>
+
+                    {/* Información */}
+                    <div className="mb-6 p-4 bg-gray-100 rounded-lg">
+                        <h3 className="font-semibold mb-2">Debug Info:</h3>
+                        <ul className="space-y-1 text-sm">
+                            <li><strong>isLoaded:</strong> {isLoaded ? 'true' : 'false'}</li>
+                            <li><strong>error:</strong> {error ? error.message : 'null'}</li>
+                            <li><strong>google disponible:</strong> {google ? 'true' : 'false'}</li>
+                            <li><strong>window.google:</strong> {window.google ? 'true' : 'false'}</li>
+                        </ul>
+                    </div>
+
+                    {/* Botones */}
+                    <div className="mb-6 space-x-2">
+                        <button 
+                            onClick={testGeocode}
+                            disabled={!isLoaded || !!error}
+                            className="px-4 py-2 bg-blue-500 text-white rounded disabled:bg-gray-400"
+                        >
+                            Test Geocoding
+                        </button>
+                        <button 
+                            onClick={createMap}
+                            disabled={!isLoaded || !!error}
+                            className="px-4 py-2 bg-green-500 text-white rounded disabled:bg-gray-400"
+                        >
+                            Crear Mapa
+                        </button>
+                        <button 
+                            onClick={testDirections}
+                            disabled={!isLoaded || !!error}
+                            className="px-4 py-2 bg-purple-500 text-white rounded disabled:bg-gray-400"
+                        >
+                            Test Directions
+                        </button>
+                    </div>
+
+                    {/* Mapa */}
+                    <div className="mb-6">
+                        <h3 className="text-lg font-semibold mb-2">Mapa:</h3>
+                        <div 
+                            ref={mapRef}
+                            className="w-full h-96 bg-gray-200 border rounded-lg"
+                        ></div>
+                    </div>
+
+                    {/* Resultados */}
+                    {results && (
+                        <div className="p-4 bg-gray-50 rounded-lg">
+                            <h3 className="font-semibold mb-2">Resultados:</h3>
+                            <pre className="text-sm whitespace-pre-wrap">{results}</pre>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        // Renderizar
+        ReactDOM.render(<GoogleMapsTest />, document.getElementById('root'));
+    </script>
+</body>
+</html>

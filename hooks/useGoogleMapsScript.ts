@@ -32,6 +32,15 @@ export function useGoogleMapsScript({
     if (language) params.set('language', language);
     if (region) params.set('region', region);
     if (version) params.set('v', version);
+    
+    // Siempre usar directamente Google Maps API si tenemos la key
+    const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+    if (apiKey) {
+      params.set('key', apiKey);
+      return `https://maps.googleapis.com/maps/api/js?${params.toString()}`;
+    }
+    
+    // Fallback al proxy (para producción sin VITE_GOOGLE_MAPS_API_KEY)
     const query = params.toString();
     return `/api/google/maps/script${query ? `?${query}` : ''}`;
   }, [libraries, language, region, version]);
