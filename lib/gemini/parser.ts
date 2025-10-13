@@ -36,7 +36,7 @@ export async function agenticParse(
   // Tool map retained for backwards compatibility; tooling executed server-side.
   void tools;
 
-  const res = await fetch('/api/proxy?path=ai/gemini', {
+  const res = await fetch('/api/ai/gemini', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ mode: 'agent', text, useCrewFirst }),

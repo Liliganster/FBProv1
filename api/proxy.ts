@@ -40,6 +40,9 @@ async function handleAI(route: string, req: VercelRequest, res: VercelResponse) 
   if (route === 'gemini') {
     const { default: handler } = await import('../lib/api-handlers/ai/gemini');
     return handler(req, res);
+  } else if (route === 'test-geocode') {
+    const { default: handler } = await import('../lib/api-handlers/ai/test-geocode');
+    return handler(req, res);
   } else if (route.startsWith('openrouter/')) {
     const subRoute = route.replace('openrouter/', '');
     if (subRoute === 'chat') {
@@ -56,7 +59,7 @@ async function handleAI(route: string, req: VercelRequest, res: VercelResponse) 
     const { default: handler } = await import('../lib/api-handlers/ai/status');
     return handler(req, res);
   }
-  
+
   return res.status(404).json({ error: 'AI route not found' });
 }
 
