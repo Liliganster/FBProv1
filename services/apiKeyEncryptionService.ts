@@ -62,7 +62,6 @@ class SimpleApiKeyEncryption {
         iv: btoa(String.fromCharCode(...iv))
       };
 
-      console.log('🔐 API Key encrypted', { userId: userId || 'unknown' });
       return JSON.stringify(result);
     } catch (error) {
       console.error('❌ Encryption failed:', error);
@@ -93,7 +92,6 @@ class SimpleApiKeyEncryption {
       );
 
       const result = new TextDecoder().decode(decrypted);
-      console.log('🔓 API Key decrypted', { userId: userId || 'unknown' });
       return result;
     } catch (error) {
       console.error('❌ Decryption failed:', error);
@@ -111,7 +109,6 @@ class SimpleApiKeyEncryption {
       const decrypted = await this.decryptApiKey(encrypted);
       
       const success = decrypted === testKey;
-      console.log(success ? '✅ Encryption test passed' : '❌ Encryption test failed');
       return success;
     } catch (error) {
       console.error('❌ Encryption test error:', error);

@@ -51,8 +51,6 @@ export async function executeGeocodeAddress(args: GeocodeAddressArgs) {
     };
   }
 
-  console.log(`[geocode_address] ✓ API Key found: ${apiKey.substring(0, 15)}...`);
-
   try {
     const url = new URL('https://maps.googleapis.com/maps/api/geocode/json');
     url.searchParams.append('address', address);

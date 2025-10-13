@@ -528,8 +528,6 @@ export class TripLedgerService {
       // Clear localStorage after successful migration
       localStorage.removeItem(localStorageKey);
       
-      console.log(`Successfully migrated ${localEntries.length} entries from localStorage to Supabase`);
-      
       // Clear cache to force refresh from Supabase
       this.clearCache();
       

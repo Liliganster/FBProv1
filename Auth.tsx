@@ -9,7 +9,7 @@ import { ProjectsProvider } from './context/ProjectsContext';
 import { RouteTemplatesProvider } from './context/SupabaseRouteTemplatesContext';
 import { ExpensesProvider } from './context/ExpensesContext';
 import { LoaderIcon } from './components/Icons';
-import LoadingDiagnostics from './components/LoadingDiagnostics';
+
 
 const Auth: React.FC = () => {
   const { user, isLoading, configError } = useAuth();
@@ -42,10 +42,13 @@ const Auth: React.FC = () => {
   // mostramos un loader. Esto no afecta al flujo de login sin usuario.
   if (isLoading) {
     return (
-      <LoadingDiagnostics 
-        stage="Verificando autenticacion" 
-        details="Conectando con Supabase y validando sesion de usuario"
-      />
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-900 text-white p-6">
+        <div className="text-center space-y-4">
+          <LoaderIcon className="mx-auto h-12 w-12 animate-spin text-brand-primary" />
+          <h2 className="text-xl font-semibold">Verificando autenticación</h2>
+          <p className="text-sm text-gray-400">Conectando con Supabase y validando sesión de usuario</p>
+        </div>
+      </div>
     );
   }
 
