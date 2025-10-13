@@ -37,7 +37,7 @@ export async function parseWithGemini(
   text: string,
   useCrewFirst = false
 ): Promise<CallsheetExtraction | CrewFirstCallsheet> {
-  const res = await fetchWithRateLimit('/api/ai/gemini', {
+  const res = await fetchWithRateLimit('/api/proxy?path=ai/gemini', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ mode: 'direct', text, useCrewFirst }),
@@ -51,7 +51,7 @@ export async function parseWithOpenRouter(
   modelOverride?: string | null,
   useCrewFirst = false
 ): Promise<CallsheetExtraction | CrewFirstCallsheet> {
-  const res = await fetchWithRateLimit('/api/ai/openrouter/structured', {
+  const res = await fetchWithRateLimit('/api/proxy?path=ai/openrouter/structured', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
