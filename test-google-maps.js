@@ -1,7 +1,7 @@
 // Script para probar Google Maps API directamente
 import fetch from 'node-fetch';
 import dotenv from 'dotenv';
-dotenv.config({ path: '.env.local' });
+dotenv.config(); // Carga .env por defecto
 
 async function testGoogleMapsAPI() {
   const apiKey = process.env.GOOGLE_MAPS_API_KEY;
@@ -9,7 +9,7 @@ async function testGoogleMapsAPI() {
   console.log('🔍 Probando Google Maps API...\n');
   
   if (!apiKey) {
-    console.log('❌ No se encontró GOOGLE_MAPS_API_KEY en .env.local');
+    console.log('❌ No se encontró GOOGLE_MAPS_API_KEY en tu archivo .env');
     return;
   }
   
