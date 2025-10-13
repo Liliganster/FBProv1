@@ -29,13 +29,13 @@
     "@types/p-queue": "^3.1.0",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
-    "@vercel/node": "^5.3.26",
+    "@vercel/node": "^2.3.0",
     "@vitejs/plugin-react": "^4.3.1",
     "autoprefixer": "^10.4.21",
     "cors": "^2.8.5",
     "express": "^5.1.0",
     "terser": "^5.44.0",
     "typescript": "^5.5.3",
-    "vite": "^5.3.3"
+    "vite": "^7.1.9"
   }
 }
