@@ -123,7 +123,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ setCurrentView, personaliza
         <SettingsIcon className="w-16 h-16 mb-4 text-gray-600" />
         <h2 className="text-2xl font-bold mb-2">Google Calendar no disponible</h2>
         <p className="text-lg mb-4 max-w-md text-gray-400">
-          La integración requiere un OAuth Client ID en el cliente y un proxy seguro en el backend con la variable <code className="bg-gray-800 px-2 py-1 rounded">GOOGLE_CALENDAR_API_KEY</code>.
+          La integración requiere un OAuth Client ID en el cliente y que el proxy seguro del backend responda correctamente para las solicitudes de Google Calendar.
         </p>
         <div className="mt-4 p-4 bg-gray-800/50 rounded-lg text-left text-sm max-w-md space-y-2">
           <div className="flex items-center">
@@ -136,10 +136,10 @@ const CalendarView: React.FC<CalendarViewProps> = ({ setCurrentView, personaliza
             <span className={`w-6 h-6 inline-flex items-center justify-center rounded-full mr-3 ${calendarProxyReady ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
               {calendarProxyReady ? 'OK' : 'X'}
             </span>
-            <span>Backend: proxy `/api/google/calendar` {calendarProxyReady ? 'activo' : 'sin clave en el servidor'}.</span>
+            <span>Backend: proxy `/api/google/calendar` {calendarProxyReady ? 'activo' : 'no responde'}.</span>
           </div>
           <p className="text-gray-500 text-xs">
-            Configura <code className="bg-gray-800 px-1 rounded">GOOGLE_CALENDAR_API_KEY</code> en el backend (Vercel) y limita el dominio desde Google Cloud.
+            Comprueba las variables <code className="bg-gray-800 px-1 rounded">VITE_GOOGLE_CALENDAR_CLIENT_ID</code> y el endpoint `/api/google/calendar/events?health=1` en tu despliegue para confirmar que el proxy está operativo.
           </p>
         </div>
       </div>

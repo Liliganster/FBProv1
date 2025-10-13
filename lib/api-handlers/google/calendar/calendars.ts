@@ -16,12 +16,6 @@ export default async function handler(req: any, res: any) {
     return;
   }
 
-  const apiKey = process.env.GOOGLE_CALENDAR_API_KEY;
-  if (!apiKey) {
-    json(res, 500, { error: 'Google Calendar API key is not configured on the server' });
-    return;
-  }
-
   const accessToken = getAccessToken(req);
   if (!accessToken) {
     json(res, 401, { error: 'Missing Authorization bearer token' });
@@ -31,7 +25,10 @@ export default async function handler(req: any, res: any) {
   try {
     const url = new URL('https://www.googleapis.com/calendar/v3/users/me/calendarList');
     url.searchParams.set('maxResults', '250');
-    url.searchParams.set('key', apiKey);
+    const apiKey = process.env.GOOGLE_CALENDAR_API_KEY;
+    if (apiKey) {
+      url.searchParams.set('key', apiKey);
+    }
 
     const response = await fetch(url.toString(), {
       headers: {

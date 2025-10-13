@@ -105,18 +105,13 @@ async function createEvent(params: {
 
 export default async function handler(req: any, res: any) {
   if (req.method === 'GET' && req.query?.health) {
-    json(res, 200, { ready: Boolean(process.env.GOOGLE_CALENDAR_API_KEY) });
+    const apiKey = process.env.GOOGLE_CALENDAR_API_KEY;
+    json(res, 200, { ready: true, usesApiKey: Boolean(apiKey) });
     return;
   }
 
   if (req.method !== 'POST') {
     json(res, 405, { error: 'Method Not Allowed' });
-    return;
-  }
-
-  const apiKey = process.env.GOOGLE_CALENDAR_API_KEY;
-  if (!apiKey) {
-    json(res, 500, { error: 'Google Calendar API key is not configured on the server' });
     return;
   }
 
@@ -147,6 +142,7 @@ export default async function handler(req: any, res: any) {
         return;
       }
 
+      const apiKey = process.env.GOOGLE_CALENDAR_API_KEY;
       const events = await listEvents({ calendarIds, timeMin, timeMax, accessToken, apiKey });
       json(res, 200, { events });
       return;
@@ -161,6 +157,7 @@ export default async function handler(req: any, res: any) {
         return;
       }
 
+      const apiKey = process.env.GOOGLE_CALENDAR_API_KEY;
       const created = await createEvent({ calendarId, event, accessToken, apiKey });
       json(res, 200, { event: created });
       return;
