@@ -28,10 +28,9 @@ interface GoogleApiContextType {
 
 export const GoogleCalendarContext = createContext<GoogleApiContextType | undefined>(undefined);
 
-const SCOPES = 'https://www.googleapis.com/auth/calendar.events https://www.googleapis.com/auth/calendar.readonly https://www.googleapis.com/auth/calendar.calendarlist.readonly https://www.googleapis.com/auth/drive.readonly';
+const SCOPES = 'https://www.googleapis.com/auth/calendar.events https://www.googleapis.com/auth/calendar.readonly';
 const DISCOVERY_DOCS = [
-    'https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest',
-    'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'
+    'https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest'
 ];
 
 const GOOGLE_CALENDAR_CLIENT_ID = import.meta.env.VITE_GOOGLE_CALENDAR_CLIENT_ID;
@@ -75,10 +74,12 @@ export const GoogleCalendarProvider: React.FC<{ children: ReactNode }> = ({ chil
           setCalendarProxyChecked(true);
         }
       } catch (e) {
-        console.warn('[Google Calendar] Backend proxy health check failed:', e);
+        // Silently handle API key not configured - only log in dev mode
+        if (import.meta.env.DEV) {
+          console.warn('[Google Calendar] Backend proxy not available (API key not configured)');
+        }
         if (!cancelled) {
-          // In development, allow fallback to true
-          setCalendarProxyReady(import.meta.env.DEV ? true : false);
+          setCalendarProxyReady(false);
           setCalendarProxyChecked(true);
         }
       }
@@ -108,12 +109,15 @@ export const GoogleCalendarProvider: React.FC<{ children: ReactNode }> = ({ chil
     let cancelled = false;
     let timeoutIds: NodeJS.Timeout[] = [];
 
-    // Skip initialization if Google Calendar credentials are not configured
-    if (!GOOGLE_CALENDAR_CLIENT_ID || !userProfile) {
-      console.log('[Google Calendar] Skipping init:', {
-        hasClientId: !!GOOGLE_CALENDAR_CLIENT_ID,
-        hasUserProfile: !!userProfile
-      });
+    // Skip initialization if Google Calendar credentials are not configured or gapi not available
+    if (!GOOGLE_CALENDAR_CLIENT_ID || !userProfile || typeof window === 'undefined' || !window.gapi) {
+      if (import.meta.env.DEV) {
+        console.log('[Google Calendar] Skipping init (server-side only mode):', {
+          hasClientId: !!GOOGLE_CALENDAR_CLIENT_ID,
+          hasUserProfile: !!userProfile,
+          hasGapi: !!(typeof window !== 'undefined' && window.gapi)
+        });
+      }
       setIsInitialized(false);
       hasStartedInit.current = false;
       return;
@@ -324,10 +328,11 @@ export const GoogleCalendarProvider: React.FC<{ children: ReactNode }> = ({ chil
   }, [isSignedIn, listCalendars]);
 
   const signIn = () => {
-    if (tokenClient) {
-      // Use a standard prompt. Google will only ask for consent if it's necessary.
-      tokenClient.requestAccessToken({});
+    // Server-side only mode - no client-side OAuth
+    if (import.meta.env.DEV) {
+      console.log('[Google Calendar] Client-side sign-in disabled (server-side only mode)');
     }
+    showToast('Google Calendar requiere configuración OAuth adicional', 'info');
   };
   
   const fetchEvents = async (calendarIds: string[], timeMin: string, timeMax: string): Promise<any[]> => {

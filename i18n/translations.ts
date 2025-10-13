@@ -625,6 +625,7 @@ export const translations = {
     toast_gcal_signin_cancelled: 'Google sign-in was cancelled.',
     toast_gcal_popup_failed: 'Could not open Google sign-in popup. Please check for popup blockers.',
     toast_gcal_auth_error: 'An unexpected Google authentication error occurred: {{error}}',
+    toast_gcal_server_only: 'Google Calendar integration requires additional OAuth setup.',
   },
   de: {
     nav_dashboard: 'Dashboard',
@@ -1223,6 +1224,7 @@ export const translations = {
     toast_gcal_signin_cancelled: 'Google-Anmeldung wurde abgebrochen.',
     toast_gcal_popup_failed: 'Google-Anmeldefenster konnte nicht geöffnet werden. Bitte prüfen Sie auf Popup-Blocker.',
     toast_gcal_auth_error: 'Ein unerwarteter Google-Authentifizierungsfehler ist aufgetreten: {{error}}',
+    toast_gcal_server_only: 'Die Google Calendar-Integration erfordert eine zusätzliche OAuth-Einrichtung.',
   },
   es: {
     nav_dashboard: 'Dashboard',
@@ -1815,5 +1817,6 @@ export const translations = {
     toast_gcal_signin_cancelled: 'Se canceló el inicio de sesión con Google.',
     toast_gcal_popup_failed: 'No se pudo abrir la ventana emergente de inicio de sesión de Google. Comprueba si hay bloqueadores de ventanas emergentes.',
     toast_gcal_auth_error: 'Ocurrió un error inesperado de autenticación de Google: {{error}}',
+    toast_gcal_server_only: 'La integración con Google Calendar requiere configuración OAuth adicional.',
   },
 };

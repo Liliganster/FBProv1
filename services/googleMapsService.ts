@@ -43,6 +43,10 @@ async function postJson<T>(url: string, body: unknown): Promise<T> {
   });
   if (!response.ok) {
     const detail = await response.text();
+    // Handle specific error types more gracefully
+    if (response.status === 500) {
+      throw new Error('Google Maps API not configured on server');
+    }
     throw new Error(`Request failed (${response.status}): ${detail}`);
   }
   return (await response.json()) as T;
@@ -65,7 +69,10 @@ export async function calculateDistanceViaBackend(
     });
     return typeof data.distanceKm === 'number' ? data.distanceKm : null;
   } catch (error) {
-    console.error('[googleMapsService] calculateDistanceViaBackend failed:', error);
+    // Silently handle API not configured - only log detailed errors in dev mode
+    if (import.meta.env.DEV) {
+      console.warn('[GoogleMaps] Distance calculation failed - API not configured:', error);
+    }
     return null;
   }
 }
@@ -88,7 +95,10 @@ export async function getStaticMapUrlViaBackend(
     });
     return typeof data.dataUrl === 'string' ? data.dataUrl : FALLBACK_STATIC_MAP(validLocations[0]);
   } catch (error) {
-    console.error('[googleMapsService] getStaticMapUrlViaBackend failed:', error);
+    // Silently handle API not configured - only log in dev mode
+    if (import.meta.env.DEV) {
+      console.warn('[GoogleMaps] Static map generation failed - API not configured:', error);
+    }
     return FALLBACK_STATIC_MAP(validLocations[0]);
   }
 }
