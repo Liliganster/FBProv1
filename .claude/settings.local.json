@@ -28,7 +28,8 @@
       "Bash(unix2dos:*)",
       "Bash(cat:*)",
       "Bash(curl -s \"https://fbprov1.vercel.app\")",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(curl:*)"
     ],
     "deny": [],
     "ask": []
