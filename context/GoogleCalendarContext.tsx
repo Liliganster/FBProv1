@@ -24,6 +24,7 @@ interface GoogleApiContextType {
   createCalendarEvent: (trip: Trip, projectName: string) => Promise<any>;
   showPicker: (callback: (data: any) => void) => void;
   gapiClient: any;
+  refreshCalendars: () => Promise<void>;
 }
 
 export const GoogleCalendarContext = createContext<GoogleApiContextType | undefined>(undefined);
@@ -499,6 +500,7 @@ export const GoogleCalendarProvider: React.FC<{ children: ReactNode }> = ({ chil
     createCalendarEvent,
     showPicker,
     gapiClient,
+    refreshCalendars: listCalendars,
   };
 
   return (

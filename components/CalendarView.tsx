@@ -19,7 +19,7 @@ interface CalendarViewProps {
 const CalendarView: React.FC<CalendarViewProps> = ({ setCurrentView, personalization, theme }) => {
   const { t, language } = useTranslation();
   const { userProfile } = useUserProfile();
-  const { isInitialized, isSignedIn, signIn, signOut, calendars, fetchEvents, calendarProxyReady, calendarProxyChecked } = useGoogleCalendar();
+  const { isInitialized, isSignedIn, signIn, signOut, calendars, fetchEvents, calendarProxyReady, calendarProxyChecked, refreshCalendars } = useGoogleCalendar();
   
   const [currentDate, setCurrentDate] = useState(new Date());
   const [events, setEvents] = useState<any[]>([]);
@@ -181,11 +181,18 @@ const CalendarView: React.FC<CalendarViewProps> = ({ setCurrentView, personaliza
               {currentDate.toLocaleDateString(language, { month: 'long', year: 'numeric' })}
             </h1>
           </div>
-          {!isSignedIn && (
-            <button onClick={signIn} disabled={!isInitialized} className="bg-brand-primary hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg disabled:opacity-50">
-                {t('calendar_connect_btn')}
-            </button>
-          )}
+          <div className="flex items-center gap-2">
+            {isSignedIn && (
+              <button onClick={() => refreshCalendars()} className="bg-surface-dark hover:bg-surface-dark/70 text-white font-medium py-2 px-3 rounded-md border border-gray-700/60">
+                {t('common_refresh') || 'Refrescar'}
+              </button>
+            )}
+            {!isSignedIn && (
+              <button onClick={signIn} disabled={!isInitialized} className="bg-brand-primary hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg disabled:opacity-50">
+                  {t('calendar_connect_btn')}
+              </button>
+            )}
+          </div>
         </div>
         {!isSignedIn ? (
             <div className="flex-1 flex items-center justify-center text-on-surface-dark-secondary">{t('calendar_connect_btn')} to view events.</div>

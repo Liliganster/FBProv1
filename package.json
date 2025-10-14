@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "dev:api": "node dev-server.mjs",
-    "dev:full": "npm run dev:api & npm run dev",
+    "dev:full": "concurrently -n api,web -c blue,green \"npm:dev:api\" \"npm:dev\"",
     "build": "tsc && vite build",
     "preview": "vite preview",
     "lint": "tsc --noEmit"
@@ -35,6 +35,7 @@
     "cors": "^2.8.5",
     "express": "^5.1.0",
     "terser": "^5.44.0",
+    "concurrently": "^9.0.1",
     "typescript": "^5.5.3",
     "vite": "^7.1.9"
   }

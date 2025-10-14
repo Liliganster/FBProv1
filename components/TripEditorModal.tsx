@@ -376,6 +376,32 @@ const TripEditorModal: React.FC<TripEditorModalProps> = ({ trip, projects, trips
       }
   }
 
+  // Auto-calculate distance when origin and destination are filled
+  const lastCalcKeyRef = useRef<string | null>(null);
+  useEffect(() => {
+    const locs = Array.isArray(formData.locations) ? formData.locations.map(l => (l || '').trim()) : [];
+    if (locs.length < 2) return;
+    const origin = locs[0];
+    const destination = locs[locs.length - 1];
+    if (!origin || !destination) return;
+
+    // Build a key to detect same calculation inputs (avoid loops)
+    const calcKey = `${origin}__${locs.slice(1, -1).filter(Boolean).join('|')}__${destination}`;
+    if (lastCalcKeyRef.current === calcKey) return;
+
+    // Debounce a bit to wait for user typing to settle
+    const timeout = setTimeout(async () => {
+      try {
+        await handleCalculateDistance();
+        lastCalcKeyRef.current = calcKey;
+      } catch {
+        // ignore – UI already shows toast on failure
+      }
+    }, 700);
+
+    return () => clearTimeout(timeout);
+  }, [formData.locations]);
+
   // Helper function to determine which fields changed between trips
   const getChangedFields = (originalTrip: Trip, updatedTrip: Trip): string[] => {
     const changedFields: string[] = [];
