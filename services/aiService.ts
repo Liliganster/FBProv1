@@ -275,7 +275,11 @@ export async function fetchOpenRouterModels(apiKey?: string | null): Promise<AiM
             }
 
             const data = await res.json();
-            const models = Array.isArray(data?.data) ? data.data : [];
+            const models = Array.isArray(data?.models)
+                ? data.models
+                : Array.isArray(data?.data)
+                    ? data.data
+                    : [];
             return models
                 .map((m: any) => ({ id: m.id, name: m.name || m.id }))
                 .sort((a: AiModelInfo, b: AiModelInfo) => (a.name || '').localeCompare(b.name || ''));
