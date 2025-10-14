@@ -216,34 +216,31 @@ async function runOpenRouterAgent(
     userAction: string,
     parser: (response: string) => any
 ): Promise<any> {
-    // Build the user message with content
+    // Build messages for OpenRouter chat API
     const userMessage = typeof contentSource === 'string'
         ? `${userAction}\n\n**Text:**\n"${contentSource}"`
         : userAction; // For images, we'll handle differently
 
-    // Prepare request for our backend proxy
-    const payload = {
-        prompt: typeof contentSource === 'string'
-            ? `${systemPrompt}\n\n${userMessage}`
-            : systemPrompt + '\n\n' + userAction,
-        model: profile.openRouterModel || 'google/gemini-2.0-flash-001',
-        userApiKey: profile.openRouterApiKey || undefined, // Send decrypted user key if available
-        useUserApiKey: !!profile.openRouterApiKey,
-        userId: profile.id || 'anonymous',
-        temperature: 0.1,
-        maxTokens: 2048
-    };
+    const messages = [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userMessage },
+    ];
 
-    if (!payload.model) {
-        throw new Error("OpenRouter model is not configured.");
-    }
+    const model = profile.openRouterModel || 'google/gemini-2.0-flash-001';
+    if (!model) throw new Error("OpenRouter model is not configured.");
 
     try {
-        // Call our backend proxy instead of OpenRouter directly
-        const res = await fetchWithRateLimit("/api/ai/openrouter-proxy", {
+        // Use unified proxy route, always passing the user's apiKey when present
+        const res = await fetchWithRateLimit("/api/ai/openrouter/chat", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload)
+            body: JSON.stringify({
+                apiKey: profile.openRouterApiKey || undefined,
+                model,
+                messages,
+                temperature: 0.1,
+                max_tokens: 2048,
+            }),
         });
 
         if (!res.ok) {
@@ -254,14 +251,10 @@ async function runOpenRouterAgent(
         const data = await res.json();
         const content = data?.choices?.[0]?.message?.content;
         if (!content) throw new Error("OpenRouter response is missing content.");
-
         return parser(content);
     } catch (error) {
         console.error("OpenRouter request failed:", error);
-        // Don't override rate limit error messages
-        if (error instanceof Error && error.message.includes('rate limit')) {
-            throw error;
-        }
+        if (error instanceof Error && error.message.includes('rate limit')) throw error;
         throw new Error("Failed to connect to OpenRouter. Please check your network connection, API key, and browser extensions (like ad-blockers).");
     }
 }
@@ -273,15 +266,9 @@ const runLocationAgentOpenRouter = (c: any, s: any, docType: DocumentType) => ru
 export async function fetchOpenRouterModels(apiKey?: string | null): Promise<AiModelInfo[]> {
     return withRateLimitHandling(async () => {
         try {
-            // Call backend proxy to fetch models list
-            const res = await fetchWithRateLimit('/api/ai/openrouter-models', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    userApiKey: apiKey || undefined,
-                    useUserApiKey: !!apiKey
-                })
-            });
+            // Unified proxy route: use GET with optional apiKey
+            const qs = apiKey ? `?apiKey=${encodeURIComponent(apiKey)}` : '';
+            const res = await fetchWithRateLimit(`/api/ai/openrouter/models${qs}`, { method: 'GET' });
 
             if (!res.ok) {
                 throw new Error(`Failed to fetch models: ${res.status} ${await res.text()}`);
