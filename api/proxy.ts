@@ -416,6 +416,20 @@ async function handleOpenRouterStructured(req: VercelRequest, res: VercelRespons
   }
 
   const model = body?.model?.trim() || process.env.OPENROUTER_MODEL || 'google/gemini-2.0-flash-001';
+  const useCrewFirst = Boolean(body?.useCrewFirst);
+
+  // Schema-specific, strict JSON instructions
+  const systemContent = useCrewFirst
+    ? (
+      'You are a callsheet extraction service. Output ONLY valid JSON matching this exact schema (no extra fields): ' +
+      '{"version":"parser-crew-1","date":"YYYY-MM-DD","projectName":"string","productionCompany":string|null,"motiv":string|null,"episode":string|null,"shootingDay":string|null,"generalCallTime":string|null,"locations":[{"location_type":"FILMING_PRINCIPAL"|"UNIT_BASE"|"CATERING"|"MAKEUP_HAIR"|"WARDROBE"|"CREW_PARKING"|"LOAD_UNLOAD","name"?:string,"address":string,"formatted_address"?:string|null,"latitude"?:number|null,"longitude"?:number|null,"notes"?:string[],"confidence"?:number}],"rutas":[]} '
+      + 'Rules: 1) version must be "parser-crew-1". 2) date must be normalized to YYYY-MM-DD. 3) locations must use one of the allowed location_type values. 4) No explanations, only the JSON object.'
+    )
+    : (
+      'You are a callsheet extraction service. Output ONLY valid JSON with this exact shape: ' +
+      '{"date":"YYYY-MM-DD","projectName":"string","locations":["string",...]} ' +
+      'Rules: 1) date must be normalized to YYYY-MM-DD. 2) locations is an ordered list of relevant addresses/place names. 3) No explanations, only the JSON object.'
+    );
 
   try {
     const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
@@ -429,7 +443,7 @@ async function handleOpenRouterStructured(req: VercelRequest, res: VercelRespons
       body: JSON.stringify({
         model,
         messages: [
-          { role: 'system', content: 'You output ONLY valid JSON. No explanations.' },
+          { role: 'system', content: systemContent },
           { role: 'user', content: text },
         ],
         temperature: 0,

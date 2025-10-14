@@ -32,6 +32,8 @@ export function useGoogleMapsScript({
     if (language) params.set('language', language);
     if (region) params.set('region', region);
     if (version) params.set('v', version);
+    // Best practice: explicit async loader flag to silence Google warning
+    params.set('loading', 'async');
     
     // Siempre usar directamente Google Maps API si tenemos la key
     const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
