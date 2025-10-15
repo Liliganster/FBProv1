@@ -393,9 +393,18 @@ async function handleOpenRouterStructured(req: VercelRequest, res: VercelRespons
       + 'Rules: 1) version must be "parser-crew-1". 2) date must be normalized to YYYY-MM-DD. 3) locations must use one of the allowed location_type values. 4) No explanations, only the JSON object.'
     )
     : (
-      'You are a callsheet extraction service. Output ONLY valid JSON with this exact shape: ' +
-      '{"date":"YYYY-MM-DD","projectName":"string","locations":["string",...]} ' +
-      'Rules: 1) date must be normalized to YYYY-MM-DD. 2) locations is an ordered list of relevant addresses/place names. 3) No explanations, only the JSON object.'
+      'You are a callsheet data extraction AI. Extract ONLY the main filming locations from the callsheet. ' +
+      '\n\nCRITICAL RULES:\n' +
+      '1. Extract ONLY locations marked as "Drehort", "Location", "Set", or "Motiv" (filming locations)\n' +
+      '2. IGNORE all locations for: Basis, Parken, Aufenthalt, Kostüm, Maske, Lunch, Catering, Team, Technik, Office, Meeting\n' +
+      '3. IGNORE room names or internal location names without a street address (e.g., "Suite Nico", "Keller", "Catering Bereich")\n' +
+      '4. Each location MUST be a complete physical address with street name and number (e.g., "Salmgasse 10, 1030 Wien")\n' +
+      '5. If a location has both a place name AND an address, use ONLY the address\n' +
+      '6. Remove duplicates\n' +
+      '7. Order locations in the sequence they appear on the callsheet\n\n' +
+      'Output format: {"date":"YYYY-MM-DD","projectName":"string","locations":["complete address 1","complete address 2",...]}\n\n' +
+      'Example good locations: ["Palais Rasumofsky, 23-25, 1030 Wien", "Salmgasse 10, 1030 Wien"]\n' +
+      'Example BAD locations to IGNORE: ["Suite Nico", "Keller", "Catering Bereich", "Basis", "Parken"]'
     );
 
   try {

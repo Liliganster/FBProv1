@@ -35,11 +35,13 @@ Your entire response must be ONLY a single JSON object with a "locations" key co
 **Address Cleaning & Filtering Rules (CRITICAL):**
 1.  **Prioritize Shooting Locations:** Your primary goal is to identify addresses for the actual filming. These are often associated with keywords like "Drehort", "Location", "Set", "Motiv", or numbered items like "Location 1". Give these the highest priority.
 2.  **Exclusion Filter:** You MUST IGNORE any address clearly associated with logistical categories: "Basis & Parken", "Aufenthalt", "Kostüm & Maske", "Lunch", "Catering", "Team", "Technik", "Office", "Meeting point", "Transport", "Pick Up", "Driver / Car". If an address is ambiguous, assume it's for logistics, not filming.
-3.  **Clean & Format Addresses:**
+3.  **IGNORE Room/Internal Names:** You MUST IGNORE internal location names, room names, or descriptive names that are NOT complete street addresses. Examples to IGNORE: "Suite Nico", "Keller", "Villa Dardenne", "Catering Bereich", "Salon", "Empfang". These are NOT valid locations unless they have a complete street address with them.
+4.  **Complete Address Requirement:** Each location MUST be a complete physical address with: street name + house number + postal code/city. Examples: "Salmgasse 10, 1030 Wien", "Palais Rasumofsky, 23-25, 1030 Wien". Single words or place names without street addresses are NOT valid.
+5.  **Clean & Format Addresses:**
     *   **Vienna District Prefix Rule:** If a location part starts with a number and a dot (e.g., '2.', '13.'), convert this to the correct 4-digit postal code (e.g., '1020', '1130'). Example: '2., Rustenschacherallee 9' MUST become 'Rustenschacherallee 9, 1020 Wien'.
-    *   **Association Rule:** If a line contains both a place name (like "WAC Prater") and a full physical address (like "2., Rustenschacherallee 9"), your final output MUST be ONLY the processed physical address.
+    *   **Association Rule:** If a line contains both a place name (like "WAC Prater") and a full physical address (like "2., Rustenschacherallee 9"), your final output MUST be ONLY the processed physical address, NOT the place name.
     *   **Deduplication:** The final "locations" array must NOT contain duplicate addresses.
-4.  **Self-Correction:** Review your output to ensure it is a single valid JSON object and all rules have been followed. Do not include logistical addresses.`;
+6.  **Self-Correction:** Review your output to ensure it is a single valid JSON object and all rules have been followed. Do not include logistical addresses or room names.`;
 
 export const LOCATION_AGENT_SYSTEM_PROMPT_EMAIL = `You are a data extraction engine specialized in analyzing emails and unstructured text to identify a sequence of physical locations for a trip. Your ONLY task is to return a single, valid JSON object containing a list of **clean, formatted, physical addresses** that represent the main journey.
 
@@ -51,7 +53,8 @@ Your entire response must be ONLY a single JSON object with a "locations" key co
 **Address Cleaning & Filtering Rules (CRITICAL):**
 1.  **Identify Travel Locations:** Look for sequences of addresses in a list or paragraph describing a route.
 2.  **Exclusion Filter:** IGNORE addresses associated with logistics (\"Lunch\", \"Catering\", 'Office', \"Meeting point\") or in email signatures.
-3.  **Clean & Format Addresses:**
+3.  **IGNORE Room/Internal Names:** IGNORE internal location names or room names without complete street addresses (e.g., "Suite", "Keller", "Salon").
+4.  **Clean & Format Addresses:**
     *   **Vienna District Prefix Rule:** For Vienna, if a location part starts with a number and a dot (e.g., '2.', '13.'), convert this to the correct 4-digit postal code (e.g., '1020', '1130').
     *   **Association Rule:** If a line contains a place name and a physical address for the same location, output ONLY the processed physical address.
     *   **Deduplication:** The final "locations" array must NOT contain duplicate addresses.`;

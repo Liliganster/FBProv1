@@ -5,14 +5,19 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
 
 // Load environment variables from .env.local first, then .env
 dotenv.config({ path: '.env.local' });
 dotenv.config();
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
 const app = express();
 app.use(cors());
-app.use(express.json({ limit: '1mb' }));
+app.use(express.json({ limit: '10mb' })); // Increased for AI requests with large text
 
 function assertEnv(name) {
   const val = process.env[name];
@@ -242,6 +247,223 @@ app.get('/api/google/maps/script', async (req, res) => {
   } catch (err) {
     console.error('[dev-server] maps/script error', err);
     res.type('text/javascript').send(`// Internal error\n/* ${String(err?.message || err)} */`);
+  }
+});
+
+// -------- AI Routes --------
+// Proxy AI requests (Gemini, OpenRouter, etc.)
+
+app.post('/api/ai/gemini', async (req, res) => {
+  try {
+    const apiKey = assertEnv('GEMINI_API_KEY');
+    if (!apiKey) {
+      return res.status(500).json({ error: 'Gemini API key is not configured' });
+    }
+
+    const { mode, text, useCrewFirst } = req.body || {};
+    if (!text || typeof text !== 'string') {
+      return res.status(400).json({ error: 'Request body must include a non-empty text field' });
+    }
+
+    console.log(`[dev-server] Gemini request: mode=${mode}, textLength=${text.length}, useCrewFirst=${useCrewFirst}`);
+
+    // Forward to Google Gemini API
+    // Note: This is a simplified version. For full implementation, use the actual handler
+    const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=' + apiKey, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{
+          parts: [{ text }]
+        }],
+        generationConfig: {
+          temperature: 0,
+          responseMimeType: 'application/json'
+        }
+      })
+    });
+
+    if (!response.ok) {
+      const detail = await response.text();
+      console.error('[dev-server] Gemini error:', detail);
+      return res.status(502).json({ error: 'Gemini request failed', details: detail });
+    }
+
+    const data = await response.json();
+    const content = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!content) {
+      return res.status(500).json({ error: 'Empty response from Gemini' });
+    }
+
+    const parsed = JSON.parse(content);
+    return res.status(200).json(parsed);
+  } catch (error) {
+    console.error('[dev-server] /api/ai/gemini error:', error);
+    return res.status(500).json({ error: 'Internal server error', details: error.message });
+  }
+});
+
+app.post('/api/ai/openrouter/structured', async (req, res) => {
+  try {
+    const defaultKey = assertEnv('OPENROUTER_API_KEY');
+    const { text, apiKey: bodyApiKey, model: bodyModel, useCrewFirst, mode } = req.body || {};
+
+    if (!text || typeof text !== 'string') {
+      return res.status(400).json({ error: 'Request body must include a non-empty text field' });
+    }
+
+    const apiKey = bodyApiKey || defaultKey;
+    if (!apiKey) {
+      return res.status(500).json({ error: 'OpenRouter API key is not configured' });
+    }
+
+    const model = bodyModel || assertEnv('OPENROUTER_MODEL') || 'google/gemini-2.0-flash-001';
+
+    console.log(`[dev-server] OpenRouter request: model=${model}, textLength=${text.length}, useCrewFirst=${useCrewFirst}, mode=${mode}`);
+
+    // Build system prompt based on useCrewFirst
+    const systemContent = useCrewFirst
+      ? 'You are a callsheet extraction service. Output ONLY valid JSON matching this exact schema (no extra fields): {"version":"parser-crew-1","date":"YYYY-MM-DD","projectName":"string","productionCompany":string|null,"motiv":string|null,"episode":string|null,"shootingDay":string|null,"generalCallTime":string|null,"locations":[{"location_type":"FILMING_PRINCIPAL"|"UNIT_BASE"|"CATERING"|"MAKEUP_HAIR"|"WARDROBE"|"CREW_PARKING"|"LOAD_UNLOAD","name"?:string,"address":string,"formatted_address"?:string|null,"latitude"?:number|null,"longitude"?:number|null,"notes"?:string[],"confidence"?:number}],"rutas":[]} Rules: 1) version must be "parser-crew-1". 2) date must be normalized to YYYY-MM-DD. 3) locations must use one of the allowed location_type values. 4) No explanations, only the JSON object.'
+      : `You are a callsheet data extraction AI. Extract ONLY the main filming locations from the callsheet. 
+
+CRITICAL RULES:
+1. Extract ONLY locations marked as "Drehort", "Location", "Set", or "Motiv" (filming locations)
+2. IGNORE all locations for: Basis, Parken, Aufenthalt, Kostüm, Maske, Lunch, Catering, Team, Technik, Office, Meeting
+3. IGNORE room names or internal location names without a street address (e.g., "Suite Nico", "Keller", "Catering Bereich")
+4. Each location MUST be a complete physical address with street name and number (e.g., "Salmgasse 10, 1030 Wien")
+5. If a location has both a place name AND an address, use ONLY the address
+6. Remove duplicates
+7. Order locations in the sequence they appear on the callsheet
+
+Output format: {"date":"YYYY-MM-DD","projectName":"string","locations":["complete address 1","complete address 2",...]}
+
+Example good locations: ["Palais Rasumofsky, 23-25, 1030 Wien", "Salmgasse 10, 1030 Wien"]
+Example BAD locations to IGNORE: ["Suite Nico", "Keller", "Catering Bereich", "Basis", "Parken"]`;
+
+    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`,
+        'HTTP-Referer': assertEnv('OPENROUTER_HTTP_REFERER') || 'https://fahrtenbuch-pro.app',
+        'X-Title': assertEnv('OPENROUTER_TITLE') || 'Fahrtenbuch Pro',
+      },
+      body: JSON.stringify({
+        model,
+        messages: [
+          { role: 'system', content: systemContent },
+          { role: 'user', content: text }
+        ],
+        temperature: 0,
+        response_format: { type: 'json_object' }
+      })
+    });
+
+    if (!response.ok) {
+      const detail = await response.text();
+      console.error('[dev-server] OpenRouter error:', detail);
+      return res.status(502).json({ error: 'OpenRouter request failed', details: detail });
+    }
+
+    const data = await response.json();
+    const message = data?.choices?.[0]?.message?.content;
+    const parsed = typeof message === 'string' ? JSON.parse(message) : message;
+
+    return res.status(200).json(parsed);
+  } catch (error) {
+    console.error('[dev-server] /api/ai/openrouter/structured error:', error);
+    return res.status(500).json({ error: 'Internal server error', details: error.message });
+  }
+});
+
+app.post('/api/ai/openrouter/chat', async (req, res) => {
+  try {
+    const defaultKey = assertEnv('OPENROUTER_API_KEY');
+    const { messages, apiKey: bodyApiKey, model: bodyModel, temperature, response_format, max_tokens } = req.body || {};
+
+    if (!Array.isArray(messages) || messages.length === 0) {
+      return res.status(400).json({ error: 'Request body must include a non-empty messages array' });
+    }
+
+    const apiKey = bodyApiKey || defaultKey;
+    if (!apiKey) {
+      return res.status(500).json({ error: 'OpenRouter API key is not configured' });
+    }
+
+    const model = bodyModel || assertEnv('OPENROUTER_MODEL') || 'google/gemini-2.0-flash-001';
+
+    console.log(`[dev-server] OpenRouter chat request: model=${model}, messages=${messages.length}`);
+
+    const payload = {
+      model,
+      messages,
+      temperature: typeof temperature === 'number' ? temperature : 0.1
+    };
+
+    if (response_format) payload.response_format = response_format;
+    if (max_tokens) payload.max_tokens = max_tokens;
+
+    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`,
+        'HTTP-Referer': assertEnv('OPENROUTER_HTTP_REFERER') || 'https://fahrtenbuch-pro.app',
+        'X-Title': assertEnv('OPENROUTER_TITLE') || 'Fahrtenbuch Pro',
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (!response.ok) {
+      const detail = await response.text();
+      console.error('[dev-server] OpenRouter chat error:', detail);
+      return res.status(502).json({ error: 'OpenRouter request failed', details: detail });
+    }
+
+    const data = await response.json();
+    return res.status(200).json(data);
+  } catch (error) {
+    console.error('[dev-server] /api/ai/openrouter/chat error:', error);
+    return res.status(500).json({ error: 'Internal server error', details: error.message });
+  }
+});
+
+app.get('/api/ai/openrouter/models', async (req, res) => {
+  try {
+    const defaultKey = assertEnv('OPENROUTER_API_KEY');
+    const queryKey = req.query?.apiKey;
+    const apiKey = queryKey || defaultKey;
+
+    if (!apiKey) {
+      return res.status(500).json({ error: 'OpenRouter API key is not configured' });
+    }
+
+    const response = await fetch('https://openrouter.ai/api/v1/models', {
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'HTTP-Referer': assertEnv('OPENROUTER_HTTP_REFERER') || 'https://fahrtenbuch-pro.app',
+        'X-Title': assertEnv('OPENROUTER_TITLE') || 'Fahrtenbuch Pro',
+      }
+    });
+
+    if (!response.ok) {
+      const detail = await response.text();
+      console.error('[dev-server] OpenRouter models error:', detail);
+      return res.status(502).json({ error: 'OpenRouter request failed', details: detail });
+    }
+
+    const data = await response.json();
+    const models = Array.isArray(data?.data)
+      ? data.data
+          .map(m => ({ id: m.id, name: m.name || m.id }))
+          .filter(m => m.id)
+          .sort((a, b) => a.name.localeCompare(b.name))
+      : [];
+
+    return res.status(200).json({ models });
+  } catch (error) {
+    console.error('[dev-server] /api/ai/openrouter/models error:', error);
+    return res.status(500).json({ error: 'Internal server error', details: error.message });
   }
 });
 
