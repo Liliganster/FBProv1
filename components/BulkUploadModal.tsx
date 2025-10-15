@@ -94,7 +94,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
   const [draftTrips, setDraftTrips] = useState<DraftTrip[]>([]);
   const { userProfile } = useUserProfile();
   const { trips } = useTrips();
-  const [newlyCreatedProjectNames, setNewlyCreatedProjectNames] = useState<string[]>([]);
+  const [newlyCreatedProjects, setNewlyCreatedProjects] = useState<Map<string, string>>(new Map());
   
   const [csvPastedText, setCsvPastedText] = useState('');
 
@@ -116,7 +116,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
   const resetState = () => {
     setStage('upload');
     setDraftTrips([]);
-    setNewlyCreatedProjectNames([]);
+    setNewlyCreatedProjects(new Map());
     setCsvPastedText('');
     setAiFiles([]);
     setIsProcessing(false);
@@ -156,7 +156,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
             )
           );
 
-      const successfulExtractions: { tripData: Omit<Trip, 'id' | 'projectId'>; projectName: string }[] = [];
+      const successfulExtractions: { tripData: Omit<Trip, 'id' | 'projectId'>; projectName: string, productionCompany: string }[] = [];
       let errorCount = 0;
       
       results.forEach((result) => {
@@ -173,9 +173,10 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
       }
       
       if (successfulExtractions.length > 0) {
-          const reviewData = successfulExtractions.map(res => ({
+const reviewData = successfulExtractions.map(res => ({
             ...res.tripData,
             projectName: res.projectName,
+            productionCompany: res.productionCompany,
             warnings: [],
           }));
           prepareForReview(reviewData);
@@ -324,7 +325,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
     }
   };
   
-  const prepareForReview = (data: (Omit<DraftTrip, 'projectId' | 'specialOrigin'> & { projectName: string })[]) => {
+  const prepareForReview = (data: (Omit<DraftTrip, 'projectId' | 'specialOrigin'> & { projectName: string, productionCompany?: string })[]) => {
     if (!userProfile) return;
 
     const userHomeAddress = (userProfile.address && userProfile.city && userProfile.country)
@@ -347,11 +348,10 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
     const existingTripSignatures = new Set(
         trips.map(t => normalizeSignature(t.date, t.locations))
     );
-    const newTripSignatures = new Set<string>();
-    const newProjectNames = new Set<string>();
+    const newProjects = new Map<string, string>();
 
     const newDraftTrips = data.map(row => {
-        const { date, projectName, reason, locations: rawLocations, distance, warnings = [] } = row;
+        const { date, projectName, reason, locations: rawLocations, distance, warnings = [], productionCompany } = row;
         
         let locations = [...rawLocations];
         if (userHomeAddress) {
@@ -371,7 +371,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
         let projectId = existingProject ? existingProject.id : projectName;
 
         if (!existingProject && projectName) {
-            newProjectNames.add(projectName);
+            newProjects.set(projectName, productionCompany || '');
         }
 
         return {
@@ -385,7 +385,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
         };
     });
     
-    setNewlyCreatedProjectNames(Array.from(newProjectNames));
+    setNewlyCreatedProjects(newProjects);
     setDraftTrips(newDraftTrips);
     setStage('review');
   }
@@ -425,10 +425,10 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
   };
 
 
-  const tempNewProjectsForReview = newlyCreatedProjectNames.map(name => ({
+const tempNewProjectsForReview = Array.from(newlyCreatedProjects.entries()).map(([name, producer]) => ({
       id: name,
       name: `${name} (New)`,
-      producer: t('bulk_csv_default_producer')
+      producer: producer || t('bulk_csv_default_producer')
   }));
   const allProjectOptions = [...projects, ...tempNewProjectsForReview];
 

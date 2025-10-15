@@ -13,6 +13,7 @@ export interface ExtractedTripData {
   date: string;
   locations: string[];
   projectName: string;
+  productionCompany: string;
   reason: string;
   specialOrigin: SpecialOrigin;
 }
@@ -59,60 +60,7 @@ async function cleanAndVerifyAddresses(locations: string[]): Promise<string[]> {
 const today = new Date();
 const referenceDate = today.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
-const DATE_AGENT_SYSTEM_PROMPT = `You are a specialized multilingual date extraction agent. Your SOLE purpose is to identify and extract the single, primary date of the shooting day from the provided content and return it in a standardized YYYY-MM-DD format.
-
-**Rules:**
-1.  **INPUT:** You will receive text or an image from the top part of a film callsheet.
-2.  **LANGUAGES:** The text can be in Spanish, English, or German.
-3.  **PRIORITY:** Your main goal is to find the single, primary date of the shooting day, often clearly displayed in the header next to keywords like "Drehtag", a day of the week (e.g., "Montag", "Mittwoch"), or "CALL SHEET".
-4.  **FORMATS:** Dates can appear in numerous formats.
-5.  **RELATIVE:** Use today's date, ${referenceDate}, as a reference if no other date is present (e.g., "yesterday", "tomorrow").
-6.  **NORMALIZATION:** The extracted date MUST be converted to the \`YYYY-MM-DD\` format.
-7.  **OUTPUT:** Your output MUST be a valid JSON object with a single key "date". The value should be the normalized date string. Example: \`{"date": "2024-05-06"}\`.
-8.  **NO DATE:** If no definitive shooting day date is found, you MUST return \`{"date": ""}\`.
-9.  **NO EXPLANATIONS:** Do NOT provide any text, explanation, or conversational filler. Your entire response must be ONLY the JSON object.`;
-
-const PROJECT_AGENT_SYSTEM_PROMPT = `You are an expert document analyst specializing in film and television production callsheets. Your primary mission is to accurately identify and extract the main **Project Name** from the top half of the first page of a given document.
-
-**Critical Rules:**
-1.  **LOCATION:** You MUST confine your search to the **top 50% of the first page** of the text provided.
-2.  **OUTPUT FORMAT:** Your response MUST be a valid JSON object with a single key: \`projectName\`. The value will be the extracted string or \`null\` if no suitable name is found. Example: \`{ "projectName": "Nombre del Proyecto" }\`.
-3.  **NO EXPLANATIONS:** Do NOT provide any text or explanation outside of the final JSON object.
-4.  **PRIORITIZE:** Look for text that is stylistically emphasized (e.g., large font, bold, centered, all-caps) and near keywords like "Project:", "Production:", "Show:", "Produktion:", "Proyecto:".
-5.  **IGNORE Production Company Names:** You MUST distinguish the creative project title from the legal production company. Company names often include legal suffixes or keywords to IGNORE: "GmbH", "LLC", "Ltd.", "Inc.", "Film", "Pictures", "Entertainment", "Produktion", "Producciones". (e.g., If you see "Mega-Film GmbH" and "Alpenkrimi", the project name is "Alpenkrimi").
-6.  **IGNORE Episode Titles/Numbers:** If the document is for a TV series, extract the main series name, NOT the episode title.
-7.  **IGNORE Generic Document Titles:** The project name is never the document type itself (e.g., "CALLSHEET", "DISPOSICIÓN DIARIA").`;
-
-const LOCATION_AGENT_SYSTEM_PROMPT = `You are a precision data extraction engine for film production call sheets, with expert knowledge of Austrian and Viennese addresses. Your ONLY task is to meticulously analyze the provided content and return a single, valid JSON object containing a list of **clean, formatted, physical shooting locations**.
-
-**Primary Goal:** Create a list of PHYSICAL SHOOTING LOCATIONS ONLY.
-
-**Output Format (Strictly Enforced):**
-Your entire response must be ONLY a single JSON object with a "locations" key containing an array of strings.
-
-**Address Cleaning & Filtering Rules (CRITICAL):**
-1.  **Identify Shooting Locations:** An address is ONLY valid if it is clearly and directly associated with a high-priority filming keyword: "LOCATION 1", "LOCATION 2", "SET = Location", "Motiv", "Set", "Location", "Locations:", "Loc 1/2/...".
-2.  **Exclusion Filter:** You MUST IGNORE any address associated with logistical categories: "Basis & Parken", "Aufenthalt", "Kostüm & Maske", "Lunch", "Catering", "Team", "Technik", "Office", "Meeting point", "Transport", "Pick Up", "Driver / Car".
-3.  **Clean & Format Addresses:**
-    *   **Vienna District Prefix Rule:** If a location part starts with a number and a dot (e.g., '2.', '13.'), convert this to the correct 4-digit postal code (e.g., '1020', '1130'). Example: '2., Rustenschacherallee 9' MUST become 'Rustenschacherallee 9, 1020 Wien'.
-    *   **Association Rule:** If a line contains both a place name (like "WAC Prater") and a full physical address (like "2., Rustenschacherallee 9"), your final output MUST be ONLY the processed physical address.
-    *   **Deduplication:** The final "locations" array must NOT contain duplicate addresses.
-4. **Self-Correction:** Review your output to ensure it is a single valid JSON object and all rules have been followed.`;
-
-const LOCATION_AGENT_SYSTEM_PROMPT_EMAIL = `You are a data extraction engine specialized in analyzing emails and unstructured text to identify a sequence of physical locations for a trip. Your ONLY task is to return a single, valid JSON object containing a list of **clean, formatted, physical addresses** that represent the main journey.
-
-**Primary Goal:** Extract the main sequence of travel locations from the text.
-
-**Output Format (Strictly Enforced):**
-Your entire response must be ONLY a single JSON object with a "locations" key containing an array of strings.
-
-**Address Cleaning & Filtering Rules (CRITICAL):**
-1.  **Identify Travel Locations:** Look for sequences of addresses in a list or paragraph describing a route.
-2.  **Exclusion Filter:** IGNORE addresses associated with logistics ("Lunch", "Catering", "Office", "Meeting point") or in email signatures.
-3.  **Clean & Format Addresses:**
-    *   **Vienna District Prefix Rule:** For Vienna, if a location part starts with a number and a dot (e.g., '2.', '13.'), convert this to the correct 4-digit postal code (e.g., '1020', '1130').
-    *   **Association Rule:** If a line contains a place name and a physical address for the same location, output ONLY the processed physical address.
-    *   **Deduplication:** The final "locations" array must NOT contain duplicate addresses.`;
+import { DATE_AGENT_SYSTEM_PROMPT, PROJECT_AGENT_SYSTEM_PROMPT, LOCATION_AGENT_SYSTEM_PROMPT, LOCATION_AGENT_SYSTEM_PROMPT_EMAIL, PRODUCTION_COMPANY_AGENT_SYSTEM_PROMPT } from './extractor-universal/prompts/prompts';
 
 const robustJsonParse = (jsonString: string, agentName: string): any | null => {
     let text = jsonString.trim();
@@ -143,7 +91,10 @@ const parseLocationAgentResponse = (jsonString: string): string[] => {
     return (data && Array.isArray(data.locations)) ? data.locations.filter((loc: any) => typeof loc === 'string' && loc.trim() !== '') : [];
 };
 
-const fileToBase64 = (file: File): Promise<{ mimeType: string; data: string }> => {
+const parseProductionCompanyAgentResponse = (jsonString: string): string => {
+    const data = robustJsonParse(jsonString, 'Production Company Agent');
+    return (data && typeof data.productionCompany === 'string') ? data.productionCompany : '';
+};const fileToBase64 = (file: File): Promise<{ mimeType: string; data: string }> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.readAsDataURL(file);
@@ -261,6 +212,7 @@ async function runOpenRouterAgent(
 const runDateAgentOpenRouter = (c: any, s: any) => runOpenRouterAgent(c, s, DATE_AGENT_SYSTEM_PROMPT, "Extract date.", parseDateAgentResponse);
 const runProjectAgentOpenRouter = (c: any, s: any) => runOpenRouterAgent(c, s, PROJECT_AGENT_SYSTEM_PROMPT, "Extract project name.", parseProjectAgentResponse);
 const runLocationAgentOpenRouter = (c: any, s: any, docType: DocumentType) => runOpenRouterAgent(c, s, docType === DocumentType.EMAIL ? LOCATION_AGENT_SYSTEM_PROMPT_EMAIL : LOCATION_AGENT_SYSTEM_PROMPT, "Extract locations.", parseLocationAgentResponse);
+const runProductionCompanyAgentOpenRouter = (c: any, s: any) => runOpenRouterAgent(c, s, PRODUCTION_COMPANY_AGENT_SYSTEM_PROMPT, "Extract production company.", parseProductionCompanyAgentResponse);
 
 
 export async function fetchOpenRouterModels(apiKey?: string | null): Promise<AiModelInfo[]> {
@@ -320,56 +272,83 @@ async function _extractRawTripData(file: File, userProfile: UserProfile, documen
 
     const dateAgentPromise = runDateAgentOpenRouter(croppedContent, userProfile);
     const projectAgentPromise = runProjectAgentOpenRouter(croppedContent, userProfile);
+    const productionCompanyAgentPromise = runProductionCompanyAgentOpenRouter(croppedContent, userProfile);
     const locationAgentPromise = runLocationAgentOpenRouter(fullContent, userProfile, documentType);
   
-    const [dateResult, projectResult, locationResult] = await Promise.all([dateAgentPromise, projectAgentPromise, locationAgentPromise]);
+    const [dateResult, projectResult, productionCompanyResult, locationResult] = await Promise.all([dateAgentPromise, projectAgentPromise, productionCompanyAgentPromise, locationAgentPromise]);
 
     const cleanedLocations = await cleanAndVerifyAddresses(locationResult);
 
     return {
         date: formatDateForStorage(dateResult),
         projectName: projectResult,
+        productionCompany: productionCompanyResult,
         locations: cleanedLocations,
         reason: projectResult || 'Extracted Trip',
         specialOrigin: SpecialOrigin.HOME,
     };
 }
 
-export async function processFileForTrip(file: File, userProfile: UserProfile, documentType: DocumentType): Promise<{ tripData: Omit<Trip, 'id' | 'projectId'>; projectName: string }> {
+export async function processFileForTrip(file: File, userProfile: UserProfile, documentType: DocumentType): Promise<{ tripData: Omit<Trip, 'id' | 'projectId'>; projectName: string, productionCompany: string }> {
+
     const userHomeAddress = (userProfile.address && userProfile.city && userProfile.country) ? `${userProfile.address}, ${userProfile.city}, ${userProfile.country}` : null;
+
     if (!userHomeAddress) throw new Error("Your home address is not set in your profile.");
+
   
+
     const extractedData = await _extractRawTripData(file, userProfile, documentType);
+
   
+
     const finalLocations = [userHomeAddress, ...extractedData.locations, userHomeAddress];
+
   
+
     let distance = 0;
+
     try {
+
       const regionCode = getCountryCode(userProfile?.country);
+
       const calculatedDist = await calculateDistanceViaBackend(finalLocations, regionCode);
+
       distance = calculatedDist ?? 0;
+
     } catch (e) {
+
       console.warn(`Could not calculate distance for trip. Reason:`, e instanceof Error ? e.message : e);
+
     }
+
   
+
     const tripData: Omit<Trip, 'id' | 'projectId'> = {
+
       date: extractedData.date || new Date().toISOString().split('T')[0],
+
       locations: finalLocations,
+
       distance,
+
       reason: extractedData.reason || extractedData.projectName || 'Extracted Trip',
+
       specialOrigin: SpecialOrigin.HOME,
+
     };
+
   
-    return { tripData, projectName: extractedData.projectName };
+
+    return { tripData, projectName: extractedData.projectName, productionCompany: extractedData.productionCompany };
+
 }
 
-// New: Universal extractor wrapper using Direct/Agent modes (with OCR in Agent)
 export async function processFileForTripUniversal(
   input: { file?: File; text?: string },
   userProfile: UserProfile,
   documentType: DocumentType,
   mode: ExtractMode
-): Promise<{ tripData: Omit<Trip, 'id' | 'projectId'>; projectName: string }> {
+): Promise<{ tripData: Omit<Trip, 'id' | 'projectId'>; projectName: string, productionCompany: string }> {
   const userHomeAddress = (userProfile.address && userProfile.city && userProfile.country)
     ? `${userProfile.address}, ${userProfile.city}, ${userProfile.country}`
     : null;
@@ -407,5 +386,5 @@ export async function processFileForTripUniversal(
     specialOrigin: SpecialOrigin.HOME,
   };
 
-  return { tripData, projectName: extraction.projectName };
+  return { tripData, projectName: extraction.projectName, productionCompany: (extraction as any).productionCompany || '' };
 }
