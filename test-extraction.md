@@ -1,146 +1,113 @@
-# Test de Extracción - Guía de Verificación
+# Test de Extracción - Guía de Verificación v2
 
-## ✅ Cambios Implementados
+## 🔥 CAMBIO CRÍTICO AGREGADO
 
-### 1. Prompts Mejorados en TODOS los puntos de extracción:
+### ✅ Post-Procesamiento Inteligente
+He agregado **filtrado automático** en `postProcess.ts` que elimina ubicaciones inválidas DESPUÉS de la extracción de IA.
 
-#### Archivos Actualizados:
-- ✅ `services/extractor-universal/prompts/callsheet.ts` - Prompt directo principal
-- ✅ `lib/gemini/prompt.ts` - Prompts de Gemini (directo y agente)
-- ✅ `services/extractor-universal/prompts/prompts.ts` - Prompts de agentes especializados
-- ✅ `dev-server.mjs` - Prompts del servidor de desarrollo
-- ✅ `api/proxy.ts` - Prompts del servidor de producción
+**Nuevo archivo modificado:**
+- ✅ `services/extractor-universal/postProcess.ts` - **Filtrado inteligente automático**
 
-### 2. Reglas Críticas Agregadas:
+### 🎯 Filtros Aplicados Automáticamente:
 
-**EXTRAE SOLO:**
-- ✅ Ubicaciones marcadas como "Drehort", "Location", "Set", "Motiv"
-- ✅ Direcciones completas: Calle + Número + Código Postal/Ciudad
-- ✅ Ejemplo: "Salmgasse 10, 1030 Wien", "Palais Rasumofsky, 23-25, 1030 Wien"
+#### ❌ **ELIMINA Ubicaciones con Keywords de Logística:**
+- basis, parken, parking, aufenthalt, kostüm, costume
+- maske, makeup, hair, lunch, catering, team, technik
+- office, meeting, transport, pick up, driver, car
+- wardrobe, load, unload, crew parking, unit base
 
-**IGNORA:**
-- ❌ Logística: Basis, Parken, Aufenthalt, Kostüm, Maske, Lunch, Catering, Team, Technik
-- ❌ Nombres de habitaciones: "Suite Nico", "Keller", "Salon", "Empfang", "Villa Dardenne"
-- ❌ Descripciones sin dirección: "Catering Bereich", "Studio"
+#### ❌ **ELIMINA Nombres de Habitaciones/Lugares Internos:**
+- Que empiecen con: suite, salon, keller, empfang, studio, villa, raum, room, floor, etage
+- Que empiecen con: bereich, area, zona, zone
+- Números de piso sin dirección: "3. Etage", "2nd Floor"
+
+#### ❌ **ELIMINA Ubicaciones Incompletas:**
+- Sin números (sin número de calle ni código postal)
+- Una sola palabra sin contexto
+- Menos de 5 caracteres
+
+#### ✅ **ACEPTA Solo Direcciones Completas:**
+- Con coma: "Salmgasse 10, 1030 Wien"
+- Con código postal: "Salmgasse 10 1030 Wien"
+- Con nombre de ciudad: "Salmgasse 10, Wien"
+
+## 🧪 Ejemplo de Filtrado Automático
+
+**Input de IA (puede contener basura):**
+```json
+{
+  "locations": [
+    "Palais Rasumofsky, 23-25, 1030 Wien",
+    "Suite Nico",
+    "Salmgasse 10, 1030 Wien",
+    "Keller",
+    "Salmgasse 19, 1030 Wien - Basis & Parken",
+    "Catering Bereich",
+    "Villa Dardenne",
+    "Salmgasse 6, 1030 Wien"
+  ]
+}
+```
+
+**Output Después del Post-Procesamiento:**
+```json
+{
+  "locations": [
+    "Palais Rasumofsky, 23-25, 1030 Wien",
+    "Salmgasse 10, 1030 Wien",
+    "Salmgasse 6, 1030 Wien"
+  ]
+}
+```
+
+**Filtrados automáticamente:**
+- ❌ "Suite Nico" → Nombre de habitación (patrón: ^suite)
+- ❌ "Keller" → Una palabra, sin números, incompleto
+- ❌ "Salmgasse 19... Basis & Parken" → Contiene keyword "parken"
+- ❌ "Catering Bereich" → Contiene keywords "catering" y "bereich"
+- ❌ "Villa Dardenne" → Una/dos palabras, sin números, incompleto
+
+## 📊 Logs en Consola
+
+Ahora verás logs como:
+```
+[PostProcess] Filtered out invalid location: "Suite Nico"
+[PostProcess] Filtered out invalid location: "Keller"
+[PostProcess] Filtered out invalid location: "Catering Bereich"
+[PostProcess] Final locations count: 3 ["Palais...", "Salmgasse 10...", "Salmgasse 6..."]
+```
 
 ## 🧪 Cómo Probar
 
-### Prueba 1: Carga Masiva (Bulk Upload)
-1. Abre la app en http://localhost:5173
-2. Ve a "Trips" → Click en el botón de carga masiva
-3. Selecciona modo "AI Extraction"
-4. Sube un PDF de callsheet
-5. Click en "Process"
+1. **Recarga la aplicación** (Ctrl + Shift + R)
+2. **Sube un callsheet** en Carga Masiva o Proyecto
+3. **Abre la consola** del navegador (F12)
+4. **Busca los logs** `[PostProcess]` para ver qué se filtró
+5. **Verifica el resultado** - Solo deben aparecer direcciones completas
 
-**Resultado Esperado:**
-```json
-{
-  "date": "2025-10-15",
-  "projectName": "Nombre del Proyecto",
-  "locations": [
-    "Palais Rasumofsky, 23-25, 1030 Wien",
-    "Salmgasse 10, 1030 Wien"
-  ]
-}
-```
+## ✅ Doble Capa de Protección
 
-**NO debería aparecer:**
-- "Suite Nico"
-- "Keller"  
-- "Catering Bereich"
-- "Villa Dardenne"
+Ahora tienes **DOS capas** de filtrado:
 
-### Prueba 2: Extracción en Proyecto Individual
-1. Ve a "Projects"
-2. Abre un proyecto existente
-3. Click en "Extract from File"
-4. Sube un callsheet
-5. Click en "Process"
+1. **Prompts Mejorados** → Le dice a la IA qué extraer
+2. **Post-Procesamiento** → Filtra automáticamente cualquier basura que la IA haya extraído
 
-**Verificar:**
-- Solo direcciones completas
-- Sin nombres de habitaciones
-- Sin ubicaciones de logística
+**Incluso si la IA se equivoca, el post-procesamiento lo corrige!**
 
-## 📊 Logs de Debugging
+## 🚀 Servidores Activos
 
-Abre la consola del navegador (F12) y verifica estos logs:
+- ✅ Vite Dev Server: http://localhost:5173
+- ✅ API Dev Server: http://localhost:3000
+- ✅ Post-procesamiento activo y funcionando
 
-```
-[BulkUpload] Starting AI extraction...
-[ExtractorUniversal] Starting extraction...
-[DirectParse] Starting parse with provider: openrouter
-[DirectParse] OpenRouter result: { date, projectName, locations }
-```
+## 🔧 Si Aún Hay Problemas
 
-Si ves ubicaciones incorrectas en el resultado, el prompt no está siendo usado correctamente.
+Si TODAVÍA extrae ubicaciones inválidas:
 
-## 🔧 Troubleshooting
+1. **Copia el resultado** exacto que estás viendo
+2. **Revisa los logs** de `[PostProcess]` en la consola
+3. **Verifica** que los logs muestren el filtrado
+4. **Si una ubicación incorrecta pasa el filtro**, dime cuál es para agregar más reglas
 
-### Si sigue extrayendo nombres de habitaciones:
+La mayoría de ubicaciones incorrectas ahora deberían ser eliminadas automáticamente.
 
-1. **Verifica que los servidores se reiniciaron:**
-   ```powershell
-   # Detener todo
-   taskkill /F /IM node.exe
-   
-   # Reiniciar
-   npm run dev
-   node dev-server.mjs
-   ```
-
-2. **Limpia la caché del navegador:**
-   - Ctrl + Shift + R (recarga forzada)
-   - O abre en modo incógnito
-
-3. **Verifica el modo de extracción:**
-   - Asegúrate de usar "direct" mode (no "agent" por defecto)
-   - O prueba ambos modos
-
-4. **Revisa los logs del servidor:**
-   - Terminal del dev-server debería mostrar requests entrantes
-   - Busca `[dev-server] OpenRouter request:` en los logs
-
-## 🎯 Ejemplo Completo de Extracción Correcta
-
-**Input:** Callsheet con:
-```
-DREHORT 1:
-Palais Rasumofsky, 23-25, 1030 Wien
-Suite Nico (Interior)
-
-DREHORT 2:
-Salmgasse 10, 1030 Wien
-Keller
-
-BASIS & PARKEN:
-Salmgasse 19, 1030 Wien
-
-CATERING:
-Catering Bereich, Salmgasse 6
-```
-
-**Output Esperado:**
-```json
-{
-  "date": "2025-10-15",
-  "projectName": "Mi Proyecto",
-  "locations": [
-    "Palais Rasumofsky, 23-25, 1030 Wien",
-    "Salmgasse 10, 1030 Wien"
-  ]
-}
-```
-
-**Filtrados correctamente:**
-- ❌ "Suite Nico" (nombre de habitación)
-- ❌ "Keller" (nombre de habitación)
-- ❌ "Salmgasse 19, 1030 Wien" (Basis & Parken = logística)
-- ❌ "Catering Bereich" (nombre sin dirección completa + logística)
-
-## ✅ Servidores Activos
-
-- Vite Dev Server: http://localhost:5173
-- API Dev Server: http://localhost:3000
-
-Ambos servidores deben estar corriendo para que la extracción funcione.
