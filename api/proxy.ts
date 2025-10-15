@@ -293,6 +293,7 @@ async function handleOpenRouterChat(req: VercelRequest, res: VercelResponse) {
   if (body?.max_tokens) payload.max_tokens = body.max_tokens;
 
   try {
+    console.log('[OpenRouter Chat] Sending request to OpenRouter API...');
     const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -304,14 +305,20 @@ async function handleOpenRouterChat(req: VercelRequest, res: VercelResponse) {
       body: JSON.stringify(payload),
     });
 
+    console.log(`[OpenRouter Chat] Response status: ${response.status}`);
     const json = await response.json();
+    
     if (!response.ok) {
+      console.error('[OpenRouter Chat] API error:', json);
       throw new Error(`OpenRouter error ${response.status}: ${JSON.stringify(json)}`);
     }
 
     return sendJson(res, 200, json);
   } catch (error: any) {
-    console.error('[api/ai/openrouter/chat] Error:', error);
+    console.error('[OpenRouter Chat] Error:', {
+      message: error.message,
+      stack: error.stack
+    });
     return sendJson(res, 500, { error: 'OpenRouter request failed', details: error.message });
   }
 }
@@ -330,6 +337,7 @@ async function handleOpenRouterModels(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
+    console.log('[OpenRouter Models] Fetching models list...');
     const response = await fetch('https://openrouter.ai/api/v1/models', {
       headers: {
         Authorization: `Bearer ${apiKey}`,
@@ -338,8 +346,11 @@ async function handleOpenRouterModels(req: VercelRequest, res: VercelResponse) {
       },
     });
 
+    console.log(`[OpenRouter Models] Response status: ${response.status}`);
+
     if (!response.ok) {
       const detail = await response.text();
+      console.error('[OpenRouter Models] API error:', detail);
       throw new Error(`OpenRouter error ${response.status}: ${detail}`);
     }
 
@@ -351,9 +362,13 @@ async function handleOpenRouterModels(req: VercelRequest, res: VercelResponse) {
           .sort((a: any, b: any) => a.name.localeCompare(b.name))
       : [];
 
+    console.log(`[OpenRouter Models] Successfully fetched ${models.length} models`);
     return sendJson(res, 200, { models });
   } catch (error: any) {
-    console.error('[api/ai/openrouter/models] Error:', error);
+    console.error('[OpenRouter Models] Error:', {
+      message: error.message,
+      stack: error.stack
+    });
     return sendJson(res, 500, { error: 'OpenRouter request failed', details: error.message });
   }
 }
@@ -369,16 +384,25 @@ async function handleOpenRouterStructured(req: VercelRequest, res: VercelRespons
   try {
     body = await readBody(req);
   } catch (error: any) {
+    console.error('[OpenRouter Structured] Failed to read body:', error);
     return sendJson(res, 400, { error: 'Invalid JSON body', details: error.message });
   }
 
   const text = body?.text?.trim();
   if (!text) {
+    console.error('[OpenRouter Structured] Missing text field in body');
     return sendError(res, 400, 'Request body must include a non-empty text field');
   }
 
+  console.log('[OpenRouter Structured] Processing request:', {
+    textLength: text.length,
+    useCrewFirst: body?.useCrewFirst || false,
+    model: body?.model || 'default'
+  });
+
   const apiKey = body?.apiKey?.trim() || defaultKey;
   if (!apiKey) {
+    console.error('[OpenRouter Structured] Missing API key');
     return sendError(res, 500, 'OpenRouter API key is not configured');
   }
 
@@ -408,6 +432,9 @@ async function handleOpenRouterStructured(req: VercelRequest, res: VercelRespons
     );
 
   try {
+    console.log('[OpenRouter Structured] Sending request to OpenRouter API...');
+    const startTime = Date.now();
+    
     const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -427,18 +454,33 @@ async function handleOpenRouterStructured(req: VercelRequest, res: VercelRespons
       }),
     });
 
+    const elapsed = Date.now() - startTime;
+    console.log(`[OpenRouter Structured] Response received in ${elapsed}ms, status: ${response.status}`);
+
     if (!response.ok) {
       const detail = await response.text();
+      console.error('[OpenRouter Structured] API error:', { status: response.status, detail });
       throw new Error(`OpenRouter error ${response.status}: ${detail}`);
     }
 
     const payload = await response.json();
     const message = payload?.choices?.[0]?.message?.content;
+    
+    if (!message) {
+      console.error('[OpenRouter Structured] No message content in response:', payload);
+      throw new Error('No content in OpenRouter response');
+    }
+    
     const parsed = typeof message === 'string' ? JSON.parse(message) : message;
+    console.log('[OpenRouter Structured] Successfully parsed response');
 
     return sendJson(res, 200, parsed);
   } catch (error: any) {
-    console.error('[api/ai/openrouter/structured] Error:', error);
+    console.error('[OpenRouter Structured] Error:', {
+      message: error.message,
+      stack: error.stack,
+      name: error.name
+    });
     return sendJson(res, 500, { error: 'OpenRouter request failed', details: error.message });
   }
 }
