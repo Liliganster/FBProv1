@@ -141,48 +141,77 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
       
       setIsProcessing(true);
 
-      const hasTextOnly = aiFiles.length === 0 && aiText.trim().length > 0;
-      const results = hasTextOnly
-        ? await Promise.all([
-            processFileForTripUniversal({ text: aiText }, userProfile, documentType, aiExtractMode)
-              .then(value => ({ status: 'fulfilled' as const, value }))
-              .catch(reason => ({ status: 'rejected' as const, reason, fileName: 'pasted-text' }))
-          ])
-        : await Promise.all(
-            aiFiles.map(file =>
-              processFileForTripUniversal({ file }, userProfile, documentType, aiExtractMode)
-                .then(value => ({ status: 'fulfilled' as const, value }))
-                .catch(reason => ({ status: 'rejected' as const, reason, fileName: file.name }))
-            )
-          );
+      try {
+          const hasTextOnly = aiFiles.length === 0 && aiText.trim().length > 0;
+          const itemsToProcess = hasTextOnly ? 1 : aiFiles.length;
+          
+          console.log(`[BulkUpload] Starting AI extraction for ${itemsToProcess} item(s) in ${aiExtractMode} mode`);
+          
+          const results = hasTextOnly
+            ? await Promise.all([
+                processFileForTripUniversal({ text: aiText }, userProfile, documentType, aiExtractMode)
+                  .then(value => {
+                      console.log('[BulkUpload] Successfully processed pasted text:', value);
+                      return { status: 'fulfilled' as const, value };
+                  })
+                  .catch(reason => {
+                      console.error('[BulkUpload] Failed to process pasted text:', reason);
+                      return { status: 'rejected' as const, reason, fileName: 'pasted-text' };
+                  })
+              ])
+            : await Promise.all(
+                aiFiles.map((file, idx) =>
+                  processFileForTripUniversal({ file }, userProfile, documentType, aiExtractMode)
+                    .then(value => {
+                        console.log(`[BulkUpload] Successfully processed file ${idx + 1}/${aiFiles.length}: ${file.name}`, value);
+                        return { status: 'fulfilled' as const, value };
+                    })
+                    .catch(reason => {
+                        console.error(`[BulkUpload] Failed to process file ${idx + 1}/${aiFiles.length}: ${file.name}`, reason);
+                        return { status: 'rejected' as const, reason, fileName: file.name };
+                    })
+                )
+              );
 
-      const successfulExtractions: { tripData: Omit<Trip, 'id' | 'projectId'>; projectName: string, productionCompany: string }[] = [];
-      let errorCount = 0;
-      
-      results.forEach((result) => {
-          if (result.status === 'fulfilled') {
-              successfulExtractions.push(result.value);
-          } else {
-              errorCount++;
-              console.error(`Failed to process file ${result.fileName}:`, result.reason);
+          const successfulExtractions: { tripData: Omit<Trip, 'id' | 'projectId'>; projectName: string, productionCompany: string }[] = [];
+          const errors: { fileName: string; error: string }[] = [];
+          
+          results.forEach((result) => {
+              if (result.status === 'fulfilled') {
+                  successfulExtractions.push(result.value);
+              } else {
+                  const errorMsg = result.reason instanceof Error 
+                      ? result.reason.message 
+                      : String(result.reason);
+                  errors.push({ fileName: result.fileName || 'unknown', error: errorMsg });
+              }
+          });
+
+          console.log(`[BulkUpload] Extraction complete: ${successfulExtractions.length} successful, ${errors.length} failed`);
+
+          if (errors.length > 0) {
+              const errorDetails = errors.map(e => `${e.fileName}: ${e.error}`).join('\n');
+              showToast(`Failed to process ${errors.length} file(s):\n${errorDetails}`, 'error');
           }
-      });
-
-      if (errorCount > 0) {
-          showToast(`Failed to process ${errorCount} files. Check console for details.`, 'error');
+          
+          if (successfulExtractions.length > 0) {
+              const reviewData = successfulExtractions.map(res => ({
+                  ...res.tripData,
+                  projectName: res.projectName,
+                  productionCompany: res.productionCompany,
+                  warnings: [],
+              }));
+              prepareForReview(reviewData);
+              showToast(`Successfully extracted ${successfulExtractions.length} trip(s)`, 'success');
+          } else if (errors.length > 0) {
+              showToast('No files were successfully processed. Please check the errors above.', 'error');
+          }
+      } catch (error) {
+          console.error('[BulkUpload] Unexpected error during AI processing:', error);
+          showToast(`Unexpected error: ${error instanceof Error ? error.message : String(error)}`, 'error');
+      } finally {
+          setIsProcessing(false);
       }
-      
-      if (successfulExtractions.length > 0) {
-const reviewData = successfulExtractions.map(res => ({
-            ...res.tripData,
-            projectName: res.projectName,
-            productionCompany: res.productionCompany,
-            warnings: [],
-          }));
-          prepareForReview(reviewData);
-      }
-      
-      setIsProcessing(false);
   };
 
     const handleDriveImport = () => {
@@ -348,6 +377,7 @@ const reviewData = successfulExtractions.map(res => ({
     const existingTripSignatures = new Set(
         trips.map(t => normalizeSignature(t.date, t.locations))
     );
+    const newTripSignatures = new Set<string>();
     const newProjects = new Map<string, string>();
 
     const newDraftTrips = data.map(row => {

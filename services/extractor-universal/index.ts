@@ -122,19 +122,39 @@ export async function extractUniversalStructured({
   provider?: ExtractProvider;
   credentials?: ProviderCredentials;
 }): Promise<CallsheetExtraction> {
-  const normalized = mode === 'direct' ? await normalizeDirect(input) : await normalizeAgent(input);
-  const { provider: chosen, creds } = resolveProvider(provider, credentials);
-  const tools = {
-    geocode_address: async ({ address }: { address: string }) => ({ lat: 40.4168, lng: -3.7038, confidence: 0.4, address }),
-    address_normalize: async ({ address }: { address: string }) => ({ normalized: (address || '').trim() }),
-  };
-  const parsed = mode === 'agent'
-    ? await agenticParse(normalized.text, tools, chosen, creds)
-    : await directParse(normalized.text, chosen, creds);
-  if (!isCallsheetExtraction(parsed)) {
-    throw new ExtractorError('ai_invalid_json', 'The AI did not return a valid JSON.');
+  console.log('[ExtractorUniversal] Starting extraction:', { mode, provider, hasFile: !!input.file, hasText: !!input.text });
+  
+  try {
+    const normalized = mode === 'direct' ? await normalizeDirect(input) : await normalizeAgent(input);
+    console.log('[ExtractorUniversal] Normalized text length:', normalized.text.length, 'source:', normalized.source);
+    
+    const { provider: chosen, creds } = resolveProvider(provider, credentials);
+    console.log('[ExtractorUniversal] Using provider:', chosen);
+    
+    const tools = {
+      geocode_address: async ({ address }: { address: string }) => ({ lat: 40.4168, lng: -3.7038, confidence: 0.4, address }),
+      address_normalize: async ({ address }: { address: string }) => ({ normalized: (address || '').trim() }),
+    };
+    
+    const parsed = mode === 'agent'
+      ? await agenticParse(normalized.text, tools, chosen, creds)
+      : await directParse(normalized.text, chosen, creds);
+    
+    console.log('[ExtractorUniversal] Parsed result:', parsed);
+    
+    if (!isCallsheetExtraction(parsed)) {
+      console.error('[ExtractorUniversal] Invalid extraction format:', parsed);
+      throw new ExtractorError('ai_invalid_json', 'The AI did not return a valid JSON.');
+    }
+    
+    const processed = postProcessCrewFirstData(parsed);
+    console.log('[ExtractorUniversal] Post-processed result:', processed);
+    
+    return processed;
+  } catch (error) {
+    console.error('[ExtractorUniversal] Extraction failed:', error);
+    throw error;
   }
-  return postProcessCrewFirstData(parsed);
 }
 
 export { ExtractorError };
