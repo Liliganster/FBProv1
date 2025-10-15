@@ -60,16 +60,9 @@ export const GoogleCalendarProvider: React.FC<{ children: ReactNode }> = ({ chil
     let cancelled = false;
     const checkProxy = async () => {
       try {
-        // In development, skip backend proxy check
-        if (import.meta.env.DEV) {
-          console.log('[Google Calendar] Development mode: skipping backend proxy check');
-          if (!cancelled) {
-            setCalendarProxyReady(true);
-            setCalendarProxyChecked(true);
-          }
-          return;
-        }
-
+        // Health check to ensure the backend proxy is ready for calendar operations.
+        // This is crucial because the frontend will delegate API calls (e.g., creating events)
+        // to this backend proxy to protect the API key.
         const res = await fetch('/api/google/calendar/events?health=1');
         if (!res.ok) throw new Error(`status ${res.status}`);
         const data = await res.json();

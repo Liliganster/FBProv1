@@ -24,6 +24,41 @@ function assertEnv(name) {
 const GCAL_EVENTS_BASE = 'https://www.googleapis.com/calendar/v3/calendars';
 const GCAL_CAL_LIST_URL = 'https://www.googleapis.com/calendar/v3/users/me/calendarList';
 
+app.get('/api/google/calendar/calendars', async (req, res) => {
+  try {
+    const auth = req.headers['authorization'] || req.headers['Authorization'];
+    if (!auth || typeof auth !== 'string' || !auth.startsWith('Bearer ')) {
+      return res.status(401).json({ error: 'Missing Authorization bearer token' });
+    }
+    const accessToken = auth.replace('Bearer ', '');
+    const apiKey = assertEnv('GOOGLE_CALENDAR_API_KEY');
+
+    const url = new URL(GCAL_CAL_LIST_URL);
+    url.searchParams.set('maxResults', '250');
+    if (apiKey) {
+      url.searchParams.set('key', apiKey);
+    }
+
+    const response = await fetch(url, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+
+    if (!response.ok) {
+      const detail = await response.text();
+      console.error(`[dev-server] Google Calendar List Error ${response.status}:`, detail);
+      return res.status(502).json({ error: 'Google Calendar list failed', details: detail });
+    }
+
+    const payload = await response.json();
+    const calendars = Array.isArray(payload?.items) ? payload.items : [];
+    return res.status(200).json({ calendars });
+
+  } catch (error) {
+    console.error('[dev-server] /api/google/calendar/calendars Error:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 app.get('/api/google/calendar/events', async (req, res) => {
   // Health check: indicates whether server has an API key configured
   if (req.query.health) {
@@ -100,40 +135,6 @@ app.post('/api/google/calendar/events', async (req, res) => {
     return res.status(400).json({ error: 'Unsupported action' });
   } catch (err) {
     console.error('[dev-server] calendar/events error', err);
-    return res.status(500).json({ error: 'Internal error', details: String(err?.message || err) });
-  }
-});
-
-// List available calendars for the authenticated user
-app.get('/api/google/calendar/calendars', async (req, res) => {
-  if (req.query && Object.prototype.hasOwnProperty.call(req.query, 'health')) {
-    const apiKey = assertEnv('GOOGLE_CALENDAR_API_KEY');
-    return res.status(200).json({ ready: true, usesApiKey: Boolean(apiKey) });
-  }
-  try {
-    const auth = req.headers['authorization'] || req.headers['Authorization'];
-    if (!auth || typeof auth !== 'string' || !auth.startsWith('Bearer ')) {
-      return res.status(401).json({ error: 'Missing Authorization bearer token' });
-    }
-    const accessToken = auth.replace('Bearer ', '');
-    const apiKey = assertEnv('GOOGLE_CALENDAR_API_KEY');
-
-    const url = new URL(GCAL_CAL_LIST_URL);
-    if (apiKey) url.searchParams.set('key', apiKey);
-
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: { Authorization: `Bearer ${accessToken}` },
-    });
-    if (!response.ok) {
-      const text = await response.text();
-      return res.status(502).json({ error: 'Google Calendar error', details: `${response.status}: ${text}` });
-    }
-    const data = await response.json();
-    const calendars = Array.isArray(data?.items) ? data.items : [];
-    return res.status(200).json({ calendars });
-  } catch (err) {
-    console.error('[dev-server] calendar/calendars error', err);
     return res.status(500).json({ error: 'Internal error', details: String(err?.message || err) });
   }
 });
