@@ -1,5 +1,39 @@
 export function buildDirectPrompt(text: string) {
-  return `You are an expert in film and TV production logistics. Analyze the following content (callsheet, pdf text, csv or plain text) and extract a concise JSON object with EXACTLY these keys:\n\n{\n  "date": "YYYY-MM-DD",\n  "projectName": "string",\n  "locations": ["string", "string", ...]\n}\n\nConstraints:\n- Output ONLY valid JSON without markdown or explanations.\n- Follow the exact schema and keys above.\n- If multiple dates appear, pick the primary shooting day.\n- If the project name and production company both appear, return the creative project title (not the company).\n- Locations should be clean, human-readable addresses or place names.\n- If a location repeats, deduplicate while preserving order.\n\nContent:\n\n${text}`;
+  return `You are an expert in film and TV production logistics. Analyze the following content (callsheet, pdf text, csv or plain text) and extract a concise JSON object with EXACTLY these keys:
+
+{
+  "date": "YYYY-MM-DD",
+  "projectName": "string",
+  "locations": ["string", "string", ...]
+}
+
+**CRITICAL EXTRACTION RULES FOR LOCATIONS:**
+
+1. **ONLY Filming Locations**: Extract ONLY locations marked as "Drehort", "Location", "Set", or "Motiv" (actual filming locations)
+
+2. **IGNORE Logistics**: You MUST IGNORE locations for: "Basis", "Parken", "Aufenthalt", "Kostüm", "Maske", "Lunch", "Catering", "Team", "Technik", "Office", "Meeting point", "Transport"
+
+3. **IGNORE Room/Internal Names**: You MUST IGNORE internal location names or room names without complete street addresses. Examples to IGNORE: "Suite Nico", "Keller", "Villa Dardenne", "Catering Bereich", "Salon", "Empfang", "Studio"
+
+4. **Complete Address Required**: Each location MUST be a complete physical address with street name + house number + postal code/city
+   - ✅ GOOD: "Salmgasse 10, 1030 Wien", "Palais Rasumofsky, 23-25, 1030 Wien"
+   - ❌ BAD: "Suite Nico", "Keller", "Villa Dardenne", "Catering Bereich"
+
+5. **Place Name + Address**: If a location has both a place name AND a street address, use ONLY the complete street address
+
+6. **Vienna District Format**: Convert Vienna district prefixes (e.g., "2., Straße") to postal codes (e.g., "Straße, 1020 Wien")
+
+7. **Deduplicate**: Remove duplicate addresses while preserving order
+
+Constraints:
+- Output ONLY valid JSON without markdown or explanations
+- Follow the exact schema and keys above
+- If multiple dates appear, pick the primary shooting day
+- If the project name and production company both appear, return the creative project title (not the company)
+
+Content:
+
+${text}`;
 }
 
 export function buildCrewFirstDirectPrompt(text: string) {

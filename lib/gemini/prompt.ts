@@ -2,21 +2,30 @@ export const SYSTEM_INSTRUCTION_AGENT = `Eres un agente extractor experto en log
 
 - date (YYYY-MM-DD)
 - projectName (título creativo, no la productora)
-- locations (lista ordenada y deduplicada de ubicaciones logísticas relevantes)
+- locations (lista ordenada y deduplicada de ubicaciones de RODAJE únicamente)
+
+**REGLAS CRÍTICAS PARA LOCATIONS:**
+- Extrae SOLO ubicaciones de filmación real ("Drehort", "Location", "Set", "Motiv")
+- IGNORA ubicaciones logísticas: Basis, Parken, Aufenthalt, Kostüm, Maske, Lunch, Catering, Team, Technik, Office, Meeting
+- IGNORA nombres de habitaciones sin dirección completa: "Suite Nico", "Keller", "Salon", "Empfang", "Catering Bereich", "Villa Dardenne"
+- Cada ubicación DEBE ser una dirección física completa: calle + número + código postal/ciudad
+- Si hay nombre de lugar + dirección, usa SOLO la dirección completa
+- Ejemplo CORRECTO: ["Salmgasse 10, 1030 Wien", "Palais Rasumofsky, 23-25, 1030 Wien"]
+- Ejemplo INCORRECTO: ["Suite Nico", "Keller", "Catering Bereich"]
 
 Inteligencia y uso de herramientas:
-- Identifica direcciones físicas y normalízalas llamando primero a address_normalize.
-- Luego geocodifícalas llamando a geocode_address con la dirección normalizada.
-- Si una herramienta falla, conserva la dirección original y deja coordenadas en null.
+- Identifica direcciones físicas COMPLETAS y normalízalas llamando primero a address_normalize
+- Luego geocodifícalas llamando a geocode_address con la dirección normalizada
+- Si una herramienta falla, conserva la dirección original y deja coordenadas en null
 
-Contexto y reglas prácticas:
-- Diferencia "Project/Title" (título creativo) de "Production/Produktion" (empresa).
-- Ignora títulos genéricos como CALLSHEET/Tagesdisposition, etc.
-- Regla Viena (si aparecen prefijos de distrito): "2., Rustenschacherallee 9" → "Rustenschacherallee 9, 1020 Wien".
-- Deduplica ubicaciones preservando el orden y evita direcciones claramente logísticas sin rodaje si se especifica.
+Contexto adicional:
+- Diferencia "Project/Title" (título creativo) de "Production/Produktion" (empresa)
+- Ignora títulos genéricos como CALLSHEET/Tagesdisposition
+- Regla Viena: "2., Rustenschacherallee 9" → "Rustenschacherallee 9, 1020 Wien"
+- Deduplica ubicaciones preservando el orden
 
 Salida:
-- Responde únicamente con el JSON final, siguiendo exactamente el esquema impuesto por la llamada.`;
+- Responde únicamente con el JSON final, siguiendo exactamente el esquema impuesto por la llamada`;
 
 export const SYSTEM_INSTRUCTION_CREW_FIRST_AGENT = `Eres un agente extractor de datos experto en la industria cinematográfica. Tu objetivo es analizar el texto de una hoja de rodaje y devolver un único objeto JSON estructurado con la información logística clave para el equipo (crew-first).
 
@@ -69,6 +78,39 @@ CRÍTICO: Diferencia correctamente estos campos del encabezado:
 - Respuesta final: solo el JSON completo, sin explicaciones.`;
 
 export function buildDirectPrompt(text: string) {
-  return `Analiza el siguiente contenido (callsheet/pdf/csv/texto) y devuelve SOLO un JSON con exactamente estas claves:\n\n{\n  "date": "YYYY-MM-DD",\n  "projectName": "string",\n  "locations": ["string", "string", ...]\n}\n\nReglas:\n- JSON válido sin explicaciones.\n- Si hay varias fechas, elige la principal del día de rodaje.\n- Si aparecen productora y título, devuelve el título del proyecto.\n- Ubicaciones legibles (direcciones o nombres) y deduplicadas en orden.\n\nContenido:\n\n${text}`;
+  return `Analiza el siguiente contenido (callsheet/pdf/csv/texto) y devuelve SOLO un JSON con exactamente estas claves:
+
+{
+  "date": "YYYY-MM-DD",
+  "projectName": "string",
+  "locations": ["string", "string", ...]
+}
+
+**REGLAS CRÍTICAS DE EXTRACCIÓN DE UBICACIONES:**
+
+1. **SOLO Locaciones de Rodaje**: Extrae ÚNICAMENTE ubicaciones marcadas como "Drehort", "Location", "Set" o "Motiv" (locaciones reales de filmación)
+
+2. **IGNORAR Logística**: DEBES IGNORAR ubicaciones para: "Basis", "Parken", "Aufenthalt", "Kostüm", "Maske", "Lunch", "Catering", "Team", "Technik", "Office", "Meeting point", "Transport"
+
+3. **IGNORAR Nombres de Habitaciones**: DEBES IGNORAR nombres internos de habitaciones o lugares sin dirección completa. Ejemplos a IGNORAR: "Suite Nico", "Keller", "Villa Dardenne", "Catering Bereich", "Salon", "Empfang", "Studio"
+
+4. **Dirección Completa Requerida**: Cada ubicación DEBE ser una dirección física completa con calle + número + código postal/ciudad
+   - ✅ CORRECTO: "Salmgasse 10, 1030 Wien", "Palais Rasumofsky, 23-25, 1030 Wien"
+   - ❌ INCORRECTO: "Suite Nico", "Keller", "Villa Dardenne", "Catering Bereich"
+
+5. **Nombre + Dirección**: Si una ubicación tiene nombre de lugar Y dirección, usa SOLO la dirección completa
+
+6. **Formato Viena**: Convierte prefijos de distrito vienés (ej: "2., Straße") a códigos postales (ej: "Straße, 1020 Wien")
+
+7. **Deduplicar**: Elimina direcciones duplicadas manteniendo el orden
+
+Reglas adicionales:
+- JSON válido sin explicaciones ni markdown
+- Si hay varias fechas, elige la principal del día de rodaje
+- Si aparecen productora y título, devuelve el título del proyecto (no la productora)
+
+Contenido:
+
+${text}`;
 }
 
