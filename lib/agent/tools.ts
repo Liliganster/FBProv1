@@ -6,7 +6,7 @@ export const tools = [
     type: 'function',
     function: {
       name: 'address_normalize',
-      description: 'Normaliza y limpia una dirección cruda para prepararla para geocodificación',
+      description: 'Normaliza y limpia una dirección cruda para prepararla para geocodificación. Devuelve { normalized }',
       parameters: {
         type: 'object',
         properties: {
@@ -23,7 +23,7 @@ export const tools = [
     type: 'function',
     function: {
       name: 'geocode_address',
-      description: 'Geocodifica una dirección usando Google Maps API. Convierte dirección en coordenadas GPS',
+      description: 'Geocodifica una dirección (usa el resultado de address_normalize). Devuelve { formatted_address, latitude, longitude, confidence }',
       parameters: {
         type: 'object',
         properties: {
@@ -50,3 +50,4 @@ export type ToolResult = {
   name: ToolName;
   result: any;
 };
+

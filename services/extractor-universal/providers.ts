@@ -49,7 +49,8 @@ export async function parseWithOpenRouter(
   text: string,
   apiKeyOverride?: string | null,
   modelOverride?: string | null,
-  useCrewFirst = false
+  useCrewFirst = false,
+  mode: 'direct' | 'agent' = 'direct'
 ): Promise<CallsheetExtraction | CrewFirstCallsheet> {
   const res = await fetchWithRateLimit('/api/ai/openrouter/structured', {
     method: 'POST',
@@ -59,6 +60,7 @@ export async function parseWithOpenRouter(
       apiKey: apiKeyOverride ?? undefined,
       model: modelOverride ?? undefined,
       useCrewFirst,
+      mode,
     }),
   });
   return await parseJsonResponse(res, 'openrouter', useCrewFirst);

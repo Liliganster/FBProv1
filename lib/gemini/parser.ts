@@ -30,7 +30,15 @@ export async function agenticParse(
   useCrewFirst = false
 ): Promise<CallsheetExtraction | CrewFirstCallsheet> {
   if (provider === 'openrouter') {
-    return await directParse(text, 'openrouter', creds, useCrewFirst);
+    // Run via OpenRouter structured endpoint. If useCrewFirst is true, the server uses
+    // the function-calling orchestrator; otherwise it returns structured JSON directly.
+    return await parseWithOpenRouter(
+      text,
+      creds?.openRouterApiKey || undefined,
+      creds?.openRouterModel || undefined,
+      useCrewFirst,
+      'agent'
+    );
   }
 
   // Tool map retained for backwards compatibility; tooling executed server-side.

@@ -1,5 +1,6 @@
 import { GoogleGenAI } from '@google/genai';
 import type { CallsheetExtraction, CrewFirstCallsheet } from '../../../services/extractor-universal/config/schema';
+import { callsheetSchema, crewFirstCallsheetSchema } from '../../../services/extractor-universal/config/schema';
 import {
   buildDirectPrompt as buildCallsheetPrompt,
   buildCrewFirstDirectPrompt,
@@ -12,6 +13,8 @@ import {
   buildDirectPrompt as buildAgentPrompt
 } from '../../gemini/prompt';
 import { withRateLimit } from '../../rate-limiter';
+import { tools as toolDeclarations } from '../../agent/tools';
+import { executeTool } from '../../agent/executor';
 
 type Mode = 'direct' | 'agent';
 
@@ -58,6 +61,8 @@ async function runDirect(text: string, ai: GoogleGenAI, useCrewFirst = false): P
   const result: any = await ai.models.generateContent({
     model: GEMINI_MODEL,
     contents: [{ role: 'user', parts: [{ text: prompt }] }],
+    responseMimeType: 'application/json',
+    responseSchema: useCrewFirst ? (crewFirstCallsheetSchema as any) : (callsheetSchema as any),
   } as any);
 
   const output =
@@ -87,16 +92,18 @@ async function runDirect(text: string, ai: GoogleGenAI, useCrewFirst = false): P
 type ToolFn = (args: Record<string, unknown>) => Promise<Record<string, unknown>>;
 
 async function runAgent(text: string, ai: GoogleGenAI, useCrewFirst = false): Promise<CallsheetExtraction | CrewFirstCallsheet> {
+  // Real tool execution is implemented server-side via executor
   const tools: Record<string, ToolFn> = {
-    geocode_address: async ({ address }) => ({
-      lat: 40.4168,
-      lng: -3.7038,
-      confidence: 0.4,
-      address,
-    }),
-    address_normalize: async ({ address }) => ({
-      normalized: typeof address === 'string' ? address.trim() : '',
-    }),
+    geocode_address: async ({ address }) => {
+      const res = await executeTool('geocode_address', { address });
+      return res as any;
+    },
+    address_normalize: async ({ raw, address }) => {
+      // Support both { raw } and legacy { address }
+      const value = typeof raw === 'string' ? raw : (typeof address === 'string' ? address : '');
+      const res = await executeTool('address_normalize', { raw: value });
+      return res as any;
+    },
   };
 
   const systemInstruction = useCrewFirst ? SYSTEM_INSTRUCTION_CREW_FIRST_AGENT : SYSTEM_INSTRUCTION_AGENT;
@@ -110,9 +117,12 @@ async function runAgent(text: string, ai: GoogleGenAI, useCrewFirst = false): Pr
     const response: any = await ai.models.generateContent({
       model: GEMINI_MODEL,
       messages,
-      tools: [{ functionDeclarations: Object.keys(tools).map((name) => ({ name, description: `Tool ${name}`, parameters: { type: 'object' } })) }],
+      // Use our tool declarations (Gemini-compatible)
+      tools: [{ functionDeclarations: toolDeclarations.map((t: any) => t.function) }],
       toolConfig: { functionCallingConfig: { mode: 'AUTO' } },
       temperature: 0,
+      responseMimeType: 'application/json',
+      responseSchema: useCrewFirst ? (crewFirstCallsheetSchema as any) : (callsheetSchema as any),
     } as any);
 
     const parts = response?.response?.candidates?.[0]?.content?.parts || [];

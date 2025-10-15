@@ -1,4 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import geminiHandler from '../lib/api-handlers/ai/gemini';
 
 // ============================================================================
 // CONSOLIDATED API PROXY - ALL HANDLERS IN ONE FILE
@@ -251,47 +252,13 @@ async function handleAI(route: string, req: VercelRequest, res: VercelResponse) 
 }
 
 async function handleGemini(req: VercelRequest, res: VercelResponse) {
-  if (req.method !== 'POST') {
-    return sendError(res, 405, 'Method Not Allowed');
-  }
-
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) {
-    return sendError(res, 500, 'Gemini API key is not configured');
-  }
-
-  let body: any;
-  try {
-    body = await readBody(req);
-  } catch (error: any) {
-    return sendJson(res, 400, { error: 'Invalid JSON body', details: error.message });
-  }
-
-  const text = body?.text;
-  if (typeof text !== 'string' || !text.trim()) {
-    return sendError(res, 400, 'Request body must include a non-empty text field');
-  }
-
-  // Simplified Gemini handler - forward to Google AI
-  try {
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-001:generateContent?key=${apiKey}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ role: 'user', parts: [{ text }] }]
-      })
-    });
-
-    if (!response.ok) {
-      throw new Error(`Gemini API error: ${response.status}`);
-    }
-
-    const data = await response.json();
-    return sendJson(res, 200, data);
-  } catch (error: any) {
-    console.error('[api/ai/gemini] Error:', error);
-    return sendJson(res, 500, { error: 'Gemini request failed', details: error.message });
-  }
+  // Delegate to the consolidated Gemini handler with tools, schemas and agent loop
+  // It already handles method checks, body parsing, and error formatting.
+  // Note: rate limiting is already applied at the top-level proxy.
+  // The imported handler also applies its own internal rate limit wrapper.
+  // This is acceptable and conservative for free-tier limits.
+  // @ts-ignore - handler signature matches (req, res)
+  return geminiHandler(req as any, res as any);
 }
 
 async function handleOpenRouterChat(req: VercelRequest, res: VercelResponse) {
