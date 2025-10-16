@@ -339,7 +339,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
             }
         }
 
-        const reason = reasonIndex > -1 ? (values[reasonIndex]?.trim() || projectName) : projectName;
+        const reason = reasonIndex > -1 ? (values[reasonIndex]?.trim() || 'Trabajo') : 'Trabajo';
         const origin = values[originIndex]?.trim() ?? '';
         const destination = values[destinationIndex]?.trim() ?? '';
         const stops = stopIndices.map(idx => values[idx]?.trim() ?? '').filter(stop => stop);

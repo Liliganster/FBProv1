@@ -376,7 +376,7 @@ export async function processFileForTripUniversal(
   }
 
   const date = extraction.date || new Date().toISOString().split('T')[0];
-  const reason = extraction.projectName || 'Extracted Trip';
+  const reason = 'Trabajo';
 
   const tripData: Omit<Trip, 'id' | 'projectId'> = {
     date,
