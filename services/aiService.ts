@@ -386,5 +386,5 @@ export async function processFileForTripUniversal(
     specialOrigin: SpecialOrigin.HOME,
   };
 
-  return { tripData, projectName: extraction.projectName, productionCompany: (extraction as any).productionCompany || '' };
+  return { tripData, projectName: extraction.projectName, productionCompany: extraction.productionCompany || 'Unknown' };
 }

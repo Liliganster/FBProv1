@@ -27,11 +27,12 @@ export function isCrewFirstLocation(x: any): x is CrewFirstLocation {
 }
 
 // Legacy version for backward compatibility (simple string array locations)
-export function isCallsheetSimple(x: any): x is { date: string; projectName: string; locations: string[] } {
+export function isCallsheetSimple(x: any): x is { date: string; projectName: string; productionCompany: string; locations: string[] } {
   return (
     x && typeof x === 'object' &&
     typeof x.date === 'string' &&
     typeof x.projectName === 'string' &&
+    typeof x.productionCompany === 'string' &&
     Array.isArray(x.locations) && x.locations.every((s: any) => typeof s === 'string')
   );
 }

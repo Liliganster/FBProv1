@@ -5,6 +5,7 @@ export function isCallsheetExtraction(x: any): x is CallsheetExtraction {
     x && typeof x === 'object' &&
     typeof x.date === 'string' &&
     typeof x.projectName === 'string' &&
+    typeof x.productionCompany === 'string' &&
     Array.isArray(x.locations) && x.locations.every((s: any) => typeof s === 'string')
   );
 }

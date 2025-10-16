@@ -5,6 +5,7 @@ Extract a JSON object with these keys:
 {
   "date": "YYYY-MM-DD",
   "projectName": "string",
+  "productionCompany": "string",
   "locations": ["string", "string", ...]
 }
 
@@ -27,12 +28,19 @@ YOUR TASK - Think like a production coordinator:
 
 2. PROJECT NAME:
    • Look for the creative title of the production
-   • May appear in headers, logos, or "Projekt:", "Production:", "Show:"
+   • May appear in headers, logos, or "Projekt:", "Titel:", "Title:", "Show:"
    • Examples: "Dark", "El Reino", "Vorstadtweiber", "Succession"
    • Distinguish from production company names (Netflix, Warner Bros, etc.)
-   • If both exist, return the creative title, not the company
+   • This is the TITLE, NOT the production company
 
-3. LOCATIONS - This is critical. Understand the DIFFERENCE:
+3. PRODUCTION COMPANY:
+   • Look for the production company/studio name
+   • May appear as: "Produktion:", "Production:", "Productora:", "Studio:"
+   • Examples: "UFA Fiction", "Netflix", "Warner Bros", "Bavaria Film"
+   • This is the COMPANY producing the project, NOT the creative title
+   • If not found or unclear, use "Unknown"
+
+4. LOCATIONS - This is critical. Understand the DIFFERENCE:
 
    🎬 FILMING LOCATIONS (what you SHOULD extract):
    • These are where the actual filming/shooting happens
@@ -61,11 +69,12 @@ YOUR TASK - Think like a production coordinator:
    • If it says "Basis", "Catering", "Parken", "Kostüm", "Maske" → It's logistics
    • If unclear, consider: Would cameras film here or is this crew support?
 
-   HOW TO IDENTIFY THE *MAIN* FILMING LOCATIONS:
-   • Prioritize locations that are explicitly numbered or listed, e.g., "Drehort 1", "Set A", "Location 2".
-   • The most important locations are often mentioned in the context of scene numbers or shooting schedules.
-   • A typical callsheet has 1-5 primary filming locations. If you find many more, you are likely being too inclusive. Focus on the most important ones where the main action happens.
-   • IGNORE addresses mentioned in passing, such as crew pickup points, team hotels, or secondary "weather cover" locations, unless they are clearly marked as a primary set for the day.
+   HOW TO IDENTIFY FILMING LOCATIONS:
+   • Extract ALL locations labeled as: "Drehort", "Set", "Location", "Motiv", "Loc"
+   • Locations may be numbered (Drehort 1, Set A) or in a list
+   • Extract AS MANY filming locations as are listed in the callsheet (could be 1, could be 10+)
+   • The callsheet determines the quantity - there is NO maximum limit
+   • IGNORE addresses mentioned in passing, such as crew pickup points or team hotels, unless they are clearly marked as a filming location
 
    ADDRESSES MAY VARY:
    • Some may be complete: "Hauptstraße 100, 10115 Berlin"
@@ -83,11 +92,12 @@ IMPORTANT PRINCIPLES:
 
 ✓ Be intelligent and context-aware
 ✓ Understand the PURPOSE of each location mentioned
-✓ Extract filming locations, ignore logistics/support locations
+✓ Extract ALL filming locations marked as Drehort/Set/Location/Motiv
+✓ Ignore logistics/support locations (Basis, Catering, Parken, etc.)
 ✓ Handle varied formats, languages, and structures
 ✓ Use your understanding of film production to interpret
 ✓ If a location appears in both filming AND logistics context, extract it only once as filming location
-✓ Typically expect 1-8 filming locations per day of shooting
+✓ No maximum limit - extract as many filming locations as the callsheet specifies (1, 5, 10, or more)
 
 ✗ Don't apply rigid rules
 ✗ Don't expect perfect formatting

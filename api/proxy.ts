@@ -429,32 +429,101 @@ async function handleOpenRouterStructured(req: VercelRequest, res: VercelRespons
       + 'Rules: 1) version must be "parser-crew-1". 2) date must be normalized to YYYY-MM-DD. 3) locations must use one of the allowed location_type values. 4) No explanations, only the JSON object.'
     )
     : (
-      `You are an AI expert in analyzing film production documents (callsheets). These documents vary widely - they can be professional PDFs, scanned documents, hand-written notes, in multiple languages, with logos/photos/headers.
+      `You are an expert AI for analyzing film production documents (callsheets). Use OCR-quality text analysis and intelligent context understanding.
 
-YOUR TASK: Think like a production coordinator. Understand the document and extract:
-1. DATE: The shooting date (Drehtag/Shooting Day/Fecha de rodaje) - normalize to YYYY-MM-DD
-2. PROJECT NAME: The creative title (show/film name), NOT the production company
-3. LOCATIONS: ONLY filming locations (where cameras roll), NOT logistics/crew support areas
+YOUR TASK - Extract ONLY these 4 essential fields:
 
-CRITICAL - Understand FILMING vs LOGISTICS:
-🎬 FILMING LOCATIONS (extract these):
-• Where actual shooting/filming happens
-• May be labeled: "Drehort", "Location", "Set", "Motiv", "Scene Location"
-• Can be complete addresses OR landmarks/venues/areas
-• Examples: "Salmgasse 10, 1030 Wien", "Schloss Schönbrunn", "Stephansplatz", "Hotel Imperial"
+1. DATE: The main shooting date (Drehtag/Shooting Day/Fecha de rodaje)
+   - Normalize to YYYY-MM-DD format
+   - Look for: "Datum:", "Date:", "Fecha:", or day headers
 
-⚙️ LOGISTICS (ignore these):
-• Crew support areas: Basis/Basecamp, Parken/Parking, Catering/Lunch, Kostüm/Wardrobe, Maske/Makeup/Hair
-• Examples: "Basis: Parkplatz", "Catering: Suite Nico", "Parken: Parkhaus"
+2. PRODUCTION COMPANY: The production company/studio name (Produktionsfirma/Production Company/Productora)
+   - NOT the project title - this is the COMPANY producing the project
+   - Look for: "Produktion:", "Production:", "Productora:", "Studio:", company logos
+   - Examples: "Warner Bros", "Netflix", "UFA Fiction", "Bavaria Film", "El Deseo"
+   - If not found, use "Unknown"
 
-HOW TO DISTINGUISH:
-• Read the CONTEXT around each location
-• If labeled as Drehort/Set/Location → filming (extract)
-• If labeled as Basis/Catering/Parken/Kostüm/Maske → logistics (ignore)
-• Addresses may be complete OR partial - extract what's given
-• Don't apply rigid rules - understand the purpose
+3. PROJECT NAME: The creative title of the show/film/series
+   - This is the TITLE, NOT the production company
+   - Look for: "Titel:", "Title:", "Project:", "Serie:", "Film:", "Proyecto:"
+   - Examples: "Dark", "El Reino", "Vorstadtweiber", "Succession"
+   - Ignore generic terms like "CALLSHEET" or "Tagesdisposition"
 
-Output JSON only: {"date":"YYYY-MM-DD","projectName":"string","locations":["string",...]}`
+4. LOCATIONS: ONLY the MAIN filming locations - BE HIGHLY SELECTIVE
+   
+   🎯 CRITICAL SELECTION RULES:
+   
+   a) Extract ONLY locations labeled as PRIMARY filming locations:
+      • "Drehort" / "Location" / "Set" / "Motiv" / "Scene Location"
+      • Look for section headers or emphasis (bold, larger text, numbered priority)
+   
+   b) LIMIT: Extract maximum 2-3 PRINCIPAL filming addresses
+      • If there are multiple locations, prioritize the first/main ones
+      • Ignore secondary or backup locations
+   
+   c) EACH address MUST be COMPLETE with:
+      • Street name + Number
+      • Postal code OR city name
+      • Format: "Straße Nummer, PLZ Stadt" or "Street Number, City"
+      • Example: "Salmgasse 10, 1030 Wien" ✓
+      • NOT acceptable: "Suite Nico" ✗, "Keller" ✗, "Wien" ✗
+   
+   d) IGNORE completely:
+      • Logistics: Basis, Basecamp, Parken, Parking, Crew Parking
+      • Services: Catering, Lunch, Essen, Kostüm, Wardrobe, Maske, Makeup, Hair
+      • Support: Aufenthalt, Holding, Green Room, Production Office, Technik
+      • Transport: Treffpunkt, Meeting Point, Shuttle, Mobile, Trailer
+      • Internal names: Suite names, room numbers, floor numbers, area names
+      • Examples to IGNORE: "Suite Nico", "Keller", "Catering Bereich", "Basis Parkplatz"
+   
+   e) Validation before including:
+      • Does it have a street name? ✓
+      • Does it have a number? ✓
+      • Does it have postal code or city? ✓
+      • Is it labeled as logistics/crew support? ✗ IGNORE
+      • Is it just a room/suite name? ✗ IGNORE
+
+INTELLIGENCE REQUIREMENTS:
+• Read the FULL document to understand structure
+• Identify section headers and labels (Drehort vs Basis vs Catering)
+• Distinguish between production company and project title
+• Extract only MAIN filming locations, not every address mentioned
+• Validate each address is complete before including it
+• Use OCR context clues (formatting, position, labels)
+
+OUTPUT FORMAT (strict JSON only):
+{"date":"YYYY-MM-DD","productionCompany":"string","projectName":"string","locations":["complete address 1","complete address 2"]}
+
+EXAMPLES:
+
+Good extraction ✓:
+{
+  "date": "2025-02-25",
+  "productionCompany": "UFA Fiction",
+  "projectName": "VORSTADTWEIBER",
+  "locations": [
+    "Salmgasse 10, 1030 Wien",
+    "Palais Rasumofsky, 1030 Wien"
+  ]
+}
+
+Bad extraction ✗ (too many locations, includes logistics):
+{
+  "date": "2025-02-25",
+  "productionCompany": "Unknown",
+  "projectName": "VORSTADTWEIBER", 
+  "locations": [
+    "Salmgasse 10, 1030 Wien",
+    "Suite Nico",  ← WRONG: room name
+    "Keller",  ← WRONG: incomplete
+    "Basis Parkplatz",  ← WRONG: logistics
+    "Catering Bereich",  ← WRONG: catering
+    "Salmgasse 6, 1030 Wien",
+    "Salmgasse 19, 1030 Wien"  ← TOO MANY
+  ]
+}
+
+Remember: Quality over quantity. 2-3 MAIN filming addresses only. Each must be complete and valid.`
     );
 
   try {

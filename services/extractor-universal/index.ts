@@ -116,13 +116,15 @@ export async function extractUniversalStructured({
   input,
   provider = 'auto',
   credentials,
+  useCrewFirst = false, // Use simple schema by default
 }: {
   mode: ExtractMode;
   input: ExtractInput;
   provider?: ExtractProvider;
   credentials?: ProviderCredentials;
+  useCrewFirst?: boolean; // Optional parameter to use CrewFirst schema
 }): Promise<CallsheetExtraction> {
-  console.log('[ExtractorUniversal] Starting extraction:', { mode, provider, hasFile: !!input.file, hasText: !!input.text });
+  console.log('[ExtractorUniversal] Starting extraction:', { mode, provider, useCrewFirst, hasFile: !!input.file, hasText: !!input.text });
   
   try {
     const normalized = mode === 'direct' ? await normalizeDirect(input) : await normalizeAgent(input);
@@ -136,9 +138,11 @@ export async function extractUniversalStructured({
       address_normalize: async ({ address }: { address: string }) => ({ normalized: (address || '').trim() }),
     };
     
+    // Mode controls OCR behavior, useCrewFirst controls schema
+    // direct mode = fast, no OCR | agent mode = with OCR and optional function calling
     const parsed = mode === 'agent'
-      ? await agenticParse(normalized.text, tools, chosen, creds, true)
-      : await directParse(normalized.text, chosen, creds, true);
+      ? await agenticParse(normalized.text, tools, chosen, creds, useCrewFirst)
+      : await directParse(normalized.text, chosen, creds, useCrewFirst);
     
     console.log('[ExtractorUniversal] Parsed result:', parsed);
     
