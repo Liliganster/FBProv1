@@ -1,5 +1,7 @@
 import type { CallsheetExtraction } from './config/schema';
 
+import type { CallsheetExtraction } from './config/schema';
+
 /**
  * Post-processing for extracted callsheet data
  * Applies LIGHTWEIGHT filtering to remove only obvious logistics/crew locations
@@ -75,5 +77,8 @@ export function postProcessCrewFirstData(data: CallsheetExtraction): CallsheetEx
   console.log(`[PostProcess] Final locations count: ${locations.length}`, locations);
   return { date, projectName, locations };
 }
+
+
+
 
 
