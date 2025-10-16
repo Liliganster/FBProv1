@@ -6,8 +6,9 @@ import type { CallsheetExtraction } from './config/schema';
  * NO maximum limits, NO strict format validation.
  */
 
-// Keywords that indicate logistics, not filming locations
-const LOGISTICS_KEYWORDS = [
+// Keywords that indicate logistics or non-principal filming (NOT main filming locations)
+const NON_PRINCIPAL_KEYWORDS = [
+  // Logistics
   'basis', 'base', 'basecamp', 
   'parken', 'parking', 'parkplatz',
   'aufenthalt', 
@@ -21,13 +22,20 @@ const LOGISTICS_KEYWORDS = [
   'mobile', 'trailer', 'wohnwagen',
   'treffpunkt', 'meeting point',
   'hospital', 'krankenhaus', 'arzt',
-  'toiletten', 'toilets', 'wc', 'restroom', 'sanitär'
+  'toiletten', 'toilets', 'wc', 'restroom', 'sanitär',
+  
+  // Non-principal filming
+  'drone', 'drones', 'drohne', 'drohnen',
+  'b-unit', 'b unit', 'second unit', 'segunda unidad',
+  'weather cover', 'alternativ', 'alternative', 'alternativa',
+  'backup', 'respaldo', 'ersatz'
 ];
 
 /**
- * Simple logistics filter - trusts AI for address format and validity
+ * Simple filter - removes logistics and non-principal filming locations
+ * Trusts AI for everything else
  */
-function isFilmingLocation(location: string): boolean {
+function isPrincipalFilmingLocation(location: string): boolean {
   if (!location || location.trim().length < 3) {
     console.log(`[PostProcess] ❌ Filtered (too short): "${location}"`);
     return false;
@@ -35,10 +43,10 @@ function isFilmingLocation(location: string): boolean {
 
   const normalized = location.toLowerCase().trim();
 
-  // ONLY filter out obvious logistics keywords - everything else is accepted
-  for (const keyword of LOGISTICS_KEYWORDS) {
+  // Filter out logistics and non-principal filming (drones, b-unit, weather cover, etc.)
+  for (const keyword of NON_PRINCIPAL_KEYWORDS) {
     if (normalized.includes(keyword)) {
-      console.log(`[PostProcess] ❌ Filtered (logistics): "${location}"`);
+      console.log(`[PostProcess] ❌ Filtered (non-principal/logistics): "${location}"`);
       return false;
     }
   }
@@ -58,7 +66,7 @@ export function postProcessCrewFirstData(data: CallsheetExtraction): CallsheetEx
   const locations = (data.locations || [])
     .map((s) => (s || '').trim())
     .filter(Boolean)
-    .filter(isFilmingLocation) // Simple logistics filter only
+    .filter(isPrincipalFilmingLocation) // Filters logistics and non-principal (drones, b-unit, etc.)
     .filter((s) => {
       // Deduplicate
       const key = s.toLowerCase();
@@ -71,10 +79,10 @@ export function postProcessCrewFirstData(data: CallsheetExtraction): CallsheetEx
     });
     // NO .slice() - NO maximum limit!
 
-  console.log(`[PostProcess] Final locations count: ${locations.length}`, locations);
+  console.log(`[PostProcess] Final principal filming locations count: ${locations.length}`, locations);
   
   if (locations.length === 0) {
-    console.warn('[PostProcess] ⚠️ WARNING: No filming locations found after filtering!');
+    console.warn('[PostProcess] ⚠️ WARNING: No principal filming locations found after filtering!');
   }
   
   return { date, projectName, productionCompany, locations };
