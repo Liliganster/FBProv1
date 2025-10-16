@@ -151,7 +151,7 @@ export async function extractUniversalStructured({
       throw new ExtractorError('ai_invalid_json', 'The AI did not return a valid JSON.');
     }
     
-    const processed = postProcessCrewFirstData(parsed);
+    const processed = postProcessCrewFirstData(parsed, normalized.text);
     console.log('[ExtractorUniversal] Post-processed result:', processed);
     
     return processed;
