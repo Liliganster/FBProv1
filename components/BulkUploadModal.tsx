@@ -180,9 +180,11 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
               if (result.status === 'fulfilled') {
                   successfulExtractions.push(result.value);
               } else {
-                  const errorMsg = result.reason instanceof Error 
-                      ? result.reason.message 
-                      : String(result.reason);
+                  const errorMsg = result.reason?.code === 'requires_ocr'
+                      ? t('bulk_alert_requires_ocr')
+                      : result.reason instanceof Error 
+                          ? result.reason.message 
+                          : String(result.reason);
                   errors.push({ fileName: result.fileName || 'unknown', error: errorMsg });
               }
           });

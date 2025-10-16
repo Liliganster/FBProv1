@@ -60,7 +60,13 @@ YOUR TASK - Think like a production coordinator:
    • If it says "Drehort", "Set", "Location" → It's filming
    • If it says "Basis", "Catering", "Parken", "Kostüm", "Maske" → It's logistics
    • If unclear, consider: Would cameras film here or is this crew support?
-   
+
+   HOW TO IDENTIFY THE *MAIN* FILMING LOCATIONS:
+   • Prioritize locations that are explicitly numbered or listed, e.g., "Drehort 1", "Set A", "Location 2".
+   • The most important locations are often mentioned in the context of scene numbers or shooting schedules.
+   • A typical callsheet has 1-5 primary filming locations. If you find many more, you are likely being too inclusive. Focus on the most important ones where the main action happens.
+   • IGNORE addresses mentioned in passing, such as crew pickup points, team hotels, or secondary "weather cover" locations, unless they are clearly marked as a primary set for the day.
+
    ADDRESSES MAY VARY:
    • Some may be complete: "Hauptstraße 100, 10115 Berlin"
    • Some may be partial: "Schloss Schönbrunn" (famous landmark)
