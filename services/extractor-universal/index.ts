@@ -137,8 +137,8 @@ export async function extractUniversalStructured({
     };
     
     const parsed = mode === 'agent'
-      ? await agenticParse(normalized.text, tools, chosen, creds)
-      : await directParse(normalized.text, chosen, creds);
+      ? await agenticParse(normalized.text, tools, chosen, creds, true)
+      : await directParse(normalized.text, chosen, creds, true);
     
     console.log('[ExtractorUniversal] Parsed result:', parsed);
     
