@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import geminiHandler from '../lib/api-handlers/ai/gemini';
+// Gemini handler removed - use OpenRouter instead in production
 
 // ============================================================================
 // CONSOLIDATED API PROXY - ALL HANDLERS IN ONE FILE
@@ -263,13 +263,14 @@ async function handleAI(route: string, req: VercelRequest, res: VercelResponse) 
 }
 
 async function handleGemini(req: VercelRequest, res: VercelResponse) {
-  // Delegate to the consolidated Gemini handler with tools, schemas and agent loop
-  // It already handles method checks, body parsing, and error formatting.
-  // Note: rate limiting is already applied at the top-level proxy.
-  // The imported handler also applies its own internal rate limit wrapper.
-  // This is acceptable and conservative for free-tier limits.
-  // @ts-ignore - handler signature matches (req, res)
-  return geminiHandler(req as any, res as any);
+  // Gemini is not available in production serverless environment due to complex dependencies
+  // Use OpenRouter instead, which is the recommended provider
+  console.log('[Gemini] Request attempted but not available in production');
+  return sendJson(res, 503, { 
+    error: 'Gemini not available in production', 
+    message: 'Please use OpenRouter provider instead. Configure your OpenRouter API key in Settings.',
+    details: 'The Gemini handler requires complex dependencies that are not compatible with Vercel serverless functions.'
+  });
 }
 
 async function handleOpenRouterChat(req: VercelRequest, res: VercelResponse) {
