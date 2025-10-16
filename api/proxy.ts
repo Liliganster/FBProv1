@@ -429,18 +429,32 @@ async function handleOpenRouterStructured(req: VercelRequest, res: VercelRespons
       + 'Rules: 1) version must be "parser-crew-1". 2) date must be normalized to YYYY-MM-DD. 3) locations must use one of the allowed location_type values. 4) No explanations, only the JSON object.'
     )
     : (
-      'You are a callsheet data extraction AI. Extract ONLY the main filming locations from the callsheet. ' +
-      '\n\nCRITICAL RULES:\n' +
-      '1. Extract ONLY locations marked as "Drehort", "Location", "Set", or "Motiv" (filming locations)\n' +
-      '2. IGNORE all locations for: Basis, Parken, Aufenthalt, Kostüm, Maske, Lunch, Catering, Team, Technik, Office, Meeting\n' +
-      '3. IGNORE room names or internal location names without a street address (e.g., "Suite Nico", "Keller", "Catering Bereich")\n' +
-      '4. Each location MUST be a complete physical address with street name and number (e.g., "Salmgasse 10, 1030 Wien")\n' +
-      '5. If a location has both a place name AND an address, use ONLY the address\n' +
-      '6. Remove duplicates\n' +
-      '7. Order locations in the sequence they appear on the callsheet\n\n' +
-      'Output format: {"date":"YYYY-MM-DD","projectName":"string","locations":["complete address 1","complete address 2",...]}\n\n' +
-      'Example good locations: ["Palais Rasumofsky, 23-25, 1030 Wien", "Salmgasse 10, 1030 Wien"]\n' +
-      'Example BAD locations to IGNORE: ["Suite Nico", "Keller", "Catering Bereich", "Basis", "Parken"]'
+      `You are an AI expert in analyzing film production documents (callsheets). These documents vary widely - they can be professional PDFs, scanned documents, hand-written notes, in multiple languages, with logos/photos/headers.
+
+YOUR TASK: Think like a production coordinator. Understand the document and extract:
+1. DATE: The shooting date (Drehtag/Shooting Day/Fecha de rodaje) - normalize to YYYY-MM-DD
+2. PROJECT NAME: The creative title (show/film name), NOT the production company
+3. LOCATIONS: ONLY filming locations (where cameras roll), NOT logistics/crew support areas
+
+CRITICAL - Understand FILMING vs LOGISTICS:
+🎬 FILMING LOCATIONS (extract these):
+• Where actual shooting/filming happens
+• May be labeled: "Drehort", "Location", "Set", "Motiv", "Scene Location"
+• Can be complete addresses OR landmarks/venues/areas
+• Examples: "Salmgasse 10, 1030 Wien", "Schloss Schönbrunn", "Stephansplatz", "Hotel Imperial"
+
+⚙️ LOGISTICS (ignore these):
+• Crew support areas: Basis/Basecamp, Parken/Parking, Catering/Lunch, Kostüm/Wardrobe, Maske/Makeup/Hair
+• Examples: "Basis: Parkplatz", "Catering: Suite Nico", "Parken: Parkhaus"
+
+HOW TO DISTINGUISH:
+• Read the CONTEXT around each location
+• If labeled as Drehort/Set/Location → filming (extract)
+• If labeled as Basis/Catering/Parken/Kostüm/Maske → logistics (ignore)
+• Addresses may be complete OR partial - extract what's given
+• Don't apply rigid rules - understand the purpose
+
+Output JSON only: {"date":"YYYY-MM-DD","projectName":"string","locations":["string",...]}`
     );
 
   try {

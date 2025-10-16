@@ -1,40 +1,103 @@
 export function buildDirectPrompt(text: string) {
-  return `You are an expert in film and TV production logistics. Analyze the following content (callsheet, pdf text, csv or plain text) and extract a concise JSON object with EXACTLY these keys:
+  return `You are an AI expert in analyzing film and TV production documents (callsheets). These documents vary widely in format and structure. Your job is to understand the context and extract key information intelligently.
 
+Extract a JSON object with these keys:
 {
   "date": "YYYY-MM-DD",
   "projectName": "string",
   "locations": ["string", "string", ...]
 }
 
-**CRITICAL EXTRACTION RULES FOR LOCATIONS:**
+UNDERSTANDING CALLSHEETS:
 
-1. **ONLY Filming Locations**: Extract ONLY locations marked as "Drehort", "Location", "Set", or "Motiv" (actual filming locations)
+Callsheets are NOT standardized. They can be:
+• Professional templates or hand-written notes
+• Well-formatted PDFs or scanned documents
+• In multiple languages (German, English, Spanish, etc.)
+• With logos, photos, headers, and varied layouts
 
-2. **IGNORE Logistics**: You MUST IGNORE locations for: "Basis", "Parken", "Aufenthalt", "Kostüm", "Maske", "Lunch", "Catering", "Team", "Technik", "Office", "Meeting point", "Transport"
+YOUR TASK - Think like a production coordinator:
 
-3. **IGNORE Room/Internal Names**: You MUST IGNORE internal location names or room names without complete street addresses. Examples to IGNORE: "Suite Nico", "Keller", "Villa Dardenne", "Catering Bereich", "Salon", "Empfang", "Studio"
+1. DATE:
+   • Look for the shooting date (Drehtag, Shooting Day, Fecha de rodaje)
+   • May appear as: "25.02.2025", "Feb 25, 2025", "Montag, 25. Februar"
+   • Ignore prep dates, wrap dates, or other non-shooting dates
+   • Normalize to YYYY-MM-DD format
+   • If unclear, use the most prominent date
 
-4. **Complete Address Required**: Each location MUST be a complete physical address with street name + house number + postal code/city
-   - ✅ GOOD: "Salmgasse 10, 1030 Wien", "Palais Rasumofsky, 23-25, 1030 Wien"
-   - ❌ BAD: "Suite Nico", "Keller", "Villa Dardenne", "Catering Bereich"
+2. PROJECT NAME:
+   • Look for the creative title of the production
+   • May appear in headers, logos, or "Projekt:", "Production:", "Show:"
+   • Examples: "Dark", "El Reino", "Vorstadtweiber", "Succession"
+   • Distinguish from production company names (Netflix, Warner Bros, etc.)
+   • If both exist, return the creative title, not the company
 
-5. **Place Name + Address**: If a location has both a place name AND a street address, use ONLY the complete street address
+3. LOCATIONS - This is critical. Understand the DIFFERENCE:
 
-6. **Vienna District Format**: Convert Vienna district prefixes (e.g., "2., Straße") to postal codes (e.g., "Straße, 1020 Wien")
+   🎬 FILMING LOCATIONS (what you SHOULD extract):
+   • These are where the actual filming/shooting happens
+   • May be labeled: "Drehort", "Location", "Set", "Motiv", "Scene Location"
+   • Can be outdoor or indoor venues
+   • Examples:
+     - Complete addresses: "Salmgasse 10, 1030 Wien"
+     - Landmarks: "Schloss Schönbrunn", "Palais Rasumofsky"
+     - Buildings: "Rathaus Wien", "Alte Oper Frankfurt"
+     - Areas: "Donauinsel", "Stephansplatz"
+     - Venues: "Hotel Imperial, Kärntner Ring 16"
+   
+   ⚙️ LOGISTICS LOCATIONS (what you should NOT extract):
+   • These are support/infrastructure for the crew
+   • Usually labeled: "Basis", "Basecamp", "Parken", "Catering", "Kostüm", "Maske"
+   • These are WHERE the crew works/eats/parks, NOT where cameras roll
+   • Examples to IGNORE:
+     - "Basis: Parkplatz Donauinsel" (crew basecamp)
+     - "Catering: Suite Nico" (where crew eats)
+     - "Kostüm: Trailer 5" (wardrobe area)
+     - "Parken: Parkhaus Mitte" (parking for crew)
 
-7. **Deduplicate**: Remove duplicate addresses while preserving order
+   HOW TO DISTINGUISH:
+   • Read the context around each location
+   • If it says "Drehort", "Set", "Location" → It's filming
+   • If it says "Basis", "Catering", "Parken", "Kostüm", "Maske" → It's logistics
+   • If unclear, consider: Would cameras film here or is this crew support?
+   
+   ADDRESSES MAY VARY:
+   • Some may be complete: "Hauptstraße 100, 10115 Berlin"
+   • Some may be partial: "Schloss Schönbrunn" (famous landmark)
+   • Some may be areas: "Donauinsel, Wien" (outdoor area)
+   • Some may need your knowledge: "Stephansplatz" → "Stephansplatz, 1010 Wien"
+   • Extract what's given, try to include city/postal code if mentioned nearby
+   
+   FORMATTING:
+   • Preserve the format as given in the document
+   • Add city/postal code if clearly mentioned in context
+   • Don't invent information not in the document
 
-Constraints:
-- Output ONLY valid JSON without markdown or explanations
-- Follow the exact schema and keys above
-- If multiple dates appear, pick the primary shooting day
-- If the project name and production company both appear, return the creative project title (not the company)
+IMPORTANT PRINCIPLES:
 
-Content:
+✓ Be intelligent and context-aware
+✓ Understand the PURPOSE of each location mentioned
+✓ Extract filming locations, ignore logistics/support locations
+✓ Handle varied formats, languages, and structures
+✓ Use your understanding of film production to interpret
+✓ If a location appears in both filming AND logistics context, extract it only once as filming location
+✓ Typically expect 1-8 filming locations per day of shooting
+
+✗ Don't apply rigid rules
+✗ Don't expect perfect formatting
+✗ Don't reject incomplete addresses if they identify a filming location
+✗ Don't include crew support areas (basecamp, catering, parking, wardrobe, makeup)
+
+OUTPUT:
+• Return ONLY valid JSON, no markdown, no explanations
+• Use the exact schema above
+• Be confident in your interpretation of context
+
+CONTENT TO ANALYZE:
 
 ${text}`;
 }
+
 
 export function buildCrewFirstDirectPrompt(text: string) {
   return `Extrae datos de esta hoja de rodaje en JSON. Devuelve SOLO JSON válido, sin markdown ni explicaciones.
