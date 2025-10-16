@@ -3,37 +3,40 @@ import type { CallsheetExtraction } from './config/schema';
 import type { CallsheetExtraction } from './config/schema';
 
 /**
- * Post-processing for extracted callsheet data
- * Applies LIGHTWEIGHT filtering to remove only obvious logistics/crew locations
- * Trusts the AI to understand context and extract appropriate filming locations
+ * Post-processing for extracted callsheet data.
+ * Applies a HYBRID filter: blocks obvious junk but allows flexible address formats.
  */
 
-// Keywords that clearly indicate logistics/crew support areas (NOT filming)
+// Expanded list of keywords that indicate logistics, not filming locations.
 const LOGISTICS_KEYWORDS = [
-  'basis', 'base', 'basecamp', 'unit base',
-  'parken', 'parking', 'parkplatz', 'crew parking',
-  'catering', 'lunch', 'essen',
-  'aufenthalt', 'holding',
-  'kostüm', 'costume', 'wardrobe',
-  'maske', 'makeup', 'hair',
-  'team office', 'crew office', 'production office',
-  'transport', 'shuttle', 'pickup',
-  'mobile', 'trailer',
-  'toiletten', 'wc', 'restroom'
+  'basis', 'base', 'parken', 'parking', 'aufenthalt', 'kostüm', 'maske',
+  'lunch', 'catering', 'team', 'technik', 'office', 'meeting', 'transport',
+  'pickup', 'driver', 'car', 'wardrobe', 'load', 'unload', 'holding',
+  'green room', 'production office', 'mobile', 'trailer', 'wohnwagen',
+  'treffpunkt', 'meeting point', 'hospital', 'krankenhaus', 'arzt',
+  'toiletten', 'toilets', 'wc', 'restroom', 'sanitär'
+];
+
+// Patterns for invalid locations like room names or general areas.
+const INVALID_PATTERNS = [
+  /^suite/i, /^salon/i, /^keller/i, /^empfang/i, /^studio/i, /^raum/i, /^room/i,
+  /^bereich/i, /^area/i, /^zona/i, /^zone/i,
+  /^innen/i, /^außen/i, /^interior/i, /^exterior/i, /^int/i, /^ext/i,
+  /^(set|motiv|scene|szene)\s*\d*$/i, // Matches "Set", "Motiv 3", etc.
+  /^\d+\.\s*(etage|floor|og)/i
 ];
 
 /**
- * Lightweight validation: Filter out ONLY obvious logistics locations
- * Trust the AI to understand context for everything else
+ * Hybrid validation: blocks obvious junk but is flexible with address formats.
  */
-function isValidFilmingLocation(location: string): boolean {
+function isHybridValidLocation(location: string): boolean {
   if (!location || location.trim().length < 3) {
     return false;
   }
 
   const normalized = location.toLowerCase().trim();
 
-  // Filter out ONLY obvious logistics keywords
+  // 1. Filter out obvious logistics keywords
   for (const keyword of LOGISTICS_KEYWORDS) {
     if (normalized.includes(keyword)) {
       console.log(`[PostProcess] ❌ Filtered (logistics): "${location}"`);
@@ -41,16 +44,20 @@ function isValidFilmingLocation(location: string): boolean {
     }
   }
 
-  // Accept everything else - trust the AI
+  // 2. Filter out invalid patterns like room names or "Set 3"
+  for (const pattern of INVALID_PATTERNS) {
+    if (pattern.test(location)) {
+      console.log(`[PostProcess] ❌ Filtered (pattern): "${location}"`);
+      return false;
+    }
+  }
+
+  // ✅ Accept everything else - trusts AI but with a stronger safety net.
   console.log(`[PostProcess] ✅ Accepted: "${location}"`);
   return true;
 }
 
-// Post-process extracted data:
-// - Trim strings
-// - Filter out logistics locations only
-// - Deduplicate preserving order
-// - Trust AI for everything else (addresses may be complete or partial)
+// Post-process extracted data using the hybrid filter.
 export function postProcessCrewFirstData(data: CallsheetExtraction): CallsheetExtraction {
   const date = (data.date || '').trim();
   const projectName = (data.projectName || '').trim();
@@ -59,26 +66,18 @@ export function postProcessCrewFirstData(data: CallsheetExtraction): CallsheetEx
   const locations = (data.locations || [])
     .map((s) => (s || '').trim())
     .filter(Boolean)
-    .filter((loc) => {
-      // Filter out ONLY logistics locations - trust AI for everything else
-      if (!isValidFilmingLocation(loc)) {
-        console.log(`[PostProcess] Filtered out: "${loc}"`);
-        return false;
-      }
-      return true;
-    })
+    .filter(isHybridValidLocation) // Using the new hybrid validation
     .filter((s) => {
       // Deduplicate
-      if (seen.has(s.toLowerCase())) return false;
-      seen.add(s.toLowerCase());
+      const key = s.toLowerCase();
+      if (seen.has(key)) return false;
+      seen.add(key);
       return true;
     });
 
   console.log(`[PostProcess] Final locations count: ${locations.length}`, locations);
   return { date, projectName, locations };
 }
-
-
 
 
 
