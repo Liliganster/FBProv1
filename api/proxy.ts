@@ -199,18 +199,26 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
+    console.log('[Proxy] Routing request:', { route, method: req.method });
+    
     // Route to appropriate handler
     if (route.startsWith('ai/')) {
-      return handleAI(route.replace('ai/', ''), req, res);
+      return await handleAI(route.replace('ai/', ''), req, res);
     } else if (route.startsWith('google/')) {
-      return handleGoogle(route.replace('google/', ''), req, res);
+      return await handleGoogle(route.replace('google/', ''), req, res);
     } else if (route.startsWith('admin/')) {
-      return handleAdmin(route.replace('admin/', ''), req, res);
+      return await handleAdmin(route.replace('admin/', ''), req, res);
     }
 
+    console.error('[Proxy] Route not found:', route);
     return sendError(res, 404, 'Route not found');
   } catch (error: any) {
-    console.error('API Error:', error);
+    console.error('[Proxy] Fatal error:', {
+      message: error.message,
+      stack: error.stack,
+      route,
+      method: req.method
+    });
     return sendError(res, 500, error.message || 'Internal server error');
   }
 }
@@ -219,6 +227,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 // AI HANDLERS
 // ============================================================================
 async function handleAI(route: string, req: VercelRequest, res: VercelResponse) {
+  console.log('[AI] Handling route:', route);
+  
   // Check rate limit for AI endpoints
   const userId = getUserId(req);
   const rateLimit = aiRateLimiter.checkLimit(userId);
@@ -237,17 +247,18 @@ async function handleAI(route: string, req: VercelRequest, res: VercelResponse) 
   }
 
   if (route === 'gemini') {
-    return handleGemini(req, res);
+    return await handleGemini(req, res);
   } else if (route === 'openrouter/chat') {
-    return handleOpenRouterChat(req, res);
+    return await handleOpenRouterChat(req, res);
   } else if (route === 'openrouter/models') {
-    return handleOpenRouterModels(req, res);
+    return await handleOpenRouterModels(req, res);
   } else if (route === 'openrouter/structured') {
-    return handleOpenRouterStructured(req, res);
+    return await handleOpenRouterStructured(req, res);
   } else if (route === 'status') {
-    return handleAIStatus(req, res);
+    return await handleAIStatus(req, res);
   }
 
+  console.error('[AI] Route not found:', route);
   return sendError(res, 404, 'AI route not found');
 }
 
@@ -517,24 +528,31 @@ async function handleAIStatus(req: VercelRequest, res: VercelResponse) {
 // GOOGLE HANDLERS
 // ============================================================================
 async function handleGoogle(route: string, req: VercelRequest, res: VercelResponse) {
+  console.log('[Google] Handling route:', route);
+  
   if (route.startsWith('calendar/')) {
     const subRoute = route.replace('calendar/', '');
+    console.log('[Google] Calendar sub-route:', subRoute);
+    
     if (subRoute === 'calendars') {
-      return handleGoogleCalendarList(req, res);
+      return await handleGoogleCalendarList(req, res);
     } else if (subRoute === 'events') {
-      return handleGoogleCalendarEvents(req, res);
+      return await handleGoogleCalendarEvents(req, res);
     }
   } else if (route.startsWith('maps/')) {
     const subRoute = route.replace('maps/', '');
+    console.log('[Google] Maps sub-route:', subRoute);
+    
     if (subRoute === 'directions') {
-      return handleGoogleMapsDirections(req, res);
+      return await handleGoogleMapsDirections(req, res);
     } else if (subRoute === 'script') {
-      return handleGoogleMapsScript(req, res);
+      return await handleGoogleMapsScript(req, res);
     } else if (subRoute === 'staticmap') {
-      return handleGoogleMapsStaticMap(req, res);
+      return await handleGoogleMapsStaticMap(req, res);
     }
   }
 
+  console.error('[Google] Route not found:', route);
   return sendError(res, 404, 'Google route not found');
 }
 
@@ -575,13 +593,21 @@ async function handleGoogleCalendarList(req: VercelRequest, res: VercelResponse)
 }
 
 async function handleGoogleCalendarEvents(req: VercelRequest, res: VercelResponse) {
+  console.log('[GoogleCalendarEvents] Request received:', { 
+    method: req.method, 
+    hasHealth: !!req.query?.health,
+    query: req.query
+  });
+  
   // Health check
   if (req.method === 'GET' && req.query?.health) {
     const apiKey = process.env.GOOGLE_CALENDAR_API_KEY;
+    console.log('[GoogleCalendarEvents] Health check - API key present:', !!apiKey);
     return sendJson(res, 200, { ready: true, usesApiKey: Boolean(apiKey) });
   }
 
   if (req.method !== 'POST') {
+    console.log('[GoogleCalendarEvents] Method not allowed:', req.method);
     return sendError(res, 405, 'Method Not Allowed');
   }
 
