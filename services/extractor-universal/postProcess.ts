@@ -1,7 +1,5 @@
 import type { CallsheetExtraction } from './config/schema';
 
-import type { CallsheetExtraction } from './config/schema';
-
 /**
  * Post-processing for extracted callsheet data.
  * Applies a HYBRID filter: blocks obvious junk but allows flexible address formats.
