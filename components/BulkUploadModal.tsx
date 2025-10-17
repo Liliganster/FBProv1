@@ -11,6 +11,7 @@ import useUserProfile from '../hooks/useUserProfile';
 import { normalizeSignature } from '../services/tripUtils';
 import { processFileForTrip, processFileForTripUniversal } from '../services/aiService';
 import useGoogleMapsScript from '../hooks/useGoogleMapsScript';
+import { useProjects } from '../hooks/useProjects';
 import useGoogleCalendar from '../hooks/useGoogleCalendar';
 
 interface BulkUploadModalProps {
@@ -108,6 +109,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
   const { showToast } = useToast();
   const { isLoaded: isMapsScriptLoaded, error: mapsScriptError } = useGoogleMapsScript();
   const { showPicker, gapiClient, isSignedIn, signIn } = useGoogleCalendar();
+  const { addProject, projects: projectsCtx } = useProjects();
 
   const findHeaderIndex = (headers: string[], validNames: string[]): number => {
     return headers.findIndex(h => validNames.includes(h.trim().toLowerCase()));
@@ -422,6 +424,41 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
     setStage('review');
   }
 
+  const handleConfirmSave = async () => {
+    try {
+      // Build mapping from project name to ID
+      const nameToId = new Map<string, string>();
+      // Include existing projects from context
+      (projectsCtx || []).forEach(p => nameToId.set(p.name, p.id));
+      // Create missing projects listed in newlyCreatedProjects map
+      for (const [name, producer] of newlyCreatedProjects.entries()) {
+        if (!nameToId.has(name)) {
+          try {
+            await addProject({ name, producer });
+          } catch (e) {
+            console.error('[BulkUpload] Failed to create project', name, e);
+          }
+        }
+      }
+      // Refresh mapping after potential creations
+      (projectsCtx || []).forEach(p => nameToId.set(p.name, p.id));
+
+      // Map placeholder projectId (name) to real IDs
+      const updatedDrafts = draftTrips.map(trip => {
+        const mapped = { ...trip };
+        if (mapped.projectId && nameToId.has(mapped.projectId)) {
+          mapped.projectId = nameToId.get(mapped.projectId)!;
+        }
+        return mapped;
+      });
+
+      await onSave(updatedDrafts);
+    } catch (error) {
+      console.error('[BulkUpload] handleConfirmSave error:', error);
+      showToast('Error saving trips', 'error');
+    }
+  };
+
   const handleCsvFileSelected = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (!event.target.files || event.target.files.length === 0) return;
     const file = event.target.files[0];
@@ -660,7 +697,7 @@ const tempNewProjectsForReview = Array.from(newlyCreatedProjects.entries()).map(
           ) : ( // Review Stage
                <>
                   <button onClick={() => setStage('upload')} className="bg-gray-700 hover:bg-gray-600 text-white font-medium text-sm py-2.5 px-4 rounded-md mr-3 transition-colors">{t('common_back')}</button>
-                  <button onClick={() => onSave(draftTrips)} className="flex items-center justify-center bg-brand-primary hover:brightness-110 text-white font-medium text-sm py-2.5 px-6 rounded-md transition-colors">
+                  <button onClick={handleConfirmSave} className="flex items-center justify-center bg-brand-primary hover:brightness-110 text-white font-medium text-sm py-2.5 px-6 rounded-md transition-colors">
                     <CheckIcon className="w-5 h-5 mr-2" /> {t('bulk_review_saveBtn', { count: draftTrips.length })}
                  </button>
                </>
