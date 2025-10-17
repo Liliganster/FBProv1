@@ -432,9 +432,26 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
       // Build mapping from project name (normalized) to ID
       const normalizeName = (s: string) => (s || '').trim().toLowerCase();
       const nameToId = new Map<string, string>();
+      
+      console.log('[BulkUpload] Starting handleConfirmSave');
+      console.log('[BulkUpload] Existing projects from props:', projects);
+      console.log('[BulkUpload] Existing projects from context:', projectsCtx);
+      console.log('[BulkUpload] New projects to create:', Array.from(newlyCreatedProjects.entries()));
+      console.log('[BulkUpload] Draft trips before mapping:', draftTrips);
+      
       // Include existing projects from props and context
-      (projects || []).forEach(p => nameToId.set(normalizeName(p.name), p.id));
-      (projectsCtx || []).forEach(p => nameToId.set(normalizeName(p.name), p.id));
+      (projects || []).forEach(p => {
+        const key = normalizeName(p.name);
+        nameToId.set(key, p.id);
+        console.log(`[BulkUpload] Mapped existing project: "${p.name}" (${key}) -> ${p.id}`);
+      });
+      (projectsCtx || []).forEach(p => {
+        const key = normalizeName(p.name);
+        if (!nameToId.has(key)) {
+          nameToId.set(key, p.id);
+          console.log(`[BulkUpload] Mapped context project: "${p.name}" (${key}) -> ${p.id}`);
+        }
+      });
 
       // Create missing projects directly via DB to obtain IDs immediately
       if (!user?.id) {
@@ -445,32 +462,53 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
       for (const [rawName, producer] of newlyCreatedProjects.entries()) {
         const name = (rawName || '').trim();
         const key = normalizeName(name);
-        if (!key) continue;
+        console.log(`[BulkUpload] Processing new project: "${name}" (${key}) with producer: "${producer}"`);
+        if (!key) {
+          console.warn(`[BulkUpload] Skipping empty project name`);
+          continue;
+        }
         if (!nameToId.has(key)) {
           try {
+            console.log(`[BulkUpload] Creating project in DB: "${name}" with producer: "${producer}"`);
             const inserted = await databaseService.createProject(user.id, { name, producer });
+            console.log(`[BulkUpload] Project created successfully:`, inserted);
             // Update local map with newly created project ID
             nameToId.set(key, inserted.id);
             // Also update UI context (non-blocking)
             void addProject({ name, producer });
           } catch (e) {
             console.error('[BulkUpload] Failed to create project', name, e);
+            showToast(`Failed to create project "${name}"`, 'error');
           }
+        } else {
+          console.log(`[BulkUpload] Project "${name}" already exists with ID: ${nameToId.get(key)}`);
         }
       }
+
+      console.log('[BulkUpload] Final nameToId mapping:', Array.from(nameToId.entries()));
 
       // Ensure projects context is refreshed (best-effort)
       try { await fetchProjects(); } catch {}
 
       // Map placeholder projectId (name) to real IDs
-      const updatedDrafts = draftTrips.map(trip => {
+      const updatedDrafts = draftTrips.map((trip, index) => {
         const mapped = { ...trip };
+        const originalProjectId = mapped.projectId;
         const key = normalizeName(mapped.projectId);
+        console.log(`[BulkUpload] Trip ${index}: original projectId="${originalProjectId}", normalized key="${key}"`);
+        
         if (key && nameToId.has(key)) {
-          mapped.projectId = nameToId.get(key)!;
+          const realId = nameToId.get(key)!;
+          mapped.projectId = realId;
+          console.log(`[BulkUpload] Trip ${index}: Mapped "${originalProjectId}" -> "${realId}"`);
+        } else {
+          console.warn(`[BulkUpload] Trip ${index}: Could not find mapping for "${originalProjectId}" (key: "${key}")`);
+          console.warn(`[BulkUpload] Available keys in nameToId:`, Array.from(nameToId.keys()));
         }
         return mapped;
       });
+
+      console.log('[BulkUpload] Updated drafts after mapping:', updatedDrafts);
 
       await onSave(updatedDrafts);
     } catch (error) {
