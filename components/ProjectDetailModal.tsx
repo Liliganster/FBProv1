@@ -3,7 +3,7 @@ import React, { useState, useRef, useMemo } from 'react';
 import { Project, CallsheetFile, SpecialOrigin, Trip, DocumentType, ExpenseDocument } from '../types';
 import useTrips from '../hooks/useTrips';
 import useProjects from '../hooks/useProjects';
-import { XIcon, FileTextIcon, EyeIcon, TrashIcon, LoaderIcon, SparklesIcon, LeafIcon, LineChartIcon, UsersIcon, PieChartIcon, CarIcon, UploadCloudIcon } from './Icons';
+import { XIcon, FileTextIcon, EyeIcon, TrashIcon, LoaderIcon, SparklesIcon, LeafIcon, LineChartIcon, PieChartIcon, CarIcon, UploadCloudIcon } from './Icons';
 import useTranslation from '../hooks/useTranslation';
 import { formatDateForDisplay } from '../i18n/translations';
 import useToast from '../hooks/useToast';
@@ -129,8 +129,6 @@ const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({ projectId, trip
     const totalKm = projectTrips.reduce((sum, trip) => sum + trip.distance, 0);
     
     const shootingDays = new Set(projectTrips.map(t => t.date));
-    
-    const transferTrips = projectTrips.filter(t => t.specialOrigin === SpecialOrigin.HOME || t.specialOrigin === SpecialOrigin.END_OF_CONTINUATION);
 
     const EMISSION_FACTOR_G_PER_KM = 140;
     const totalCo2 = (totalKm * EMISSION_FACTOR_G_PER_KM) / 1000;
@@ -139,7 +137,6 @@ const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({ projectId, trip
       totalKm,
       shootingDaysCount: shootingDays.size,
       kmPerDay: shootingDays.size > 0 ? totalKm / shootingDays.size : 0,
-      transferTripCount: transferTrips.length,
       totalTrips: projectTrips.length,
       totalCo2,
     };
@@ -270,11 +267,10 @@ const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({ projectId, trip
         </header>
         <main className="flex-1 overflow-y-auto px-6 py-6 space-y-8">
           {/* Stats grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             <StatCard title={t('projectDetail_stats_total_km')} value={`${stats.totalKm.toFixed(1)} km`} icon={<CarIcon className="w-6 h-6 text-brand-primary" />} />
             <StatCard title={t('projectDetail_stats_shooting_days')} value={stats.shootingDaysCount.toString()} icon={<LineChartIcon className="w-6 h-6 text-brand-secondary" />} />
             <StatCard title={t('projectDetail_stats_km_per_day')} value={`${stats.kmPerDay.toFixed(1)} km`} icon={<PieChartIcon className="w-6 h-6 text-blue-400" />} />
-            <StatCard title={t('projectDetail_stats_transfers')} value={`${stats.transferTripCount} / ${stats.totalTrips}`} icon={<UsersIcon className="w-6 h-6 text-yellow-400" />} />
             <StatCard title={t('projectDetail_stats_co2')} value={`${stats.totalCo2.toFixed(1)} kg`} icon={<LeafIcon className="w-6 h-6 text-green-400" />} />
           </div>
           {/* Callsheets section */}

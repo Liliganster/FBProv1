@@ -437,30 +437,46 @@ YOUR TASK - Extract ONLY these 4 essential fields:
    - Normalize to YYYY-MM-DD format
    - Look for: "Datum:", "Date:", "Fecha:", or day headers
 
-2. PRODUCTION COMPANIES: Array of ALL production companies/studios involved (Produktionsfirma/Production Company/Productora)
+2. PRODUCTION COMPANIES: Array of ONLY the actual film/TV production companies (Produktionsfirma/Production Company/Productora)
    
-   🎯 CRITICAL: Extract ALL companies listed in the document
+   🎯 CRITICAL RULES - Be VERY selective and context-aware:
    
-   - Look for company names in these sections:
-     • Header/footer logos and text
-     • "Produktion:", "Production:", "Productora:", "Producer:", "Producción:"
-     • "Studio:", "Produktionsfirma:", "Auftraggeber:", "Commissioner:"
-     • "Co-Production:", "Co-Produktion:", "Coproducción:"
-     • Multiple companies are common - extract ALL of them
+   ✅ INCLUDE ONLY:
+     • Film/TV production companies with explicit "Production" or "Producer" label
+     • Examples: "UFA Fiction", "Wiedemann & Berg Television", "El Deseo Producciones"
+     • Independent producers clearly labeled as "Produktion:", "Production:", "Productora:"
+     • Co-producers explicitly labeled "Co-Produktion:", "Co-Production:"
    
-   - These are the COMPANIES, NOT the project title
-   - Include ALL production companies mentioned (main, co-producers, studios)
-   - Remove generic terms like "GmbH", "Inc.", "Ltd." if they appear separately
+   ❌ DO NOT INCLUDE:
+     • TV Broadcasters/Channels: ARD, ZDF, ORF, BBC, TVE, RAI, RTVE, Antena 3
+       (UNLESS they appear with explicit "Co-Produktion:" or "Co-Production:" label)
+     • Streaming platforms: Netflix, Amazon Prime, HBO, Disney+
+       (UNLESS explicitly labeled "Produced by" or "Produktion:")
+     • Client companies (companies being filmed or featured in the project)
+     • Service/rental companies: ARRI, Panavision, camera/lighting rental
+     • Brands or sponsors appearing as logos
+     • Distributors (unless also producing)
+     • Funding entities: Film funds, government agencies (ICAA, FFA, BKM, etc.)
+     • Commissioners: "Auftraggeber:", "Commissioner:", "Sender:" (these are NOT producers)
    
-   - Examples:
-     • Single: ["Warner Bros Pictures"]
-     • Multiple: ["Netflix", "Studio Babelsberg"]
-     • With co-producers: ["UFA Fiction", "ARD Degeto", "ORF"]
-     • Spanish: ["El Deseo", "Televisión Española", "ICAA"]
+   🔍 HOW TO VERIFY:
+     1. Check the label/context near the company name
+     2. If labeled "Produktion:", "Production:", "Productora:" → ✅ INCLUDE
+     3. If labeled "Sender:", "Broadcaster:", "Auftraggeber:" → ❌ EXCLUDE
+     4. If labeled "Co-Produktion:", "Co-Production:" → ✅ INCLUDE
+     5. If just a logo with no production context → ❌ EXCLUDE
+     6. If company name includes "Production", "Producciones", "Films" → likely ✅
+     7. If it's a known broadcaster without production label → ❌ EXCLUDE
+   
+   Examples:
+     ✅ CORRECT: ["UFA Fiction", "Wiedemann & Berg Television"]
+     ✅ CORRECT (co-production): ["El Deseo Producciones", "Televisión Española"]
+     ❌ WRONG: ["UFA Fiction", "ZDF", "Mercedes-Benz"] (ZDF is broadcaster, Mercedes is client)
+     ❌ WRONG: ["Warner Bros", "HBO", "Netflix"] (streaming platforms without production label)
    
    - MUST be an array of strings
    - If none found, use ["Unknown"]
-   - Do NOT duplicate the same company name
+   - Maximum 2-4 actual production companies (prioritize main producers)
 
 3. PROJECT NAME: The creative title of the show/film/series
    - This is the TITLE, NOT the production company
@@ -528,25 +544,45 @@ EXAMPLES:
   ]
 }
 
-✅ Example 2 - Multiple production companies (co-production):
+✅ Example 2 - Co-production (only actual producers):
 {
   "date": "2025-03-15",
-  "productionCompanies": ["Netflix", "Studio Babelsberg", "ARD Degeto"],
+  "productionCompanies": ["Wiedemann & Berg Television", "Studio Babelsberg"],
   "projectName": "DARK",
   "locations": [
     "Berliner Straße 45, 14467 Potsdam"
   ]
 }
+(NOTE: If ARD Degeto appears only as "Sender:" or "Auftraggeber:", DO NOT include it)
 
-✅ Example 3 - International co-production:
+✅ Example 3 - International co-production with broadcaster as co-producer:
 {
   "date": "2025-04-10",
-  "productionCompanies": ["El Deseo", "Televisión Española", "ARTE France"],
+  "productionCompanies": ["El Deseo Producciones", "Televisión Española"],
   "projectName": "TODO SOBRE MI MADRE",
   "locations": [
     "Calle Mayor 28, 28013 Madrid"
   ]
 }
+(NOTE: TVE is included ONLY if labeled "Co-Producción:" or "Co-Production:")
+
+❌ Bad extraction - TOO MANY companies (includes broadcasters, clients, services):
+{
+  "date": "2025-02-25",
+  "productionCompanies": ["UFA Fiction", "ZDF", "ARD", "Mercedes-Benz", "ARRI Rental"],
+  "projectName": "COMMERCIAL",
+  "locations": ["Studio Berlin"]
+}
+← WRONG: ZDF and ARD are broadcasters (not producers), Mercedes is client, ARRI is rental service
+
+❌ Bad extraction - Streaming platforms without production label:
+{
+  "date": "2025-03-10",
+  "productionCompanies": ["Netflix", "HBO", "Amazon Prime"],
+  "projectName": "SERIES NAME",
+  "locations": ["Madrid"]
+}
+← WRONG: These are streaming platforms. Only include if explicitly labeled "Produced by" or "Produktion:"
 
 ❌ Bad extraction (too many locations, includes logistics):
 {

@@ -99,17 +99,75 @@ function classifyContextAroundLocation(location: string, sourceText: string): 'p
   return 'unknown';
 }
 
+// Known broadcasters, streaming platforms, and service companies (NOT production companies)
+const NON_PRODUCTION_COMPANIES = [
+  // German broadcasters
+  'ard', 'zdf', 'rtl', 'sat.1', 'pro7', 'prosieben', 'vox', 'kabel eins', 'rtl2',
+  'ard degeto', 'zdf enterprises', 'mdr', 'ndr', 'wdr', 'br', 'swr', 'hr', 'rbb',
+  
+  // Austrian/Swiss
+  'orf', 'orf1', 'orf2', 'orf3', 'srf', 'srf1', 'srf2',
+  
+  // Spanish/Latin American
+  'rtve', 'tve', 'tve1', 'tve2', 'antena 3', 'telecinco', 'la sexta', 'cuatro',
+  'televisión española', 'television española',
+  
+  // International broadcasters
+  'bbc', 'itv', 'channel 4', 'sky', 'rai', 'france télévisions', 'arte', 'arte france',
+  
+  // Streaming platforms (unless explicitly producing)
+  'netflix', 'amazon prime', 'hbo', 'hbo max', 'disney+', 'apple tv+', 'paramount+',
+  
+  // Film funds and government agencies
+  'bkm', 'ffa', 'dfff', 'icaa', 'eurimages', 'media programme', 'creative europe',
+  'filmförderung', 'film fund', 'medienboard',
+  
+  // Service/rental companies
+  'arri', 'panavision', 'arri rental', 'camera rental', 'grip', 'lighting',
+];
+
+// Check if a company name is a known non-production entity
+function isNonProductionCompany(company: string): boolean {
+  const normalized = company.toLowerCase().trim();
+  
+  // Check exact match or if it's contained in the company name
+  for (const nonProd of NON_PRODUCTION_COMPANIES) {
+    if (normalized === nonProd || normalized.includes(nonProd)) {
+      return true;
+    }
+  }
+  
+  // Check for common service/rental indicators
+  if (normalized.includes('rental') || 
+      normalized.includes('hire') || 
+      normalized.includes('equipment') ||
+      normalized.includes('services')) {
+    return true;
+  }
+  
+  return false;
+}
+
 // Post-process extracted data - simple filtering only
 export function postProcessCrewFirstData(data: CallsheetExtraction, sourceText?: string): CallsheetExtraction {
   const date = (data.date || '').trim();
   const projectName = (data.projectName || '').trim();
   
-  // Handle productionCompanies as array, filter out empty strings and deduplicate
+  // Handle productionCompanies as array, filter out empty strings, non-production companies, and deduplicate
   const seenCompanies = new Set<string>();
   const productionCompanies = (Array.isArray(data.productionCompanies) ? data.productionCompanies : [])
     .map(c => (c || '').trim())
     .filter(Boolean)
     .filter(c => {
+      // Filter out known non-production companies
+      if (isNonProductionCompany(c)) {
+        console.log(`[PostProcess] ❌ Filtered non-production company: "${c}"`);
+        return false;
+      }
+      return true;
+    })
+    .filter(c => {
+      // Deduplicate
       const normalized = c.toLowerCase();
       if (seenCompanies.has(normalized)) {
         console.log(`[PostProcess] ❌ Filtered duplicate production company: "${c}"`);
