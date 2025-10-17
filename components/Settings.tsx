@@ -10,6 +10,7 @@ import useUserProfile from '../hooks/useUserProfile';
 import { useAuth } from '../hooks/useAuth';
 import { databaseService } from '../services/databaseService';
 import LanguageSwitcher from './LanguageSwitcher';
+import ExtractorModal from './ExtractorModal';
 import {
   LuPalette as Palette,
   LuLanguages as Languages,
@@ -17,6 +18,7 @@ import {
   LuCircleHelp as HelpCircle,
   LuCloudUpload as UploadCloud,
   LuImageOff as ImageOff,
+  LuFileText as FileText,
 } from 'react-icons/lu';
 
 type Tab = 'profile' | 'compliance' | 'api' | 'personalization' | 'language' | 'changelog' | 'help';
@@ -40,6 +42,7 @@ const SettingsView: React.FC<{
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [deleteConfirmation, setDeleteConfirmation] = useState('');
     const [isDeletingAccount, setIsDeletingAccount] = useState(false);
+    const [showExtractorModal, setShowExtractorModal] = useState(false);
 
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -297,6 +300,23 @@ const SettingsView: React.FC<{
                                     <p className="text-xs text-on-surface-dark-secondary mt-1">{t('settings_api_or_info')}</p>
                                 </ProviderConfigContainer>
                             </div>
+                            
+                            <div className="space-y-2 p-4 border border-brand-primary/30 rounded-lg bg-brand-primary/5">
+                                <h3 className="text-lg font-medium mb-2 text-on-surface-dark flex items-center gap-2">
+                                    <FileText className="w-5 h-5 text-brand-primary" />
+                                    Extractor de Hoja de Rodaje con IA
+                                </h3>
+                                <p className="text-sm text-on-surface-dark-secondary mb-3">
+                                    Extrae datos de hojas de rodaje automáticamente usando inteligencia artificial. Soporta PDFs, imágenes y texto.
+                                </p>
+                                <button
+                                    onClick={() => setShowExtractorModal(true)}
+                                    className="inline-flex items-center gap-2 bg-brand-primary hover:bg-brand-primary/90 text-white font-semibold py-2 px-4 rounded-md transition-colors"
+                                >
+                                    <SparklesIcon className="w-4 h-4" />
+                                    Abrir Extractor IA
+                                </button>
+                            </div>
                         </div>
                     </div>
                 );
@@ -550,6 +570,10 @@ const SettingsView: React.FC<{
                     </div>
                 )}
             </div>
+            
+            {showExtractorModal && (
+                <ExtractorModal onClose={() => setShowExtractorModal(false)} />
+            )}
         </div>
     );
 };
