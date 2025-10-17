@@ -41,15 +41,53 @@ const ExtractorModal: React.FC<ExtractorModalProps> = ({ onClose }) => {
           </button>
         </div>
 
-        <div className="mb-4 flex gap-4">
-          <label className="flex items-center gap-2">
-            <input type="radio" checked={mode==='direct'} onChange={()=>setMode('direct')} />
-            Direct Mode
-          </label>
-          <label className="flex items-center gap-2">
-            <input type="radio" checked={mode==='agent'} onChange={()=>setMode('agent')} />
-            Agent Mode (con OCR)
-          </label>
+        <div className="mb-4">
+          <label className="mb-2 block text-sm font-medium text-on-surface-dark">Modo de Extracción:</label>
+          <div className="flex gap-3">
+            <button
+              type="button"
+              onClick={() => setMode('direct')}
+              className={`flex-1 rounded-lg border-2 px-4 py-3 text-left transition-all ${
+                mode === 'direct'
+                  ? 'border-brand-primary bg-brand-primary/20 shadow-md'
+                  : 'border-surface-light/30 bg-background-dark hover:border-surface-light/50'
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <div className={`h-4 w-4 rounded-full border-2 flex items-center justify-center ${
+                  mode === 'direct' ? 'border-brand-primary bg-brand-primary' : 'border-surface-light/50'
+                }`}>
+                  {mode === 'direct' && <div className="h-2 w-2 rounded-full bg-white"></div>}
+                </div>
+                <div>
+                  <div className="font-semibold">Direct Mode</div>
+                  <div className="text-xs text-on-surface-dark-secondary">Rápido, texto limpio</div>
+                </div>
+              </div>
+            </button>
+            
+            <button
+              type="button"
+              onClick={() => setMode('agent')}
+              className={`flex-1 rounded-lg border-2 px-4 py-3 text-left transition-all ${
+                mode === 'agent'
+                  ? 'border-brand-primary bg-brand-primary/20 shadow-md'
+                  : 'border-surface-light/30 bg-background-dark hover:border-surface-light/50'
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <div className={`h-4 w-4 rounded-full border-2 flex items-center justify-center ${
+                  mode === 'agent' ? 'border-brand-primary bg-brand-primary' : 'border-surface-light/50'
+                }`}>
+                  {mode === 'agent' && <div className="h-2 w-2 rounded-full bg-white"></div>}
+                </div>
+                <div>
+                  <div className="font-semibold">Agent Mode</div>
+                  <div className="text-xs text-on-surface-dark-secondary">Con OCR para PDFs e imágenes</div>
+                </div>
+              </div>
+            </button>
+          </div>
         </div>
 
         <div className="mb-3">
@@ -72,7 +110,8 @@ const ExtractorModal: React.FC<ExtractorModalProps> = ({ onClose }) => {
             disabled={loading}
             className="flex items-center gap-2 rounded-md bg-brand-primary px-4 py-2 text-white hover:opacity-90 disabled:opacity-60"
           >
-            {loading && <LoaderIcon className="h-4 w-4 animate-spin" />} Extract with AI
+            {loading && <LoaderIcon className="h-4 w-4 animate-spin" />} 
+            {loading ? `Extrayendo (${mode === 'direct' ? 'Direct' : 'Agent con OCR'})...` : 'Extract with AI'}
           </button>
         </div>
 
