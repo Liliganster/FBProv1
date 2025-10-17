@@ -53,11 +53,14 @@ Los call sheets NO están estandarizados. Pueden ser:
 ## CAMPO 3: productionCompany (PRODUCTORA)
 
 **Qué buscar**: El nombre de la empresa que produce
-- Puede aparecer como: "Produktion:", "Production Company:", "Productora:", "Studio:"
-- Ejemplos: "UFA Fiction", "Netflix Original", "Warner Bros TV", "Bavaria Film"
-- **Si NO encuentras**: Usa "Unknown"
+- Puede aparecer como: "Produktion:", "Production Company:", "Productora:", "Studio:", "Prod:", "Producer:"
+- También puede estar en logos, cabeceras, o pie de página
+- Ejemplos: "UFA Fiction", "Netflix Original", "Warner Bros TV", "Bavaria Film", "Neue Super", "X Filme"
+- **Si NO encuentras**: Deja el campo vacío ""
 
 **Razonamiento**: Como humano, ¿qué EMPRESA/ESTUDIO está produciendo esto?
+
+**IMPORTANTE**: Lee TODO el documento, incluyendo encabezados, logos y pies de página donde suele aparecer la productora.
 
 ---
 

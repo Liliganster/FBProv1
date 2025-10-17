@@ -103,7 +103,10 @@ function classifyContextAroundLocation(location: string, sourceText: string): 'p
 export function postProcessCrewFirstData(data: CallsheetExtraction, sourceText?: string): CallsheetExtraction {
   const date = (data.date || '').trim();
   const projectName = (data.projectName || '').trim();
-  const productionCompany = (data.productionCompany || '').trim() || 'Unknown';
+  const productionCompany = (data.productionCompany || '').trim();
+  
+  console.log('[PostProcess] Extracted data:', { date, projectName, productionCompany, locationsCount: data.locations?.length });
+  
   const seen = new Set<string>();
   
   const locations = (data.locations || [])
