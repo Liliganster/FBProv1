@@ -6,21 +6,25 @@ export const callsheetSchema = {
   properties: {
     date: { type: "string", description: "Normalized shooting day date YYYY-MM-DD" },
     projectName: { type: "string", description: "Main project/production name" },
-    productionCompany: { type: "string", description: "Production company name" },
+    productionCompanies: { 
+      type: "array", 
+      description: "List of all production companies (can be multiple)",
+      items: { type: "string" }
+    },
     locations: {
       type: "array",
       description: "Ordered list of MAIN filming locations only (max 3-5 principal addresses)",
       items: { type: "string" },
     },
   },
-  required: ["date", "projectName", "productionCompany", "locations"],
+  required: ["date", "projectName", "productionCompanies", "locations"],
   additionalProperties: false,
 } as const;
 
 export type CallsheetExtraction = {
   date: string;
   projectName: string;
-  productionCompany: string;
+  productionCompanies: string[];
   locations: string[];
 };
 

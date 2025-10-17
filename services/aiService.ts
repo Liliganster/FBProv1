@@ -386,5 +386,10 @@ export async function processFileForTripUniversal(
     specialOrigin: SpecialOrigin.HOME,
   };
 
-  return { tripData, projectName: extraction.projectName, productionCompany: extraction.productionCompany || '' };
+  // Join multiple production companies with " & "
+  const productionCompany = Array.isArray(extraction.productionCompanies) 
+    ? extraction.productionCompanies.filter(Boolean).join(' & ')
+    : '';
+  
+  return { tripData, projectName: extraction.projectName, productionCompany };
 }

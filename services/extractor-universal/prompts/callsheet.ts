@@ -7,7 +7,7 @@ export function buildDirectPrompt(text: string) {
 {
   "date": "YYYY-MM-DD",
   "projectName": "string",
-  "productionCompany": "string",
+  "productionCompanies": ["string", "string", ...],
   "locations": ["string", "string", ...]
 }
 
@@ -50,17 +50,22 @@ Los call sheets NO están estandarizados. Pueden ser:
 
 ---
 
-## CAMPO 3: productionCompany (PRODUCTORA)
+## CAMPO 3: productionCompanies (PRODUCTORAS)
 
-**Qué buscar**: El nombre de la empresa que produce
-- Puede aparecer como: "Produktion:", "Production Company:", "Productora:", "Studio:", "Prod:", "Producer:"
+**Qué buscar**: TODAS las empresas que producen (puede haber varias)
+- Puede aparecer como: "Produktion:", "Production Company:", "Productora:", "Studio:", "Prod:", "Producer:", "In Co-Production with:"
 - También puede estar en logos, cabeceras, o pie de página
-- Ejemplos: "UFA Fiction", "Netflix Original", "Warner Bros TV", "Bavaria Film", "Neue Super", "X Filme"
-- **Si NO encuentras**: Deja el campo vacío ""
+- Ejemplos: ["UFA Fiction"], ["Netflix Original", "Warner Bros TV"], ["Bavaria Film", "Neue Super"], ["X Filme"]
+- **Formato**: Array de strings, UNA productora por elemento
+- **Si NO encuentras ninguna**: Devuelve array vacío []
 
-**Razonamiento**: Como humano, ¿qué EMPRESA/ESTUDIO está produciendo esto?
+**Razonamiento**: Como humano, ¿qué EMPRESAS/ESTUDIOS están produciendo esto?
 
-**IMPORTANTE**: Lee TODO el documento, incluyendo encabezados, logos y pies de página donde suele aparecer la productora.
+**IMPORTANTE**: 
+- Lee TODO el documento, especialmente la PRIMERA PÁGINA donde suelen estar todas las productoras
+- Busca en encabezados, logos, pies de página
+- **Extrae TODAS las productoras que encuentres**, pueden ser 1, 2, 3 o más
+- Cada productora debe ser un elemento separado en el array
 
 ---
 

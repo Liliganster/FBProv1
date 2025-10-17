@@ -3,17 +3,17 @@ export const responseSchema = {
   properties: {
     date: { type: 'string' },
     projectName: { type: 'string' },
-    productionCompany: { type: 'string' },
+    productionCompanies: { type: 'array', items: { type: 'string' } },
     locations: { type: 'array', items: { type: 'string' } },
   },
-  required: ['date', 'projectName', 'productionCompany', 'locations'],
+  required: ['date', 'projectName', 'productionCompanies', 'locations'],
   additionalProperties: false,
 } as const;
 
 export type CrewFirstCallsheet = {
   date: string;
   projectName: string;
-  productionCompany: string;
+  productionCompanies: string[];
   locations: string[];
 };
 
