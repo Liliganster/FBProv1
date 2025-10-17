@@ -140,9 +140,22 @@ export async function extractUniversalStructured({
     
     // Mode controls OCR behavior, useCrewFirst controls schema
     // direct mode = fast, no OCR | agent mode = with OCR and optional function calling
-    const parsed = mode === 'agent'
-      ? await agenticParse(normalized.text, tools, chosen, creds, useCrewFirst)
-      : await directParse(normalized.text, chosen, creds, useCrewFirst);
+    let parsed: any;
+    try {
+      parsed = mode === 'agent'
+        ? await agenticParse(normalized.text, tools, chosen, creds, useCrewFirst)
+        : await directParse(normalized.text, chosen, creds, useCrewFirst);
+    } catch (err) {
+      // Graceful fallback: if OpenRouter fails in production due to key/domain issues, try Gemini automatically
+      if (chosen === 'openrouter') {
+        console.warn('[ExtractorUniversal] OpenRouter failed, falling back to Gemini:', (err as Error)?.message || err);
+        parsed = mode === 'agent'
+          ? await agenticParse(normalized.text, tools, 'gemini', undefined, useCrewFirst)
+          : await directParse(normalized.text, 'gemini', undefined, useCrewFirst);
+      } else {
+        throw err;
+      }
+    }
     
     console.log('[ExtractorUniversal] Parsed result:', parsed);
     
