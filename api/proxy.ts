@@ -437,11 +437,12 @@ YOUR TASK - Extract ONLY these 4 essential fields:
    - Normalize to YYYY-MM-DD format
    - Look for: "Datum:", "Date:", "Fecha:", or day headers
 
-2. PRODUCTION COMPANY: The production company/studio name (Produktionsfirma/Production Company/Productora)
-   - NOT the project title - this is the COMPANY producing the project
+2. PRODUCTION COMPANIES: Array of production company/studio names (Produktionsfirma/Production Company/Productora)
+   - NOT the project title - these are the COMPANIES producing the project
    - Look for: "Produktion:", "Production:", "Productora:", "Studio:", company logos
-   - Examples: "Warner Bros", "Netflix", "UFA Fiction", "Bavaria Film", "El Deseo"
-   - If not found, use "Unknown"
+   - Examples: ["Warner Bros"], ["Netflix"], ["UFA Fiction", "Bavaria Film"], ["El Deseo"]
+   - MUST be an array of strings, even if only one company
+   - If not found, use ["Unknown"]
 
 3. PROJECT NAME: The creative title of the show/film/series
    - This is the TITLE, NOT the production company
@@ -492,14 +493,16 @@ INTELLIGENCE REQUIREMENTS:
 • Use OCR context clues (formatting, position, labels)
 
 OUTPUT FORMAT (strict JSON only):
-{"date":"YYYY-MM-DD","productionCompany":"string","projectName":"string","locations":["complete address 1","complete address 2"]}
+{"date":"YYYY-MM-DD","productionCompanies":["Company 1","Company 2"],"projectName":"string","locations":["complete address 1","complete address 2"]}
+
+CRITICAL: productionCompanies MUST be an array of strings, even if only one company.
 
 EXAMPLES:
 
 Good extraction ✓:
 {
   "date": "2025-02-25",
-  "productionCompany": "UFA Fiction",
+  "productionCompanies": ["UFA Fiction"],
   "projectName": "VORSTADTWEIBER",
   "locations": [
     "Salmgasse 10, 1030 Wien",
@@ -510,7 +513,7 @@ Good extraction ✓:
 Bad extraction ✗ (too many locations, includes logistics):
 {
   "date": "2025-02-25",
-  "productionCompany": "Unknown",
+  "productionCompanies": ["Unknown"],
   "projectName": "VORSTADTWEIBER", 
   "locations": [
     "Salmgasse 10, 1030 Wien",

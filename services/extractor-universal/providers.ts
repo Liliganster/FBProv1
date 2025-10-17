@@ -22,11 +22,20 @@ async function parseJsonResponse(
 
   if (useCrewFirst) {
     if (!isCrewFirstCallsheet(payload)) {
+      console.error(`[${provider}] Invalid CrewFirst payload:`, payload);
       throw new Error(`${provider} returned an unexpected CrewFirst JSON payload`);
     }
     return payload;
   } else {
+    // Handle legacy format conversion: productionCompany (string) → productionCompanies (array)
+    if (payload && typeof payload === 'object' && typeof payload.productionCompany === 'string' && !payload.productionCompanies) {
+      console.log(`[${provider}] Converting legacy productionCompany to productionCompanies array`);
+      payload.productionCompanies = [payload.productionCompany];
+      delete payload.productionCompany;
+    }
+    
     if (!isCallsheetExtraction(payload)) {
+      console.error(`[${provider}] Invalid payload:`, payload);
       throw new Error(`${provider} returned an unexpected JSON payload`);
     }
     return normalizeExtraction(payload);
