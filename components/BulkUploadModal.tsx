@@ -12,6 +12,8 @@ import { normalizeSignature } from '../services/tripUtils';
 import { processFileForTrip, processFileForTripUniversal } from '../services/aiService';
 import useGoogleMapsScript from '../hooks/useGoogleMapsScript';
 import { useProjects } from '../hooks/useProjects';
+import { useAuth } from '../hooks/useAuth';
+import databaseService from '../services/databaseService';
 import useGoogleCalendar from '../hooks/useGoogleCalendar';
 
 interface BulkUploadModalProps {
@@ -109,7 +111,8 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
   const { showToast } = useToast();
   const { isLoaded: isMapsScriptLoaded, error: mapsScriptError } = useGoogleMapsScript();
   const { showPicker, gapiClient, isSignedIn, signIn } = useGoogleCalendar();
-  const { addProject, projects: projectsCtx } = useProjects();
+  const { addProject, projects: projectsCtx, fetchProjects } = useProjects();
+  const { user } = useAuth();
 
   const findHeaderIndex = (headers: string[], validNames: string[]): number => {
     return headers.findIndex(h => validNames.includes(h.trim().toLowerCase()));
@@ -426,28 +429,45 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
 
   const handleConfirmSave = async () => {
     try {
-      // Build mapping from project name to ID
+      // Build mapping from project name (normalized) to ID
+      const normalizeName = (s: string) => (s || '').trim().toLowerCase();
       const nameToId = new Map<string, string>();
-      // Include existing projects from context
-      (projectsCtx || []).forEach(p => nameToId.set(p.name, p.id));
-      // Create missing projects listed in newlyCreatedProjects map
-      for (const [name, producer] of newlyCreatedProjects.entries()) {
-        if (!nameToId.has(name)) {
+      // Include existing projects from props and context
+      (projects || []).forEach(p => nameToId.set(normalizeName(p.name), p.id));
+      (projectsCtx || []).forEach(p => nameToId.set(normalizeName(p.name), p.id));
+
+      // Create missing projects directly via DB to obtain IDs immediately
+      if (!user?.id) {
+        showToast('User not authenticated', 'error');
+        return;
+      }
+
+      for (const [rawName, producer] of newlyCreatedProjects.entries()) {
+        const name = (rawName || '').trim();
+        const key = normalizeName(name);
+        if (!key) continue;
+        if (!nameToId.has(key)) {
           try {
-            await addProject({ name, producer });
+            const inserted = await databaseService.createProject(user.id, { name, producer });
+            // Update local map with newly created project ID
+            nameToId.set(key, inserted.id);
+            // Also update UI context (non-blocking)
+            void addProject({ name, producer });
           } catch (e) {
             console.error('[BulkUpload] Failed to create project', name, e);
           }
         }
       }
-      // Refresh mapping after potential creations
-      (projectsCtx || []).forEach(p => nameToId.set(p.name, p.id));
+
+      // Ensure projects context is refreshed (best-effort)
+      try { await fetchProjects(); } catch {}
 
       // Map placeholder projectId (name) to real IDs
       const updatedDrafts = draftTrips.map(trip => {
         const mapped = { ...trip };
-        if (mapped.projectId && nameToId.has(mapped.projectId)) {
-          mapped.projectId = nameToId.get(mapped.projectId)!;
+        const key = normalizeName(mapped.projectId);
+        if (key && nameToId.has(key)) {
+          mapped.projectId = nameToId.get(key)!;
         }
         return mapped;
       });
