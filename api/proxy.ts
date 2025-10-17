@@ -437,12 +437,30 @@ YOUR TASK - Extract ONLY these 4 essential fields:
    - Normalize to YYYY-MM-DD format
    - Look for: "Datum:", "Date:", "Fecha:", or day headers
 
-2. PRODUCTION COMPANIES: Array of production company/studio names (Produktionsfirma/Production Company/Productora)
-   - NOT the project title - these are the COMPANIES producing the project
-   - Look for: "Produktion:", "Production:", "Productora:", "Studio:", company logos
-   - Examples: ["Warner Bros"], ["Netflix"], ["UFA Fiction", "Bavaria Film"], ["El Deseo"]
-   - MUST be an array of strings, even if only one company
-   - If not found, use ["Unknown"]
+2. PRODUCTION COMPANIES: Array of ALL production companies/studios involved (Produktionsfirma/Production Company/Productora)
+   
+   🎯 CRITICAL: Extract ALL companies listed in the document
+   
+   - Look for company names in these sections:
+     • Header/footer logos and text
+     • "Produktion:", "Production:", "Productora:", "Producer:", "Producción:"
+     • "Studio:", "Produktionsfirma:", "Auftraggeber:", "Commissioner:"
+     • "Co-Production:", "Co-Produktion:", "Coproducción:"
+     • Multiple companies are common - extract ALL of them
+   
+   - These are the COMPANIES, NOT the project title
+   - Include ALL production companies mentioned (main, co-producers, studios)
+   - Remove generic terms like "GmbH", "Inc.", "Ltd." if they appear separately
+   
+   - Examples:
+     • Single: ["Warner Bros Pictures"]
+     • Multiple: ["Netflix", "Studio Babelsberg"]
+     • With co-producers: ["UFA Fiction", "ARD Degeto", "ORF"]
+     • Spanish: ["El Deseo", "Televisión Española", "ICAA"]
+   
+   - MUST be an array of strings
+   - If none found, use ["Unknown"]
+   - Do NOT duplicate the same company name
 
 3. PROJECT NAME: The creative title of the show/film/series
    - This is the TITLE, NOT the production company
@@ -485,21 +503,21 @@ YOUR TASK - Extract ONLY these 4 essential fields:
       • Is it just a room/suite name? ✗ IGNORE
 
 INTELLIGENCE REQUIREMENTS:
-• Read the FULL document to understand structure
-• Identify section headers and labels (Drehort vs Basis vs Catering)
+• Read the FULL document - scan header, footer, and all sections
+• Identify ALL production company names (main producer, co-producers, studios, commissioners)
 • Distinguish between production company and project title
 • Extract only MAIN filming locations, not every address mentioned
 • Validate each address is complete before including it
 • Use OCR context clues (formatting, position, labels)
 
 OUTPUT FORMAT (strict JSON only):
-{"date":"YYYY-MM-DD","productionCompanies":["Company 1","Company 2"],"projectName":"string","locations":["complete address 1","complete address 2"]}
+{"date":"YYYY-MM-DD","productionCompanies":["Company 1","Company 2","Company 3"],"projectName":"string","locations":["complete address 1","complete address 2"]}
 
-CRITICAL: productionCompanies MUST be an array of strings, even if only one company.
+CRITICAL: productionCompanies MUST be an array of strings containing ALL companies mentioned.
 
 EXAMPLES:
 
-Good extraction ✓:
+✅ Example 1 - Single production company:
 {
   "date": "2025-02-25",
   "productionCompanies": ["UFA Fiction"],
@@ -510,7 +528,27 @@ Good extraction ✓:
   ]
 }
 
-Bad extraction ✗ (too many locations, includes logistics):
+✅ Example 2 - Multiple production companies (co-production):
+{
+  "date": "2025-03-15",
+  "productionCompanies": ["Netflix", "Studio Babelsberg", "ARD Degeto"],
+  "projectName": "DARK",
+  "locations": [
+    "Berliner Straße 45, 14467 Potsdam"
+  ]
+}
+
+✅ Example 3 - International co-production:
+{
+  "date": "2025-04-10",
+  "productionCompanies": ["El Deseo", "Televisión Española", "ARTE France"],
+  "projectName": "TODO SOBRE MI MADRE",
+  "locations": [
+    "Calle Mayor 28, 28013 Madrid"
+  ]
+}
+
+❌ Bad extraction (too many locations, includes logistics):
 {
   "date": "2025-02-25",
   "productionCompanies": ["Unknown"],

@@ -104,10 +104,20 @@ export function postProcessCrewFirstData(data: CallsheetExtraction, sourceText?:
   const date = (data.date || '').trim();
   const projectName = (data.projectName || '').trim();
   
-  // Handle productionCompanies as array, filter out empty strings
+  // Handle productionCompanies as array, filter out empty strings and deduplicate
+  const seenCompanies = new Set<string>();
   const productionCompanies = (Array.isArray(data.productionCompanies) ? data.productionCompanies : [])
     .map(c => (c || '').trim())
-    .filter(Boolean);
+    .filter(Boolean)
+    .filter(c => {
+      const normalized = c.toLowerCase();
+      if (seenCompanies.has(normalized)) {
+        console.log(`[PostProcess] ❌ Filtered duplicate production company: "${c}"`);
+        return false;
+      }
+      seenCompanies.add(normalized);
+      return true;
+    });
   
   console.log('[PostProcess] Extracted data:', { date, projectName, productionCompanies, locationsCount: data.locations?.length });
   

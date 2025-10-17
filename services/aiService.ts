@@ -386,10 +386,11 @@ export async function processFileForTripUniversal(
     specialOrigin: SpecialOrigin.HOME,
   };
 
-  // Join multiple production companies with " & "
+  // Join multiple production companies with comma separator
+  // Examples: "Netflix" or "Netflix, Studio Babelsberg, ARD Degeto"
   const productionCompany = Array.isArray(extraction.productionCompanies) 
-    ? extraction.productionCompanies.filter(Boolean).join(' & ')
-    : '';
+    ? extraction.productionCompanies.filter(Boolean).join(', ')
+    : 'Unknown';
   
   return { tripData, projectName: extraction.projectName, productionCompany };
 }
