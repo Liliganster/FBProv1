@@ -569,8 +569,28 @@ Remember: Quality over quantity. 2-3 MAIN filming addresses only. Each must be c
       throw new Error('No content in OpenRouter response');
     }
     
-    const parsed = typeof message === 'string' ? JSON.parse(message) : message;
-    console.log('[OpenRouter Structured] Successfully parsed response');
+    let parsed = typeof message === 'string' ? JSON.parse(message) : message;
+    
+    // CRITICAL FIX: Convert legacy format productionCompany (string) → productionCompanies (array)
+    if (!useCrewFirst && parsed && typeof parsed === 'object') {
+      if (typeof parsed.productionCompany === 'string' && !parsed.productionCompanies) {
+        console.log('[OpenRouter Structured] Converting productionCompany to productionCompanies array');
+        parsed.productionCompanies = [parsed.productionCompany];
+        delete parsed.productionCompany;
+      }
+      // Ensure productionCompanies is always an array
+      if (!Array.isArray(parsed.productionCompanies)) {
+        console.warn('[OpenRouter Structured] productionCompanies is not an array, fixing...');
+        parsed.productionCompanies = parsed.productionCompanies ? [String(parsed.productionCompanies)] : ['Unknown'];
+      }
+    }
+    
+    console.log('[OpenRouter Structured] Successfully parsed and normalized response:', {
+      date: parsed.date,
+      projectName: parsed.projectName,
+      productionCompanies: parsed.productionCompanies,
+      locationsCount: parsed.locations?.length
+    });
 
     return sendJson(res, 200, parsed);
   } catch (error: any) {

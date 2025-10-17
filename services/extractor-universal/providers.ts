@@ -27,16 +27,36 @@ async function parseJsonResponse(
     }
     return payload;
   } else {
-    // Handle legacy format conversion: productionCompany (string) → productionCompanies (array)
-    if (payload && typeof payload === 'object' && typeof payload.productionCompany === 'string' && !payload.productionCompanies) {
-      console.log(`[${provider}] Converting legacy productionCompany to productionCompanies array`);
-      payload.productionCompanies = [payload.productionCompany];
-      delete payload.productionCompany;
+    // CRITICAL FIX: Handle multiple legacy format issues
+    if (payload && typeof payload === 'object') {
+      // Fix 1: productionCompany (string) → productionCompanies (array)
+      if (typeof payload.productionCompany === 'string' && !payload.productionCompanies) {
+        console.log(`[${provider}] Converting productionCompany (string) to productionCompanies (array)`);
+        payload.productionCompanies = [payload.productionCompany];
+        delete payload.productionCompany;
+      }
+      
+      // Fix 2: Ensure productionCompanies is always an array
+      if (!Array.isArray(payload.productionCompanies)) {
+        console.warn(`[${provider}] productionCompanies is not an array, converting...`);
+        if (typeof payload.productionCompanies === 'string') {
+          payload.productionCompanies = [payload.productionCompanies];
+        } else if (payload.productionCompanies === null || payload.productionCompanies === undefined) {
+          payload.productionCompanies = ['Unknown'];
+        } else {
+          payload.productionCompanies = [String(payload.productionCompanies)];
+        }
+      }
+      
+      // Fix 3: Ensure required fields exist
+      if (!payload.date) payload.date = '';
+      if (!payload.projectName) payload.projectName = '';
+      if (!Array.isArray(payload.locations)) payload.locations = [];
     }
     
     if (!isCallsheetExtraction(payload)) {
-      console.error(`[${provider}] Invalid payload:`, payload);
-      throw new Error(`${provider} returned an unexpected JSON payload`);
+      console.error(`[${provider}] Invalid payload after normalization:`, JSON.stringify(payload, null, 2));
+      throw new Error(`${provider} returned an unexpected JSON payload. Expected: {date: string, projectName: string, productionCompanies: string[], locations: string[]}`);
     }
     return normalizeExtraction(payload);
   }
