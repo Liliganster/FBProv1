@@ -510,7 +510,10 @@ const SettingsView: React.FC<{
                             </>
                         )}
                     </div>
-                    <div className="flex gap-4">
+                    <div className="flex items-center gap-4">
+                        <span className="text-[10px] text-on-surface-dark-secondary">
+                          Build: {typeof __COMMIT_HASH__ !== 'undefined' && __COMMIT_HASH__ ? __COMMIT_HASH__.slice(0,7) : 'local'} @ {typeof __BUILD_TIME__ !== 'undefined' ? __BUILD_TIME__ : 'dev'}
+                        </span>
                         <button onClick={handleClose} className="bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-smooth">{t('common_cancel')}</button>
                         <button onClick={handleSaveAllSettings} className="flex items-center bg-brand-primary hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-smooth transition-colors">
                             <SaveIcon className="w-5 h-5 mr-2"/>
