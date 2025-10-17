@@ -649,24 +649,49 @@ const tempNewProjectsForReview = Array.from(newlyCreatedProjects.entries()).map(
                   </div>
                   <div>
                     <label className="block text-xs font-medium uppercase tracking-wide text-on-surface-dark-secondary mb-2">Extraction Mode</label>
-                    <div className="flex gap-1 rounded-md bg-background-dark/60 p-1 border border-gray-700/60">
+                    <div className="flex gap-2">
                       <button
+                        type="button"
+                        aria-pressed={aiExtractMode === 'direct'}
                         onClick={() => setAiExtractMode('direct')}
-                        className={`w-full text-center px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
-                          aiExtractMode === 'direct' ? 'bg-brand-primary text-white' : 'text-on-surface-dark-secondary hover:bg-gray-700/50'
+                        className={`flex-1 flex items-center justify-between gap-2 px-3 py-2 rounded-md border transition-all ${
+                          aiExtractMode === 'direct'
+                            ? 'border-brand-primary bg-brand-primary/20 text-white shadow'
+                            : 'border-gray-700/60 text-on-surface-dark-secondary hover:border-gray-500 hover:bg-gray-700/30'
                         }`}
+                        title="Fast, clean text (no OCR)"
                       >
-                        Direct
+                        <span className="text-xs font-medium">Direct</span>
+                        {aiExtractMode === 'direct' ? (
+                          <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-brand-primary">
+                            <CheckIcon className="w-3 h-3 text-white" />
+                          </span>
+                        ) : (
+                          <span className="inline-block w-4 h-4 rounded-full border border-gray-500" />
+                        )}
                       </button>
                       <button
+                        type="button"
+                        aria-pressed={aiExtractMode === 'agent'}
                         onClick={() => setAiExtractMode('agent')}
-                        className={`w-full text-center px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
-                          aiExtractMode === 'agent' ? 'bg-brand-primary text-white' : 'text-on-surface-dark-secondary hover:bg-gray-700/50'
+                        className={`flex-1 flex items-center justify-between gap-2 px-3 py-2 rounded-md border transition-all ${
+                          aiExtractMode === 'agent'
+                            ? 'border-brand-primary bg-brand-primary/20 text-white shadow'
+                            : 'border-gray-700/60 text-on-surface-dark-secondary hover:border-gray-500 hover:bg-gray-700/30'
                         }`}
+                        title="With OCR for PDFs and images"
                       >
-                        Agent (OCR)
+                        <span className="text-xs font-medium">Agent (OCR)</span>
+                        {aiExtractMode === 'agent' ? (
+                          <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-brand-primary">
+                            <CheckIcon className="w-3 h-3 text-white" />
+                          </span>
+                        ) : (
+                          <span className="inline-block w-4 h-4 rounded-full border border-gray-500" />
+                        )}
                       </button>
                     </div>
+                    <p className="mt-1 text-[10px] text-on-surface-dark-secondary">Selected: {aiExtractMode === 'direct' ? 'Direct' : 'Agent (OCR)'} mode</p>
                   </div>
                   {documentType === DocumentType.EMAIL && (
                     <div>
@@ -737,17 +762,17 @@ const tempNewProjectsForReview = Array.from(newlyCreatedProjects.entries()).map(
               <>
                   <button onClick={onClose} className="px-4 py-2 text-sm bg-gray-700 hover:bg-gray-600 text-white rounded-md font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-brand-primary/60 mr-3">{t('common_cancel')}</button>
                  {mode === 'ai' && (
-                    <button onClick={handleProcessAi} disabled={isProcessing || (aiFiles.length === 0 && aiText.trim().length === 0)} className="flex items-center justify-center bg-brand-primary hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-lg disabled:opacity-50 w-60">
-                        {isProcessing ? (
-                            <><LoaderIcon className="w-5 h-5 mr-2 animate-spin"/> Processing...</>
-                        ) : mapsLoading ? (
-                            <><LoaderIcon className="w-5 h-5 mr-2 animate-spin"/> Loading Maps...</>
-                        ) : aiFiles.length > 0 ? (
-                            <><SparklesIcon className="w-5 h-5 mr-2" /> {`Process ${aiFiles.length} files`}</>
-                        ) : (
-                            <><SparklesIcon className="w-5 h-5 mr-2" /> Process text</>
-                        )}
-                    </button>
+          <button onClick={handleProcessAi} disabled={isProcessing || (aiFiles.length === 0 && aiText.trim().length === 0)} className="flex items-center justify-center bg-brand-primary hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-lg disabled:opacity-50 w-auto min-w-60">
+            {isProcessing ? (
+              <><LoaderIcon className="w-5 h-5 mr-2 animate-spin"/> Processing ({aiExtractMode === 'direct' ? 'Direct' : 'Agent (OCR)'})...</>
+            ) : mapsLoading ? (
+              <><LoaderIcon className="w-5 h-5 mr-2 animate-spin"/> Loading Maps...</>
+            ) : aiFiles.length > 0 ? (
+              <><SparklesIcon className="w-5 h-5 mr-2" /> {`Process ${aiFiles.length} file${aiFiles.length > 1 ? 's' : ''}`} ({aiExtractMode === 'direct' ? 'Direct' : 'Agent (OCR)'})</>
+            ) : (
+              <><SparklesIcon className="w-5 h-5 mr-2" /> Process text ({aiExtractMode === 'direct' ? 'Direct' : 'Agent (OCR)'})</>
+            )}
+          </button>
                  )}
               </>
           ) : ( // Review Stage
