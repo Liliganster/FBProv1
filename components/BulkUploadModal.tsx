@@ -111,7 +111,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
   const { showToast } = useToast();
   const { isLoaded: isMapsScriptLoaded, error: mapsScriptError } = useGoogleMapsScript();
   const { showPicker, gapiClient, isSignedIn, signIn } = useGoogleCalendar();
-  const { addProject, projects: projectsCtx, fetchProjects } = useProjects();
+  const { projects: projectsCtx, fetchProjects } = useProjects();
   const { user } = useAuth();
 
   const findHeaderIndex = (headers: string[], validNames: string[]): number => {
@@ -474,8 +474,6 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
             console.log(`[BulkUpload] Project created successfully:`, inserted);
             // Update local map with newly created project ID
             nameToId.set(key, inserted.id);
-            // Also update UI context (non-blocking)
-            void addProject({ name, producer });
           } catch (e) {
             console.error('[BulkUpload] Failed to create project', name, e);
             showToast(`Failed to create project "${name}"`, 'error');
