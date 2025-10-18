@@ -66,27 +66,23 @@ const SettingsView: React.FC<{
     useEffect(() => {
         if (!localProfile) return;
         const fetchModels = async () => {
-            if (localProfile.openRouterApiKey && localProfile.openRouterApiKey.trim() !== '') {
-                setIsFetchingOrModels(true);
-                setFetchOrModelsError(null);
-                setOpenRouterModels([]);
-                try {
-                    const models = await fetchOpenRouterModels(localProfile.openRouterApiKey);
-                    if (models.length === 0) {
-                        setFetchOrModelsError(t('settings_api_or_no_models') || 'No models available. Please check your API key.');
-                    } else {
-                        setOpenRouterModels(models);
-                    }
-                } catch (error) {
-                    const errorMessage = error instanceof Error ? error.message : "An unknown error occurred.";
-                    console.error('[Settings] Error fetching OpenRouter models:', errorMessage);
-                    setFetchOrModelsError(errorMessage);
-                } finally {
-                    setIsFetchingOrModels(false);
+            setIsFetchingOrModels(true);
+            setFetchOrModelsError(null);
+            setOpenRouterModels([]);
+            try {
+                // If user has entered an API key, pass it; otherwise allow server to use default key
+                const models = await fetchOpenRouterModels(localProfile.openRouterApiKey || undefined);
+                if (models.length === 0) {
+                    setFetchOrModelsError(t('settings_api_or_no_models') || 'No models available. Please check your API key.');
+                } else {
+                    setOpenRouterModels(models);
                 }
-            } else {
-                setOpenRouterModels([]);
-                setFetchOrModelsError(null);
+            } catch (error) {
+                const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
+                console.error('[Settings] Error fetching OpenRouter models:', errorMessage);
+                setFetchOrModelsError(errorMessage);
+            } finally {
+                setIsFetchingOrModels(false);
             }
         };
         fetchModels();
@@ -296,7 +292,6 @@ const SettingsView: React.FC<{
                                         isLoading={isFetchingOrModels}
                                         error={fetchOrModelsError}
                                         models={openRouterModels}
-                                        disabled={!localProfile.openRouterApiKey}
                                         loadingText={t('settings_api_or_loading')}
                                         errorText={fetchOrModelsError || t('settings_api_or_enter_key')}
                                         noModelsText={t('settings_api_or_enter_key')}
@@ -648,7 +643,8 @@ const ModelSelect: React.FC<{
 }> = ({ id, name, label, value, onChange, isLoading, error, models, disabled, loadingText, errorText, noModelsText, defaultOptionText }) => {
     const hasError = !!error;
     const isEmpty = !isLoading && !hasError && models.length === 0;
-    const isDisabled = disabled || isLoading || hasError || isEmpty;
+    // Keep the select interactive unless explicitly disabled or loading
+    const isDisabled = !!disabled || !!isLoading;
 
     return (
         <div>
