@@ -1,7 +1,9 @@
 import type { CallsheetExtraction, CrewFirstCallsheet } from '../../../../services/extractor-universal/config/schema.js';
+import { callsheetSchema, crewFirstCallsheetSchema } from '../../../../services/extractor-universal/config/schema.js';
 import { buildDirectPrompt, buildCrewFirstDirectPrompt, sanitizeModelText } from '../../../../services/extractor-universal/prompts/callsheet.js';
 import { isCallsheetExtraction, isCrewFirstCallsheet } from '../../../../services/extractor-universal/verify.js';
 import { withRateLimit } from '../../../rate-limiter.js';
+import { GoogleGenAI } from '@google/genai';
 
 const DEFAULT_MODEL = process.env.OPENROUTER_MODEL || 'google/gemini-2.0-flash-001';
 function deriveReferer(req: any): string {
@@ -125,6 +127,16 @@ async function structuredHandler(req: any, res: any) {
     if (!response.ok) {
       const detail = await response.text();
       console.error('[api/ai/openrouter/structured] 6. OpenRouter error', response.status, detail?.slice?.(0, 200));
+      // On 5xx, try a single lightweight fallback to Gemini
+      if (response.status >= 500) {
+        try {
+          const extraction = await fallbackWithGemini(text, useCrewFirst);
+          toJsonResponse(res, 200, extraction);
+          return;
+        } catch (fallbackErr) {
+          console.error('[api/ai/openrouter/structured] Gemini fallback failed:', fallbackErr);
+        }
+      }
       throw new Error(`OpenRouter error ${response.status}: ${detail}`);
     }
 
@@ -194,13 +206,29 @@ async function structuredHandler(req: any, res: any) {
     if (useCrewFirst) {
       if (!isCrewFirstCallsheet(parsed)) {
         console.error('[api/ai/openrouter/structured] 8. Invalid CrewFirst structure', parsed);
-        throw new Error('OpenRouter returned an unexpected CrewFirst JSON structure');
+        // Fallback to Gemini if available
+        try {
+          const extraction = await fallbackWithGemini(text, true);
+          toJsonResponse(res, 200, extraction);
+          return;
+        } catch (fallbackErr) {
+          console.error('[api/ai/openrouter/structured] Gemini fallback failed:', fallbackErr);
+          throw new Error('OpenRouter returned an unexpected CrewFirst JSON structure');
+        }
       }
       toJsonResponse(res, 200, parsed);
     } else {
       if (!isCallsheetExtraction(parsed)) {
         console.error('[api/ai/openrouter/structured] 9. Invalid direct structure', parsed);
-        throw new Error('OpenRouter returned an unexpected JSON structure');
+        // Fallback to Gemini if available
+        try {
+          const extraction = await fallbackWithGemini(text, false);
+          toJsonResponse(res, 200, extraction);
+          return;
+        } catch (fallbackErr) {
+          console.error('[api/ai/openrouter/structured] Gemini fallback failed:', fallbackErr);
+          throw new Error('OpenRouter returned an unexpected JSON structure');
+        }
       }
       toJsonResponse(res, 200, normalizeExtraction(parsed));
     }
@@ -211,3 +239,32 @@ async function structuredHandler(req: any, res: any) {
 }
 
 export default withRateLimit(structuredHandler);
+
+// Server-side fallback to Gemini (direct mode). Returns normalized extraction or throws.
+async function fallbackWithGemini(rawText: string, useCrewFirst: boolean): Promise<CallsheetExtraction | CrewFirstCallsheet> {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) throw new Error('GEMINI_API_KEY not configured for fallback');
+  const ai = new GoogleGenAI({ apiKey });
+  const text = sanitizeModelText(rawText);
+  const prompt = useCrewFirst ? buildCrewFirstDirectPrompt(text) : buildDirectPrompt(text);
+
+  const model = process.env.GEMINI_MODEL || 'gemini-2.0-flash-001';
+  const result: any = await ai.models.generateContent({
+    model,
+    contents: [{ role: 'user', parts: [{ text: prompt }] }],
+    responseMimeType: 'application/json',
+    responseSchema: useCrewFirst ? (crewFirstCallsheetSchema as any) : (callsheetSchema as any),
+  } as any);
+
+  const output = typeof result.text === 'function'
+    ? result.text()
+    : result?.response?.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
+  if (!output) throw new Error('Empty response from Gemini fallback');
+  const parsed = JSON.parse(output);
+  if (useCrewFirst) {
+    if (!isCrewFirstCallsheet(parsed)) throw new Error('Gemini fallback returned invalid CrewFirst payload');
+    return parsed;
+  }
+  if (!isCallsheetExtraction(parsed)) throw new Error('Gemini fallback returned invalid payload');
+  return normalizeExtraction(parsed);
+}
