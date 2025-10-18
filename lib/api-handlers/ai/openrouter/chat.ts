@@ -94,16 +94,38 @@ async function chatHandler(req: any, res: any) {
       body: JSON.stringify(payload),
     });
 
-    const json = await response.json();
+    let json: any;
+    try {
+      json = await response.json();
+    } catch (parseError) {
+      console.error('[api/ai/openrouter/chat] Failed to parse response as JSON:', parseError);
+      toJsonResponse(res, 500, {
+        error: 'Invalid response from OpenRouter',
+        details: 'The API returned a non-JSON response'
+      });
+      return;
+    }
+
     if (!response.ok) {
       const detail = typeof json === 'object' ? json : { detail: json };
-      throw new Error(`OpenRouter error ${response.status}: ${JSON.stringify(detail)}`);
+      const errorMessage = json?.error?.message || json?.message || 'OpenRouter request failed';
+      console.error(`[api/ai/openrouter/chat] OpenRouter error ${response.status}:`, JSON.stringify(detail));
+
+      toJsonResponse(res, 400, {
+        error: errorMessage,
+        details: `Status ${response.status}: ${JSON.stringify(detail).substring(0, 200)}`
+      });
+      return;
     }
 
     toJsonResponse(res, 200, json);
   } catch (error) {
-    console.error('[api/ai/openrouter/chat] Error:', error);
-    toJsonResponse(res, 500, { error: 'OpenRouter request failed', details: (error as Error).message });
+    console.error('[api/ai/openrouter/chat] Unexpected error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    toJsonResponse(res, 500, {
+      error: 'Failed to connect to OpenRouter. Please check your network connection and API key.',
+      details: errorMessage
+    });
   }
 }
 

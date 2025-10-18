@@ -387,7 +387,7 @@ app.post('/api/ai/openrouter/chat', async (req, res) => {
 
     const apiKey = bodyApiKey || defaultKey;
     if (!apiKey) {
-      return res.status(500).json({ error: 'OpenRouter API key is not configured' });
+      return res.status(400).json({ error: 'OpenRouter API key is required. Please add your API key in Settings.' });
     }
 
     const model = bodyModel || assertEnv('OPENROUTER_MODEL') || 'google/gemini-2.0-flash-001';
@@ -414,17 +414,33 @@ app.post('/api/ai/openrouter/chat', async (req, res) => {
       body: JSON.stringify(payload)
     });
 
-    if (!response.ok) {
-      const detail = await response.text();
-      console.error('[dev-server] OpenRouter chat error:', detail);
-      return res.status(502).json({ error: 'OpenRouter request failed', details: detail });
+    let data;
+    try {
+      data = await response.json();
+    } catch (parseError) {
+      console.error('[dev-server] Failed to parse response as JSON:', parseError);
+      return res.status(500).json({
+        error: 'Invalid response from OpenRouter',
+        details: 'The API returned a non-JSON response'
+      });
     }
 
-    const data = await response.json();
+    if (!response.ok) {
+      const errorMessage = data?.error?.message || data?.message || 'OpenRouter request failed';
+      console.error(`[dev-server] OpenRouter chat error ${response.status}:`, JSON.stringify(data));
+      return res.status(400).json({
+        error: errorMessage,
+        details: `Status ${response.status}: ${JSON.stringify(data).substring(0, 200)}`
+      });
+    }
+
     return res.status(200).json(data);
   } catch (error) {
     console.error('[dev-server] /api/ai/openrouter/chat error:', error);
-    return res.status(500).json({ error: 'Internal server error', details: error.message });
+    return res.status(500).json({
+      error: 'Failed to connect to OpenRouter. Please check your network connection and API key.',
+      details: error.message
+    });
   }
 });
 
@@ -435,7 +451,7 @@ app.get('/api/ai/openrouter/models', async (req, res) => {
     const apiKey = queryKey || defaultKey;
 
     if (!apiKey) {
-      return res.status(500).json({ error: 'OpenRouter API key is not configured' });
+      return res.status(400).json({ error: 'OpenRouter API key is required. Please add your API key in Settings.' });
     }
 
     const response = await fetch('https://openrouter.ai/api/v1/models', {
@@ -447,23 +463,49 @@ app.get('/api/ai/openrouter/models', async (req, res) => {
     });
 
     if (!response.ok) {
-      const detail = await response.text();
-      console.error('[dev-server] OpenRouter models error:', detail);
-      return res.status(502).json({ error: 'OpenRouter request failed', details: detail });
+      let errorMessage = 'Failed to fetch models from OpenRouter';
+      let errorDetails = '';
+
+      try {
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+          const errorJson = await response.json();
+          errorDetails = JSON.stringify(errorJson);
+          errorMessage = errorJson.error?.message || errorJson.message || errorMessage;
+        } else {
+          errorDetails = await response.text();
+        }
+      } catch (parseError) {
+        console.error('[dev-server] Error parsing error response:', parseError);
+        errorDetails = 'Unable to parse error response';
+      }
+
+      console.error(`[dev-server] OpenRouter models error ${response.status}:`, errorDetails);
+      return res.status(400).json({
+        error: errorMessage,
+        details: `Status ${response.status}: ${errorDetails.substring(0, 200)}`
+      });
     }
 
     const data = await response.json();
     const models = Array.isArray(data?.data)
       ? data.data
           .map(m => ({ id: m.id, name: m.name || m.id }))
-          .filter(m => m.id)
-          .sort((a, b) => a.name.localeCompare(b.name))
+          .filter(m => m.id && typeof m.id === 'string')
+          .sort((a, b) => (a.name || '').localeCompare(b.name || ''))
       : [];
+
+    if (models.length === 0) {
+      console.warn('[dev-server] No models returned from OpenRouter API');
+    }
 
     return res.status(200).json({ models });
   } catch (error) {
     console.error('[dev-server] /api/ai/openrouter/models error:', error);
-    return res.status(500).json({ error: 'Internal server error', details: error.message });
+    return res.status(500).json({
+      error: 'Failed to connect to OpenRouter. Please check your network connection and API key.',
+      details: error.message
+    });
   }
 });
 

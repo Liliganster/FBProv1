@@ -66,15 +66,21 @@ const SettingsView: React.FC<{
     useEffect(() => {
         if (!localProfile) return;
         const fetchModels = async () => {
-            if (localProfile.openRouterApiKey) {
+            if (localProfile.openRouterApiKey && localProfile.openRouterApiKey.trim() !== '') {
                 setIsFetchingOrModels(true);
                 setFetchOrModelsError(null);
                 setOpenRouterModels([]);
                 try {
                     const models = await fetchOpenRouterModels(localProfile.openRouterApiKey);
-                    setOpenRouterModels(models);
+                    if (models.length === 0) {
+                        setFetchOrModelsError(t('settings_api_or_no_models') || 'No models available. Please check your API key.');
+                    } else {
+                        setOpenRouterModels(models);
+                    }
                 } catch (error) {
-                    setFetchOrModelsError(error instanceof Error ? error.message : "An unknown error occurred.");
+                    const errorMessage = error instanceof Error ? error.message : "An unknown error occurred.";
+                    console.error('[Settings] Error fetching OpenRouter models:', errorMessage);
+                    setFetchOrModelsError(errorMessage);
                 } finally {
                     setIsFetchingOrModels(false);
                 }
@@ -84,7 +90,7 @@ const SettingsView: React.FC<{
             }
         };
         fetchModels();
-    }, [localProfile?.openRouterApiKey]);
+    }, [localProfile?.openRouterApiKey, t]);
 
     const handleProfileChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement> | { target: { name: string; value: string; type?: string } }) => {
         if (!localProfile) return;
@@ -639,35 +645,51 @@ const ModelSelect: React.FC<{
     id: string, name: string, label: string, value?: string, onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void,
     isLoading?: boolean, error?: string | null, models: AiModelInfo[], disabled?: boolean,
     loadingText?: string, errorText?: string, noModelsText?: string, defaultOptionText?: string
-}> = ({ id, name, label, value, onChange, isLoading, error, models, disabled, loadingText, errorText, noModelsText, defaultOptionText }) => (
-    <div>
-        <label htmlFor={id} className="block text-sm font-medium text-on-surface-dark-secondary mb-1">{label}</label>
-        <select
-            id={id}
-            name={name}
-            value={value}
-            onChange={onChange}
-            disabled={disabled || isLoading || !!error || models.length === 0}
-            className="w-full bg-background-dark border border-gray-600 rounded-md p-2 focus:ring-2 focus:ring-brand-primary focus:outline-none disabled:bg-gray-800 disabled:text-gray-400 disabled:cursor-not-allowed"
-        >
-            {isLoading ? (
-                <option>{loadingText || 'Loading...'}</option>
-            ) : error ? (
-                <option>{errorText || 'Error loading models'}</option>
-            ) : models.length > 0 ? (
-                <>
-                    {defaultOptionText && <option value="">{defaultOptionText}</option>}
-                    {models.map(model => (
-                        <option key={model.id} value={model.id}>{model.name || model.id}</option>
-                    ))}
-                </>
-            ) : (
-                <option>{noModelsText || 'No models available'}</option>
+}> = ({ id, name, label, value, onChange, isLoading, error, models, disabled, loadingText, errorText, noModelsText, defaultOptionText }) => {
+    const hasError = !!error;
+    const isEmpty = !isLoading && !hasError && models.length === 0;
+    const isDisabled = disabled || isLoading || hasError || isEmpty;
+
+    return (
+        <div>
+            <label htmlFor={id} className="block text-sm font-medium text-on-surface-dark-secondary mb-1">{label}</label>
+            <select
+                id={id}
+                name={name}
+                value={value || ''}
+                onChange={onChange}
+                disabled={isDisabled}
+                className={`w-full bg-background-dark border rounded-md p-2 focus:ring-2 focus:ring-brand-primary focus:outline-none disabled:bg-gray-800 disabled:text-gray-400 disabled:cursor-not-allowed ${
+                    hasError ? 'border-red-500' : 'border-gray-600'
+                }`}
+            >
+                {isLoading ? (
+                    <option>{loadingText || 'Loading models...'}</option>
+                ) : hasError ? (
+                    <option>{errorText || 'Error loading models'}</option>
+                ) : isEmpty ? (
+                    <option>{noModelsText || 'No models available'}</option>
+                ) : (
+                    <>
+                        {defaultOptionText && <option value="">{defaultOptionText}</option>}
+                        {models.map(model => (
+                            <option key={model.id} value={model.id}>{model.name || model.id}</option>
+                        ))}
+                    </>
+                )}
+            </select>
+            {hasError && (
+                <div className="mt-2 p-2 bg-red-900/20 border border-red-500/50 rounded text-xs text-red-300">
+                    <p className="font-semibold">Error:</p>
+                    <p>{error}</p>
+                </div>
             )}
-        </select>
-        {error && <p className="text-red-400 text-xs mt-1">{error}</p>}
-    </div>
-);
+            {isEmpty && !disabled && (
+                <p className="text-yellow-400 text-xs mt-1">Please enter a valid OpenRouter API key above.</p>
+            )}
+        </div>
+    );
+};
 
 const ReadOnlyField: React.FC<{label: string, value: string}> = ({ label, value }) => (
     <div>
