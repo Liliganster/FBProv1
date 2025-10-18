@@ -40,7 +40,8 @@ async function modelsHandler(req: any, res: any) {
 
     if (!response.ok) {
       const detail = await response.text();
-      throw new Error(`OpenRouter error ${response.status}: ${detail}`);
+      toJsonResponse(res, response.status, { error: 'OpenRouter error', details: detail });
+      return;
     }
 
     const json = await response.json();
