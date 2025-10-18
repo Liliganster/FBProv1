@@ -130,18 +130,76 @@ async function structuredHandler(req: any, res: any) {
 
     console.log('[api/ai/openrouter/structured] 7. Parsing JSON');
     const payload = await response.json();
-    const message = payload?.choices?.[0]?.message?.content;
-    const parsed = typeof message === 'string' ? JSON.parse(message) : message;
+    const rawContent = payload?.choices?.[0]?.message?.content;
+
+    function coerceTextFromContent(content: any): string | null {
+      if (!content) return null;
+      if (typeof content === 'string') return content;
+      // Some models return array parts
+      if (Array.isArray(content)) {
+        const joined = content.map((c) => (typeof c === 'string' ? c : c?.text || c?.content || '')).join('');
+        return joined || null;
+      }
+      // Already an object (when response_format enforces JSON object)
+      if (typeof content === 'object') return JSON.stringify(content);
+      return null;
+    }
+
+    function extractJson(text: string): any {
+      let t = text.trim();
+      // strip common code fences
+      t = t.replace(/^```json\s*|```$/gim, '').trim();
+      // Try full parse first
+      try { return JSON.parse(t); } catch {}
+      // Try to locate first {...} block
+      const start = t.indexOf('{');
+      const end = t.lastIndexOf('}');
+      if (start >= 0 && end > start) {
+        const slice = t.slice(start, end + 1);
+        try { return JSON.parse(slice); } catch {}
+      }
+      return null;
+    }
+
+    const asText = coerceTextFromContent(rawContent);
+    const parsedCandidate = asText ? extractJson(asText) : (typeof rawContent === 'object' ? rawContent : null);
+
+    // Normalize for direct mode
+    function normalizeDirect(candidate: any) {
+      if (!candidate || typeof candidate !== 'object') return candidate;
+      const obj: any = { ...candidate };
+      if (typeof obj.productionCompany === 'string' && !obj.productionCompanies) {
+        obj.productionCompanies = [obj.productionCompany];
+        delete obj.productionCompany;
+      }
+      if (!Array.isArray(obj.productionCompanies)) {
+        if (typeof obj.productionCompanies === 'string') obj.productionCompanies = [obj.productionCompanies];
+        else if (obj.productionCompanies == null) obj.productionCompanies = ['Unknown'];
+        else obj.productionCompanies = [String(obj.productionCompanies)];
+      }
+      if (!Array.isArray(obj.locations)) {
+        if (typeof obj.locations === 'string') obj.locations = obj.locations.split(/\s*[;|\n]\s*/).filter(Boolean);
+        else if (Array.isArray(obj.locations)) obj.locations = obj.locations.map((v: any) => typeof v === 'string' ? v : (v?.address || v?.name || ''));
+        else obj.locations = [];
+      } else {
+        obj.locations = obj.locations.map((v: any) => typeof v === 'string' ? v : (v?.address || v?.name || ''));
+      }
+      if (typeof obj.date !== 'string') obj.date = String(obj.date || '');
+      if (typeof obj.projectName !== 'string') obj.projectName = String(obj.projectName || '');
+      return obj;
+    }
+
+    const parsed = useCrewFirst ? parsedCandidate : normalizeDirect(parsedCandidate);
 
     if (useCrewFirst) {
       if (!isCrewFirstCallsheet(parsed)) {
-        console.error('[api/ai/openrouter/structured] 8. Invalid CrewFirst structure');
+        console.error('[api/ai/openrouter/structured] 8. Invalid CrewFirst structure', parsed);
         throw new Error('OpenRouter returned an unexpected CrewFirst JSON structure');
       }
       toJsonResponse(res, 200, parsed);
     } else {
       if (!isCallsheetExtraction(parsed)) {
-        console.error('[api/ai/openrouter/structured] 9. Invalid direct structure');
+        console.error('[api/ai/openrouter/structured] 9. Invalid direct structure', parsed);
         throw new Error('OpenRouter returned an unexpected JSON structure');
       }
       toJsonResponse(res, 200, normalizeExtraction(parsed));

@@ -81,16 +81,26 @@ export async function parseWithOpenRouter(
   useCrewFirst = false,
   mode: 'direct' | 'agent' = 'direct'
 ): Promise<CallsheetExtraction | CrewFirstCallsheet> {
-  const res = await fetchWithRateLimit('/api/ai/openrouter/structured', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      text,
-      apiKey: apiKeyOverride ?? undefined,
-      model: modelOverride ?? undefined,
-      useCrewFirst,
-      mode,
-    }),
-  });
-  return await parseJsonResponse(res, 'openrouter', useCrewFirst);
+  try {
+    const res = await fetchWithRateLimit('/api/ai/openrouter/structured', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        text,
+        apiKey: apiKeyOverride ?? undefined,
+        model: modelOverride ?? undefined,
+        useCrewFirst,
+        mode,
+      }),
+    });
+    return await parseJsonResponse(res, 'openrouter', useCrewFirst);
+  } catch (err: any) {
+    const msg = typeof err?.message === 'string' ? err.message : String(err);
+    // Soft fallback: if OpenRouter returns 5xx or unexpected JSON, retry with Gemini endpoint
+    if (/openrouter request failed: 5\d\d/i.test(msg) || /unexpected json/i.test(msg)) {
+      console.warn('[providers] Falling back to Gemini due to OpenRouter failure:', msg);
+      return await parseWithGemini(text, useCrewFirst);
+    }
+    throw err;
+  }
 }
