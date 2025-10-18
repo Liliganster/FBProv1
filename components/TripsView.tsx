@@ -106,7 +106,7 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
           formattedDate,
           expense.description || '',
         ].filter(Boolean);
-        return parts.join(' • ');
+        return parts.join(' â€¢ ');
       })
       .join('\n');
   };
@@ -441,7 +441,7 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
                         <div className="cursor-pointer" onClick={() => handleViewTrip(trip)}>
                           <div className="mb-2">
                             <div className="flex items-center gap-1">
-                              <span className="text-white text-sm font-medium">{trip.locations.join(' → ')}</span>
+                              <span className="text-white text-sm font-medium">{trip.locations.join(' -> ')}</span>
                               <SpecialOriginTag originType={trip.specialOrigin} />
                             </div>
                           </div>
@@ -567,7 +567,7 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
                       {/* Ruta */}
                       <div className="mb-2">
                         <div className="flex items-center gap-1">
-                          <span className="text-white text-sm font-medium">{trip.locations.join(' → ')}</span>
+                          <span className="text-white text-sm font-medium">{trip.locations.join(' -> ')}</span>
                           <SpecialOriginTag originType={trip.specialOrigin} />
                         </div>
                       </div>
@@ -723,7 +723,7 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
                   </td>
                   <td className="p-3 cursor-pointer text-sm" onClick={() => handleViewTrip(trip)}>
                     <div className="flex items-center gap-1">
-                      <span className="truncate max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg" title={trip.locations.join(' → ')}>{trip.locations.join(' → ')}</span>
+                      <span className="truncate max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg" title={trip.locations.join(' -> ')}>{trip.locations.join(' -> ')}</span>
                       <SpecialOriginTag originType={trip.specialOrigin} />
                       {allWarnings.length > 0 && (
                         <div className="ml-1 cursor-pointer hover:scale-110 transition-transform flex-shrink-0" title={allWarnings.join('\n')}>
@@ -744,7 +744,7 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
                         <span>{invoiceCount}</span>
                       </span>
                     ) : (
-                      <span className="text-on-surface-dark-secondary">—</span>
+                      <span className="text-on-surface-dark-secondary">â€”</span>
                     )}
                   </td>
                   <td className="p-3 whitespace-nowrap text-brand-primary font-semibold text-sm cursor-pointer" onClick={() => handleViewTrip(trip)}>{trip.distance.toFixed(1)} km</td>
