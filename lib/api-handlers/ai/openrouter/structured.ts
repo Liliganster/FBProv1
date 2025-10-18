@@ -2,7 +2,6 @@ import type { CallsheetExtraction, CrewFirstCallsheet } from '../../../../servic
 import { buildDirectPrompt, buildCrewFirstDirectPrompt, sanitizeModelText } from '../../../../services/extractor-universal/prompts/callsheet.js';
 import { isCallsheetExtraction, isCrewFirstCallsheet } from '../../../../services/extractor-universal/verify.js';
 import { withRateLimit } from '../../../rate-limiter.js';
-import { runAgentWithOpenRouter } from '../../../agent/orchestrator.js';
 
 const DEFAULT_MODEL = process.env.OPENROUTER_MODEL || 'google/gemini-2.0-flash-001';
 function deriveReferer(req: any): string {
@@ -49,6 +48,7 @@ function normalizeExtraction(raw: CallsheetExtraction): CallsheetExtraction {
 }
 
 async function structuredHandler(req: any, res: any) {
+  console.log('[api/ai/openrouter/structured] 1. Handler start');
   if (req.method !== 'POST') {
     toJsonResponse(res, 405, { error: 'Method Not Allowed' });
     return;
@@ -59,6 +59,13 @@ async function structuredHandler(req: any, res: any) {
   let body: any;
   try {
     body = await readJsonBody(req);
+    console.log('[api/ai/openrouter/structured] 2. Body parsed', {
+      hasText: typeof body?.text === 'string',
+      mode: body?.mode,
+      useCrewFirst: body?.useCrewFirst,
+      hasApiKey: !!body?.apiKey,
+      hasModel: !!body?.model
+    });
   } catch (error) {
     toJsonResponse(res, 400, { error: 'Invalid JSON body', details: (error as Error).message });
     return;
@@ -83,12 +90,9 @@ async function structuredHandler(req: any, res: any) {
   try {
     // Si es modo agente con crew-first, usar el orquestador con function calling
     if (mode === 'agent' && useCrewFirst) {
-      console.log('[OpenRouter] Using agent mode with function calling');
-      const result = await runAgentWithOpenRouter({
-        apiKey,
-        model,
-        text
-      });
+      console.log('[api/ai/openrouter/structured] 3. Agent mode with function calling');
+      const { runAgentWithOpenRouter } = await import('../../../agent/orchestrator.js');
+      const result = await runAgentWithOpenRouter({ apiKey, model, text });
       toJsonResponse(res, 200, result);
       return;
     }
@@ -97,6 +101,7 @@ async function structuredHandler(req: any, res: any) {
     const prompt = useCrewFirst
       ? buildCrewFirstDirectPrompt(sanitizeModelText(text))
       : buildDirectPrompt(sanitizeModelText(text));
+    console.log('[api/ai/openrouter/structured] 4. Calling OpenRouter chat/completions');
     const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -116,28 +121,33 @@ async function structuredHandler(req: any, res: any) {
       }),
     });
 
+    console.log('[api/ai/openrouter/structured] 5. OpenRouter status', response.status);
     if (!response.ok) {
       const detail = await response.text();
+      console.error('[api/ai/openrouter/structured] 6. OpenRouter error', response.status, detail?.slice?.(0, 200));
       throw new Error(`OpenRouter error ${response.status}: ${detail}`);
     }
 
+    console.log('[api/ai/openrouter/structured] 7. Parsing JSON');
     const payload = await response.json();
     const message = payload?.choices?.[0]?.message?.content;
     const parsed = typeof message === 'string' ? JSON.parse(message) : message;
 
     if (useCrewFirst) {
       if (!isCrewFirstCallsheet(parsed)) {
+        console.error('[api/ai/openrouter/structured] 8. Invalid CrewFirst structure');
         throw new Error('OpenRouter returned an unexpected CrewFirst JSON structure');
       }
       toJsonResponse(res, 200, parsed);
     } else {
       if (!isCallsheetExtraction(parsed)) {
+        console.error('[api/ai/openrouter/structured] 9. Invalid direct structure');
         throw new Error('OpenRouter returned an unexpected JSON structure');
       }
       toJsonResponse(res, 200, normalizeExtraction(parsed));
     }
   } catch (error) {
-    console.error('[api/ai/openrouter/structured] Error:', error);
+    console.error('[api/ai/openrouter/structured] 10. Error:', error);
     toJsonResponse(res, 500, { error: 'OpenRouter request failed', details: (error as Error).message });
   }
 }

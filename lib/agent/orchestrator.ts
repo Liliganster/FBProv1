@@ -1,10 +1,10 @@
 // Orquestador del agente - Maneja la conversación multi-turno con function calling
 
-import { tools } from './tools';
-import { executeTool } from './executor';
-import type { CrewFirstCallsheet } from '../../services/extractor-universal/config/schema';
-import { isCrewFirstCallsheet } from '../../services/extractor-universal/verify';
-import { SYSTEM_INSTRUCTION_CREW_FIRST_AGENT } from '../gemini/prompt';
+import { tools } from './tools.js';
+import { executeTool } from './executor.js';
+import type { CrewFirstCallsheet } from '../../services/extractor-universal/config/schema.js';
+import { isCrewFirstCallsheet } from '../../services/extractor-universal/verify.js';
+import { SYSTEM_INSTRUCTION_CREW_FIRST_AGENT } from '../gemini/prompt.js';
 
 const MAX_TURNS = 10; // Máximo de turnos de conversación
 
