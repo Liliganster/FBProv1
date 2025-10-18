@@ -177,8 +177,8 @@ async function runOpenRouterAgent(
         { role: 'user', content: userMessage },
     ];
 
-    const model = profile.openRouterModel || 'google/gemini-2.0-flash-001';
-    if (!model) throw new Error("OpenRouter model is not configured.");
+    const model = profile.openRouterModel;
+    if (!model) throw new Error("OpenRouter model is not configured. Please select a model in Settings.");
 
     try {
         // Use unified proxy route, always passing the user's apiKey when present

@@ -54,7 +54,7 @@ async function structuredHandler(req: any, res: any) {
     return;
   }
 
-  const defaultKey = process.env.OPENROUTER_API_KEY;
+  // Do not use server env defaults; require user's key from request
 
   let body: any;
   try {
@@ -72,10 +72,9 @@ async function structuredHandler(req: any, res: any) {
 
   const mode = body?.mode === 'agent' ? 'agent' : 'direct';
   const useCrewFirst = body?.useCrewFirst === true;
-  const apiKeyFromRequest = typeof body?.apiKey === 'string' && body.apiKey.trim() ? body.apiKey.trim() : null;
-  const apiKey = apiKeyFromRequest || defaultKey;
+  const apiKey = typeof body?.apiKey === 'string' && body.apiKey.trim() ? body.apiKey.trim() : null;
   if (!apiKey) {
-    toJsonResponse(res, 500, { error: 'OpenRouter API key is not configured' });
+    toJsonResponse(res, 400, { error: 'OpenRouter API key is required. Please add your API key in Settings.' });
     return;
   }
 

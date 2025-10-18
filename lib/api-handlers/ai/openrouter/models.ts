@@ -20,9 +20,9 @@ async function modelsHandler(req: any, res: any) {
     return;
   }
 
-  const defaultKey = process.env.OPENROUTER_API_KEY;
+  // Require the user's API key; do not fallback to server env
   const queryKey = typeof req.query?.apiKey === 'string' && req.query.apiKey.trim() ? req.query.apiKey.trim() : null;
-  const apiKey = queryKey || defaultKey;
+  const apiKey = queryKey;
 
   if (!apiKey) {
     toJsonResponse(res, 400, { error: 'OpenRouter API key is required. Please add your API key in Settings.' });

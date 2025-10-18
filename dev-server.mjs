@@ -305,19 +305,18 @@ app.post('/api/ai/gemini', async (req, res) => {
 
 app.post('/api/ai/openrouter/structured', async (req, res) => {
   try {
-    const defaultKey = assertEnv('OPENROUTER_API_KEY');
     const { text, apiKey: bodyApiKey, model: bodyModel, useCrewFirst, mode } = req.body || {};
 
     if (!text || typeof text !== 'string') {
       return res.status(400).json({ error: 'Request body must include a non-empty text field' });
     }
 
-    const apiKey = bodyApiKey || defaultKey;
+    const apiKey = typeof bodyApiKey === 'string' && bodyApiKey.trim() ? bodyApiKey.trim() : null;
     if (!apiKey) {
-      return res.status(500).json({ error: 'OpenRouter API key is not configured' });
+      return res.status(400).json({ error: 'OpenRouter API key is required. Please add your API key in Settings.' });
     }
 
-    const model = bodyModel || assertEnv('OPENROUTER_MODEL') || 'google/gemini-2.0-flash-001';
+    const model = bodyModel || 'google/gemini-2.0-flash-001';
 
     console.log(`[dev-server] OpenRouter request: model=${model}, textLength=${text.length}, useCrewFirst=${useCrewFirst}, mode=${mode}`);
 
@@ -378,19 +377,18 @@ Example BAD locations to IGNORE: ["Suite Nico", "Keller", "Catering Bereich", "B
 
 app.post('/api/ai/openrouter/chat', async (req, res) => {
   try {
-    const defaultKey = assertEnv('OPENROUTER_API_KEY');
     const { messages, apiKey: bodyApiKey, model: bodyModel, temperature, response_format, max_tokens } = req.body || {};
 
     if (!Array.isArray(messages) || messages.length === 0) {
       return res.status(400).json({ error: 'Request body must include a non-empty messages array' });
     }
 
-    const apiKey = bodyApiKey || defaultKey;
+    const apiKey = typeof bodyApiKey === 'string' && bodyApiKey.trim() ? bodyApiKey.trim() : null;
     if (!apiKey) {
       return res.status(400).json({ error: 'OpenRouter API key is required. Please add your API key in Settings.' });
     }
 
-    const model = bodyModel || assertEnv('OPENROUTER_MODEL') || 'google/gemini-2.0-flash-001';
+    const model = bodyModel || 'google/gemini-2.0-flash-001';
 
     console.log(`[dev-server] OpenRouter chat request: model=${model}, messages=${messages.length}`);
 
@@ -446,9 +444,8 @@ app.post('/api/ai/openrouter/chat', async (req, res) => {
 
 app.get('/api/ai/openrouter/models', async (req, res) => {
   try {
-    const defaultKey = assertEnv('OPENROUTER_API_KEY');
-    const queryKey = req.query?.apiKey;
-    const apiKey = queryKey || defaultKey;
+    // Require API key from query (client Settings). Do not fallback to server env.
+    const apiKey = typeof req.query?.apiKey === 'string' && req.query.apiKey.trim() ? req.query.apiKey.trim() : null;
 
     if (!apiKey) {
       return res.status(400).json({ error: 'OpenRouter API key is required. Please add your API key in Settings.' });

@@ -66,12 +66,18 @@ const SettingsView: React.FC<{
     useEffect(() => {
         if (!localProfile) return;
         const fetchModels = async () => {
+            // Only fetch when the user has provided an API key in Settings
+            const key = localProfile.openRouterApiKey?.trim();
+            if (!key) {
+                setOpenRouterModels([]);
+                setFetchOrModelsError(null);
+                return;
+            }
             setIsFetchingOrModels(true);
             setFetchOrModelsError(null);
             setOpenRouterModels([]);
             try {
-                // If user has entered an API key, pass it; otherwise allow server to use default key
-                const models = await fetchOpenRouterModels(localProfile.openRouterApiKey || undefined);
+                const models = await fetchOpenRouterModels(key);
                 if (models.length === 0) {
                     setFetchOrModelsError(t('settings_api_or_no_models') || 'No models available. Please check your API key.');
                 } else {
@@ -284,19 +290,20 @@ const SettingsView: React.FC<{
                                         type="password"
                                     />
                                     <ModelSelect
-                                        id="openRouterModel"
-                                        name="openRouterModel"
-                                        label={t('settings_api_or_model')}
-                                        value={localProfile.openRouterModel}
-                                        onChange={handleProfileChange}
-                                        isLoading={isFetchingOrModels}
-                                        error={fetchOrModelsError}
-                                        models={openRouterModels}
-                                        loadingText={t('settings_api_or_loading')}
-                                        errorText={fetchOrModelsError || t('settings_api_or_enter_key')}
-                                        noModelsText={t('settings_api_or_enter_key')}
-                                        defaultOptionText={t('settings_api_or_select')}
-                                    />
+                                         id="openRouterModel"
+                                         name="openRouterModel"
+                                         label={t('settings_api_or_model')}
+                                         value={localProfile.openRouterModel}
+                                         onChange={handleProfileChange}
+                                         isLoading={isFetchingOrModels}
+                                         error={fetchOrModelsError}
+                                         models={openRouterModels}
+                                         disabled={!localProfile.openRouterApiKey}
+                                         loadingText={t('settings_api_or_loading')}
+                                         errorText={fetchOrModelsError || t('settings_api_or_enter_key')}
+                                         noModelsText={t('settings_api_or_enter_key')}
+                                         defaultOptionText={t('settings_api_or_select')}
+                                     />
                                     <p className="text-xs text-on-surface-dark-secondary mt-1">{t('settings_api_or_info')}</p>
                                 </ProviderConfigContainer>
                             </div>
