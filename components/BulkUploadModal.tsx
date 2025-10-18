@@ -789,4 +789,4 @@ const tempNewProjectsForReview = Array.from(newlyCreatedProjects.entries()).map(
   );
 };
 
-export default BulkUploadModal;
+export default React.memo(BulkUploadModal);

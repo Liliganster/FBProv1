@@ -224,4 +224,4 @@ const InfoItem: React.FC<{label: string, value: string, highlight?: boolean}> = 
     </div>
 );
 
-export default TripDetailModal;
+export default React.memo(TripDetailModal);

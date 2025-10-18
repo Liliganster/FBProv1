@@ -20,6 +20,8 @@ const Avatar: React.FC<AvatarProps> = ({ profile, className = 'w-10 h-10' }) => 
       <img
         src={profile.profilePicture}
         alt={profile.name || 'Profile'}
+        loading="lazy"
+        decoding="async"
         className={`rounded-full object-cover ${className}`}
       />
     );

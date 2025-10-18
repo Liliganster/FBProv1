@@ -632,6 +632,8 @@ const TripEditorModal: React.FC<TripEditorModalProps> = ({ trip, projects, trips
                 <img
                   src={staticMapUrl || `https://picsum.photos/seed/${encodeURIComponent(formData.locations?.[0] || 'trip')}/800/200`}
                   alt={t('tripEditor_mapAlt')}
+                  loading="lazy"
+                  decoding="async"
                   className="rounded-lg h-full w-full object-cover bg-gray-800 ring-1 ring-gray-700/60"
                 />
                 {isStaticMapLoading && (
@@ -854,4 +856,4 @@ const InputField: React.FC<{label: string, name: string, value?: string | number
   </div>
 );
 
-export default TripEditorModal;
+export default React.memo(TripEditorModal);

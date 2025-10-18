@@ -372,7 +372,7 @@ const SettingsView: React.FC<{
                                             className={`relative aspect-video rounded-md overflow-hidden cursor-pointer group border-2 transition-all ${isSelected ? 'border-brand-primary' : 'border-transparent hover:border-gray-500'}`}
                                             title={bg.alt}
                                         >
-                                            <img src={bg.url} alt={bg.alt} className="w-full h-full object-cover" />
+                                            <img src={bg.url} alt={bg.alt} loading="lazy" decoding="async" className="w-full h-full object-cover" />
                                             <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                                         </div>
                                     )

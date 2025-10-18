@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import useTrips from '../hooks/useTrips';
 import { Trip, SpecialOrigin, UserProfile, PersonalizationSettings, ExpenseDocument } from '../types';
 import TripEditorModal from './TripEditorModal';
@@ -17,7 +17,7 @@ import useUndoRedo from '../hooks/useUndoRedo';
 import UndoToast from './UndoToast';
 import useExpenses from '../hooks/useExpenses';
 
-const SpecialOriginTag: React.FC<{ originType: SpecialOrigin }> = ({ originType }) => {
+const SpecialOriginTag = React.memo(({ originType }: { originType: SpecialOrigin }) => {
   const { t } = useTranslation();
   const styles: { [key in SpecialOrigin]: string } = {
     [SpecialOrigin.HOME]: 'hidden',
@@ -38,7 +38,7 @@ const SpecialOriginTag: React.FC<{ originType: SpecialOrigin }> = ({ originType 
       {t(textKey[originType])}
     </span>
   );
-};
+});
 
 interface TripsViewProps {
     personalization: PersonalizationSettings;
@@ -63,6 +63,8 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
   const [selectedTripIds, setSelectedTripIds] = useState<string[]>([]);
   const [projectFilter, setProjectFilter] = useState<string>('all');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const PAGE_SIZE = 100; // paginate to avoid rendering huge lists
   const { t } = useTranslation();
 
   const expensesByTrip = useMemo<Record<string, ExpenseDocument[]>>(() => {
@@ -217,6 +219,17 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
     
   }, [trips, projectFilter, userProfile, sortOrder]);
 
+  // Reset pagination when filters/sorting change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [projectFilter, sortOrder]);
+
+  const totalPages = useMemo(() => Math.max(1, Math.ceil(filteredTrips.length / PAGE_SIZE)), [filteredTrips.length]);
+  const pagedTrips = useMemo(() => {
+    const start = (currentPage - 1) * PAGE_SIZE;
+    return filteredTrips.slice(start, start + PAGE_SIZE);
+  }, [filteredTrips, currentPage]);
+
   const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.checked) {
       setSelectedTripIds(filteredTrips.map(trip => trip.id));
@@ -344,7 +357,7 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
                   </div>
                 </div>
               )}
-              {filteredTrips.map((trip) => {
+              {pagedTrips.map((trip) => {
                 const isSelected = selectedTripIds.includes(trip.id);
                 const isLocked = userProfile?.lockedUntilDate ? new Date(trip.date) <= new Date(userProfile.lockedUntilDate) : false;
                 
@@ -472,6 +485,33 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
                   </div>
                 );
               })}
+              {/* Pagination controls for mobile/card view */}
+              {filteredTrips.length > PAGE_SIZE && (
+                <div className="flex items-center justify-between mt-4">
+                  <span className="text-sm text-on-surface-dark-secondary">
+                    {t('trips_total') || 'Total'}: {filteredTrips.length}
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <button
+                      className="px-3 py-1 rounded-smooth bg-gradient-surface disabled:opacity-50"
+                      onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                      disabled={currentPage === 1}
+                    >
+                      {t('prev') || 'Previous'}
+                    </button>
+                    <span className="text-sm text-on-surface-dark-secondary">
+                      {t('page') || 'Page'} {currentPage} / {totalPages}
+                    </span>
+                    <button
+                      className="px-3 py-1 rounded-smooth bg-gradient-surface disabled:opacity-50"
+                      onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                      disabled={currentPage >= totalPages}
+                    >
+                      {t('next') || 'Next'}
+                    </button>
+                  </div>
+                </div>
+              )}
             </>
           ) : (
             <div className="bg-frost-glass border-glass rounded-fluid p-8 backdrop-blur-glass text-center">
@@ -513,7 +553,7 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-700/50">
-              {filteredTrips.length > 0 ? filteredTrips.map((trip) => {
+              {filteredTrips.length > 0 ? pagedTrips.map((trip) => {
                 const isSelected = selectedTripIds.includes(trip.id);
                 const isLocked = userProfile?.lockedUntilDate ? new Date(trip.date) <= new Date(userProfile.lockedUntilDate) : false;
                 
@@ -616,6 +656,33 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
               )}
             </tbody>
           </table>
+          {/* Pagination controls for desktop/table view */}
+          {filteredTrips.length > PAGE_SIZE && (
+            <div className="flex items-center justify-between p-4">
+              <span className="text-sm text-on-surface-dark-secondary">
+                {t('trips_total') || 'Total'}: {filteredTrips.length}
+              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  className="px-3 py-1 rounded-smooth bg-gradient-surface disabled:opacity-50"
+                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                >
+                  {t('prev') || 'Previous'}
+                </button>
+                <span className="text-sm text-on-surface-dark-secondary">
+                  {t('page') || 'Page'} {currentPage} / {totalPages}
+                </span>
+                <button
+                  className="px-3 py-1 rounded-smooth bg-gradient-surface disabled:opacity-50"
+                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                  disabled={currentPage >= totalPages}
+                >
+                  {t('next') || 'Next'}
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
 

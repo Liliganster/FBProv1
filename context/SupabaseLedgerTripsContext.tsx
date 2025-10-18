@@ -137,10 +137,23 @@ export const LedgerTripsProvider: React.FC<{ children: ReactNode }> = ({ childre
       throw new Error('Trip not found');
     }
 
-    // Find changed fields
-    const changedFields = Object.keys(updatedTrip).filter(key => {
-      if (key === 'hash' || key === 'previousHash' || key === 'id') return false;
-      return JSON.stringify((originalTrip as any)[key]) !== JSON.stringify((updatedTrip as any)[key]);
+    // Find changed fields using shallow comparison (avoid JSON.stringify)
+    const changedFields = (Object.keys(updatedTrip) as (keyof Trip)[]).filter((key) => {
+      if (key === 'hash' || key === 'previousHash' || key === 'id' || key === 'editJustification') return false;
+      const oldVal = (originalTrip as Trip)[key] as unknown;
+      const newVal = (updatedTrip as Trip)[key] as unknown;
+
+      // Shallow compare arrays
+      if (Array.isArray(oldVal) && Array.isArray(newVal)) {
+        if (oldVal.length !== newVal.length) return true;
+        for (let i = 0; i < oldVal.length; i++) {
+          if (oldVal[i] !== newVal[i]) return true;
+        }
+        return false;
+      }
+
+      // Primitive and by-reference compare
+      return oldVal !== newVal;
     });
 
     if (changedFields.length === 0) {
