@@ -6,6 +6,8 @@ import openrouterStructuredHandler from '../lib/api-handlers/ai/openrouter/struc
 import openrouterModelsHandler from '../lib/api-handlers/ai/openrouter/models';
 import openrouterChatHandler from '../lib/api-handlers/ai/openrouter/chat';
 import statusHandler from '../lib/api-handlers/ai/status';
+import googleCalendarEventsHandler from '../lib/api-handlers/google/calendar/events';
+import googleCalendarCalendarsHandler from '../lib/api-handlers/google/calendar/calendars';
 
 type Handler = (req: VercelRequest, res: VercelResponse) => void | Promise<void>;
 
@@ -16,6 +18,9 @@ const routes: Record<string, Handler> = {
   'ai/openrouter/models': openrouterModelsHandler,
   'ai/openrouter/chat': openrouterChatHandler,
   'ai/status': statusHandler,
+  // Google Calendar proxy endpoints
+  'google/calendar/events': googleCalendarEventsHandler,
+  'google/calendar/calendars': googleCalendarCalendarsHandler,
 };
 
 function toJsonResponse(res: VercelResponse, status: number, payload: unknown) {
@@ -45,4 +50,3 @@ export default async function proxy(req: VercelRequest, res: VercelResponse) {
     toJsonResponse(res, 500, { error: 'Internal Server Error', details: (error as Error)?.message || String(error) });
   }
 }
-
