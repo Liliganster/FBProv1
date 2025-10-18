@@ -392,8 +392,55 @@ export async function processFileForTripUniversal(
     ? extraction.productionCompanies.filter(Boolean).join(', ')
     : 'Unknown';
   
-  // Ensure projectName is never empty - provide fallback
-  const projectName = (extraction.projectName || '').trim() || 'Untitled Project';
+  // Derive a project name without using a generic "Untitled" fallback.
+  const cleanGenericTokens = (s: string) => s
+    .replace(/[_-]+/g, ' ')
+    .replace(/\b(call\s*sheet|callsheet|tagesdisposition|disposici[oó]n\s*diaria|drehtag|shooting\s*day|version|versi[oó]n|final|rev(ision)?|v\d+)\b/gi, ' ')
+    .replace(/\b(\d{1,2}[./-]\d{1,2}[./-]\d{2,4}|\d{4}-\d{2}-\d{2})\b/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  const looksLikeCompany = (s: string) => /\b(gmbh|llc|ltd\.?|inc\.?|kg|og|s\.l\.|s\.a\.|film(produktion)?|pictures|entertainment|studios?)\b/i.test(s);
+
+  const getNameFromFile = (file?: File): string => {
+    if (!file?.name) return '';
+    const base = file.name.replace(/\.[^.]+$/, '');
+    const cleaned = cleanGenericTokens(base);
+    // Prefer the first tokenized chunk that doesn't look like a company name
+    const candidates = cleaned.split(/\s{2,}|\s-\s|\s\|\s|\s{1}/).filter(Boolean);
+    const picked = candidates.find(c => !looksLikeCompany(c) && /[A-Za-zÁÉÍÓÚÜÑäöüÄÖÜß]/.test(c)) || cleaned;
+    return picked.trim();
+  };
+
+  const getNameFromText = (text?: string): string => {
+    if (!text) return '';
+    const head = text.split(/\r?\n/).slice(0, 40);
+    const blacklist = /(call\s*sheet|callsheet|tagesdisposition|disposici[oó]n\s*diaria|drehtag|shooting\s*day|production\s*company|produktion|productora|producci[oó]n)/i;
+    let best = '';
+    for (const line of head) {
+      const cleaned = cleanGenericTokens(line);
+      if (!cleaned) continue;
+      if (blacklist.test(cleaned)) continue;
+      if (looksLikeCompany(cleaned)) continue;
+      if (cleaned.length >= 2 && cleaned.length <= 60) {
+        // Prefer lines with multiple words or Title/ALLCAPS patterns
+        const score = (cleaned.split(/\s+/).length >= 2 ? 2 : 1) + (/[A-Z]{3,}/.test(cleaned) ? 1 : 0);
+        if (score >= 2) {
+          best = cleaned;
+          break;
+        }
+        if (!best) best = cleaned;
+      }
+    }
+    return best;
+  };
+
+  let projectName = (extraction.projectName || '').trim();
+  if (!projectName) {
+    // Try stronger derivations, especially for OCR/agent mode
+    projectName = getNameFromFile(input.file) || getNameFromText(input.text) || '';
+  }
+  // Final guard: if still empty, keep it empty; UI will handle fallback, but we never use "Untitled" here.
   
   return { tripData, projectName, productionCompany };
 }

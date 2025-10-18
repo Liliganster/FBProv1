@@ -106,13 +106,25 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
           formattedDate,
           expense.description || '',
         ].filter(Boolean);
-        return parts.join(' â€¢ ');
+        // Use a bullet separator with a safe unicode escape to avoid encoding issues
+        return parts.join(' \u2022 ');
       })
       .join('\n');
   };
 
   const getProjectName = (projectId: string) => {
-    return projects.find(p => p.id === projectId)?.name || t('trips_unknownProject');
+    // Prefer lookup by ID
+    const byId = projects.find(p => p.id === projectId)?.name;
+    if (byId) return byId;
+    // Some historical trips saved the project name in projectId. Try match by name.
+    if (projectId) {
+      const byName = projects.find(p => (p.name || '').toLowerCase() === projectId.toLowerCase())?.name;
+      if (byName) return byName;
+      // If it's a non-UUID string, show it as-is to avoid "Unknown Project"
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(projectId);
+      if (!isUuid) return projectId;
+    }
+    return t('trips_unknownProject');
   };
   
   const handleViewTrip = (trip: Trip) => {
@@ -745,7 +757,8 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
                         <span>{invoiceCount}</span>
                       </span>
                     ) : (
-                      <span className="text-on-surface-dark-secondary">â€”</span>
+                      // Use an em dash via HTML entity to avoid mojibake in some environments
+                      <span className="text-on-surface-dark-secondary" aria-hidden="true">&mdash;</span>
                     )}
                   </td>
                   <td className="p-3 whitespace-nowrap text-brand-primary font-semibold text-sm cursor-pointer" onClick={() => handleViewTrip(trip)}>{trip.distance.toFixed(1)} km</td>

@@ -103,7 +103,15 @@ const Dashboard: React.FC<DashboardProps> = ({ setCurrentView, personalization, 
     const recentTrips = useMemo(() => userTrips.slice(0, 5), [userTrips]);
     
     const getProjectName = (projectId: string) => {
-      return projects.find(p => p.id === projectId)?.name || t('dashboard_unknownProject');
+      const byId = projects.find(p => p.id === projectId)?.name;
+      if (byId) return byId;
+      if (projectId) {
+        const byName = projects.find(p => (p.name || '').toLowerCase() === projectId.toLowerCase())?.name;
+        if (byName) return byName;
+        const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(projectId);
+        if (!isUuid) return projectId;
+      }
+      return t('dashboard_unknownProject');
     };
     
     const PIE_COLORS = ['#007aff', '#34c759', '#ff9500', '#ff3b30', '#5856d6', '#5ac8fa'];
