@@ -146,15 +146,10 @@ export async function extractUniversalStructured({
         ? await agenticParse(normalized.text, tools, chosen, creds, useCrewFirst)
         : await directParse(normalized.text, chosen, creds, useCrewFirst);
     } catch (err) {
-      // Graceful fallback: if OpenRouter fails in production due to key/domain issues, try Gemini automatically
-      if (chosen === 'openrouter') {
-        console.warn('[ExtractorUniversal] OpenRouter failed, falling back to Gemini:', (err as Error)?.message || err);
-        parsed = mode === 'agent'
-          ? await agenticParse(normalized.text, tools, 'gemini', undefined, useCrewFirst)
-          : await directParse(normalized.text, 'gemini', undefined, useCrewFirst);
-      } else {
-        throw err;
-      }
+      // Do NOT fallback to Gemini when OpenRouter is selected or configured.
+      // Surface the OpenRouter error to the UI so the user can fix API key/model/network issues.
+      console.error('[ExtractorUniversal] OpenRouter (or chosen provider) failed:', (err as Error)?.message || err);
+      throw err;
     }
     
     console.log('[ExtractorUniversal] Parsed result:', parsed);
