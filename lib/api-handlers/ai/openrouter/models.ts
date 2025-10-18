@@ -35,21 +35,15 @@ async function modelsHandler(req: any, res: any) {
   try {
     console.log('[api/ai/openrouter/models] Fetching models from OpenRouter...');
     
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 25000);
-    
     const response = await fetch('https://openrouter.ai/api/v1/models', {
       method: 'GET',
       headers: {
         Authorization: `Bearer ${apiKey}`,
         'HTTP-Referer': deriveReferer(req),
         'X-Title': APP_TITLE,
-        'Content-Type': 'application/json',
       },
-      signal: controller.signal,
     });
 
-    clearTimeout(timeoutId);
     console.log('[api/ai/openrouter/models] OpenRouter response status:', response.status);
 
     if (!response.ok) {
