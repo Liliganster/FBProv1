@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
+import VirtualList from './VirtualList';
 import useTrips from '../hooks/useTrips';
 import { Trip, SpecialOrigin, UserProfile, PersonalizationSettings, ExpenseDocument } from '../types';
 import TripEditorModal from './TripEditorModal';
@@ -357,7 +358,126 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
                   </div>
                 </div>
               )}
-              {pagedTrips.map((trip) => {
+              {/* Use virtual scrolling for large datasets */}
+              {filteredTrips.length > 100 ? (
+                <VirtualList
+                  items={filteredTrips}
+                  itemHeight={180}
+                  height={Math.round(window.innerHeight * 0.7) || 600}
+                  overscan={6}
+                  renderItem={(trip) => {
+                    const isSelected = selectedTripIds.includes(trip.id);
+                    const isLocked = userProfile?.lockedUntilDate ? new Date(trip.date) <= new Date(userProfile.lockedUntilDate) : false;
+                    const allWarnings = [...(trip.warnings || [])];
+                    if (trip.distance > 1000) { allWarnings.push(t('trips_warning_improbable_distance')); }
+                    if (trip.distance === 0) { allWarnings.push(t('trips_warning_zero_distance')); }
+                    if (!trip.reason?.trim()) { allWarnings.push(t('dashboard_alert_missing_reason')); }
+                    const project = projects.find(p => p.id === trip.projectId);
+                    const reimbursement = calculateTripReimbursement(trip, userProfile, project);
+                    const emissions = (trip.distance * EMISSION_FACTOR_G_PER_KM) / 1000;
+                    const tripExpenses = expensesByTrip[trip.id] ?? [];
+                    const invoiceCount = tripExpenses.length;
+                    return (
+                      <div
+                        key={trip.id}
+                        className={`bg-frost-glass border-glass rounded-fluid p-4 mb-3 backdrop-blur-glass transition-all duration-200 ${
+                          isSelected ? 'ring-2 ring-brand-primary bg-brand-primary/10' : 'hover:bg-gradient-surface/50'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center gap-3">
+                            <input
+                              type="checkbox"
+                              checked={isSelected}
+                              onChange={() => handleSelectTrip(trip.id)}
+                              className="bg-gradient-surface border-surface rounded text-brand-primary focus:ring-brand-primary focus:ring-2 h-5 w-5 transition-all duration-200"
+                              disabled={isLocked}
+                            />
+                            <div className="flex items-center gap-2">
+                              {isLocked && (
+                                <span title={t('trips_locked_tooltip')} className="cursor-pointer hover:scale-110 transition-transform">
+                                  <LockIcon className="w-4 h-4 text-yellow-400 hover:text-yellow-300" />
+                                </span>
+                              )}
+                              <span className="text-white font-medium">{formatDateForDisplay(trip.date)}</span>
+                              {allWarnings.length > 0 && (
+                                <div className="cursor-pointer hover:scale-110 transition-transform" title={allWarnings.join('\n')}>
+                                  <WarningIcon className="w-4 h-4 text-yellow-400 hover:text-yellow-300" />
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <button onClick={() => handleViewTrip(trip)} className="p-2 text-gray-400 hover:text-white transition-colors">
+                              <MapIcon className="w-4 h-4"/>
+                            </button>
+                            <button
+                              onClick={() => handleAddToCalendar(trip)}
+                              className="p-2 text-green-400 hover:text-green-300 disabled:text-gray-600 disabled:cursor-not-allowed transition-colors"
+                              disabled={isLocked || !isSignedIn}
+                              title={isSignedIn ? t('trips_col_actions_add_to_calendar') : t('trips_col_actions_add_to_calendar_disabled')}
+                            >
+                              <CalendarPlusIcon className="w-4 h-4"/>
+                            </button>
+                            <button 
+                              onClick={() => handleEditTrip(trip)} 
+                              className="p-2 text-blue-400 hover:text-blue-300 disabled:text-gray-600 disabled:cursor-not-allowed transition-colors" 
+                              disabled={isLocked}
+                            >
+                              <EditIcon className="w-4 h-4"/>
+                            </button>
+                            <button 
+                              onClick={() => handleDeleteTrip(trip.id)} 
+                              className="p-2 text-red-400 hover:text-red-300 disabled:text-gray-600 disabled:cursor-not-allowed transition-colors" 
+                              disabled={isLocked}
+                            >
+                              <TrashIcon className="w-4 h-4"/>
+                            </button>
+                          </div>
+                        </div>
+                        <div className="cursor-pointer" onClick={() => handleViewTrip(trip)}>
+                          <div className="mb-2">
+                            <div className="flex items-center gap-1">
+                              <span className="text-white text-sm font-medium">{trip.locations.join(' → ')}</span>
+                              <SpecialOriginTag originType={trip.specialOrigin} />
+                            </div>
+                          </div>
+                          <div className="grid grid-cols-2 gap-4 text-sm">
+                            <div>
+                              <span className="text-on-surface-dark-secondary text-xs uppercase tracking-wider">{t('trips_col_project')}</span>
+                              <p className="text-white">{getProjectName(trip.projectId)}</p>
+                            </div>
+                            <div>
+                              <span className="text-on-surface-dark-secondary text-xs uppercase tracking-wider">{t('trips_col_distance')}</span>
+                              <p className="text-brand-primary font-semibold">{trip.distance.toFixed(1)} km</p>
+                            </div>
+                            <div>
+                              <span className="text-on-surface-dark-secondary text-xs uppercase tracking-wider">{t('trips_col_emissions')}</span>
+                              <p className="text-white">
+                                <span className="font-semibold">{emissions.toFixed(1)}</span>
+                                <span className="text-xs text-on-surface-dark-secondary ml-1">kg</span>
+                              </p>
+                            </div>
+                            <div>
+                              <span className="text-on-surface-dark-secondary text-xs uppercase tracking-wider">{t('trips_col_earnings')}</span>
+                              <p className="text-brand-secondary font-semibold">EUR {reimbursement.toFixed(2)}</p>
+                            </div>
+                          </div>
+                          {invoiceCount > 0 && (
+                            <div className="mt-2">
+                              <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-secondary/10 px-2.5 py-1 text-[11px] font-semibold text-brand-secondary">
+                                <FileTextIcon className="h-3.5 w-3.5" />
+                                <span>{invoiceCount}</span>
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  }}
+                />
+              ) : (
+                pagedTrips.map((trip) => {
                 const isSelected = selectedTripIds.includes(trip.id);
                 const isLocked = userProfile?.lockedUntilDate ? new Date(trip.date) <= new Date(userProfile.lockedUntilDate) : false;
                 
