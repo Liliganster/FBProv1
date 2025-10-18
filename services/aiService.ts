@@ -392,5 +392,8 @@ export async function processFileForTripUniversal(
     ? extraction.productionCompanies.filter(Boolean).join(', ')
     : 'Unknown';
   
-  return { tripData, projectName: extraction.projectName, productionCompany };
+  // Ensure projectName is never empty - provide fallback
+  const projectName = (extraction.projectName || '').trim() || 'Untitled Project';
+  
+  return { tripData, projectName, productionCompany };
 }

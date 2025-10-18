@@ -159,6 +159,18 @@ export async function extractUniversalStructured({
       throw new ExtractorError('ai_invalid_json', 'The AI did not return a valid JSON.');
     }
     
+    // Add warning if projectName is empty or just whitespace
+    if (!parsed.projectName || !parsed.projectName.trim()) {
+      console.warn('[ExtractorUniversal] ⚠️ WARNING: AI returned empty projectName!', {
+        rawProjectName: parsed.projectName,
+        productionCompanies: parsed.productionCompanies,
+        date: parsed.date,
+        locationsCount: parsed.locations?.length
+      });
+    } else {
+      console.log('[ExtractorUniversal] ✓ Extracted projectName:', parsed.projectName);
+    }
+    
     const processed = postProcessCrewFirstData(parsed, normalized.text);
     console.log('[ExtractorUniversal] Post-processed result:', processed);
     

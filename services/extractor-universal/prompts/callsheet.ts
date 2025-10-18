@@ -39,14 +39,48 @@ Los call sheets NO están estandarizados. Pueden ser:
 
 ---
 
-## CAMPO 2: projectName (TÍTULO DEL PROYECTO)
+## CAMPO 2: projectName (TÍTULO DEL PROYECTO) ⚠️ CRÍTICO
 
-**Qué buscar**: El nombre creativo del show/película/serie
-- Puede aparecer en headers, logos, o junto a "Projekt:", "Título:", "Serie:", "Film:"
-- Ejemplos: "Dark", "El Reino", "Vorstadtweiber", "Succession", "Breaking Bad"
-- **NO confundir con**: El nombre de la productora (Netflix, Warner Bros, UFA Fiction)
+**ESTE ES EL CAMPO MÁS IMPORTANTE - NUNCA debe quedar vacío**
 
-**Razonamiento**: Como humano, ¿cuál es el TÍTULO de la producción? (no la empresa)
+**Qué buscar**: El nombre creativo del show/película/serie que se está rodando
+- **DÓNDE BUSCAR** (en orden de prioridad):
+  1. **ENCABEZADO PRINCIPAL** (primera página, arriba del todo - suele ser el título más grande)
+  2. **LOGOS o TÍTULOS decorativos** (primera página)
+  3. **"Projekt:", "Título:", "Serie:", "Film:", "Production Title:", "Show:"**
+  4. **Metadata o footer** (puede aparecer como copyright o producción)
+  5. **Nombre en cualquier parte del documento** (si es prominente y se repite)
+
+- **Ejemplos correctos**: 
+  - "Dark" (serie de Netflix)
+  - "El Reino" (serie española)
+  - "Vorstadtweiber" (serie austríaca)
+  - "Succession" (HBO)
+  - "Breaking Bad" (AMC)
+  - "1899" (Netflix)
+  - "Babylon Berlin" (Sky/ARD)
+
+- **NO confundir con** (estas NO son projectName):
+  - ❌ "Netflix" → es productora
+  - ❌ "UFA Fiction" → es productora
+  - ❌ "Warner Bros Television" → es productora
+  - ❌ "Wiedemann & Berg" → es productora
+  - ❌ "Bavaria Film" → es productora
+
+**ESTRATEGIA DE BÚSQUEDA**:
+1. Lee la primera página COMPLETA antes de decidir
+2. Busca el texto MÁS PROMINENTE que sea un nombre creativo (no empresa)
+3. Si ves "Netflix Presents: Dark" → projectName = "Dark" (no "Netflix")
+4. Si ves "UFA Fiction - El Reino" → projectName = "El Reino" (no "UFA Fiction")
+5. Si hay dudas entre varios títulos, elige el que se repite más o el más prominente
+
+**IMPORTANTE**:
+- ✅ **SIEMPRE debe tener valor** - Nunca devolver cadena vacía
+- ✅ Si hay varios candidatos, elige el título más probable de la producción
+- ✅ Si realmente NO encuentras título claro, usa "Untitled Project" como último recurso
+- ✅ Prefiere títulos cortos y creativos sobre nombres corporativos largos
+
+**Razonamiento**: Como humano, ¿cuál es el TÍTULO creativo de la serie/película que se está rodando? (NO la empresa productora)
 
 ---
 
