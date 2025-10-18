@@ -155,9 +155,27 @@ const extractFirstPageHalfTextFromPdf = async (file: File): Promise<string> => {
     const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
     if (pdf.numPages === 0) return '';
     const page = await pdf.getPage(1);
-    const textContent = await page.getTextContent();
-    const pageText = textContent.items.map((item: any) => item.str).join(' ');
-    return pageText.substring(0, Math.floor(pageText.length / 2));
+    const viewport = page.getViewport({ scale: 1 });
+    const content = await page.getTextContent();
+    const items: any[] = Array.isArray((content as any)?.items) ? (content as any).items : [];
+
+    // Prefer true top-half by y-coordinate when available; otherwise fall back to length split
+    const halfY = viewport?.height ? viewport.height / 2 : null;
+    let topText = '';
+    if (halfY != null && items.length > 0 && items.every(it => Array.isArray(it.transform))) {
+        const topItems = items.filter(it => {
+            try {
+                const y = Array.isArray(it.transform) && it.transform.length >= 6 ? it.transform[5] : null;
+                return typeof y === 'number' ? y >= halfY : true;
+            } catch { return true; }
+        });
+        topText = topItems.map(it => String(it.str || '').trim()).filter(Boolean).join(' ');
+    }
+    if (!topText) {
+        const pageText = items.map((item: any) => item.str).join(' ');
+        topText = pageText.substring(0, Math.floor(pageText.length / 2));
+    }
+    return topText.trim();
 };
 
 async function runOpenRouterAgent(
@@ -436,9 +454,13 @@ export async function processFileForTripUniversal(
   };
 
   let projectName = (extraction.projectName || '').trim();
-  if (!projectName) {
+  const containsProducerKeyword = /\b(produktion|production|productora|producer|producers)\b/i.test(projectName);
+  if (!projectName || looksLikeCompany(projectName) || containsProducerKeyword) {
     // Try stronger derivations, especially for OCR/agent mode
-    projectName = getNameFromFile(input.file) || getNameFromText(input.text) || '';
+    const derived = getNameFromFile(input.file) || getNameFromText(input.text) || '';
+    if (derived && !looksLikeCompany(derived)) {
+      projectName = derived;
+    }
   }
   // Final guard: if still empty, keep it empty; UI will handle fallback, but we never use "Untitled" here.
   

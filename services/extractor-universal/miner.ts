@@ -10,6 +10,8 @@ export function detectKind(file: File): InputKind | null {
   if (type === 'application/pdf' || name.endsWith('.pdf')) return 'pdf';
   if (type.startsWith('image/')) return 'image';
   if (type.includes('csv') || name.endsWith('.csv')) return 'csv';
+  // Treat email files as text to allow OCR/agent pipeline to work with .eml exports
+  if (type === 'message/rfc822' || name.endsWith('.eml') || name.endsWith('.emlx')) return 'text';
   if (type.startsWith('text/') || name.endsWith('.txt')) return 'text';
   return null;
 }

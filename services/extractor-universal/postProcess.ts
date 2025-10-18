@@ -148,10 +148,18 @@ function isNonProductionCompany(company: string): boolean {
   return false;
 }
 
+// Heuristic: detect strings that look like company names (legal suffixes / studio keywords)
+function looksLikeCompanyName(s: string): boolean {
+  if (!s) return false;
+  const x = s.toLowerCase();
+  return /\b(gmbh|llc|ltd\.?|inc\.?|kg|og|s\.?l\.?|s\.?a\.?|film(produktion)?|pictures|entertainment|studios?)\b/.test(x)
+    || /\b(produktion|production|productora|producer|producers)\b/.test(x);
+}
+
 // Post-process extracted data - simple filtering only
 export function postProcessCrewFirstData(data: CallsheetExtraction, sourceText?: string): CallsheetExtraction {
   const date = (data.date || '').trim();
-  const projectName = (data.projectName || '').trim();
+  let projectName = (data.projectName || '').trim();
   
   // Handle productionCompanies as array, filter out empty strings, non-production companies, and deduplicate
   const seenCompanies = new Set<string>();
@@ -214,8 +222,14 @@ export function postProcessCrewFirstData(data: CallsheetExtraction, sourceText?:
     console.warn('[PostProcess] ⚠️ WARNING: No principal filming locations found after filtering!');
   }
   
+  // Guardrail: If the model returned a company-like string in projectName, clear it
+  // so downstream fallbacks (file name / text heuristics) can recover a proper title.
+  if (projectName && (looksLikeCompanyName(projectName) || isNonProductionCompany(projectName))) {
+    console.warn('[PostProcess] Replacing suspicious projectName that looks like a company:', projectName);
+    projectName = '';
+  }
+
   return { date, projectName, productionCompanies, locations };
 }
-
 
 

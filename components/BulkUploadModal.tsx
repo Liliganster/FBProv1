@@ -104,7 +104,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
   const [aiFiles, setAiFiles] = useState<File[]>([]);
   const [aiText, setAiText] = useState<string>("");
   const [isProcessing, setIsProcessing] = useState(false);
-  const [aiExtractMode, setAiExtractMode] = useState<'direct'|'agent'>('direct');
+  const [aiExtractMode, setAiExtractMode] = useState<'direct'|'agent'>('agent');
   const [documentType, setDocumentType] = useState<DocumentType>(DocumentType.CALLSHEET);
   
   const { t } = useTranslation();
@@ -149,34 +149,36 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
       try {
           const hasTextOnly = aiFiles.length === 0 && aiText.trim().length > 0;
           const itemsToProcess = hasTextOnly ? 1 : aiFiles.length;
-          
+
           console.log(`[BulkUpload] Starting AI extraction for ${itemsToProcess} item(s) in ${aiExtractMode} mode`);
-          
+
+          const attemptProcess = async (params: { file?: File; text?: string }, name: string) => {
+            try {
+              const primary = await processFileForTripUniversal(params, userProfile, documentType, aiExtractMode);
+              console.log(`[BulkUpload] Processed (${aiExtractMode}) ${name}:`, primary);
+              return { status: 'fulfilled' as const, value: primary };
+            } catch (reason: any) {
+              const code = reason?.code || (reason instanceof Error ? reason.message : String(reason));
+              // Auto-fallback to Agent (OCR) when direct path reports missing text layer
+              const needsOcr = String(code).toLowerCase().includes('requires_ocr') || String(code).toLowerCase().includes('no text layer');
+              if (aiExtractMode === 'direct' && needsOcr) {
+                try {
+                  const secondary = await processFileForTripUniversal(params, userProfile, documentType, 'agent');
+                  console.log(`[BulkUpload] Fallback to Agent (OCR) succeeded for ${name}:`, secondary);
+                  return { status: 'fulfilled' as const, value: secondary };
+                } catch (fallbackReason) {
+                  console.error(`[BulkUpload] Fallback to Agent (OCR) failed for ${name}:`, fallbackReason);
+                  return { status: 'rejected' as const, reason: fallbackReason, fileName: name };
+                }
+              }
+              console.error(`[BulkUpload] Failed to process ${name}:`, reason);
+              return { status: 'rejected' as const, reason, fileName: name };
+            }
+          };
+
           const results = hasTextOnly
-            ? await Promise.all([
-                processFileForTripUniversal({ text: aiText }, userProfile, documentType, aiExtractMode)
-                  .then(value => {
-                      console.log('[BulkUpload] Successfully processed pasted text:', value);
-                      return { status: 'fulfilled' as const, value };
-                  })
-                  .catch(reason => {
-                      console.error('[BulkUpload] Failed to process pasted text:', reason);
-                      return { status: 'rejected' as const, reason, fileName: 'pasted-text' };
-                  })
-              ])
-            : await Promise.all(
-                aiFiles.map((file, idx) =>
-                  processFileForTripUniversal({ file }, userProfile, documentType, aiExtractMode)
-                    .then(value => {
-                        console.log(`[BulkUpload] Successfully processed file ${idx + 1}/${aiFiles.length}: ${file.name}`, value);
-                        return { status: 'fulfilled' as const, value };
-                    })
-                    .catch(reason => {
-                        console.error(`[BulkUpload] Failed to process file ${idx + 1}/${aiFiles.length}: ${file.name}`, reason);
-                        return { status: 'rejected' as const, reason, fileName: file.name };
-                    })
-                )
-              );
+            ? await Promise.all([attemptProcess({ text: aiText }, 'pasted-text')])
+            : await Promise.all(aiFiles.map((file, idx) => attemptProcess({ file }, `${idx + 1}/${aiFiles.length}: ${file.name}`)));
 
           const successfulExtractions: { tripData: Omit<Trip, 'id' | 'projectId'>; projectName: string, productionCompany: string }[] = [];
           const errors: { fileName: string; error: string }[] = [];

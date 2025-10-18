@@ -104,6 +104,7 @@ export function buildDirectPrompt(text: string) {
    - Busca: "Titel:", "Title:", "Project:", "Serie:", "Film:", "Proyecto:"
    - Ejemplos: "Dark", "El Reino", "Vorstadtweiber", "Succession"
    - Ignora términos genéricos como "CALLSHEET" o "Tagesdisposition"
+   - CRÍTICO: El valor NUNCA debe quedar vacío; si hay dudas, elige el mejor título creativo plausible (no empresa)
 
 4. **LOCATIONS**: SOLO las ubicaciones de filmación PRINCIPALES - SÉ MUY SELECTIVO
 
@@ -187,4 +188,3 @@ Contenido:
 
 ${text}`;
 }
-
