@@ -23,5 +23,11 @@
     },
     "allowImportingTsExtensions": true,
     "noEmit": true
-  }
+  },
+  "exclude": [
+    "tests",
+    "vitest.config.ts",
+    "**/*.test.ts",
+    "**/*.test.tsx"
+  ]
 }

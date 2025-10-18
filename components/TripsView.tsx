@@ -481,27 +481,27 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
                 />
               ) : (
                 pagedTrips.map((trip) => {
-                const isSelected = selectedTripIds.includes(trip.id);
-                const isLocked = userProfile?.lockedUntilDate ? new Date(trip.date) <= new Date(userProfile.lockedUntilDate) : false;
-                
-                const allWarnings = [...(trip.warnings || [])];
-                if (trip.distance > 1000) {
+                  const isSelected = selectedTripIds.includes(trip.id);
+                  const isLocked = userProfile?.lockedUntilDate ? new Date(trip.date) <= new Date(userProfile.lockedUntilDate) : false;
+                  
+                  const allWarnings = [...(trip.warnings || [])];
+                  if (trip.distance > 1000) {
                     allWarnings.push(t('trips_warning_improbable_distance'));
-                }
-                if (trip.distance === 0) {
+                  }
+                  if (trip.distance === 0) {
                     allWarnings.push(t('trips_warning_zero_distance'));
-                }
-                if (!trip.reason?.trim()) {
+                  }
+                  if (!trip.reason?.trim()) {
                     allWarnings.push(t('dashboard_alert_missing_reason'));
-                }
+                  }
 
-                const project = projects.find(p => p.id === trip.projectId);
-                const reimbursement = calculateTripReimbursement(trip, userProfile, project);
-                const emissions = (trip.distance * EMISSION_FACTOR_G_PER_KM) / 1000;
-                const tripExpenses = expensesByTrip[trip.id] ?? [];
-                const invoiceCount = tripExpenses.length;
+                  const project = projects.find(p => p.id === trip.projectId);
+                  const reimbursement = calculateTripReimbursement(trip, userProfile, project);
+                  const emissions = (trip.distance * EMISSION_FACTOR_G_PER_KM) / 1000;
+                  const tripExpenses = expensesByTrip[trip.id] ?? [];
+                  const invoiceCount = tripExpenses.length;
 
-                return (
+                  return (
                   <div
                     key={trip.id}
                     className={`bg-frost-glass border-glass rounded-fluid p-4 backdrop-blur-glass transition-all duration-200 ${
@@ -606,8 +606,9 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
                       )}
                     </div>
                   </div>
-                );
-              })}
+                  );
+                })
+              )}
               {/* Pagination controls for mobile/card view */}
               {filteredTrips.length > PAGE_SIZE && (
                 <div className="flex items-center justify-between mt-4">
