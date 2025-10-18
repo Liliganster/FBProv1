@@ -52,20 +52,28 @@ Los call sheets NO están estandarizados. Pueden ser:
 
 ## CAMPO 3: productionCompanies (PRODUCTORAS)
 
-**Qué buscar**: TODAS las empresas que producen (puede haber varias)
-- Puede aparecer como: "Produktion:", "Production Company:", "Productora:", "Studio:", "Prod:", "Producer:", "In Co-Production with:"
-- También puede estar en logos, cabeceras, o pie de página
-- Ejemplos: ["UFA Fiction"], ["Netflix Original", "Warner Bros TV"], ["Bavaria Film", "Neue Super"], ["X Filme"]
-- **Formato**: Array de strings, UNA productora por elemento
-- **Si NO encuentras ninguna**: Devuelve array vacío []
+**Qué buscar**: TODAS las empresas que PRODUCEN el proyecto (puede haber varias co-productoras)
+- Puede aparecer como:
+  - "Produktion:", "Production Company:", "Productora:", "Studio:", "Prod:", "Producer:"
+  - "In Co-Production with:", "Co-produced by:", "Koproduzent:", "En coproducción con:"
+  - En logos, cabeceras principales, o pie de página del documento
+- Ejemplos: ["UFA Fiction"], ["Netflix", "Warner Bros TV"], ["Bavaria Film", "Neue Super"], ["X Filme", "ARD Degeto"]
 
-**Razonamiento**: Como humano, ¿qué EMPRESAS/ESTUDIOS están produciendo esto?
+**DÓNDE BUSCAR** (en orden de prioridad):
+1. **ENCABEZADO/HEADER** (primera página, parte superior)
+2. **LOGOS** (primera página, esquinas o centro)
+3. **PIE DE PÁGINA** (footer con información legal/copyright)
+4. **SECCIÓN "Production"** o "Produktion" (si existe)
 
-**IMPORTANTE**: 
-- Lee TODO el documento, especialmente la PRIMERA PÁGINA donde suelen estar todas las productoras
-- Busca en encabezados, logos, pies de página
-- **Extrae TODAS las productoras que encuentres**, pueden ser 1, 2, 3 o más
-- Cada productora debe ser un elemento separado en el array
+**IMPORTANTE - Lee TODO el documento ANTES de extraer**:
+- ⚠️ **NO te limites a la primera mención** - Puede haber VARIAS productoras (2, 3, 4 o más)
+- ⚠️ **Lee la PRIMERA PÁGINA COMPLETA** - Aquí suelen estar TODAS las productoras listadas
+- ⚠️ **Lee el PIE DE PÁGINA** - A menudo lista todas las productoras en el copyright
+- ✅ **Extrae TODAS** - Si hay 5 productoras, devuelve las 5
+- ✅ **UNA por elemento** - Cada productora es un string separado en el array
+- ✅ **Si NO encuentras NINGUNA** - Devuelve [] (array vacío)
+
+**Razonamiento**: Como humano, ¿qué EMPRESAS/ESTUDIOS financian y producen este proyecto? (pueden ser varias en co-producción)
 
 ---
 
@@ -121,11 +129,26 @@ Los call sheets NO están estandarizados. Pueden ser:
 
 ### Formatos de dirección:
 
-**Acepta cualquier formato válido**:
-- Direcciones completas: "Hauptstraße 100, 10115 Berlin"
-- Landmarks: "Schloss Schönbrunn"
-- Áreas: "Donauinsel, Wien"
-- Venues: "Hotel Imperial"
+**REGLA CRÍTICA - NO DUPLICAR INFORMACIÓN**:
+Si el call sheet tiene:
+```
+Drehort 1: Hotel Imperial
+Adresse: Kärntner Ring 16, 1010 Wien
+```
+
+❌ **MAL**: "Hotel Imperial, Kärntner Ring 16, 1010 Wien" (duplica info)
+❌ **MAL**: "Hotel Imperial + Kärntner Ring 16, 1010 Wien" (duplica info)
+✅ **BIEN**: "Kärntner Ring 16, 1010 Wien" (solo la dirección física)
+
+**Formatos aceptables**:
+- **Dirección completa**: "Hauptstraße 100, 10115 Berlin" ← PREFERIR SIEMPRE
+- **Landmark famoso** (solo si NO hay dirección): "Schloss Schönbrunn"
+- **Nombre + ciudad** (solo si NO hay dirección): "Central Park, New York"
+
+**Prioridad de extracción**:
+1. Si hay dirección física (calle + número + ciudad) → Usar SOLO eso
+2. Si NO hay dirección pero hay landmark famoso → Usar nombre del lugar
+3. Si hay nombre genérico sin dirección → Buscar si hay dirección asociada
 
 **Si la dirección está incompleta**:
 - Si tiene contexto claro de ciudad: "Stephansplatz" → "Stephansplatz, Wien"
