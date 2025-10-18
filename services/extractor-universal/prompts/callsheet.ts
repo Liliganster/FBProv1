@@ -131,10 +131,8 @@ Los call sheets NO están estandarizados. Pueden ser:
 
 **REGLA CRÍTICA - NO DUPLICAR INFORMACIÓN**:
 Si el call sheet tiene:
-```
-Drehort 1: Hotel Imperial
-Adresse: Kärntner Ring 16, 1010 Wien
-```
+  Drehort 1: Hotel Imperial
+  Adresse: Kärntner Ring 16, 1010 Wien
 
 ❌ **MAL**: "Hotel Imperial, Kärntner Ring 16, 1010 Wien" (duplica info)
 ❌ **MAL**: "Hotel Imperial + Kärntner Ring 16, 1010 Wien" (duplica info)
