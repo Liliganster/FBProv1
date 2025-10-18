@@ -223,21 +223,7 @@ export async function fetchOpenRouterModels(apiKey?: string | null): Promise<AiM
             const res = await fetchWithRateLimit(`/api/ai/openrouter/models${qs}`, { method: 'GET' });
 
             if (!res.ok) {
-                // Try to extract a user-friendly error from JSON
-                const contentType = res.headers.get('content-type') || '';
-                if (contentType.includes('application/json')) {
-                    try {
-                        const errJson = await res.json();
-                        const msg = errJson?.error || errJson?.message || JSON.stringify(errJson);
-                        throw new Error(msg || `Failed to fetch models (status ${res.status}).`);
-                    } catch {
-                        const body = await res.text();
-                        throw new Error(body || `Failed to fetch models (status ${res.status}).`);
-                    }
-                } else {
-                    const body = await res.text();
-                    throw new Error(body || `Failed to fetch models (status ${res.status}).`);
-                }
+                throw new Error(`Failed to fetch models: ${res.status} ${await res.text()}`);
             }
 
             const data = await res.json();
@@ -251,10 +237,6 @@ export async function fetchOpenRouterModels(apiKey?: string | null): Promise<AiM
                 .sort((a: AiModelInfo, b: AiModelInfo) => (a.name || '').localeCompare(b.name || ''));
         } catch (e) {
             console.error("Error fetching OpenRouter models:", e);
-            // Propagate the original message when possible so the Settings UI can show actionable instructions
-            if (e instanceof Error && e.message) {
-                throw new Error(e.message);
-            }
             throw new Error("Failed to connect to OpenRouter. Please check your network connection and API key.");
         }
     }, 'fetchOpenRouterModels');
