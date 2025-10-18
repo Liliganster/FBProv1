@@ -210,6 +210,7 @@ export const translations = {
     settings_api_or_loading: "Loading models...",
     settings_api_or_select: "Select a model",
     settings_api_or_enter_key: "Enter API key to load models",
+    settings_api_or_no_models: 'No models available. Please check your API key.',
     settings_api_gcal_title: 'Google Calendar Integration',
     settings_api_gcal_apikey: 'Google Calendar API Key',
     settings_api_gcal_clientid: 'Google Calendar Client ID',
@@ -590,7 +591,12 @@ export const translations = {
     common_back: 'Back',
     common_undo: 'Undo',
     common_redo: 'Redo',
-    
+    common_close: 'Close',
+    common_save: 'Save',
+    common_edit: 'Edit',
+    common_delete: 'Delete',
+    common_refresh: 'Refresh',
+
     // Unsaved changes indicators and warnings
     common_unsaved_changes_warning: 'You have unsaved changes. Are you sure you want to close?',
     common_unsaved_indicator: 'Unsaved changes',
@@ -809,6 +815,7 @@ export const translations = {
     settings_api_or_loading: "Lade Modelle...",
     settings_api_or_select: "Modell auswählen",
     settings_api_or_enter_key: "API-Schlüssel eingeben, um Modelle zu laden",
+    settings_api_or_no_models: 'Keine Modelle verfügbar. Bitte überprüfen Sie Ihren API-Schlüssel.',
     settings_api_gcal_title: 'Google Kalender Integration',
     settings_api_gcal_apikey: 'Google Kalender API-Schlüssel',
     settings_api_gcal_clientid: 'Google Kalender Client-ID',
@@ -1189,7 +1196,12 @@ export const translations = {
     common_back: 'Zurück',
     common_undo: 'Rückgängig',
     common_redo: 'Wiederholen',
-    
+    common_close: 'Schließen',
+    common_save: 'Speichern',
+    common_edit: 'Bearbeiten',
+    common_delete: 'Löschen',
+    common_refresh: 'Aktualisieren',
+
     // Unsaved changes indicators and warnings
     common_unsaved_changes_warning: 'Sie haben nicht gespeicherte Änderungen. Sind Sie sicher, dass Sie schließen möchten?',
     common_unsaved_indicator: 'Nicht gespeicherte Änderungen',
@@ -1410,6 +1422,7 @@ export const translations = {
     settings_api_or_loading: "Cargando modelos...",
     settings_api_or_select: "Selecciona un modelo",
     settings_api_or_enter_key: "Introduce la clave de API para cargar modelos",
+    settings_api_or_no_models: 'No hay modelos disponibles. Por favor, verifica tu clave API.',
     settings_api_gcal_title: 'Integración con Google Calendar',
     settings_api_gcal_apikey: 'Clave de API de Google Calendar',
     settings_api_gcal_clientid: 'ID de Cliente de Google Calendar',
@@ -1774,7 +1787,12 @@ export const translations = {
     common_back: 'Atrás',
     common_undo: 'Deshacer',
     common_redo: 'Rehacer',
-    
+    common_close: 'Cerrar',
+    common_save: 'Guardar',
+    common_edit: 'Editar',
+    common_delete: 'Eliminar',
+    common_refresh: 'Actualizar',
+
     // Unsaved changes indicators and warnings
     common_unsaved_changes_warning: 'Tienes cambios sin guardar. ¿Estás seguro de que quieres cerrar?',
     common_unsaved_indicator: 'Cambios sin guardar',
