@@ -1,20 +1,20 @@
 import { GoogleGenAI } from '@google/genai';
-import type { CallsheetExtraction, CrewFirstCallsheet } from '../../../services/extractor-universal/config/schema';
-import { callsheetSchema, crewFirstCallsheetSchema } from '../../../services/extractor-universal/config/schema';
+import type { CallsheetExtraction, CrewFirstCallsheet } from '../../../services/extractor-universal/config/schema.js';
+import { callsheetSchema, crewFirstCallsheetSchema } from '../../../services/extractor-universal/config/schema.js';
 import {
   buildDirectPrompt as buildCallsheetPrompt,
   buildCrewFirstDirectPrompt,
   sanitizeModelText
-} from '../../../services/extractor-universal/prompts/callsheet';
-import { isCallsheetExtraction, isCrewFirstCallsheet as isCrewFirstCallsheetVerify } from '../../../services/extractor-universal/verify';
+} from '../../../services/extractor-universal/prompts/callsheet.js';
+import { isCallsheetExtraction, isCrewFirstCallsheet as isCrewFirstCallsheetVerify } from '../../../services/extractor-universal/verify.js';
 import {
   SYSTEM_INSTRUCTION_AGENT,
   SYSTEM_INSTRUCTION_CREW_FIRST_AGENT,
   buildDirectPrompt as buildAgentPrompt
-} from '../../gemini/prompt';
-import { withRateLimit } from '../../rate-limiter';
-import { tools as toolDeclarations } from '../../agent/tools';
-import { executeTool } from '../../agent/executor';
+} from '../../gemini/prompt.js';
+import { withRateLimit } from '../../rate-limiter.js';
+import { tools as toolDeclarations } from '../../agent/tools.js';
+import { executeTool } from '../../agent/executor.js';
 
 type Mode = 'direct' | 'agent';
 

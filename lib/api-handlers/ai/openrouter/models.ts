@@ -1,4 +1,4 @@
-import { withRateLimit } from '../../../rate-limiter';
+import { withRateLimit } from '../../../rate-limiter.js';
 
 function deriveReferer(req: any): string {
   try {

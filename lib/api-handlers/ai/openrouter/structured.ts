@@ -1,8 +1,8 @@
-import type { CallsheetExtraction, CrewFirstCallsheet } from '../../../../services/extractor-universal/config/schema';
-import { buildDirectPrompt, buildCrewFirstDirectPrompt, sanitizeModelText } from '../../../../services/extractor-universal/prompts/callsheet';
-import { isCallsheetExtraction, isCrewFirstCallsheet } from '../../../../services/extractor-universal/verify';
-import { withRateLimit } from '../../../rate-limiter';
-import { runAgentWithOpenRouter } from '../../../agent/orchestrator';
+import type { CallsheetExtraction, CrewFirstCallsheet } from '../../../../services/extractor-universal/config/schema.js';
+import { buildDirectPrompt, buildCrewFirstDirectPrompt, sanitizeModelText } from '../../../../services/extractor-universal/prompts/callsheet.js';
+import { isCallsheetExtraction, isCrewFirstCallsheet } from '../../../../services/extractor-universal/verify.js';
+import { withRateLimit } from '../../../rate-limiter.js';
+import { runAgentWithOpenRouter } from '../../../agent/orchestrator.js';
 
 const DEFAULT_MODEL = process.env.OPENROUTER_MODEL || 'google/gemini-2.0-flash-001';
 function deriveReferer(req: any): string {

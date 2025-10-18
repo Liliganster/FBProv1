@@ -1,13 +1,13 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
 // Import consolidated handlers (already wrapped with rate limiting where applicable)
-import geminiHandler from '../lib/api-handlers/ai/gemini';
-import openrouterStructuredHandler from '../lib/api-handlers/ai/openrouter/structured';
-import openrouterModelsHandler from '../lib/api-handlers/ai/openrouter/models';
-import openrouterChatHandler from '../lib/api-handlers/ai/openrouter/chat';
-import statusHandler from '../lib/api-handlers/ai/status';
-import googleCalendarEventsHandler from '../lib/api-handlers/google/calendar/events';
-import googleCalendarCalendarsHandler from '../lib/api-handlers/google/calendar/calendars';
+import geminiHandler from '../lib/api-handlers/ai/gemini.js';
+import openrouterStructuredHandler from '../lib/api-handlers/ai/openrouter/structured.js';
+import openrouterModelsHandler from '../lib/api-handlers/ai/openrouter/models.js';
+import openrouterChatHandler from '../lib/api-handlers/ai/openrouter/chat.js';
+import statusHandler from '../lib/api-handlers/ai/status.js';
+import googleCalendarEventsHandler from '../lib/api-handlers/google/calendar/events.js';
+import googleCalendarCalendarsHandler from '../lib/api-handlers/google/calendar/calendars.js';
 
 type Handler = (req: VercelRequest, res: VercelResponse) => void | Promise<void>;
 

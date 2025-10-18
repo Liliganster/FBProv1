@@ -1,4 +1,4 @@
-import { withRateLimit } from '../../../rate-limiter';
+import { withRateLimit } from '../../../rate-limiter.js';
 
 const DEFAULT_MODEL = process.env.OPENROUTER_MODEL || 'google/gemini-2.0-flash-001';
 function deriveReferer(req: any): string {
