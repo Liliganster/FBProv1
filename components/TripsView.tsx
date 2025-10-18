@@ -231,6 +231,9 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
     return filteredTrips.slice(start, start + PAGE_SIZE);
   }, [filteredTrips, currentPage]);
 
+  // SSR-safe height for virtual list
+  const listHeight = typeof window !== 'undefined' ? Math.round(window.innerHeight * 0.7) : 600;
+
   const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.checked) {
       setSelectedTripIds(filteredTrips.map(trip => trip.id));
@@ -363,7 +366,7 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
                 <VirtualList
                   items={filteredTrips}
                   itemHeight={180}
-                  height={Math.round(window.innerHeight * 0.7) || 600}
+                  height={listHeight}
                   overscan={6}
                   renderItem={(trip) => {
                     const isSelected = selectedTripIds.includes(trip.id);
