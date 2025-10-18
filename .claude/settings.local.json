@@ -5,7 +5,8 @@
       "Bash(findstr:*)",
       "Bash(npm run build)",
       "Bash(npm run dev:*)",
-      "Bash(node dev-server.mjs:*)"
+      "Bash(node dev-server.mjs:*)",
+      "Bash(npm run lint)"
     ],
     "deny": [],
     "ask": []
