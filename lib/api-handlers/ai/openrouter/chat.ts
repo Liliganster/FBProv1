@@ -1,7 +1,14 @@
 import { withRateLimit } from '../../../rate-limiter';
 
 const DEFAULT_MODEL = process.env.OPENROUTER_MODEL || 'google/gemini-2.0-flash-001';
-const APP_REFERER = process.env.OPENROUTER_HTTP_REFERER || 'https://fahrtenbuch-pro.app';
+function deriveReferer(req: any): string {
+  try {
+    const xfProto = (req.headers?.['x-forwarded-proto'] || 'https') as string;
+    const xfHost = (req.headers?.['x-forwarded-host'] || req.headers?.host || '').toString();
+    if (xfHost) return `${xfProto}://${xfHost}`;
+  } catch {}
+  return process.env.OPENROUTER_HTTP_REFERER || 'https://fahrtenbuch-pro.app';
+}
 const APP_TITLE = process.env.OPENROUTER_TITLE || 'Fahrtenbuch Pro';
 
 function toJsonResponse(res: any, status: number, payload: unknown) {
@@ -81,7 +88,7 @@ async function chatHandler(req: any, res: any) {
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${apiKey}`,
-        'HTTP-Referer': APP_REFERER,
+        'HTTP-Referer': deriveReferer(req),
         'X-Title': APP_TITLE,
       },
       body: JSON.stringify(payload),

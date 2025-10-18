@@ -1,6 +1,13 @@
 import { withRateLimit } from '../../../rate-limiter';
 
-const APP_REFERER = process.env.OPENROUTER_HTTP_REFERER || 'https://fahrtenbuch-pro.app';
+function deriveReferer(req: any): string {
+  try {
+    const xfProto = (req.headers?.['x-forwarded-proto'] || 'https') as string;
+    const xfHost = (req.headers?.['x-forwarded-host'] || req.headers?.host || '').toString();
+    if (xfHost) return `${xfProto}://${xfHost}`;
+  } catch {}
+  return process.env.OPENROUTER_HTTP_REFERER || 'https://fahrtenbuch-pro.app';
+}
 const APP_TITLE = process.env.OPENROUTER_TITLE || 'Fahrtenbuch Pro';
 
 function toJsonResponse(res: any, status: number, payload: unknown) {
@@ -26,7 +33,7 @@ async function modelsHandler(req: any, res: any) {
     const response = await fetch('https://openrouter.ai/api/v1/models', {
       headers: {
         Authorization: `Bearer ${apiKey}`,
-        'HTTP-Referer': APP_REFERER,
+        'HTTP-Referer': deriveReferer(req),
         'X-Title': APP_TITLE,
       },
     });
