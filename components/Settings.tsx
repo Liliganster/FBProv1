@@ -284,19 +284,33 @@ const SettingsView: React.FC<{
                                         type="password"
                                     />
                                     <ModelSelect
-                                        id="openRouterModel"
-                                        name="openRouterModel"
-                                        label={t('settings_api_or_model')}
-                                        value={localProfile.openRouterModel}
-                                        onChange={handleProfileChange}
-                                        isLoading={isFetchingOrModels}
-                                        error={fetchOrModelsError}
-                                        models={openRouterModels}
-                                        loadingText={t('settings_api_or_loading')}
-                                        errorText={fetchOrModelsError || t('settings_api_or_enter_key')}
-                                        noModelsText={t('settings_api_or_enter_key')}
-                                        defaultOptionText={t('settings_api_or_select')}
-                                    />
+                                         id="openRouterModel"
+                                         name="openRouterModel"
+                                         label={t('settings_api_or_model')}
+                                         value={localProfile.openRouterModel}
+                                         onChange={handleProfileChange}
+                                         isLoading={isFetchingOrModels}
+                                         error={fetchOrModelsError}
+                                         models={openRouterModels}
+                                         loadingText={t('settings_api_or_loading')}
+                                         errorText={fetchOrModelsError || t('settings_api_or_enter_key')}
+                                         noModelsText={t('settings_api_or_enter_key')}
+                                         defaultOptionText={t('settings_api_or_select')}
+                                     />
+                                    {(!isFetchingOrModels && (fetchOrModelsError || openRouterModels.length === 0)) && (
+                                      <div className="mt-2">
+                                        <InputField
+                                          label={t('settings_api_or_model_manual') || 'Modelo (introducir manualmente si no aparece la lista)'}
+                                          name="openRouterModel"
+                                          value={localProfile.openRouterModel || ''}
+                                          onChange={handleProfileChange}
+                                          placeholder="google/gemini-2.0-flash-001"
+                                        />
+                                        <p className="text-xs text-on-surface-dark-secondary mt-1">
+                                          {t('settings_api_or_model_manual_hint') || 'Puedes pegar el ID exacto del modelo de OpenRouter.'}
+                                        </p>
+                                      </div>
+                                    )}
                                     <p className="text-xs text-on-surface-dark-secondary mt-1">{t('settings_api_or_info')}</p>
                                 </ProviderConfigContainer>
                             </div>
