@@ -15,6 +15,8 @@ function toJsonResponse(res: any, status: number, payload: unknown) {
 }
 
 async function modelsHandler(req: any, res: any) {
+  console.log('[api/ai/openrouter/models] Request received:', { method: req.method, hasApiKey: !!req.query?.apiKey });
+
   if (req.method !== 'GET') {
     toJsonResponse(res, 405, { error: 'Method Not Allowed' });
     return;
@@ -25,18 +27,30 @@ async function modelsHandler(req: any, res: any) {
   const apiKey = queryKey;
 
   if (!apiKey) {
+    console.log('[api/ai/openrouter/models] No API key provided');
     toJsonResponse(res, 400, { error: 'OpenRouter API key is required. Please add your API key in Settings.' });
     return;
   }
 
   try {
+    console.log('[api/ai/openrouter/models] Fetching models from OpenRouter...');
+    
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 25000);
+    
     const response = await fetch('https://openrouter.ai/api/v1/models', {
+      method: 'GET',
       headers: {
         Authorization: `Bearer ${apiKey}`,
         'HTTP-Referer': deriveReferer(req),
         'X-Title': APP_TITLE,
+        'Content-Type': 'application/json',
       },
+      signal: controller.signal,
     });
+
+    clearTimeout(timeoutId);
+    console.log('[api/ai/openrouter/models] OpenRouter response status:', response.status);
 
     if (!response.ok) {
       let errorMessage = 'Failed to fetch models from OpenRouter';
@@ -58,8 +72,8 @@ async function modelsHandler(req: any, res: any) {
 
       console.error(`[api/ai/openrouter/models] OpenRouter API error ${response.status}:`, errorDetails);
 
-      // Return a user-friendly error message
-      toJsonResponse(res, 400, {
+      // Return a user-friendly error message with appropriate status code
+      toJsonResponse(res, response.status >= 500 ? 502 : 400, {
         error: errorMessage,
         details: `Status ${response.status}: ${errorDetails.substring(0, 200)}`
       });
@@ -67,6 +81,7 @@ async function modelsHandler(req: any, res: any) {
     }
 
     const json = await response.json();
+    console.log('[api/ai/openrouter/models] Models received:', json?.data?.length || 0);
     const models = Array.isArray(json?.data)
       ? json.data
           .map((m: any) => ({ id: m.id, name: m.name || m.id }))
@@ -78,12 +93,17 @@ async function modelsHandler(req: any, res: any) {
       console.warn('[api/ai/openrouter/models] No models returned from OpenRouter API');
     }
 
+    console.log('[api/ai/openrouter/models] Returning', models.length, 'models');
     toJsonResponse(res, 200, { models });
   } catch (error) {
     console.error('[api/ai/openrouter/models] Unexpected error:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-    toJsonResponse(res, 500, {
-      error: 'Failed to connect to OpenRouter. Please check your network connection and API key.',
+    const isTimeout = errorMessage.includes('timeout') || errorMessage.includes('aborted');
+    
+    toJsonResponse(res, isTimeout ? 504 : 500, {
+      error: isTimeout 
+        ? 'Request to OpenRouter timed out. Please try again.' 
+        : 'Failed to connect to OpenRouter. Please check your network connection and API key.',
       details: errorMessage
     });
   }
