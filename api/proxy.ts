@@ -1,27 +1,34 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
-// Import consolidated handlers (already wrapped with rate limiting where applicable)
-import geminiHandler from '../lib/api-handlers/ai/gemini.js';
-import openrouterStructuredHandler from '../lib/api-handlers/ai/openrouter/structured.js';
-import openrouterModelsHandler from '../lib/api-handlers/ai/openrouter/models.js';
-import openrouterChatHandler from '../lib/api-handlers/ai/openrouter/chat.js';
-import statusHandler from '../lib/api-handlers/ai/status.js';
-import googleCalendarEventsHandler from '../lib/api-handlers/google/calendar/events.js';
-import googleCalendarCalendarsHandler from '../lib/api-handlers/google/calendar/calendars.js';
-
 type Handler = (req: VercelRequest, res: VercelResponse) => void | Promise<void>;
 
-const routes: Record<string, Handler> = {
-  // AI endpoints
-  'ai/gemini': geminiHandler,
-  'ai/openrouter/structured': openrouterStructuredHandler,
-  'ai/openrouter/models': openrouterModelsHandler,
-  'ai/openrouter/chat': openrouterChatHandler,
-  'ai/status': statusHandler,
-  // Google Calendar proxy endpoints
-  'google/calendar/events': googleCalendarEventsHandler,
-  'google/calendar/calendars': googleCalendarCalendarsHandler,
-};
+async function getHandler(path: string): Promise<Handler | null> {
+  try {
+    switch (path) {
+      // AI endpoints
+      case 'ai/gemini':
+        return (await import('../lib/api-handlers/ai/gemini.js')).default as unknown as Handler;
+      case 'ai/openrouter/structured':
+        return (await import('../lib/api-handlers/ai/openrouter/structured.js')).default as unknown as Handler;
+      case 'ai/openrouter/models':
+        return (await import('../lib/api-handlers/ai/openrouter/models.js')).default as unknown as Handler;
+      case 'ai/openrouter/chat':
+        return (await import('../lib/api-handlers/ai/openrouter/chat.js')).default as unknown as Handler;
+      case 'ai/status':
+        return (await import('../lib/api-handlers/ai/status.js')).default as unknown as Handler;
+      // Google Calendar proxy endpoints
+      case 'google/calendar/events':
+        return (await import('../lib/api-handlers/google/calendar/events.js')).default as unknown as Handler;
+      case 'google/calendar/calendars':
+        return (await import('../lib/api-handlers/google/calendar/calendars.js')).default as unknown as Handler;
+      default:
+        return null;
+    }
+  } catch (err) {
+    console.error('[api/proxy] Failed to import handler for path:', path, err);
+    throw err;
+  }
+}
 
 function toJsonResponse(res: VercelResponse, status: number, payload: unknown) {
   res.status(status).setHeader('Content-Type', 'application/json').send(JSON.stringify(payload));
@@ -37,7 +44,7 @@ export default async function proxy(req: VercelRequest, res: VercelResponse) {
     return;
   }
 
-  const handler = routes[path];
+  const handler = await getHandler(path);
   if (!handler) {
     toJsonResponse(res, 404, { error: 'Not Found', path });
     return;
