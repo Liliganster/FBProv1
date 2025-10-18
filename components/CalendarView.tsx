@@ -4,7 +4,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import useGoogleCalendar from '../hooks/useGoogleCalendar';
 import useTranslation from '../hooks/useTranslation';
 import useUserProfile from '../hooks/useUserProfile';
-import { LoaderIcon, UsersIcon, SettingsIcon, ChevronLeftIcon, ChevronRightIcon } from './Icons';
+import { LoaderIcon, UsersIcon, SettingsIcon, ChevronLeftIcon, ChevronRightIcon, RefreshIcon } from './Icons';
 import EventActionModal from './EventActionModal';
 import { PersonalizationSettings } from '../types';
 
@@ -24,6 +24,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ setCurrentView, personaliza
   const [currentDate, setCurrentDate] = useState(new Date());
   const [events, setEvents] = useState<any[]>([]);
   const [loadingEvents, setLoadingEvents] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [selectedCalendars, setSelectedCalendars] = useState<string[]>([]);
   const [selectedEvent, setSelectedEvent] = useState<any | null>(null);
 
@@ -183,8 +184,17 @@ const CalendarView: React.FC<CalendarViewProps> = ({ setCurrentView, personaliza
           </div>
           <div className="flex items-center gap-2">
             {isSignedIn && (
-              <button onClick={() => refreshCalendars()} className="bg-surface-dark hover:bg-surface-dark/70 text-white font-medium py-2 px-3 rounded-md border border-gray-700/60">
-                {t('common_refresh') || 'Refrescar'}
+              <button
+                onClick={async () => {
+                  setIsRefreshing(true);
+                  await refreshCalendars();
+                  setTimeout(() => setIsRefreshing(false), 500);
+                }}
+                disabled={isRefreshing}
+                className="flex items-center gap-2 px-4 py-2 bg-brand-primary hover:brightness-110 text-white rounded-md font-medium transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-brand-primary/60"
+              >
+                <RefreshIcon className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+                <span>{t('common_refresh')}</span>
               </button>
             )}
             {!isSignedIn && (
