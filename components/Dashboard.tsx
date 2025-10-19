@@ -54,6 +54,19 @@ const Dashboard: React.FC<DashboardProps> = ({ setCurrentView, personalization, 
 
     const totalKm = userTrips.reduce((sum, trip) => sum + trip.distance, 0);
 
+    // Check if CO2 settings are configured (vehicleType and fuel/energy consumption)
+    const hasCO2Settings = useMemo(() => {
+        if (!userProfile?.vehicleType) return false;
+        
+        if (userProfile.vehicleType === 'combustion') {
+            return !!userProfile.fuelConsumption && userProfile.fuelConsumption > 0;
+        } else if (userProfile.vehicleType === 'electric') {
+            return !!userProfile.energyConsumption && userProfile.energyConsumption > 0;
+        }
+        
+        return false;
+    }, [userProfile]);
+
     const EMISSION_FACTOR_G_PER_KM = 140;
     const totalCo2 = (totalKm * EMISSION_FACTOR_G_PER_KM) / 1000; // in kg
 
@@ -192,7 +205,20 @@ const StatCard = ({ title, value, cta, onClick, children }: { title: string, val
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
                 <StatCard title={t('dashboard_totalKm')} value={`${totalKm.toFixed(1)} km`} cta={t('dashboard_viewAllTrips')} onClick={() => setCurrentView('trips')} />
                 <StatCard title={t('dashboard_activeProjects')} value={activeProjectsCount.toString()} cta={t('dashboard_manageProjects')} onClick={() => setCurrentView('projects')} />
-                <StatCard title={t('dashboard_total_co2')} value={`${totalCo2.toFixed(1)} kg`} />
+                {hasCO2Settings ? (
+                    <StatCard title={t('dashboard_total_co2')} value={`${totalCo2.toFixed(1)} kg`} />
+                ) : (
+                    <div style={contentStyle} className="bg-frost-glass border-glass rounded-fluid p-6 backdrop-blur-glass">
+                        <h4 className="text-sm font-medium text-on-surface-secondary mb-2">{t('dashboard_total_co2')}</h4>
+                        <p className="text-xs text-on-surface-secondary mb-3">{t('co2_settings_required_notice')}</p>
+                        <button 
+                            onClick={() => setCurrentView('advanced')}
+                            className="text-xs text-brand-primary hover:text-brand-secondary transition-colors duration-200 underline"
+                        >
+                            {t('settings_vehicle_title')}
+                        </button>
+                    </div>
+                )}
             </div>
             
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

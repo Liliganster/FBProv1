@@ -439,6 +439,7 @@ export const translations = {
     // CO2 Analysis Settings
     co2_settings_title: 'CO₂ Analysis Settings',
     co2_settings_subtitle: 'Configure your CO₂ emissions analysis preferences',
+    co2_settings_required_notice: 'Configure your vehicle type and fuel/energy consumption to enable CO₂ analysis',
     co2_settings_view_mode: 'View Mode',
     co2_settings_view_mode_desc: 'Choose whether to show only project-related trips or all trips in the analysis',
     co2_settings_projects_only: 'Projects Only',
@@ -1044,6 +1045,7 @@ export const translations = {
     // CO2 Analysis Settings
     co2_settings_title: 'CO₂-Analyse-Einstellungen',
     co2_settings_subtitle: 'Konfigurieren Sie Ihre CO₂-Emissions-Analyse-Präferenzen',
+    co2_settings_required_notice: 'Konfigurieren Sie Ihren Fahrzeugtyp und Kraftstoff-/Energieverbrauch, um die CO₂-Analyse zu aktivieren',
     co2_settings_view_mode: 'Ansichtsmodus',
     co2_settings_view_mode_desc: 'Wählen Sie aus, ob nur projektbezogene Fahrten oder alle Fahrten in der Analyse angezeigt werden sollen',
     co2_settings_projects_only: 'Nur Projekte',
@@ -1651,6 +1653,7 @@ export const translations = {
     // CO2 Analysis Settings
     co2_settings_title: 'Configuración de Análisis CO₂',
     co2_settings_subtitle: 'Configura las preferencias de análisis de emisiones CO₂',
+    co2_settings_required_notice: 'Configura el tipo de vehículo y el consumo de combustible/energía para habilitar el análisis de CO₂',
     co2_settings_view_mode: 'Modo de Vista',
     co2_settings_view_mode_desc: 'Elige si mostrar solo viajes relacionados con proyectos o todos los viajes en el análisis',
     co2_settings_projects_only: 'Solo Proyectos',

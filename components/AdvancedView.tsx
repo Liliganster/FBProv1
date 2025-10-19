@@ -858,6 +858,19 @@ const AdvancedView: React.FC<AdvancedViewProps> = ({ personalization, theme }) =
     const [costingProfile, setCostingProfile] = useState<UserProfile | null>(userProfile);
     const [viewMode, setViewMode] = useState<ViewMode>('main');
 
+    // Check if CO2 settings are configured
+    const hasCO2Settings = useMemo(() => {
+        if (!userProfile?.vehicleType) return false;
+        
+        if (userProfile.vehicleType === 'combustion') {
+            return !!userProfile.fuelConsumption && userProfile.fuelConsumption > 0;
+        } else if (userProfile.vehicleType === 'electric') {
+            return !!userProfile.energyConsumption && userProfile.energyConsumption > 0;
+        }
+        
+        return false;
+    }, [userProfile]);
+
 
     useEffect(() => {
         setCostingProfile(userProfile);
@@ -1080,14 +1093,16 @@ const AdvancedView: React.FC<AdvancedViewProps> = ({ personalization, theme }) =
                     personalization={personalization}
                 />
                 
-                <ActionCard
-                    title={t('co2_ranking_title')}
-                    description={t('co2_ranking_card_description')}
-                    icon={<TreePine size={24} className="text-brand-secondary" />}
-                    onClick={() => setViewMode('co2Ranking')}
-                    theme={theme}
-                    personalization={personalization}
-                />
+                {hasCO2Settings && (
+                    <ActionCard
+                        title={t('co2_ranking_title')}
+                        description={t('co2_ranking_card_description')}
+                        icon={<TreePine size={24} className="text-brand-secondary" />}
+                        onClick={() => setViewMode('co2Ranking')}
+                        theme={theme}
+                        personalization={personalization}
+                    />
+                )}
             </div>
         </div>
     );
