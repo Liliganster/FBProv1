@@ -70,13 +70,31 @@ Ejemplo: "Project: FUNDBOX" → projectName = "FUNDBOX"
 - Códigos alfanuméricos cortos (4-12 caracteres) que parecen códigos de proyecto
 - Nombres que se **repiten** en el documento (especialmente en headers/footers)
 
-#### PASO 4: ELIMINAR FALSOS POSITIVOS
+#### PASO 4: ELIMINAR FALSOS POSITIVOS ⚠️ MUY IMPORTANTE
+
 Si encuentras un candidato, verifica que NO sea:
-- ❌ Nombre de productora (contiene: "GmbH", "LLC", "Ltd", "Inc", "Film", "Pictures", "Entertainment", "Productions", "Studios", "Media", "Production Company")
-- ❌ Broadcaster (Netflix, HBO, Amazon, BBC, ARD, ZDF, RTL, etc.)
-- ❌ Tipo de documento ("Call Sheet", "Callsheet", "Disposición", "Drehplan")
-- ❌ Nombre de locación ("Estudio 5", "Set A", "Location B")
-- ❌ Números de episodio solos ("Episode 5", "Folge 3", "EP101")
+
+**❌ TIPO DE DOCUMENTO (NUNCA es el nombre del proyecto)**:
+- "Call Sheet" / "Callsheet" / "CALLSHEET" → Es el tipo de documento, NO el proyecto
+- "Hoja de Rodaje" / "Disposición Diaria" → Tipo de documento
+- "Drehplan" / "Tagesdisposition" → Tipo de documento
+- "Production Sheet" / "Crew List" → Tipo de documento
+
+**❌ Nombre de productora**:
+- Contiene: "GmbH", "LLC", "Ltd", "Inc", "Film", "Pictures", "Entertainment", "Productions", "Studios", "Media", "Production Company"
+
+**❌ Broadcaster o plataforma**:
+- Netflix, HBO, Amazon, BBC, ARD, ZDF, RTL, ORF, etc.
+
+**❌ Nombre de locación**:
+- "Estudio 5", "Set A", "Location B", "Studio Complex"
+
+**❌ Números de episodio solos**:
+- "Episode 5", "Folge 3", "EP101" (sin nombre de serie)
+
+**🔍 REGLA CRÍTICA**: 
+Si ves texto como "CALLSHEET 2 of 2" o "Call Sheet - Saturday", **ignóralo completamente**.
+El nombre del proyecto está ANTES o DESPUÉS de esta línea, NO ES esta línea.
 
 #### PASO 5: EXTRACCIÓN INTELIGENTE CON SEPARADORES
 Si el texto tiene separadores, extrae la parte correcta:
@@ -98,6 +116,21 @@ Si el texto tiene separadores, extrae la parte correcta:
 ✅ **Caso 4**: "UFA Fiction GmbH presents BABYLON BERLIN" → projectName = "BABYLON BERLIN"
 ✅ **Caso 5**: Footer: "© 2024 SUCCESSION Productions LLC" → projectName = "SUCCESSION"
 ✅ **Caso 6**: "Call Sheet - 1899 - Tag 15" → projectName = "1899"
+✅ **Caso 7**: Header: "Raiffeisen - Goffi" / Abajo: "CALLSHEET 2 of 2" → projectName = "Raiffeisen - Goffi"
+
+### ❌ EJEMPLOS DE EXTRACCIÓN INCORRECTA (NO HACER):
+
+❌ **Error 1**: Header: "Raiffeisen - Goffi" / Abajo: "CALLSHEET 2 of 2" → projectName = "CALLSHEET" 
+   - **Por qué está mal**: "CALLSHEET" es el tipo de documento, NO el proyecto
+   - **Correcto**: projectName = "Raiffeisen - Goffi" (el texto ANTES de CALLSHEET)
+
+❌ **Error 2**: "CALL SHEET - Production XYZ" → projectName = "CALL SHEET"
+   - **Por qué está mal**: "CALL SHEET" es genérico
+   - **Correcto**: projectName = "Production XYZ" (el texto DESPUÉS)
+
+❌ **Error 3**: Solo aparece "Disposición Diaria - 15/02/2024" → projectName = "Disposición Diaria"
+   - **Por qué está mal**: Es el tipo de documento
+   - **Correcto**: Buscar más arriba en el header o usar estrategias de último recurso
 
 ### ESTRATEGIAS DE ÚLTIMO RECURSO:
 

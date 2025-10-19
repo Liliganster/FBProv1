@@ -166,6 +166,36 @@ function isNonProductionCompany(company: string): boolean {
   return false;
 }
 
+// Document type keywords that should NEVER be a project name
+const DOCUMENT_TYPE_KEYWORDS = [
+  'callsheet', 'call sheet', 'call-sheet',
+  'hoja de rodaje', 'hoja rodaje',
+  'disposición diaria', 'disposicion diaria', 'disposición', 'disposicion',
+  'drehplan', 'tagesdisposition',
+  'production sheet', 'crew list', 'crew sheet',
+  'shooting schedule', 'schedule'
+];
+
+// Check if string is a document type (not a project name)
+function isDocumentType(s: string): boolean {
+  if (!s) return false;
+  const normalized = s.toLowerCase().trim();
+  
+  // Check exact match or if it starts with document type
+  for (const docType of DOCUMENT_TYPE_KEYWORDS) {
+    if (normalized === docType || normalized.startsWith(docType + ' ')) {
+      return true;
+    }
+  }
+  
+  // Pattern: "CALLSHEET 2 of 2", "Call Sheet #3", etc.
+  if (/^(call[\s-]?sheet|disposici[oó]n|drehplan)\s*(#?\d+|\d+\s*of\s*\d+)?$/i.test(normalized)) {
+    return true;
+  }
+  
+  return false;
+}
+
 // Heuristic: detect strings that look like company names (legal suffixes / studio keywords)
 function looksLikeCompanyName(s: string): boolean {
   if (!s) return false;
@@ -325,10 +355,16 @@ export function postProcessCrewFirstData(
     console.warn('[PostProcess] ⚠️ WARNING: No principal filming locations found after filtering!');
   }
   
-  // Guardrail: If the model returned a company-like string in projectName, clear it
+  // Guardrail 1: If the model returned a document type as projectName, clear it immediately
+  if (projectName && isDocumentType(projectName)) {
+    console.warn('[PostProcess] ❌ Rejected projectName - is document type (not project):', projectName);
+    projectName = '';
+  }
+  
+  // Guardrail 2: If the model returned a company-like string in projectName, clear it
   // so downstream fallbacks (file name / text heuristics) can recover a proper title.
   if (projectName && (looksLikeCompanyName(projectName) || isNonProductionCompany(projectName))) {
-    console.warn('[PostProcess] Replacing suspicious projectName that looks like a company:', projectName);
+    console.warn('[PostProcess] ❌ Rejected projectName - looks like a company:', projectName);
     projectName = '';
   }
   
