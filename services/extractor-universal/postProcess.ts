@@ -7,33 +7,41 @@ import type { CallsheetExtraction } from './config/schema';
  */
 
 // Keywords that indicate logistics or non-principal filming (NOT main filming locations)
+// Using word boundaries to avoid false positives (e.g., "Stadtpark" vs "parking")
 const NON_PRINCIPAL_KEYWORDS = [
-  // Logistics
-  'basis', 'base', 'basecamp', 
-  'parken', 'parking', 'parkplatz',
-  'aufenthalt', 
-  'kostüm', 'wardrobe', 'vestuario',
-  'maske', 'makeup', 'hair', 'peluquería',
-  'lunch', 'catering', 'essen',
-  'team', 'technik', 'office', 'meeting',
-  'transport', 'pickup', 'driver', 'shuttle',
-  'load', 'unload', 'holding',
-  'green room', 'production office', 
-  'mobile', 'trailer', 'wohnwagen',
-  'treffpunkt', 'meeting point',
-  'hospital', 'krankenhaus', 'arzt',
-  'toiletten', 'toilets', 'wc', 'restroom', 'sanitär',
+  // Logistics - word boundary patterns
+  { pattern: /\b(basis|basecamp)\b/i, description: 'base/basecamp' },
+  { pattern: /\b(parken|parking|parkplatz|parkhaus)\b/i, description: 'parking' },
+  { pattern: /\baufenthalt\b/i, description: 'crew rest area' },
+  { pattern: /\b(kostüm|wardrobe|vestuario)\b/i, description: 'wardrobe' },
+  { pattern: /\b(maske|makeup|hair|peluquería)\b/i, description: 'makeup/hair' },
+  { pattern: /\b(lunch|catering|essen)\b/i, description: 'catering' },
+  { pattern: /\b(team|technik|office|meeting)\b/i, description: 'office/meeting' },
+  { pattern: /\b(transport|pickup|driver|shuttle)\b/i, description: 'transport' },
+  { pattern: /\b(load|unload|holding)\b/i, description: 'loading area' },
+  { pattern: /\b(green room|production office)\b/i, description: 'production office' },
+  { pattern: /\b(mobile|trailer|wohnwagen)\b/i, description: 'trailer' },
+  { pattern: /\b(treffpunkt|meeting point)\b/i, description: 'meeting point' },
+  { pattern: /\b(hospital|krankenhaus|arzt)\b/i, description: 'hospital' },
+  { pattern: /\b(toiletten|toilets|wc|restroom|sanitär)\b/i, description: 'restrooms' },
   
   // Non-principal filming
-  'drone', 'drones', 'drohne', 'drohnen', 'dron', 'uav', 'aerial', 'aerials', 'luftaufnahmen', 'luftbild', 'luftbilder',
-  'b-unit', 'b unit', 'second unit', 'segunda unidad', '2. einheit', 'zweite einheit', '2ª unidad', '2da unidad',
-  'weather cover', 'schlechtwetter', 'wetteralternative', 'alternative', 'alternativa',
-  'backup', 'respaldo', 'ersatz'
+  { pattern: /\b(drone|drones|drohne|drohnen|dron|uav)\b/i, description: 'drones' },
+  { pattern: /\b(aerial|aerials|luftaufnahmen|luftbild|luftbilder)\b/i, description: 'aerial shots' },
+  { pattern: /\b(b-unit|b unit|second unit|segunda unidad|2\. einheit|zweite einheit|2ª unidad|2da unidad)\b/i, description: 'b-unit' },
+  { pattern: /\b(weather cover|schlechtwetter|wetteralternative)\b/i, description: 'weather cover' },
+  { pattern: /\b(backup|respaldo|ersatz)\b/i, description: 'backup' }
 ];
 
 // Hints that strongly indicate principal filming locations
 const PRINCIPAL_HINTS = [
-  'drehort', 'set', 'set principal', 'principal set', 'location', 'scene location', 'motiv', 'szene', 'filming', 'shooting', 'rodaje'
+  'drehort', 'set', 'set principal', 'principal set', 'location', 'scene location', 'motiv', 'szene', 'filming', 'shooting', 'rodaje', 'locación'
+];
+
+// Known location names that should NEVER be filtered (famous places)
+const PROTECTED_LOCATIONS = [
+  'stadtpark', 'central park', 'hyde park', 'volkspark', 'englischer garten',
+  'prater', 'tiergarten', 'jardines', 'parque', 'parc'
 ];
 
 /**
@@ -47,11 +55,20 @@ function isPrincipalFilmingLocation(location: string): boolean {
   }
 
   const normalized = location.toLowerCase().trim();
+  
+  // FIRST: Check if this is a protected location (famous places that should never be filtered)
+  for (const protectedLoc of PROTECTED_LOCATIONS) {
+    if (normalized.includes(protectedLoc)) {
+      console.log(`[PostProcess] ✅ Protected location (famous place): "${location}"`);
+      return true;
+    }
+  }
 
   // Filter out logistics and non-principal filming (drones, b-unit, weather cover, etc.)
-  for (const keyword of NON_PRINCIPAL_KEYWORDS) {
-    if (normalized.includes(keyword)) {
-      console.log(`[PostProcess] ❌ Filtered (non-principal/logistics): "${location}"`);
+  // Now using word boundaries to avoid false positives
+  for (const { pattern, description } of NON_PRINCIPAL_KEYWORDS) {
+    if (pattern.test(normalized)) {
+      console.log(`[PostProcess] ❌ Filtered (${description}): "${location}"`);
       return false;
     }
   }
@@ -85,7 +102,8 @@ function classifyContextAroundLocation(location: string, sourceText: string): 'p
     if (PRINCIPAL_HINTS.some(h => windowText.includes(h))) {
       foundPrincipal = true;
     }
-    if (NON_PRINCIPAL_KEYWORDS.some(k => windowText.includes(k))) {
+    // Check non-principal patterns using regex
+    if (NON_PRINCIPAL_KEYWORDS.some(({ pattern }) => pattern.test(windowText))) {
       foundNon = true;
     }
 

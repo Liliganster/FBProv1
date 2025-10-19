@@ -178,13 +178,27 @@ Si después de los 5 pasos NO has encontrado nada claro:
 - "Set: Hotel Imperial, Kärntner Ring 16" → Locación de rodaje
 - "Motiv: Stephansplatz, Wien" → Lugar de la escena
 - "Szene 15: Donauinsel" → Locación exterior
+- "Location 1: Stadtpark" → Parque público (filmación) ✅
+- "Set: Prater Wien" → Parque de atracciones (filmación) ✅
 
 **❌ LOGÍSTICA (IGNORAR)**:
 - "Basis: Parkplatz Donauinsel" → Donde aparca el equipo
 - "Catering: Suite Nico" → Donde come el equipo
 - "Kostüm: Trailer 5" → Vestuario del equipo
-- "Parken: Parkhaus Mitte" → Parking
+- "Parken: Parkhaus Mitte" → Parking (palabra "parken" = estacionamiento)
 - "Makeup: Keller, Raum 3" → Maquillaje
+- "Crew Parking: Área 5" → Parking del equipo ❌
+
+**⚠️ IMPORTANTE - NO CONFUNDIR PARQUES CON PARKING**:
+- "Stadtpark" = Parque público (FILMACIÓN) ✅
+- "Central Park" = Parque (FILMACIÓN) ✅
+- "Volkspark" = Parque (FILMACIÓN) ✅
+- "Parkplatz" = Parking/estacionamiento (LOGÍSTICA) ❌
+- "Parkhaus" = Edificio de parking (LOGÍSTICA) ❌
+- "Crew Parking" = Estacionamiento del equipo (LOGÍSTICA) ❌
+
+**Regla**: Si dice "park" en alemán/inglés/español como LUGAR (parque), es filmación.
+Si dice "parking", "parkplatz", "parkhaus", "aparcamiento" = logística.
 
 **🚫 CASOS ESPECIALES (IGNORAR)**:
 - "Drones: Área restringida XYZ" → NO es set principal, es equipo técnico
