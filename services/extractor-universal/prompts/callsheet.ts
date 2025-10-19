@@ -39,45 +39,92 @@ Los call sheets NO están estandarizados. Pueden ser:
 
 ---
 
-## CAMPO 2: projectName (TÍTULO DEL PROYECTO) ⚠️ CRÍTICO
+## CAMPO 2: projectName (TÍTULO DEL PROYECTO) ⚠️ CRÍTICO ⚠️
 
-**ESTE ES EL CAMPO MÁS IMPORTANTE - NUNCA debe quedar vacío**
+**🚨 ESTE ES EL CAMPO MÁS IMPORTANTE - NUNCA debe quedar vacío 🚨**
 
 **Qué buscar**: El nombre creativo del show/película/serie que se está rodando
-- **DÓNDE BUSCAR** (en orden de prioridad):
-  1. **ENCABEZADO PRINCIPAL** (primera página, arriba del todo - suele ser el título más grande)
-  2. **LOGOS o TÍTULOS decorativos** (primera página)
-  3. **"Projekt:", "Título:", "Serie:", "Film:", "Production Title:", "Show:"**
-  4. **Metadata o footer** (puede aparecer como copyright o producción)
-  5. **Nombre en cualquier parte del documento** (si es prominente y se repite)
 
-- **Ejemplos correctos**: 
-  - "Dark" (serie de Netflix)
-  - "El Reino" (serie española)
-  - "Vorstadtweiber" (serie austríaca)
-  - "Succession" (HBO)
-  - "Breaking Bad" (AMC)
-  - "1899" (Netflix)
-  - "Babylon Berlin" (Sky/ARD)
+### MÉTODO DE EXTRACCIÓN (aplicar en orden):
 
-- **NO confundir con** (estas NO son projectName):
-  - ❌ "Netflix" → es productora
-  - ❌ "UFA Fiction" → es productora
-  - ❌ "Warner Bros Television" → es productora
-  - ❌ "Wiedemann & Berg" → es productora
-  - ❌ "Bavaria Film" → es productora
+#### PASO 1: Buscar en ENCABEZADO PRINCIPAL (primeros 20% del documento)
+- El título suele estar en la **parte superior de la primera página**
+- Es el texto **MÁS GRANDE** o **MÁS PROMINENTE** visualmente
+- Puede estar en **MAYÚSCULAS**, **negrita**, o **centrado**
+- Busca líneas que contengan:
+  - Solo un nombre (sin "GmbH", "LLC", "Film", "Pictures", "Production")
+  - Puede tener códigos de proyecto como: "FUNDBOX", "DRK-S3", "REINO-EP5"
+  - Ejemplos: "DARK", "El Reino", "SUCCESSION", "1899", "FUNDBOX"
 
-**ESTRATEGIA DE BÚSQUEDA**:
-1. Lee la primera página COMPLETA antes de decidir
-2. Busca el texto MÁS PROMINENTE que sea un nombre creativo (no empresa)
-3. Si ves "Netflix Presents: Dark" → projectName = "Dark" (no "Netflix")
-4. Si ves "UFA Fiction - El Reino" → projectName = "El Reino" (no "UFA Fiction")
-5. Si hay dudas entre varios títulos, elige el que se repite más o el más prominente
+#### PASO 2: Buscar después de PALABRAS CLAVE
+Busca texto inmediatamente después de:
+- **Alemán**: "Projekt:", "Serie:", "Film:", "Titel:", "Produktion von:"
+- **Inglés**: "Project:", "Series:", "Film:", "Title:", "Show:", "Production:"
+- **Español**: "Proyecto:", "Serie:", "Película:", "Título:", "Producción:"
 
-**IMPORTANTE**:
-- ✅ **SIEMPRE debe tener valor** - Nunca devolver cadena vacía
-- ✅ Si hay varios candidatos, elige el título más probable de la producción
-- ✅ Si realmente NO encuentras título claro, usa "Untitled Project" como último recurso
+Ejemplo: "Project: FUNDBOX" → projectName = "FUNDBOX"
+
+#### PASO 3: Analizar PATRONES VISUALES
+- Líneas con **un solo texto grande y destacado** en el header
+- Texto que aparece **ANTES** de la fecha y detalles de producción
+- Códigos alfanuméricos cortos (4-12 caracteres) que parecen códigos de proyecto
+- Nombres que se **repiten** en el documento (especialmente en headers/footers)
+
+#### PASO 4: ELIMINAR FALSOS POSITIVOS
+Si encuentras un candidato, verifica que NO sea:
+- ❌ Nombre de productora (contiene: "GmbH", "LLC", "Ltd", "Inc", "Film", "Pictures", "Entertainment", "Productions", "Studios", "Media", "Production Company")
+- ❌ Broadcaster (Netflix, HBO, Amazon, BBC, ARD, ZDF, RTL, etc.)
+- ❌ Tipo de documento ("Call Sheet", "Callsheet", "Disposición", "Drehplan")
+- ❌ Nombre de locación ("Estudio 5", "Set A", "Location B")
+- ❌ Números de episodio solos ("Episode 5", "Folge 3", "EP101")
+
+#### PASO 5: EXTRACCIÓN INTELIGENTE CON SEPARADORES
+Si el texto tiene separadores, extrae la parte correcta:
+- "Netflix Presents: **Dark**" → projectName = "Dark"
+- "UFA Fiction - **El Reino**" → projectName = "El Reino"  
+- "**FUNDBOX** Call Sheet #3" → projectName = "FUNDBOX"
+- "Warner Bros / **Succession** / Episode 7" → projectName = "Succession"
+- "Bavaria Film GmbH | **Vorstadtweiber**" → projectName = "Vorstadtweiber"
+
+**Patrones comunes de separación**:
+- Después de ":", "-", "|", "/", "presents", "präsentiert", "presenta"
+- Antes de números de episodio, fechas, o detalles logísticos
+
+### EJEMPLOS DE EXTRACCIÓN CORRECTA:
+
+✅ **Caso 1**: "FUNDBOX - Call Sheet #3" → projectName = "FUNDBOX"
+✅ **Caso 2**: Header grande: "DARK" pequeño: "Netflix Original Series" → projectName = "DARK"
+✅ **Caso 3**: "Projekt: El Reino | Episode 5" → projectName = "El Reino"
+✅ **Caso 4**: "UFA Fiction GmbH presents BABYLON BERLIN" → projectName = "BABYLON BERLIN"
+✅ **Caso 5**: Footer: "© 2024 SUCCESSION Productions LLC" → projectName = "SUCCESSION"
+✅ **Caso 6**: "Call Sheet - 1899 - Tag 15" → projectName = "1899"
+
+### ESTRATEGIAS DE ÚLTIMO RECURSO:
+
+Si después de los 5 pasos NO has encontrado nada claro:
+
+1. **Buscar en nombres de archivo** (si aparece en el texto OCR):
+   - "FUNDBOX_call_sheet_3.pdf" → projectName = "FUNDBOX"
+
+2. **Buscar códigos alfanuméricos prominentes**:
+   - Códigos de 4-12 caracteres en mayúsculas en el header
+   - Ejemplo: "ABC123", "PROJ-X", "DRK-S3"
+
+3. **Inferir del contexto**:
+   - Si hay "Episode 5" pero no título → buscar en copyright/footer
+   - Si hay productora famosa → buscar el otro nombre prominente
+
+4. **ÚLTIMO RECURSO**: Si absolutamente no encuentras nada:
+   - Usa "Untitled Project" (pero esto debe ser extremadamente raro)
+
+### REGLAS FINALES:
+
+- ✅ **NUNCA devolver cadena vacía ("")** - siempre debe tener valor
+- ✅ Prefiere **nombres cortos y creativos** sobre nombres corporativos largos
+- ✅ Si hay **múltiples candidatos**, elige el más **prominente visualmente**
+- ✅ **Elimina** sufijos legales del nombre: "DARK GmbH" → "DARK"
+- ✅ **Normaliza mayúsculas**: "DARK" → "Dark" (capitalización natural)
+- ⚠️ Si tienes **duda entre dos opciones**, elige la que **NO** tiene sufijos corporativos
 - ✅ Prefiere títulos cortos y creativos sobre nombres corporativos largos
 
 **Razonamiento**: Como humano, ¿cuál es el TÍTULO creativo de la serie/película que se está rodando? (NO la empresa productora)

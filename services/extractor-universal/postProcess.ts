@@ -156,8 +156,93 @@ function looksLikeCompanyName(s: string): boolean {
     || /\b(produktion|production|productora|producer|producers)\b/.test(x);
 }
 
+/**
+ * Try to infer project name from filename
+ * Example: "FUNDBOX_call_sheet_3.pdf" → "FUNDBOX"
+ */
+function inferProjectNameFromFilename(fileName: string): string | null {
+  if (!fileName) return null;
+  
+  // Remove file extension
+  const nameWithoutExt = fileName.replace(/\.(pdf|png|jpg|jpeg|txt|csv)$/i, '');
+  
+  // Pattern 1: "PROJECTNAME_call_sheet_N" or "PROJECTNAME-call-sheet-N"
+  const match1 = nameWithoutExt.match(/^([A-Z][A-Z0-9_-]{2,20})[\s_-]*(call[\s_-]?sheet|hoja|dispo)/i);
+  if (match1 && match1[1]) {
+    const candidate = match1[1].replace(/[_-]/g, ' ').trim();
+    console.log(`[InferFromFilename] Pattern 1 match: "${candidate}"`);
+    return candidate;
+  }
+  
+  // Pattern 2: Just a project code (4-12 uppercase alphanumeric)
+  const match2 = nameWithoutExt.match(/^([A-Z][A-Z0-9]{3,11})$/);
+  if (match2 && match2[1]) {
+    console.log(`[InferFromFilename] Pattern 2 match: "${match2[1]}"`);
+    return match2[1];
+  }
+  
+  // Pattern 3: "ProjectName - Call Sheet" or "ProjectName_Call_Sheet"
+  const match3 = nameWithoutExt.match(/^([A-Za-z0-9][A-Za-z0-9\s]{2,30})[\s_-]+(call|sheet|hoja|dispo)/i);
+  if (match3 && match3[1]) {
+    const candidate = match3[1].trim();
+    console.log(`[InferFromFilename] Pattern 3 match: "${candidate}"`);
+    return candidate;
+  }
+  
+  return null;
+}
+
+/**
+ * Try to infer project name from various sources when AI extraction fails
+ * This is a fallback strategy to avoid "Proyecto Desconocido"
+ */
+function inferProjectNameFromContext(sourceText: string): string | null {
+  if (!sourceText) return null;
+  
+  // Strategy 1: Look for filename patterns in OCR text
+  // Common patterns: "PROJECTNAME_call_sheet_3.pdf", "PROJECTNAME - Call Sheet"
+  const filenameMatch = sourceText.match(/([A-Z][A-Z0-9_-]{3,20})[\s_-]*(call[\s_-]?sheet|hoja[\s_-]?de[\s_-]?rodaje|dispo)/i);
+  if (filenameMatch && filenameMatch[1]) {
+    const candidate = filenameMatch[1].replace(/[_-]/g, ' ').trim();
+    // Verify it's not a generic term
+    if (!['CALL', 'SHEET', 'HOJA', 'RODAJE', 'DISPO'].includes(candidate.toUpperCase())) {
+      console.log(`[InferProjectName] Found from filename pattern: "${candidate}"`);
+      return candidate;
+    }
+  }
+  
+  // Strategy 2: Look for project codes (alphanumeric 4-12 chars in all caps near top)
+  const topText = sourceText.slice(0, Math.min(sourceText.length, 1000));
+  const projectCodeMatch = topText.match(/\b([A-Z][A-Z0-9]{3,11})\b/);
+  if (projectCodeMatch && projectCodeMatch[1]) {
+    const candidate = projectCodeMatch[1];
+    // Exclude common false positives
+    const excludePatterns = ['CALL', 'SHEET', 'DATE', 'TIME', 'CREW', 'CAST', 'PAGE', 'PROD'];
+    if (!excludePatterns.includes(candidate)) {
+      console.log(`[InferProjectName] Found project code: "${candidate}"`);
+      return candidate;
+    }
+  }
+  
+  // Strategy 3: Look for "Project:" or "Serie:" keywords with value
+  const projectKeywordMatch = sourceText.match(/(?:project|serie|film|título|title|show):\s*([A-Za-z0-9][A-Za-z0-9\s-]{2,30})/i);
+  if (projectKeywordMatch && projectKeywordMatch[1]) {
+    const candidate = projectKeywordMatch[1].trim();
+    if (!looksLikeCompanyName(candidate) && !isNonProductionCompany(candidate)) {
+      console.log(`[InferProjectName] Found from keyword: "${candidate}"`);
+      return candidate;
+    }
+  }
+  
+  return null;
+}
+
 // Post-process extracted data - simple filtering only
-export function postProcessCrewFirstData(data: CallsheetExtraction, sourceText?: string): CallsheetExtraction {
+export function postProcessCrewFirstData(
+  data: CallsheetExtraction, 
+  sourceText?: string,
+  fileName?: string
+): CallsheetExtraction {
   const date = (data.date || '').trim();
   let projectName = (data.projectName || '').trim();
   
@@ -227,6 +312,36 @@ export function postProcessCrewFirstData(data: CallsheetExtraction, sourceText?:
   if (projectName && (looksLikeCompanyName(projectName) || isNonProductionCompany(projectName))) {
     console.warn('[PostProcess] Replacing suspicious projectName that looks like a company:', projectName);
     projectName = '';
+  }
+  
+  // NEW: If projectName is still empty, try to infer from context
+  if (!projectName && sourceText) {
+    console.warn('[PostProcess] ⚠️ projectName is empty, attempting to infer from context...');
+    const inferred = inferProjectNameFromContext(sourceText);
+    if (inferred) {
+      projectName = inferred;
+      console.log(`[PostProcess] ✅ Successfully inferred projectName from context: "${projectName}"`);
+    } else {
+      console.warn('[PostProcess] ❌ Could not infer projectName from context.');
+    }
+  }
+  
+  // NEW: If still empty, try to infer from filename
+  if (!projectName && fileName) {
+    console.warn('[PostProcess] ⚠️ projectName still empty, attempting to infer from filename...');
+    const inferredFromFile = inferProjectNameFromFilename(fileName);
+    if (inferredFromFile) {
+      projectName = inferredFromFile;
+      console.log(`[PostProcess] ✅ Successfully inferred projectName from filename: "${projectName}"`);
+    } else {
+      console.warn('[PostProcess] ❌ Could not infer projectName from filename.');
+    }
+  }
+  
+  // LAST RESORT: If still empty after all attempts, use "Untitled Project"
+  if (!projectName) {
+    console.warn('[PostProcess] ⚠️ All inference attempts failed. Using fallback: "Untitled Project"');
+    projectName = 'Untitled Project';
   }
 
   return { date, projectName, productionCompanies, locations };

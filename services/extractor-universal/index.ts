@@ -126,6 +126,10 @@ export async function extractUniversalStructured({
 }): Promise<CallsheetExtraction> {
   console.log('[ExtractorUniversal] Starting extraction:', { mode, provider, useCrewFirst, hasFile: !!input.file, hasText: !!input.text });
   
+  // Get filename if available for fallback inference
+  const fileName = input.file?.name || '';
+  console.log('[ExtractorUniversal] Filename:', fileName || 'N/A');
+  
   try {
     const normalized = mode === 'direct' ? await normalizeDirect(input) : await normalizeAgent(input);
     console.log('[ExtractorUniversal] Normalized text length:', normalized.text.length, 'source:', normalized.source);
@@ -165,13 +169,14 @@ export async function extractUniversalStructured({
         rawProjectName: parsed.projectName,
         productionCompanies: parsed.productionCompanies,
         date: parsed.date,
-        locationsCount: parsed.locations?.length
+        locationsCount: parsed.locations?.length,
+        fileName
       });
     } else {
       console.log('[ExtractorUniversal] ✓ Extracted projectName:', parsed.projectName);
     }
     
-    const processed = postProcessCrewFirstData(parsed, normalized.text);
+    const processed = postProcessCrewFirstData(parsed, normalized.text, fileName);
     console.log('[ExtractorUniversal] Post-processed result:', processed);
     
     return processed;
