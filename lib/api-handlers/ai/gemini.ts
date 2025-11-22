@@ -18,7 +18,9 @@ import { executeTool } from '../../agent/executor.js';
 
 type Mode = 'direct' | 'agent';
 
-const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-1.5-flash';
+// Modelo por defecto para Google AI Studio. El usuario ha indicado explícitamente usar gemini-2.5-flash.
+// Si defines GEMINI_MODEL en las variables de entorno, tendrá prioridad sobre este valor.
+const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
 
 function toJsonResponse(res: any, status: number, payload: unknown) {
   res.status(status).setHeader('Content-Type', 'application/json').send(JSON.stringify(payload));
