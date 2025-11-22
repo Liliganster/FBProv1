@@ -21,6 +21,7 @@ type Mode = 'direct' | 'agent';
 // Modelo por defecto para Google AI Studio. El usuario ha indicado explícitamente usar gemini-2.5-flash.
 // Si defines GEMINI_MODEL en las variables de entorno, tendrá prioridad sobre este valor.
 const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+const GEMINI_FALLBACK_MODEL = process.env.GEMINI_FALLBACK_MODEL || 'gemini-1.5-flash-002';
 
 function toJsonResponse(res: any, status: number, payload: unknown) {
   res.status(status).setHeader('Content-Type', 'application/json').send(JSON.stringify(payload));
@@ -63,33 +64,90 @@ async function runDirect(text: string, ai: GoogleGenAI, useCrewFirst = false): P
     : buildCallsheetPrompt(sanitizeModelText(text));
 
   console.log('[Gemini runDirect] Calling Gemini API...');
-  const result: any = await ai.models.generateContent({
+  const baseRequest: any = {
     model: GEMINI_MODEL,
     contents: [{ role: 'user', parts: [{ text: prompt }] }],
-    generationConfig: {
-      responseMimeType: 'application/json',
-      responseSchema: useCrewFirst ? (crewFirstCallsheetSchema as any) : (callsheetSchema as any),
-    },
     safetySettings: [
       { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_NONE' },
       { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_NONE' },
       { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_NONE' },
       { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' },
-    ]
+    ],
+  };
+
+  const pickFirstTextPart = (payload: any): string => {
+    if (!payload) return '';
+    if (typeof payload.text === 'function') {
+      const val = payload.text();
+      if (typeof val === 'string' && val.trim()) return val;
+    }
+    const parts = payload?.response?.candidates?.[0]?.content?.parts || [];
+    for (const part of parts) {
+      if (part && typeof part.text === 'string' && part.text.trim()) {
+        return part.text;
+      }
+    }
+    return '';
+  };
+
+  // Primer intento: modo JSON estructurado con responseSchema
+  const result: any = await ai.models.generateContent({
+    ...baseRequest,
+    generationConfig: {
+      responseMimeType: 'application/json',
+      responseSchema: useCrewFirst ? (crewFirstCallsheetSchema as any) : (callsheetSchema as any),
+    },
   } as any);
 
   // Log full result for debugging
-  console.log('[Gemini runDirect] Full Result:', JSON.stringify(result, null, 2));
+  console.log('[Gemini runDirect] Full Result (schema):', JSON.stringify(result, null, 2));
 
-  const output =
-    typeof result.text === 'function'
-      ? result.text()
-      : result?.response?.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
+  let output = pickFirstTextPart(result);
+  console.log('[Gemini runDirect] Raw output length (schema):', output?.length || 0);
 
-  console.log('[Gemini runDirect] Raw output length:', output?.length || 0);
+  // Algunos modelos (como ciertas versiones de 2.5) pueden devolver 200 pero sin contenido cuando se usa responseSchema.
+  // En ese caso, reintentamos sin responseSchema para evitar el error "Empty response from Gemini".
+  if (!output) {
+    console.warn('[Gemini runDirect] Empty response with schema, retrying without responseSchema');
+
+    const fallbackResult: any = await ai.models.generateContent({
+      ...baseRequest,
+      generationConfig: {
+        // Sin responseSchema ni responseMimeType forzado: el prompt ya exige JSON.
+        temperature: 0,
+      },
+    } as any);
+
+    console.log('[Gemini runDirect] Full Result (fallback same model):', JSON.stringify(fallbackResult, null, 2));
+
+    output = pickFirstTextPart(fallbackResult);
+    console.log('[Gemini runDirect] Raw output length (fallback same model):', output?.length || 0);
+  }
+
+  // Si seguimos sin contenido, intentamos con modelo de respaldo (si está configurado y es distinto)
+  if (!output && GEMINI_FALLBACK_MODEL && GEMINI_FALLBACK_MODEL !== GEMINI_MODEL) {
+    console.warn(`[Gemini runDirect] Empty response from model "${GEMINI_MODEL}", retrying with fallback model "${GEMINI_FALLBACK_MODEL}"`);
+
+    const fallbackBaseRequest: any = {
+      ...baseRequest,
+      model: GEMINI_FALLBACK_MODEL,
+    };
+
+    const fbResult: any = await ai.models.generateContent({
+      ...fallbackBaseRequest,
+      generationConfig: {
+        temperature: 0,
+      },
+    } as any);
+
+    console.log('[Gemini runDirect] Full Result (fallback model):', JSON.stringify(fbResult, null, 2));
+
+    output = pickFirstTextPart(fbResult);
+    console.log('[Gemini runDirect] Raw output length (fallback model):', output?.length || 0);
+  }
 
   if (!output) {
-    console.error('[Gemini runDirect] Empty response from Gemini');
+    console.error('[Gemini runDirect] Empty response from Gemini after all fallbacks');
     throw new Error('Empty response from Gemini');
   }
 

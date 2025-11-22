@@ -271,31 +271,54 @@ app.post('/api/ai/gemini', async (req, res) => {
     // Use the same default model as the serverless handler (Gemini 2.5 Flash),
     // but allow overriding via GEMINI_MODEL.
     const model = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
 
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{
-          parts: [{ text }]
-        }],
-        generationConfig: {
-          temperature: 0,
-          responseMimeType: 'application/json'
-        }
-      })
-    });
+    const callGeminiOnce = async (opts = { jsonMime: true }) => {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+      const generationConfig = opts.jsonMime
+        ? { temperature: 0, responseMimeType: 'application/json' }
+        : { temperature: 0 };
 
-    if (!response.ok) {
-      const detail = await response.text();
-      console.error('[dev-server] Gemini error:', detail);
-      return res.status(502).json({ error: 'Gemini request failed', details: detail });
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text }] }],
+          generationConfig
+        })
+      });
+
+      if (!response.ok) {
+        const detail = await response.text();
+        console.error('[dev-server] Gemini error:', detail);
+        throw new Error(detail || `Gemini HTTP ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log('[dev-server] Gemini raw data:', JSON.stringify(data, null, 2));
+
+      const content =
+        data?.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
+      return typeof content === 'string' ? content : '';
+    };
+
+    let content = '';
+
+    try {
+      // Primer intento: con responseMimeType JSON
+      content = await callGeminiOnce({ jsonMime: true });
+      console.log('[dev-server] Gemini content length (jsonMime):', content.length);
+    } catch (e) {
+      console.warn('[dev-server] Gemini call with jsonMime failed, will retry without jsonMime:', e?.message || e);
     }
 
-    const data = await response.json();
-    const content = data?.candidates?.[0]?.content?.parts?.[0]?.text;
     if (!content) {
+      console.warn('[dev-server] Empty response with jsonMime, retrying without responseMimeType');
+      content = await callGeminiOnce({ jsonMime: false });
+      console.log('[dev-server] Gemini content length (fallback):', content.length);
+    }
+
+    if (!content) {
+      console.error('[dev-server] Empty response from Gemini after fallback');
       return res.status(500).json({ error: 'Empty response from Gemini' });
     }
 
