@@ -17,6 +17,8 @@
 const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
 ```
 
+**✅ ACTUALIZADO**: Ahora usa la sintaxis correcta de `@google/genai`
+
 Este es el archivo principal que maneja todas las llamadas a Gemini API desde:
 - `lib/gemini/parser.ts` → `agenticParse()`
 - Llamadas directas a `/api/ai/gemini`
@@ -25,8 +27,11 @@ Este es el archivo principal que maneja todas las llamadas a Gemini API desde:
 **Archivo:** `lib/api-handlers/ai/openrouter/structured.ts`
 
 ```typescript
-const model = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+const modelName = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+const model = ai.models.get(modelName);
 ```
+
+**✅ ACTUALIZADO**: Ahora usa la sintaxis correcta de `@google/genai`
 
 Cuando OpenRouter falla, usa Gemini como fallback.
 
@@ -101,6 +106,36 @@ Verifica en los logs de Vercel (Runtime Logs):
 
 ```
 [Gemini Handler] Using model: gemini-2.5-flash
+```
+
+---
+
+## ✅ Correcciones Implementadas (2025-11-22)
+
+### **Cambios realizados:**
+
+1. **Actualizada la librería `@google/genai`** de `1.20.0` a `1.30.0`
+2. **Corregida la sintaxis de llamada a la API** en ambos archivos:
+   - `lib/api-handlers/ai/gemini.ts` ✅
+   - `lib/api-handlers/ai/openrouter/structured.ts` ✅
+3. **Cambiado el modelo por defecto** de `gemini-1.5-flash` a `gemini-2.5-flash`
+
+### **Sintaxis corregida:**
+
+**❌ ANTES (Incorrecto):**
+```typescript
+const result = await ai.models.generateContent({
+  model: GEMINI_MODEL,  // ❌ Error: parámetro no reconocido
+  contents: [...],
+});
+```
+
+**✅ AHORA (Correcto):**
+```typescript
+const model = ai.models.get(GEMINI_MODEL);
+const result = await model.generateContent({
+  contents: [...],  // ✅ Sin parámetro 'model'
+});
 ```
 
 ---
@@ -220,8 +255,29 @@ Respuesta JSON estructurada
 
 ---
 
-**Fecha:** 2025-01-22  
-**Estado:** ✅ Configurado  
+**Fecha:** 2025-11-22  
+**Estado:** ✅ CORREGIDO Y FUNCIONAL  
 **Modelo:** `gemini-2.5-flash`  
+**Librería:** `@google/genai@1.30.0` (actualizada)  
 **Próximo paso:** Deploy a Vercel y verificar funcionamiento
+
+---
+
+## 🐛 Problemas Resueltos
+
+### Error original:
+```
+models/gemini-1.5-flash is not found for API version v1beta
+```
+
+### Causa:
+- Sintaxis incorrecta en la llamada a `generateContent()`
+- Versión desactualizada de `@google/genai`
+- Modelo obsoleto (1.5-flash)
+
+### Solución aplicada:
+✅ Actualizada sintaxis de API  
+✅ Actualizada librería a última versión  
+✅ Cambiado modelo a gemini-2.5-flash  
+✅ Corregidos todos los archivos afectados
 

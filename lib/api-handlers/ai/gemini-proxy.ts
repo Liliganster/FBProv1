@@ -116,7 +116,7 @@ export default async function handler(
   }
 
   try {
-    const { prompt, model = 'gemini-1.5-flash', useUserApiKey, userId }: GeminiRequest = req.body;
+    const { prompt, model = 'gemini-2.5-flash', useUserApiKey, userId }: GeminiRequest = req.body;
 
     // Validate input
     if (!prompt || typeof prompt !== 'string') {
