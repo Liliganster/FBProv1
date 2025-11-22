@@ -248,12 +248,14 @@ async function fallbackWithGemini(rawText: string, useCrewFirst: boolean): Promi
   const text = sanitizeModelText(rawText);
   const prompt = useCrewFirst ? buildCrewFirstDirectPrompt(text) : buildDirectPrompt(text);
 
-  const model = process.env.GEMINI_MODEL || 'gemini-1.5-flash';
+  const modelName = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
   const result: any = await ai.models.generateContent({
-    model,
+    model: modelName,
     contents: [{ role: 'user', parts: [{ text: prompt }] }],
-    responseMimeType: 'application/json',
-    responseSchema: useCrewFirst ? (crewFirstCallsheetSchema as any) : (callsheetSchema as any),
+    generationConfig: {
+      responseMimeType: 'application/json',
+      responseSchema: useCrewFirst ? (crewFirstCallsheetSchema as any) : (callsheetSchema as any),
+    },
   } as any);
 
   const output = typeof result.text === 'function'

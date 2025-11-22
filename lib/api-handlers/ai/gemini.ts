@@ -18,7 +18,7 @@ import { executeTool } from '../../agent/executor.js';
 
 type Mode = 'direct' | 'agent';
 
-const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-1.5-flash';
+const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
 
 function toJsonResponse(res: any, status: number, payload: unknown) {
   res.status(status).setHeader('Content-Type', 'application/json').send(JSON.stringify(payload));
