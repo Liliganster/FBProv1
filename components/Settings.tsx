@@ -278,34 +278,72 @@ const SettingsView: React.FC<{
                     <div className="space-y-4">
                         <h2 className="text-xl font-semibold text-white">{t('settings_api_title')}</h2>
                         <div className="space-y-6">
-                            <div className="space-y-2 p-4 border border-gray-700 rounded-lg">
-                                <h3 className="text-lg font-medium mb-2 text-on-surface-dark">{t('settings_api_ai_title')}</h3>
-                                <ProviderConfigContainer>
-                                    <InputField 
-                                        label={t('settings_api_or_key')}
-                                        name="openRouterApiKey" 
-                                        value={localProfile.openRouterApiKey} 
-                                        onChange={handleProfileChange} 
-                                        placeholder="sk-or-..."
-                                        type="password"
-                                    />
-                                    <ModelSelect
-                                         id="openRouterModel"
-                                         name="openRouterModel"
-                                         label={t('settings_api_or_model')}
-                                         value={localProfile.openRouterModel}
-                                         onChange={handleProfileChange}
-                                         isLoading={isFetchingOrModels}
-                                         error={fetchOrModelsError}
-                                         models={openRouterModels}
-                                         disabled={!localProfile.openRouterApiKey}
-                                         loadingText={t('settings_api_or_loading')}
-                                         errorText={fetchOrModelsError || t('settings_api_or_enter_key')}
-                                         noModelsText={t('settings_api_or_enter_key')}
-                                         defaultOptionText={t('settings_api_or_select')}
-                                     />
-                                    <p className="text-xs text-on-surface-dark-secondary mt-1">{t('settings_api_or_info')}</p>
-                                </ProviderConfigContainer>
+                            {/* AI Configuration Section */}
+                            <div className="space-y-4 p-4 border border-gray-700 rounded-lg bg-gray-800/50">
+                                <h3 className="text-lg font-medium mb-2 text-white">🤖 {t('settings_api_ai_title')}</h3>
+                                
+                                {/* Info Banner */}
+                                <div className="p-3 bg-blue-900/20 border border-blue-700/50 rounded">
+                                    <p className="text-sm text-blue-200">
+                                        ℹ️ <strong>{t('settings_api_ai_default_info')}</strong>
+                                    </p>
+                                </div>
+
+                                {/* Gemini Status (Server) */}
+                                <div className="flex items-center justify-between p-3 bg-green-900/20 border border-green-700/50 rounded">
+                                    <div>
+                                        <p className="font-medium text-green-200">{t('settings_api_gemini_status')}</p>
+                                        <p className="text-xs text-green-300">{t('settings_api_gemini_desc')}</p>
+                                    </div>
+                                    <span className="text-green-400">✅ {t('settings_api_gemini_active')}</span>
+                                </div>
+
+                                {/* OpenRouter Configuration (User) */}
+                                <div className="space-y-3 p-3 border border-gray-600 rounded">
+                                    <div className="flex items-center justify-between">
+                                        <div>
+                                            <p className="font-medium text-on-surface-dark">{t('settings_api_openrouter_optional')}</p>
+                                            <p className="text-xs text-gray-400">{t('settings_api_openrouter_desc')}</p>
+                                        </div>
+                                        {localProfile.openRouterApiKey ? (
+                                            <span className="text-green-400">✅ {t('settings_api_openrouter_configured')}</span>
+                                        ) : (
+                                            <span className="text-gray-500">⚪ {t('settings_api_openrouter_not_configured')}</span>
+                                        )}
+                                    </div>
+
+                                    <ProviderConfigContainer>
+                                        <InputField 
+                                            label={t('settings_api_or_key')}
+                                            name="openRouterApiKey" 
+                                            value={localProfile.openRouterApiKey} 
+                                            onChange={handleProfileChange} 
+                                            placeholder="sk-or-v1-..."
+                                            type="password"
+                                        />
+                                        <ModelSelect
+                                            id="openRouterModel"
+                                            name="openRouterModel"
+                                            label={t('settings_api_or_model')}
+                                            value={localProfile.openRouterModel}
+                                            onChange={handleProfileChange}
+                                            isLoading={isFetchingOrModels}
+                                            error={fetchOrModelsError}
+                                            models={openRouterModels}
+                                            disabled={!localProfile.openRouterApiKey}
+                                            loadingText={t('settings_api_or_loading')}
+                                            errorText={fetchOrModelsError || t('settings_api_or_enter_key')}
+                                            noModelsText={t('settings_api_or_enter_key')}
+                                            defaultOptionText={t('settings_api_or_select')}
+                                        />
+                                        <p className="text-xs text-on-surface-dark-secondary mt-1">
+                                            {t('settings_api_or_info')}
+                                        </p>
+                                        <p className="text-xs text-gray-400">
+                                            💡 {t('settings_api_or_get_key')} <a href="https://openrouter.ai/" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">openrouter.ai</a>
+                                        </p>
+                                    </ProviderConfigContainer>
+                                </div>
                             </div>
                             
                             {showExtractorUi && (

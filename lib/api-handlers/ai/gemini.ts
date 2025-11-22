@@ -121,23 +121,26 @@ async function runAgent(text: string, ai: GoogleGenAI, useCrewFirst = false): Pr
 
   const systemInstruction = useCrewFirst ? SYSTEM_INSTRUCTION_CREW_FIRST_AGENT : SYSTEM_INSTRUCTION_AGENT;
 
-  const messages: any[] = [
-    { role: 'system', content: systemInstruction },
-    { role: 'user', content: buildAgentPrompt(text) },
+  // Formato correcto para Gemini API - usar "contents" con "parts"
+  const contents: any[] = [
+    { role: 'user', parts: [{ text: systemInstruction + '\n\n' + buildAgentPrompt(text) }] }
   ];
 
   for (let attempt = 0; attempt < 4; attempt++) {
     console.log(`[Gemini runAgent] Attempt ${attempt + 1}/4`);
     
+    // Usar "contents" en lugar de "messages"
     const response: any = await ai.models.generateContent({
       model: GEMINI_MODEL,
-      messages,
+      contents,
       // Use our tool declarations (Gemini-compatible)
       tools: [{ functionDeclarations: toolDeclarations.map((t: any) => t.function) }],
       toolConfig: { functionCallingConfig: { mode: 'AUTO' } },
-      temperature: 0,
-      responseMimeType: 'application/json',
-      responseSchema: useCrewFirst ? (crewFirstCallsheetSchema as any) : (callsheetSchema as any),
+      generationConfig: {
+        temperature: 0,
+        responseMimeType: 'application/json',
+        responseSchema: useCrewFirst ? (crewFirstCallsheetSchema as any) : (callsheetSchema as any),
+      }
     } as any);
 
     const parts = response?.response?.candidates?.[0]?.content?.parts || [];
@@ -154,10 +157,27 @@ async function runAgent(text: string, ai: GoogleGenAI, useCrewFirst = false): Pr
       try {
         const result = await tool(args || {});
         console.log('[Gemini runAgent] Tool result:', result);
-        messages.push({ role: 'tool', name, content: JSON.stringify(result) });
+        // Agregar resultado de la herramienta en formato correcto
+        contents.push({ 
+          role: 'function',
+          parts: [{ 
+            functionResponse: {
+              name,
+              response: result
+            }
+          }]
+        });
       } catch (error) {
         console.error('[Gemini runAgent] Tool error:', error);
-        messages.push({ role: 'tool', name, content: JSON.stringify({ error: (error as Error).message }) });
+        contents.push({ 
+          role: 'function',
+          parts: [{ 
+            functionResponse: {
+              name,
+              response: { error: (error as Error).message }
+            }
+          }]
+        });
       }
       continue;
     }

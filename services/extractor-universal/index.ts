@@ -102,12 +102,14 @@ function resolveProvider(
     openRouterApiKey: creds?.openRouterApiKey ?? null,
     openRouterModel: creds?.openRouterModel ?? null,
   };
+  
+  // Casos explícitos: el usuario eligió específicamente un proveedor
   if (provider === 'gemini') return { provider: 'gemini', creds: c };
   if (provider === 'openrouter') return { provider: 'openrouter', creds: c };
-  // auto: prefer OpenRouter if OpenRouter key is present; otherwise use Gemini
-  if (c.openRouterApiKey && (c.openRouterModel || true)) {
-    return { provider: 'openrouter', creds: c };
-  }
+  
+  // Caso 'auto': SIEMPRE usar Gemini (servidor) por defecto
+  // Gemini es gratis para el usuario (usa API key del servidor)
+  // El usuario puede elegir explícitamente 'openrouter' si configuró su API key
   return { provider: 'gemini', creds: c };
 }
 
