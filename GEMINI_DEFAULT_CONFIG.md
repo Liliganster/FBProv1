@@ -138,7 +138,7 @@ Crear archivo `.env.local`:
 ```env
 # Gemini (OBLIGATORIO - Proveedor por defecto)
 GEMINI_API_KEY=AIzaSyXXXXXXXXXXXXXXXXXXXXXXXX
-GEMINI_MODEL=gemini-2.0-flash-001
+GEMINI_MODEL=gemini-2.5-flash
 
 # Supabase (OBLIGATORIO)
 VITE_SUPABASE_URL=https://tu-proyecto.supabase.co

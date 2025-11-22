@@ -18,7 +18,7 @@ import { executeTool } from '../../agent/executor.js';
 
 type Mode = 'direct' | 'agent';
 
-const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-2.0-flash-001';
+const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
 
 function toJsonResponse(res: any, status: number, payload: unknown) {
   res.status(status).setHeader('Content-Type', 'application/json').send(JSON.stringify(payload));
@@ -64,8 +64,10 @@ async function runDirect(text: string, ai: GoogleGenAI, useCrewFirst = false): P
   const result: any = await ai.models.generateContent({
     model: GEMINI_MODEL,
     contents: [{ role: 'user', parts: [{ text: prompt }] }],
-    responseMimeType: 'application/json',
-    responseSchema: useCrewFirst ? (crewFirstCallsheetSchema as any) : (callsheetSchema as any),
+    generationConfig: {
+      responseMimeType: 'application/json',
+      responseSchema: useCrewFirst ? (crewFirstCallsheetSchema as any) : (callsheetSchema as any),
+    }
   } as any);
 
   const output =
@@ -252,9 +254,11 @@ async function geminiHandler(req: any, res: any) {
   }
 
   console.log(`[Gemini Handler] Processing in ${mode} mode, useCrewFirst: ${useCrewFirst}, text length: ${text.length}`);
+  console.log(`[Gemini Handler] Using API key: ${apiKey.substring(0, 10)}...`);
+  console.log(`[Gemini Handler] Using model: ${GEMINI_MODEL}`);
 
   try {
-    const ai = new GoogleGenAI({ apiKey });
+    const ai = new GoogleGenAI(apiKey);
     const extraction = mode === 'agent'
       ? await runAgent(text, ai, useCrewFirst)
       : await runDirect(text, ai, useCrewFirst);
@@ -263,6 +267,7 @@ async function geminiHandler(req: any, res: any) {
     toJsonResponse(res, 200, extraction);
   } catch (error) {
     console.error('[Gemini Handler] Error:', error);
+    console.error('[Gemini Handler] Error stack:', (error as Error).stack);
     toJsonResponse(res, 500, { error: 'Gemini request failed', details: (error as Error).message });
   }
 }
