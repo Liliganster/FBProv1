@@ -258,11 +258,11 @@ async function geminiHandler(req: any, res: any) {
   console.log(`[Gemini Handler] Using model: ${GEMINI_MODEL}`);
 
   try {
-    const ai = new GoogleGenAI(apiKey);
+    const ai = new GoogleGenAI({ apiKey });
     const extraction = mode === 'agent'
       ? await runAgent(text, ai, useCrewFirst)
       : await runDirect(text, ai, useCrewFirst);
-    
+
     console.log('[Gemini Handler] Extraction successful:', extraction);
     toJsonResponse(res, 200, extraction);
   } catch (error) {
