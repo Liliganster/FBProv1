@@ -18,7 +18,7 @@ import { executeTool } from '../../agent/executor.js';
 
 type Mode = 'direct' | 'agent';
 
-const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-1.5-flash';
 
 function toJsonResponse(res: any, status: number, payload: unknown) {
   res.status(status).setHeader('Content-Type', 'application/json').send(JSON.stringify(payload));
@@ -67,8 +67,17 @@ async function runDirect(text: string, ai: GoogleGenAI, useCrewFirst = false): P
     generationConfig: {
       responseMimeType: 'application/json',
       responseSchema: useCrewFirst ? (crewFirstCallsheetSchema as any) : (callsheetSchema as any),
-    }
+    },
+    safetySettings: [
+      { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_NONE' },
+      { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_NONE' },
+      { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_NONE' },
+      { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' },
+    ]
   } as any);
+
+  // Log full result for debugging
+  console.log('[Gemini runDirect] Full Result:', JSON.stringify(result, null, 2));
 
   const output =
     typeof result.text === 'function'
@@ -128,8 +137,10 @@ async function runAgent(text: string, ai: GoogleGenAI, useCrewFirst = false): Pr
     { role: 'user', parts: [{ text: systemInstruction + '\n\n' + buildAgentPrompt(text) }] }
   ];
 
-  for (let attempt = 0; attempt < 4; attempt++) {
-    console.log(`[Gemini runAgent] Attempt ${attempt + 1}/4`);
+  // Limit to 2 attempts to reduce execution time (important for Vercel Hobby 10s timeout)
+  const maxAttempts = 2;
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    console.log(`[Gemini runAgent] Attempt ${attempt + 1}/${maxAttempts}`);
     
     // Usar "contents" en lugar de "messages"
     const response: any = await ai.models.generateContent({
@@ -142,8 +153,17 @@ async function runAgent(text: string, ai: GoogleGenAI, useCrewFirst = false): Pr
         temperature: 0,
         responseMimeType: 'application/json',
         responseSchema: useCrewFirst ? (crewFirstCallsheetSchema as any) : (callsheetSchema as any),
-      }
+      },
+      safetySettings: [
+        { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_NONE' },
+        { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_NONE' },
+        { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_NONE' },
+        { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' },
+      ]
     } as any);
+
+    // Log full response for debugging
+    console.log('[Gemini runAgent] Full Response:', JSON.stringify(response, null, 2));
 
     const parts = response?.response?.candidates?.[0]?.content?.parts || [];
     const fnCall = parts.find((p: any) => p?.functionCall);
