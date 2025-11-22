@@ -268,8 +268,12 @@ app.post('/api/ai/gemini', async (req, res) => {
     console.log(`[dev-server] Gemini request: mode=${mode}, textLength=${text.length}, useCrewFirst=${useCrewFirst}`);
 
     // Forward to Google Gemini API
-    // Note: This is a simplified version. For full implementation, use the actual handler
-    const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=' + apiKey, {
+    // Use the same default model as the serverless handler (Gemini 2.5 Flash),
+    // but allow overriding via GEMINI_MODEL.
+    const model = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+
+    const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
