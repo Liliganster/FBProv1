@@ -256,6 +256,35 @@ Si dice "parking", "parkplatz", "parkhaus", "aparcamiento" = logística.
 - "Weather Cover: Alternativa interior" → Ubicación de respaldo, NO principal
 - "Pickup Point: Estación central" → Punto de recogida, NO filmación
 
+**🚨 MUY IMPORTANTE - NO EXTRAER PALABRAS DE TRANSPORTE 🚨**:
+
+**❌ NUNCA extraigas estas palabras (NO son direcciones válidas)**:
+- "TAXI", "Taxi", "taxi" → Medio de transporte, NO una locación
+- "UBER", "Uber" → Servicio de transporte, NO una locación
+- "BUS", "Bus" → Medio de transporte, NO una locación
+- "SHUTTLE", "Shuttle" → Servicio de transporte, NO una locación
+- "CAR", "Car", "Auto" → Vehículo, NO una locación
+- "TRANSPORT", "Transport", "Transporte" → Servicio, NO una locación
+- "DRIVER", "Driver", "Fahrer" → Persona, NO una locación
+- "PICK UP", "Pick-up", "Abholung" → Acción, NO una locación
+- "DROP OFF", "Drop-off" → Acción, NO una locación
+- "TRANSFER" → Acción, NO una locación
+
+**Regla crítica**: Si una línea solo contiene una palabra de transporte SIN una dirección física asociada, NO la extraigas.
+
+**Ejemplos**:
+- ❌ "TAXI" → NO extraer (solo palabra de transporte)
+- ❌ "Transport: UBER" → NO extraer (solo palabra de transporte)
+- ❌ "Abholung: TAXI am Set" → NO extraer (información de transporte)
+- ✅ "Taxi to: Stephansplatz, 1010 Wien" → EXTRAER: "Stephansplatz, 1010 Wien" (dirección válida después de "to:")
+- ✅ "Pick up at: Hauptbahnhof, Wien" → EXTRAER: "Hauptbahnhof, Wien" (locación válida)
+
+**¿Qué SÍ es válido?**:
+- ✅ Direcciones físicas: "Kärntner Ring 16, 1010 Wien"
+- ✅ Landmarks famosos: "Stephansdom", "Schloss Schönbrunn", "Central Park"
+- ✅ Lugares conocidos con ciudad: "Hauptbahnhof, Wien", "Times Square, New York"
+- ✅ Plazas/Parques/Monumentos: "Stephansplatz, Wien", "Stadtpark"
+
 ### Reglas de contexto:
 
 1. **Lee el CONTEXTO**: No te guíes solo por palabras. Lee la frase completa.
