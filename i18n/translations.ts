@@ -1838,10 +1838,6 @@ export const translations = {
     co2_recommendations_title: 'Recomendaciones',
     co2_recommendation_combine: 'Combina múltiples viajes a un destino para mayor eficiencia',
     co2_recommendation_transport: 'Usa transporte público para distancias cortas cuando sea posible',
-    
-    co2_ranking_title: 'Ranking de CO₂',
-    co2_ranking_card_description: 'Evalúa el impacto ambiental de tus viajes y compáralos',
-    co2_results_title: 'Resultados del Ranking CO₂',
     co2_export_data: 'Exportar Datos',
     
     // Route Templates View
@@ -1981,14 +1977,6 @@ export const translations = {
     rate_per_km_trip: 'Tarifa de Viaje (€/km)',
     rate_per_km_trip_placeholder: 'Por defecto (del proyecto/perfil)',
     passenger_surcharge_rate: 'Recargo por pasajero (€/km)',
-
-    // CO2 Analysis and Welcome States
-    co2_welcome_title: 'Configurar Análisis de CO₂',
-    co2_welcome_desc: 'Configura tus preferencias de análisis de emisiones para comenzar a ver los datos.',
-    co2_results_title: 'Emisiones de CO₂ por Viaje',
-    co2_metric_title: 'Emisiones Totales',
-    co2_metric_desc: 'kg CO₂ totales basados en viajes filtrados',
-    co2_metric_empty: 'Configura los ajustes para ver los datos',
 
     // Extractor
     extractor_title: 'Extractor de Hoja de Rodaje',
