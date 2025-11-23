@@ -270,7 +270,7 @@ app.post('/api/ai/gemini', async (req, res) => {
     // Forward to Google Gemini API
     // Use the same default model as the serverless handler (Gemini 2.5 Flash),
     // but allow overriding via GEMINI_MODEL.
-    const model = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+    const model = (process.env.GEMINI_MODEL || 'gemini-2.5-flash').trim() || 'gemini-2.5-flash';
 
     const callGeminiOnce = async (opts = { jsonMime: true }) => {
       const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;

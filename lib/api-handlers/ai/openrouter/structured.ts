@@ -249,7 +249,7 @@ async function fallbackWithGemini(rawText: string, useCrewFirst: boolean): Promi
   const prompt = useCrewFirst ? buildCrewFirstDirectPrompt(text) : buildDirectPrompt(text);
 
   // Usar el mismo modelo por defecto que el handler principal de Gemini
-  const model = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+  const model = (process.env.GEMINI_MODEL || 'gemini-2.5-flash').trim() || 'gemini-2.5-flash';
   const result: any = await ai.models.generateContent({
     model,
     contents: [{ role: 'user', parts: [{ text: prompt }] }],
