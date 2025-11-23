@@ -80,6 +80,6 @@ export function getCO2EfficiencyRating(efficiency: number): {
   } else if (efficiency <= 0.25) {
     return { level: 'poor', color: 'text-yellow-400', label: 'poor' };
   } else {
-    return { level: 'very-poor', color: 'text-red-400', label: 'very-poor' };
+    return { level: 'very-poor', color: 'text-red-400', label: 'very_poor' };
   }
 }
