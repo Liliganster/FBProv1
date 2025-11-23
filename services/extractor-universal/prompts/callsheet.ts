@@ -193,113 +193,23 @@ Si después de los 5 pasos NO has encontrado nada claro:
 
 ## CAMPO 4: locations (UBICACIONES DE FILMACIÓN)
 
-### ESTO ES LO MÁS IMPORTANTE - Lee con atención:
+**Tu misión**: Extraer SOLO direcciones físicas válidas donde se FILMA (donde ruedan las cámaras) **del día específico de esta callsheet**.
 
-**Tu misión**: Extraer SOLO las ubicaciones donde se FILMA (donde ruedan las cámaras) **EN EL DÍA ESPECÍFICO DE ESTA CALLSHEET**
+### Principios fundamentales:
 
-### 🚨 REGLA CRÍTICA - SOLO UN DÍA 🚨
+1. **COMPRENDE EL CONTEXTO**: Lee el documento completo. Las callsheets no están estandarizadas - entiende qué significa cada sección.
 
-**⚠️ EXTRAE ÚNICAMENTE locaciones del día de rodaje de esta callsheet**:
-- Las callsheets a veces incluyen información de días futuros (mañana, próxima semana, etc.)
-- Pueden aparecer con fechas como: "Tomorrow (26.02.2025): Location XYZ" o "Next shoot day: Studio 5"
-- **IGNORA COMPLETAMENTE** cualquier locación que tenga una fecha diferente a la fecha principal de la callsheet
-- **IGNORA** locaciones marcadas como "Tomorrow", "Next day", "Mañana", "Morgen", "Future shoots", "Upcoming locations"
-- Si ves una sección tipo "PRÓXIMOS RODAJES" o "FUTURE SCHEDULE" → **NO extraigas esas locaciones**
+2. **SOLO EL DÍA DE LA CALLSHEET**: Ignora locaciones de días futuros (Tomorrow, Next week, etc.). Solo extrae las del día principal.
 
-**Regla simple**: Si una locación tiene asociada una fecha DIFERENTE a la fecha principal de la callsheet, NO la incluyas.
+3. **SOLO DIRECCIONES FÍSICAS VÁLIDAS**: 
+   - ✅ Extrae: Direcciones completas ("Kärntner Ring 16, 1010 Wien"), landmarks famosos ("Stephansdom", "Schloss Schönbrunn"), lugares conocidos con ciudad ("Hauptbahnhof, Wien")
+   - ❌ NO extraigas: Palabras sueltas sin dirección ("TAXI", "UBER"), servicios logísticos (parking, catering, vestuario), acciones (pick up, transfer)
 
-**Ejemplo**:
-- Callsheet fecha: 25.02.2025
-- "Location today: Studio 3" → ✅ EXTRAER
-- "Tomorrow (26.02.2025): Exterior Park" → ❌ IGNORAR (fecha diferente)
-- "Next week: Location B" → ❌ IGNORAR (fecha futura)
+4. **FILMACIÓN vs LOGÍSTICA**: 
+   - ¿Es donde actúan actores y filman cámaras? → FILMACIÓN (extraer)
+   - ¿Es donde el equipo come/descansa/aparca? → LOGÍSTICA (ignorar)
 
-### ¿Cómo distinguir FILMACIÓN vs LOGÍSTICA?
-
-**Piensa como coordinador**:
-- ¿Es un lugar donde ACTORES actúan y CÁMARAS filman? → FILMACIÓN (extraer)
-- ¿Es un lugar donde el EQUIPO descansa/come/se cambia? → LOGÍSTICA (ignorar)
-
-### Ejemplos prácticos:
-
-**✅ FILMACIÓN (EXTRAER)**:
-- "Drehort 1: Salmgasse 10, 1030 Wien" → Set principal
-- "Location A: Schloss Schönbrunn" → Palacio donde se filma
-- "Set: Hotel Imperial, Kärntner Ring 16" → Locación de rodaje
-- "Motiv: Stephansplatz, Wien" → Lugar de la escena
-- "Szene 15: Donauinsel" → Locación exterior
-- "Location 1: Stadtpark" → Parque público (filmación) ✅
-- "Set: Prater Wien" → Parque de atracciones (filmación) ✅
-
-**❌ LOGÍSTICA (IGNORAR)**:
-- "Basis: Parkplatz Donauinsel" → Donde aparca el equipo
-- "Catering: Suite Nico" → Donde come el equipo
-- "Kostüm: Trailer 5" → Vestuario del equipo
-- "Parken: Parkhaus Mitte" → Parking (palabra "parken" = estacionamiento)
-- "Makeup: Keller, Raum 3" → Maquillaje
-- "Crew Parking: Área 5" → Parking del equipo ❌
-
-**⚠️ IMPORTANTE - NO CONFUNDIR PARQUES CON PARKING**:
-- "Stadtpark" = Parque público (FILMACIÓN) ✅
-- "Central Park" = Parque (FILMACIÓN) ✅
-- "Volkspark" = Parque (FILMACIÓN) ✅
-- "Parkplatz" = Parking/estacionamiento (LOGÍSTICA) ❌
-- "Parkhaus" = Edificio de parking (LOGÍSTICA) ❌
-- "Crew Parking" = Estacionamiento del equipo (LOGÍSTICA) ❌
-
-**Regla**: Si dice "park" en alemán/inglés/español como LUGAR (parque), es filmación.
-Si dice "parking", "parkplatz", "parkhaus", "aparcamiento" = logística.
-
-**🚫 CASOS ESPECIALES (IGNORAR)**:
-- "Drones: Área restringida XYZ" → NO es set principal, es equipo técnico
-- "B-Unit: Segunda locación" → Si está marcada como B-Unit o equipo secundario
-- "Weather Cover: Alternativa interior" → Ubicación de respaldo, NO principal
-- "Pickup Point: Estación central" → Punto de recogida, NO filmación
-
-**🚨 MUY IMPORTANTE - NO EXTRAER PALABRAS DE TRANSPORTE 🚨**:
-
-**❌ NUNCA extraigas estas palabras (NO son direcciones válidas)**:
-- "TAXI", "Taxi", "taxi" → Medio de transporte, NO una locación
-- "UBER", "Uber" → Servicio de transporte, NO una locación
-- "BUS", "Bus" → Medio de transporte, NO una locación
-- "SHUTTLE", "Shuttle" → Servicio de transporte, NO una locación
-- "CAR", "Car", "Auto" → Vehículo, NO una locación
-- "TRANSPORT", "Transport", "Transporte" → Servicio, NO una locación
-- "DRIVER", "Driver", "Fahrer" → Persona, NO una locación
-- "PICK UP", "Pick-up", "Abholung" → Acción, NO una locación
-- "DROP OFF", "Drop-off" → Acción, NO una locación
-- "TRANSFER" → Acción, NO una locación
-
-**Regla crítica**: Si una línea solo contiene una palabra de transporte SIN una dirección física asociada, NO la extraigas.
-
-**Ejemplos**:
-- ❌ "TAXI" → NO extraer (solo palabra de transporte)
-- ❌ "Transport: UBER" → NO extraer (solo palabra de transporte)
-- ❌ "Abholung: TAXI am Set" → NO extraer (información de transporte)
-- ✅ "Taxi to: Stephansplatz, 1010 Wien" → EXTRAER: "Stephansplatz, 1010 Wien" (dirección válida después de "to:")
-- ✅ "Pick up at: Hauptbahnhof, Wien" → EXTRAER: "Hauptbahnhof, Wien" (locación válida)
-
-**¿Qué SÍ es válido?**:
-- ✅ Direcciones físicas: "Kärntner Ring 16, 1010 Wien"
-- ✅ Landmarks famosos: "Stephansdom", "Schloss Schönbrunn", "Central Park"
-- ✅ Lugares conocidos con ciudad: "Hauptbahnhof, Wien", "Times Square, New York"
-- ✅ Plazas/Parques/Monumentos: "Stephansplatz, Wien", "Stadtpark"
-
-### Reglas de contexto:
-
-1. **Lee el CONTEXTO**: No te guíes solo por palabras. Lee la frase completa.
-   - "Drehort con drones en Parque X" → Si es solo para drones, NO es set principal
-   - "Set principal: Parque X (incluye tomas aéreas)" → SÍ es set principal
-
-2. **Prioriza por JERARQUÍA**:
-   - Sets numerados (Drehort 1, 2, 3) → PRINCIPALES
-   - Sets con horario de escenas → PRINCIPALES
-   - Menciones secundarias sin horario → EVALUAR si son principales
-
-3. **Cantidad**: 
-   - Extrae TODOS los sets principales de filmación
-   - NO hay límite máximo
-   - Pero NO extraigas CADA dirección mencionada (solo las de filmación)
+5. **NO DUPLICAR**: Si hay nombre de lugar Y dirección, extrae solo la dirección física.
 
 ### Formatos de dirección:
 
