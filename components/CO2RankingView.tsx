@@ -55,7 +55,7 @@ const StatCard: React.FC<{
         <p className={`text-3xl font-bold mt-1 ${color}`}>{value}</p>
       </div>
       {icon && (
-        <div className={`p-3 rounded-full ${color.replace('text-', 'bg-').replace('-400', '-500').replace('-500', '-100')}`}>
+        <div className={`${color} opacity-40`}>
           {icon}
         </div>
       )}
