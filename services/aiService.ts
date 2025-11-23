@@ -308,57 +308,13 @@ async function _extractRawTripData(file: File, userProfile: UserProfile, documen
 }
 
 export async function processFileForTrip(file: File, userProfile: UserProfile, documentType: DocumentType): Promise<{ tripData: Omit<Trip, 'id' | 'projectId'>; projectName: string, productionCompany: string }> {
-
-    const userHomeAddress = (userProfile.address && userProfile.city && userProfile.country) ? `${userProfile.address}, ${userProfile.city}, ${userProfile.country}` : null;
-
-    if (!userHomeAddress) throw new Error("Your home address is not set in your profile.");
-
-  
-
-    const extractedData = await _extractRawTripData(file, userProfile, documentType);
-
-  
-
-    const finalLocations = [userHomeAddress, ...extractedData.locations, userHomeAddress];
-
-  
-
-    let distance = 0;
-
-    try {
-
-      const regionCode = getCountryCode(userProfile?.country);
-
-      const calculatedDist = await calculateDistanceViaBackend(finalLocations, regionCode);
-
-      distance = calculatedDist ?? 0;
-
-    } catch (e) {
-
-      console.warn(`Could not calculate distance for trip. Reason:`, e instanceof Error ? e.message : e);
-
-    }
-
-  
-
-    const tripData: Omit<Trip, 'id' | 'projectId'> = {
-
-      date: extractedData.date || new Date().toISOString().split('T')[0],
-
-      locations: finalLocations,
-
-      distance,
-
-      reason: extractedData.reason || extractedData.projectName || 'Extracted Trip',
-
-      specialOrigin: SpecialOrigin.HOME,
-
-    };
-
-  
-
-    return { tripData, projectName: extractedData.projectName, productionCompany: extractedData.productionCompany };
-
+  // Use the new universal extraction system with auto provider selection
+  return processFileForTripUniversal(
+    { file },
+    userProfile,
+    documentType,
+    'direct' // Use direct mode for file uploads from projects
+  );
 }
 
 export async function processFileForTripUniversal(
