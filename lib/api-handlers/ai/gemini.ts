@@ -26,6 +26,26 @@ function toJsonResponse(res: any, status: number, payload: unknown) {
   res.status(status).setHeader('Content-Type', 'application/json').send(JSON.stringify(payload));
 }
 
+const extractParts = (payload: any) =>
+  payload?.response?.candidates?.[0]?.content?.parts
+  || payload?.candidates?.[0]?.content?.parts
+  || [];
+
+function sanitizeJsonText(raw: string): string {
+  let t = (raw || '').trim();
+  // strip common fences
+  t = t.replace(/^```json\s*/i, '').replace(/```$/i, '').trim();
+  // if still not a JSON object, try to slice first {...}
+  if (!(t.startsWith('{') && t.endsWith('}'))) {
+    const start = t.indexOf('{');
+    const end = t.lastIndexOf('}');
+    if (start >= 0 && end > start) {
+      t = t.slice(start, end + 1);
+    }
+  }
+  return t;
+}
+
 async function readJsonBody(req: any): Promise<any> {
   if (req.body) return req.body;
   return await new Promise((resolve, reject) => {
@@ -77,21 +97,6 @@ async function runDirect(
     ],
   };
 
-  const pickFirstTextPart = (payload: any): string => {
-    if (!payload) return '';
-    if (typeof payload.text === 'function') {
-      const val = payload.text();
-      if (typeof val === 'string' && val.trim()) return val;
-    }
-    const parts = payload?.response?.candidates?.[0]?.content?.parts || [];
-    for (const part of parts) {
-      if (part && typeof part.text === 'string' && part.text.trim()) {
-        return part.text;
-      }
-    }
-    return '';
-  };
-
   console.log('[Gemini runDirect] Calling Gemini API with responseSchema...');
   const result: any = await ai.models.generateContent({
     ...baseRequest,
@@ -103,7 +108,14 @@ async function runDirect(
 
   console.log('[Gemini runDirect] Full Result (schema):', JSON.stringify(result, null, 2));
 
-  let output = pickFirstTextPart(result);
+  let output = '';
+  const schemaParts = extractParts(result);
+  if (schemaParts.length && typeof schemaParts[0]?.text === 'string') {
+    output = schemaParts[0].text;
+  } else if (typeof (result as any).text === 'function') {
+    output = (result as any).text();
+  }
+
   console.log('[Gemini runDirect] Raw output length (schema):', output?.length || 0);
 
   if (!output) {
@@ -118,7 +130,12 @@ async function runDirect(
 
     console.log('[Gemini runDirect] Full Result (fallback same model):', JSON.stringify(fallbackResult, null, 2));
 
-    output = pickFirstTextPart(fallbackResult);
+    const fallbackParts = extractParts(fallbackResult);
+    if (fallbackParts.length && typeof fallbackParts[0]?.text === 'string') {
+      output = fallbackParts[0].text;
+    } else if (typeof (fallbackResult as any).text === 'function') {
+      output = (fallbackResult as any).text();
+    }
     console.log('[Gemini runDirect] Raw output length (fallback same model):', output?.length || 0);
   }
 
@@ -127,7 +144,7 @@ async function runDirect(
     throw new Error(`Empty response from Gemini model "${GEMINI_MODEL}". Verifica que el modelo este habilitado y la clave sea valida.`);
   }
 
-  const parsed = JSON.parse(output);
+  const parsed = JSON.parse(sanitizeJsonText(output));
   console.log('[Gemini runDirect] Parsed JSON:', parsed);
 
   if (useCrewFirst) {
@@ -280,7 +297,7 @@ async function runAgent(text: string, ai: GoogleGenAI, useCrewFirst = false): Pr
     if (!output) continue;
 
     try {
-      const data = JSON.parse(output);
+      const data = JSON.parse(sanitizeJsonText(output));
       console.log('[Gemini runAgent] Parsed data:', data);
 
       if (useCrewFirst) {
