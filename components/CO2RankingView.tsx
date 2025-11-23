@@ -13,10 +13,12 @@ import {
 import {
   ArrowLeftIcon,
   DownloadIcon,
-  WarningIcon,
+  Co2EmissionIcon,
+  GaugeIcon,
+  FuelIcon,
   CheckCircleIcon,
   XCircleIcon,
-  LeafIcon,
+  TreePineIcon,
   SettingsIcon
 } from './Icons';
 import CO2AnalysisSettings from './CO2AnalysisSettings';
@@ -400,25 +402,25 @@ const CO2RankingView: React.FC<CO2RankingViewProps> = ({
           <StatCard
             title={t('co2_metric_total_emissions') || 'Total CO₂ Emissions'}
             value={`${summaryMetrics.totalCO2} kg`}
-            icon={<WarningIcon className="w-8 h-8" />}
+            icon={<Co2EmissionIcon className="w-8 h-8" />}
             color="text-red-400"
           />
           <StatCard
             title={t('co2_metric_avg_efficiency') || 'Avg. Efficiency'}
             value={`${summaryMetrics.averageEfficiency} kg/km`}
-            icon={<CheckCircleIcon className="w-8 h-8" />}
+            icon={<GaugeIcon className="w-8 h-8" />}
             color="text-blue-400"
           />
           <StatCard
             title={t('co2_metric_fuel_consumption') || 'Fuel Consumption'}
             value={`${summaryMetrics.totalFuel} L`}
-            icon={<DownloadIcon className="w-8 h-8" />}
+            icon={<FuelIcon className="w-8 h-8" />}
             color="text-purple-400"
           />
           <StatCard
             title={t('co2_metric_trees_needed') || 'Trees Needed'}
             value={`${summaryMetrics.treesNeeded}`}
-            icon={<LeafIcon className="w-8 h-8" />}
+            icon={<TreePineIcon className="w-8 h-8" />}
             color="text-green-400"
           />
         </div>
