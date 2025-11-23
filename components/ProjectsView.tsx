@@ -14,6 +14,7 @@ import useUndoRedo from '../hooks/useUndoRedo';
 import UndoToast from './UndoToast';
 import useExpenses from '../hooks/useExpenses';
 import { formatDateForDisplay } from '../i18n/translations';
+import { Button } from './Button';
 
 interface ProjectsViewProps {
     setCurrentView: (view: View) => void;
@@ -226,13 +227,14 @@ const ProjectsView: React.FC<ProjectsViewProps> = ({ setCurrentView, personaliza
         {selectedProjectIds.length > 0 ? (
           <div className="flex items-center gap-4 w-full">
             <h2 className="text-xl font-semibold text-white">{t('projects_selected_count', { count: selectedProjectIds.length })}</h2>
-            <button
+            <Button
+              variant="danger"
               onClick={handleDeleteSelected}
-              className="flex items-center bg-red-600 hover:bg-red-500 text-white font-bold py-2 px-4 rounded-smooth transition-colors ml-auto"
+              className="ml-auto"
             >
               <TrashIcon className="w-5 h-5 mr-2" />
               {t('projects_delete_selected_btn')}
-            </button>
+            </Button>
           </div>
         ) : (
           <>
@@ -251,13 +253,13 @@ const ProjectsView: React.FC<ProjectsViewProps> = ({ setCurrentView, personaliza
                   />
                   <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-on-surface-dark-secondary" />
               </div>
-              <button 
-                onClick={handleAddNew} 
-                className="flex items-center bg-brand-primary hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-smooth transition-colors"
+              <Button 
+                variant="primary"
+                onClick={handleAddNew}
               >
                 <PlusIcon className="w-5 h-5 mr-2" />
                 {t('projects_addNew')}
-              </button>
+              </Button>
             </div>
           </>
         )}
@@ -272,13 +274,14 @@ const ProjectsView: React.FC<ProjectsViewProps> = ({ setCurrentView, personaliza
                 <div className="bg-frost-glass border-glass rounded-fluid p-4 mb-4 backdrop-blur-glass">
                   <div className="flex items-center justify-between">
                     <span className="text-white font-medium">{t('projects_selected_count', { count: selectedProjectIds.length })}</span>
-                    <button
+                    <Button
+                      variant="danger"
+                      size="sm"
                       onClick={handleDeleteSelected}
-                      className="flex items-center bg-gradient-to-r from-red-600 to-red-700 hover:shadow-md hover:shadow-red-500/30 hover:scale-[1.02] text-white font-bold py-2 px-4 rounded-smooth transition-all duration-200 text-sm"
                     >
                       <TrashIcon className="w-4 h-4 mr-1" />
                       {t('projects_deleteSelected')}
-                    </button>
+                    </Button>
                   </div>
                 </div>
               )}
@@ -320,18 +323,24 @@ const ProjectsView: React.FC<ProjectsViewProps> = ({ setCurrentView, personaliza
                               : 'text-gray-600 hover:text-yellow-500'
                           }`} />
                         </button>
-                        <button 
-                          onClick={(e) => { e.stopPropagation(); handleEdit(project); }} 
-                          className="p-2 text-blue-400 hover:text-blue-300 transition-colors"
+                        <Button 
+                          variant="icon"
+                          size="sm"
+                          onClick={(e) => { e.stopPropagation(); handleEdit(project); }}
+                          className="text-blue-400 hover:text-blue-300"
+                          title={t('common_edit')}
                         >
                           <EditIcon className="w-4 h-4"/>
-                        </button>
-                        <button 
-                          onClick={(e) => handleDelete(e, project)} 
-                          className="p-2 text-red-400 hover:text-red-300 transition-colors"
+                        </Button>
+                        <Button 
+                          variant="icon"
+                          size="sm"
+                          onClick={(e) => handleDelete(e, project)}
+                          className="text-red-400 hover:text-red-300"
+                          title={t('common_delete')}
                         >
                           <TrashIcon className="w-4 h-4"/>
-                        </button>
+                        </Button>
                       </div>
                     </div>
 
@@ -470,8 +479,24 @@ const ProjectsView: React.FC<ProjectsViewProps> = ({ setCurrentView, personaliza
                       </button>
                   </td>
                   <td className="p-3 text-right" onClick={(e) => e.stopPropagation()}>
-                    <button onClick={(e) => { e.stopPropagation(); handleEdit(project); }} className="text-blue-400 hover:text-blue-300 mr-3"><EditIcon className="w-4 h-4"/></button>
-                    <button onClick={(e) => handleDelete(e, project)} className="text-red-400 hover:text-red-300"><TrashIcon className="w-4 h-4"/></button>
+                    <Button 
+                      variant="icon"
+                      size="sm"
+                      onClick={(e) => { e.stopPropagation(); handleEdit(project); }}
+                      className="text-blue-400 hover:text-blue-300 mr-3"
+                      title={t('common_edit')}
+                    >
+                      <EditIcon className="w-4 h-4"/>
+                    </Button>
+                    <Button 
+                      variant="icon"
+                      size="sm"
+                      onClick={(e) => handleDelete(e, project)}
+                      className="text-red-400 hover:text-red-300"
+                      title={t('common_delete')}
+                    >
+                      <TrashIcon className="w-4 h-4"/>
+                    </Button>
                   </td>
                 </tr>
                 );

@@ -10,6 +10,7 @@ import useUnsavedChanges from '../hooks/useUnsavedChanges';
 import { getRateForCountry } from '../services/taxService';
 import useGoogleCalendar from '../hooks/useGoogleCalendar';
 import { isDuplicateTrip, findDuplicateTrips } from '../services/tripUtils';
+import { Button } from './Button';
 
 declare global {
   interface Window {
@@ -617,13 +618,14 @@ const TripEditorModal: React.FC<TripEditorModalProps> = ({ trip, projects, trips
           <div className="flex items-center gap-3 pr-6">
             <h2 className="text-lg font-semibold tracking-tight text-white">{trip ? t('tripEditor_title_edit') : t('tripEditor_title_add')}</h2>
           </div>
-          <button
+          <Button
+            variant="icon"
             onClick={handleClose}
             aria-label={t('common_close')}
-            className="p-2 text-gray-400 hover:text-white hover:bg-white/5 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-primary/50 transition-colors"
+            title={t('common_close')}
           >
             <XIcon className="w-5 h-5" />
-          </button>
+          </Button>
         </header>
 
         <main className="flex-1 overflow-y-auto px-6 py-6">
@@ -724,8 +726,12 @@ const TripEditorModal: React.FC<TripEditorModalProps> = ({ trip, projects, trips
                                       }
                                     />
                                   </div>
-                                  <button onClick={() => handleAddLocation(index)} className="p-1.5 text-green-400 hover:text-green-300 bg-green-500/10 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500/40"><PlusIcon className="w-5 h-5"/></button>
-                                  <button onClick={() => handleRemoveLocation(index)} className="p-1.5 text-red-400 hover:text-red-300 bg-red-500/10 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500/40"><TrashIcon className="w-5 h-5"/></button>
+                                  <Button variant="icon" size="sm" onClick={() => handleAddLocation(index)} className="text-green-400 hover:text-green-300 bg-green-500/10" title={t('tripEditor_add_location')}>
+                                    <PlusIcon className="w-5 h-5"/>
+                                  </Button>
+                                  <Button variant="icon" size="sm" onClick={() => handleRemoveLocation(index)} className="text-red-400 hover:text-red-300 bg-red-500/10" title={t('tripEditor_remove_location')}>
+                                    <TrashIcon className="w-5 h-5"/>
+                                  </Button>
                                   
                                   {showSuggestions && (
                                     <ul ref={suggestionsRef} className="absolute top-full left-8 right-16 mt-1 bg-background-dark/95 border border-gray-600/70 rounded-md shadow-lg z-10 max-h-48 overflow-y-auto backdrop-blur-sm">
@@ -776,9 +782,9 @@ const TripEditorModal: React.FC<TripEditorModalProps> = ({ trip, projects, trips
                       <label className="block text-[11px] font-semibold uppercase tracking-wide text-gray-300/90 mb-1">{t('tripEditor_form_distance')}</label>
                       <div className="flex items-center">
                         <input type="number" min="0.01" step="0.1" name="distance" value={formData.distance || ''} onChange={handleChange} className="w-full bg-background-dark/70 border border-gray-600/70 rounded-md px-3 py-2 text-sm text-on-surface-dark placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-primary/50" />
-                        <button onClick={handleCalculateDistance} disabled={isCalculatingDist} className="ml-2 p-2 bg-brand-primary/15 text-brand-primary rounded-md hover:bg-brand-primary/25 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-brand-primary/40" title="Calculate distance">
+                        <Button variant="ghost" size="sm" onClick={handleCalculateDistance} disabled={isCalculatingDist} className="ml-2 bg-brand-primary/15 text-brand-primary hover:bg-brand-primary/25" title={t('tripEditor_calculate_distance')}>
                           {isCalculatingDist ? <LoaderIcon className="w-5 h-5 animate-spin" /> : <RouteIcon className="w-5 h-5"/>}
-                        </button>
+                        </Button>
                       </div>
                        {distanceWarning && <p className="text-yellow-400 text-[11px] mt-1">{distanceWarning}</p>}
                        {mapsScriptError && <p className="text-red-400 text-[11px] mt-1">Error loading Google Maps script.</p>}
@@ -820,18 +826,20 @@ const TripEditorModal: React.FC<TripEditorModalProps> = ({ trip, projects, trips
             )}
           </div>
           <div className="flex gap-3">
-            <button
+            <Button
+              variant="secondary"
+              size="sm"
               onClick={handleClose}
-              className="px-4 py-2.5 rounded-md text-sm font-medium bg-gray-600/40 hover:bg-gray-600 text-gray-200 border border-gray-500/60 transition-colors focus:outline-none focus:ring-2 focus:ring-brand-primary/40"
             >
               {t('common_cancel')}
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="primary"
+              size="sm"
               onClick={handleSave}
-              className="px-4 py-2.5 rounded-md text-sm font-medium bg-brand-primary hover:brightness-110 text-white shadow focus:outline-none focus:ring-2 focus:ring-brand-primary/50"
             >
               {t('tripEditor_saveBtn')}
-            </button>
+            </Button>
           </div>
         </footer>
       </div>

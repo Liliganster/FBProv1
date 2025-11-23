@@ -19,6 +19,7 @@ import {
   LuImageOff as ImageOff,
   LuFileText as FileText,
 } from 'react-icons/lu';
+import { Button } from './Button';
 
 type Tab = 'profile' | 'compliance' | 'api' | 'personalization' | 'language' | 'changelog' | 'help';
 
@@ -240,13 +241,13 @@ const SettingsView: React.FC<{
                             <p className="text-sm text-on-surface-dark-secondary mb-4">
                                 {t('settings_delete_account_description')}
                             </p>
-                            <button
+                            <Button
+                                variant="danger"
                                 onClick={openDeleteModal}
-                                className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-500 text-white font-semibold py-2 px-4 rounded-md transition-colors"
                             >
                                 <TrashIcon className="w-4 h-4" />
                                 {t('settings_delete_account_button')}
-                            </button>
+                            </Button>
                         </section>
                     </div>
                 );
@@ -487,7 +488,9 @@ const SettingsView: React.FC<{
             <div className="bg-frost-glass no-border rounded-organic shadow-glass-lg w-full max-w-4xl max-h-[90vh] flex flex-col backdrop-blur-glass relative" onClick={e => e.stopPropagation()}>
                 <header className="flex items-center justify-between p-4 flex-shrink-0">
                     <h2 className="text-xl font-bold bg-gradient-title bg-clip-text text-transparent">{t('settings_title')}</h2>
-                    <button onClick={handleClose} className="text-on-surface-secondary hover:text-white hover:bg-gradient-surface rounded-smooth p-1 transition-all duration-200"><XIcon className="w-6 h-6" /></button>
+                    <Button variant="icon" onClick={handleClose} title={t('common_close')}>
+                      <XIcon className="w-6 h-6" />
+                    </Button>
                 </header>
                 
                 <div className="flex-grow flex min-h-0">
@@ -558,11 +561,13 @@ const SettingsView: React.FC<{
                         <span className="text-[10px] text-on-surface-dark-secondary">
                           Build: {typeof __COMMIT_HASH__ !== 'undefined' && __COMMIT_HASH__ ? __COMMIT_HASH__.slice(0,7) : 'local'} @ {typeof __BUILD_TIME__ !== 'undefined' ? __BUILD_TIME__ : 'dev'}
                         </span>
-                        <button onClick={handleClose} className="bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-smooth">{t('common_cancel')}</button>
-                        <button onClick={handleSaveAllSettings} className="flex items-center bg-brand-primary hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-smooth transition-colors">
+                        <Button variant="secondary" onClick={handleClose}>
+                          {t('common_cancel')}
+                        </Button>
+                        <Button variant="primary" onClick={handleSaveAllSettings}>
                             <SaveIcon className="w-5 h-5 mr-2"/>
                             {t('settings_saveAll')}
-                        </button>
+                        </Button>
                     </div>
                 </footer>
 
@@ -588,17 +593,20 @@ const SettingsView: React.FC<{
                                 disabled={isDeletingAccount}
                             />
                             <div className="flex justify-end gap-3 pt-2">
-                                <button
+                                <Button
+                                    variant="secondary"
+                                    size="sm"
                                     onClick={closeDeleteModal}
-                                    className="px-4 py-2 rounded-md border border-gray-600 text-sm text-on-surface-secondary hover:text-white transition-colors disabled:opacity-60"
                                     disabled={isDeletingAccount}
                                 >
                                     {t('common_cancel')}
-                                </button>
-                                <button
+                                </Button>
+                                <Button
+                                    variant="danger"
+                                    size="sm"
                                     onClick={handleDeleteAccount}
                                     disabled={!isDeleteConfirmationValid || isDeletingAccount}
-                                    className="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-red-600 hover:bg-red-500 text-sm font-semibold text-white transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                                    isLoading={isDeletingAccount}
                                 >
                                     {isDeletingAccount ? (
                                         <>
@@ -611,7 +619,7 @@ const SettingsView: React.FC<{
                                             {t('settings_delete_account_confirm_button')}
                                         </>
                                     )}
-                                </button>
+                                </Button>
                             </div>
                         </div>
                     </div>

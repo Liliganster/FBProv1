@@ -6,6 +6,7 @@ import useTranslation from '../hooks/useTranslation';
 import useToast from '../hooks/useToast';
 import useTrips from '../hooks/useTrips';
 import useUnsavedChanges from '../hooks/useUnsavedChanges';
+import { Button } from './Button';
 
 interface ProjectEditorModalProps {
   project: Project | null;
@@ -79,13 +80,14 @@ const ProjectEditorModal: React.FC<ProjectEditorModalProps> = ({ project, onClos
           <h2 className="text-lg font-semibold tracking-tight text-white">
             {isEditing ? t('projectEditor_title_edit') : t('projectEditor_title_add')}
           </h2>
-          <button
+          <Button
+            variant="icon"
             onClick={handleClose}
             aria-label={t('common_close')}
-            className="p-2 text-gray-400 hover:text-white hover:bg-white/5 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-primary/50 transition-colors"
+            title={t('common_close')}
           >
             <XIcon className="w-5 h-5" />
-          </button>
+          </Button>
         </header>
         <main className="flex-1 overflow-y-auto px-6 py-6">
           <div className="space-y-5">
@@ -116,18 +118,20 @@ const ProjectEditorModal: React.FC<ProjectEditorModalProps> = ({ project, onClos
             )}
           </div>
           <div className="flex gap-3">
-            <button
+            <Button
+              variant="secondary"
+              size="sm"
               onClick={handleClose}
-              className="px-4 py-2.5 rounded-md text-sm font-medium bg-gray-600/40 hover:bg-gray-600 text-gray-200 border border-gray-500/60 transition-colors focus:outline-none focus:ring-2 focus:ring-brand-primary/40"
             >
               {t('common_cancel')}
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="primary"
+              size="sm"
               onClick={handleSave}
-              className="px-4 py-2.5 rounded-md text-sm font-medium bg-brand-primary hover:brightness-110 text-white shadow focus:outline-none focus:ring-2 focus:ring-brand-primary/50"
             >
               {isEditing ? t('projects_form_saveBtn') : t('projects_form_addBtn')}
-            </button>
+            </Button>
           </div>
         </footer>
       </div>

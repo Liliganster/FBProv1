@@ -9,6 +9,7 @@ import TripDetailModal from './TripDetailModal';
 
 import useDashboardSettings from '../hooks/useDashboardSettings';
 import { formatDateForDisplay } from '../i18n/translations';
+import { Button } from './Button';
 
 type ChartType = 'projectKm';
 
@@ -178,10 +179,10 @@ const StatCard = ({ title, value, cta, onClick, children }: { title: string, val
                     {userProfile && <h2 className="text-lg font-semibold text-brand-primary">{userProfile.name}</h2>}
                 </div>
                 <div className="relative" ref={alertsRef}>
-                    <button onClick={() => setIsAlertsOpen(!isAlertsOpen)} className="relative p-2 rounded-smooth hover:bg-gradient-surface transition-all duration-200">
+                    <Button variant="icon" onClick={() => setIsAlertsOpen(!isAlertsOpen)} className="relative">
                         <BellIcon className="w-6 h-6 text-on-surface-secondary"/>
                         {alerts.length > 0 && <span className="absolute top-0 right-0 h-3 w-3 rounded-full bg-red-600 border-2 border-surface-dark animate-pulse"></span>}
-                    </button>
+                    </Button>
                     {isAlertsOpen && (
                         <div className="absolute right-0 mt-2 w-80 bg-frost-glass border-glass rounded-gentle shadow-glass z-20 backdrop-blur-glass">
                             <div className="p-3 font-semibold border-b border-glass text-white">{t('dashboard_proactive_alerts_title')}</div>
@@ -190,7 +191,7 @@ const StatCard = ({ title, value, cta, onClick, children }: { title: string, val
                                     alerts.slice(0, 10).map((alert, index) => (
                                         <div key={index} className="p-3 border-b border-glass hover:bg-gradient-surface transition-colors duration-200">
                                             <p className="text-sm text-on-surface-medium">{alert.message}</p>
-                                            <button onClick={() => { setViewingTrip(alert.trip); setIsAlertsOpen(false); }} className="text-xs text-yellow-400 hover:text-yellow-300 transition-colors duration-200 mt-1 cursor-pointer underline">{t('dashboard_alert_view_trip_cta')}</button>
+                                            <button onClick={() => { setViewingTrip(alert.trip); setIsAlertsOpen(false); }} className="text-xs text-yellow-400 hover:text-yellow-300 transition-colors duration-200 mt-1 cursor-pointer underline" type="button">{t('dashboard_alert_view_trip_cta')}</button>
                                         </div>
                                     ))
                                 ) : (

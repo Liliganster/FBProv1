@@ -17,6 +17,7 @@ import useToast from '../hooks/useToast';
 import useUndoRedo from '../hooks/useUndoRedo';
 import UndoToast from './UndoToast';
 import useExpenses from '../hooks/useExpenses';
+import { Button } from './Button';
 
 const SpecialOriginTag = React.memo(({ originType }: { originType: SpecialOrigin }) => {
   const { t } = useTranslation();
@@ -295,20 +296,20 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
           <div className="flex items-center gap-4 w-full">
             <h2 className="text-xl font-semibold text-white">{t('trips_selected_count', { count: selectedTripIds.length })}</h2>
             <div className="ml-auto flex items-center gap-2">
-              <button
+              <Button
+                variant="primary"
                 onClick={() => setIsBatchEditModalOpen(true)}
-                className="flex items-center bg-gradient-brand hover:shadow-brand hover:scale-[1.02] text-white font-bold py-2 px-4 rounded-smooth transition-all duration-200"
               >
                 <EditIcon className="w-5 h-5 mr-2" />
                 {t('trips_edit_selected_btn')}
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="danger"
                 onClick={handleDeleteSelected}
-                className="flex items-center bg-gradient-to-r from-red-600 to-red-700 hover:shadow-md hover:shadow-red-500/30 hover:scale-[1.02] text-white font-bold py-2 px-4 rounded-smooth transition-all duration-200"
               >
                 <TrashIcon className="w-5 h-5 mr-2" />
                 {t('trips_delete_selected_btn')}
-              </button>
+              </Button>
             </div>
           </div>
         ) : (
@@ -332,14 +333,14 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
                   ))}
                 </select>
               </div>
-              <button onClick={() => setIsBulkModalOpen(true)} className="btn-success flex items-center hover:scale-[1.02] font-bold py-2 px-4 rounded-smooth transition-all duration-200">
+              <Button variant="success" onClick={() => setIsBulkModalOpen(true)}>
                 <UploadCloudIcon className="w-5 h-5 mr-2"/>
                 {t('trips_bulkUpload')}
-              </button>
-              <button onClick={handleAddTrip} className="flex items-center bg-gradient-brand hover:shadow-brand hover:scale-[1.02] text-white font-bold py-2 px-4 rounded-smooth transition-all duration-200">
+              </Button>
+              <Button variant="primary" onClick={handleAddTrip}>
                 <PlusIcon className="w-5 h-5 mr-2"/>
                 {t('trips_addTrip')}
-              </button>
+              </Button>
             </div>
           </>
         )}
@@ -355,20 +356,22 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
                   <div className="flex items-center justify-between">
                     <span className="text-white font-medium">{t('trips_selected_count', { count: selectedTripIds.length })}</span>
                     <div className="flex gap-2">
-                      <button
+                      <Button
+                        variant="primary"
+                        size="sm"
                         onClick={() => setIsBatchEditModalOpen(true)}
-                        className="flex items-center bg-gradient-brand hover:shadow-brand hover:scale-[1.02] text-white font-bold py-2 px-4 rounded-smooth transition-all duration-200 text-sm"
                       >
                         <EditIcon className="w-4 h-4 mr-1" />
                         {t('trips_editSelected')}
-                      </button>
-                      <button
+                      </Button>
+                      <Button
+                        variant="danger"
+                        size="sm"
                         onClick={handleDeleteSelected}
-                        className="flex items-center bg-gradient-to-r from-red-600 to-red-700 hover:shadow-md hover:shadow-red-500/30 hover:scale-[1.02] text-white font-bold py-2 px-4 rounded-smooth transition-all duration-200 text-sm"
                       >
                         <TrashIcon className="w-4 h-4 mr-1" />
                         {t('trips_deleteSelected')}
-                      </button>
+                      </Button>
                     </div>
                   </div>
                 </div>
@@ -423,31 +426,39 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
                             </div>
                           </div>
                           <div className="flex items-center gap-1">
-                            <button onClick={() => handleViewTrip(trip)} className="p-2 text-gray-400 hover:text-white transition-colors">
+                            <Button variant="icon" size="sm" onClick={() => handleViewTrip(trip)} title={t('trips_view_trip')}>
                               <MapIcon className="w-4 h-4"/>
-                            </button>
-                            <button
+                            </Button>
+                            <Button
+                              variant="icon"
+                              size="sm"
                               onClick={() => handleAddToCalendar(trip)}
-                              className="p-2 text-green-400 hover:text-green-300 disabled:text-gray-600 disabled:cursor-not-allowed transition-colors"
                               disabled={isLocked || !isSignedIn}
+                              className="text-green-400 hover:text-green-300"
                               title={isSignedIn ? t('trips_col_actions_add_to_calendar') : t('trips_col_actions_add_to_calendar_disabled')}
                             >
                               <CalendarPlusIcon className="w-4 h-4"/>
-                            </button>
-                            <button 
+                            </Button>
+                            <Button 
+                              variant="icon"
+                              size="sm"
                               onClick={() => handleEditTrip(trip)} 
-                              className="p-2 text-blue-400 hover:text-blue-300 disabled:text-gray-600 disabled:cursor-not-allowed transition-colors" 
                               disabled={isLocked}
+                              className="text-blue-400 hover:text-blue-300"
+                              title={t('common_edit')}
                             >
                               <EditIcon className="w-4 h-4"/>
-                            </button>
-                            <button 
+                            </Button>
+                            <Button 
+                              variant="icon"
+                              size="sm"
                               onClick={() => handleDeleteTrip(trip.id)} 
-                              className="p-2 text-red-400 hover:text-red-300 disabled:text-gray-600 disabled:cursor-not-allowed transition-colors" 
                               disabled={isLocked}
+                              className="text-red-400 hover:text-red-300"
+                              title={t('common_delete')}
                             >
                               <TrashIcon className="w-4 h-4"/>
-                            </button>
+                            </Button>
                           </div>
                         </div>
                         <div className="cursor-pointer" onClick={() => handleViewTrip(trip)}>
@@ -546,31 +557,39 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
                       </div>
                       
                       <div className="flex items-center gap-1">
-                        <button onClick={() => handleViewTrip(trip)} className="p-2 text-gray-400 hover:text-white transition-colors">
+                        <Button variant="icon" size="sm" onClick={() => handleViewTrip(trip)} title={t('trips_view_trip')}>
                           <MapIcon className="w-4 h-4"/>
-                        </button>
-                        <button
+                        </Button>
+                        <Button
+                          variant="icon"
+                          size="sm"
                           onClick={() => handleAddToCalendar(trip)}
-                          className="p-2 text-green-400 hover:text-green-300 disabled:text-gray-600 disabled:cursor-not-allowed transition-colors"
                           disabled={isLocked || !isSignedIn}
+                          className="text-green-400 hover:text-green-300"
                           title={isSignedIn ? t('trips_col_actions_add_to_calendar') : t('trips_col_actions_add_to_calendar_disabled')}
                         >
                           <CalendarPlusIcon className="w-4 h-4"/>
-                        </button>
-                        <button 
+                        </Button>
+                        <Button 
+                          variant="icon"
+                          size="sm"
                           onClick={() => handleEditTrip(trip)} 
-                          className="p-2 text-blue-400 hover:text-blue-300 disabled:text-gray-600 disabled:cursor-not-allowed transition-colors" 
                           disabled={isLocked}
+                          className="text-blue-400 hover:text-blue-300"
+                          title={t('common_edit')}
                         >
                           <EditIcon className="w-4 h-4"/>
-                        </button>
-                        <button 
+                        </Button>
+                        <Button 
+                          variant="icon"
+                          size="sm"
                           onClick={() => handleDeleteTrip(trip.id)} 
-                          className="p-2 text-red-400 hover:text-red-300 disabled:text-gray-600 disabled:cursor-not-allowed transition-colors" 
                           disabled={isLocked}
+                          className="text-red-400 hover:text-red-300"
+                          title={t('common_delete')}
                         >
                           <TrashIcon className="w-4 h-4"/>
-                        </button>
+                        </Button>
                       </div>
                     </div>
 
@@ -772,17 +791,25 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
                     className="p-3 whitespace-nowrap text-right"
                     onClick={(e) => e.stopPropagation()}
                   >
-                    <button onClick={() => handleViewTrip(trip)} className="text-gray-400 hover:text-white mr-2"><MapIcon className="w-4 h-4"/></button>
-                    <button
+                    <Button variant="icon" size="sm" onClick={() => handleViewTrip(trip)} className="mr-2" title={t('trips_view_trip')}>
+                      <MapIcon className="w-4 h-4"/>
+                    </Button>
+                    <Button
+                        variant="icon"
+                        size="sm"
                         onClick={() => handleAddToCalendar(trip)}
-                        className="text-green-400 hover:text-green-300 mr-2 disabled:text-gray-600 disabled:cursor-not-allowed"
                         disabled={isLocked || !isSignedIn}
+                        className="mr-2 text-green-400 hover:text-green-300"
                         title={isSignedIn ? t('trips_col_actions_add_to_calendar') : t('trips_col_actions_add_to_calendar_disabled')}
                     >
                         <CalendarPlusIcon className="w-4 h-4"/>
-                    </button>
-                    <button onClick={() => handleEditTrip(trip)} className="text-blue-400 hover:text-blue-300 mr-2 disabled:text-gray-600 disabled:cursor-not-allowed" disabled={isLocked}><EditIcon className="w-4 h-4"/></button>
-                    <button onClick={() => handleDeleteTrip(trip.id)} className="text-red-400 hover:text-red-300 disabled:text-gray-600 disabled:cursor-not-allowed" disabled={isLocked}><TrashIcon className="w-4 h-4"/></button>
+                    </Button>
+                    <Button variant="icon" size="sm" onClick={() => handleEditTrip(trip)} disabled={isLocked} className="mr-2 text-blue-400 hover:text-blue-300" title={t('common_edit')}>
+                      <EditIcon className="w-4 h-4"/>
+                    </Button>
+                    <Button variant="icon" size="sm" onClick={() => handleDeleteTrip(trip.id)} disabled={isLocked} className="text-red-400 hover:text-red-300" title={t('common_delete')}>
+                      <TrashIcon className="w-4 h-4"/>
+                    </Button>
                   </td>
                 </tr>
                 );

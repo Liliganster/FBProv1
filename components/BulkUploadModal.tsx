@@ -650,7 +650,7 @@ const tempNewProjectsForReview = Array.from(newlyCreatedProjects.entries()).map(
                     </div>
                   </div>
                   <div>
-                    <label className="block text-xs font-medium uppercase tracking-wide text-on-surface-dark-secondary mb-2">Extraction Mode</label>
+                    <label className="block text-xs font-medium uppercase tracking-wide text-on-surface-dark-secondary mb-2">{t('bulk_extraction_mode_label')}</label>
                     <div className="flex gap-2">
                       <button
                         type="button"
@@ -661,9 +661,9 @@ const tempNewProjectsForReview = Array.from(newlyCreatedProjects.entries()).map(
                             ? 'border-brand-primary bg-brand-primary/20 text-white shadow'
                             : 'border-gray-700/60 text-on-surface-dark-secondary hover:border-gray-500 hover:bg-gray-700/30'
                         }`}
-                        title="Fast, clean text (no OCR)"
+                        title={t('bulk_extraction_mode_direct_description')}
                       >
-                        <span className="text-xs font-medium">Direct</span>
+                        <span className="text-xs font-medium">{t('bulk_extraction_mode_direct')}</span>
                         {aiExtractMode === 'direct' ? (
                           <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-brand-primary">
                             <CheckIcon className="w-3 h-3 text-white" />
@@ -681,9 +681,9 @@ const tempNewProjectsForReview = Array.from(newlyCreatedProjects.entries()).map(
                             ? 'border-brand-primary bg-brand-primary/20 text-white shadow'
                             : 'border-gray-700/60 text-on-surface-dark-secondary hover:border-gray-500 hover:bg-gray-700/30'
                         }`}
-                        title="With OCR for PDFs and images"
+                        title={t('bulk_extraction_mode_agent_description')}
                       >
-                        <span className="text-xs font-medium">Agent (OCR)</span>
+                        <span className="text-xs font-medium">{t('bulk_extraction_mode_agent')}</span>
                         {aiExtractMode === 'agent' ? (
                           <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-brand-primary">
                             <CheckIcon className="w-3 h-3 text-white" />
@@ -693,15 +693,15 @@ const tempNewProjectsForReview = Array.from(newlyCreatedProjects.entries()).map(
                         )}
                       </button>
                     </div>
-                    <p className="mt-1 text-[10px] text-on-surface-dark-secondary">Selected: {aiExtractMode === 'direct' ? 'Direct' : 'Agent (OCR)'} mode</p>
+                    <p className="mt-1 text-[10px] text-on-surface-dark-secondary">{t('bulk_extraction_mode_selected', { mode: aiExtractMode === 'direct' ? t('bulk_extraction_mode_direct') : t('bulk_extraction_mode_agent') })}</p>
                   </div>
                   {documentType === DocumentType.EMAIL && (
                     <div>
-                      <label className="block text-xs font-medium uppercase tracking-wide text-on-surface-dark-secondary mb-2">Pegar texto (Email / Texto)</label>
+                      <label className="block text-xs font-medium uppercase tracking-wide text-on-surface-dark-secondary mb-2">{t('bulk_ai_paste_label')}</label>
                       <textarea
                         rows={8}
                         className="w-full bg-background-dark border border-gray-600/70 rounded-md p-3 font-mono text-xs focus:outline-none focus:ring-2 focus:ring-brand-primary resize-y min-h-[140px]"
-                        placeholder="Pega aquí el contenido del email o texto libre"
+                        placeholder={t('bulk_ai_paste_placeholder')}
                         value={aiText}
                         onChange={(e)=>setAiText(e.target.value)}
                       />
@@ -709,8 +709,8 @@ const tempNewProjectsForReview = Array.from(newlyCreatedProjects.entries()).map(
                   )}
                   <div onDragOver={handleDragOver} onDrop={handleDrop} className="border-2 border-dashed border-gray-600 rounded-lg p-8 text-center cursor-pointer hover:border-brand-primary transition-colors" onClick={() => document.getElementById('ai-upload')?.click()}>
                       <UploadCloudIcon className="w-12 h-12 mx-auto text-gray-500 mb-2"/>
-                      <h3 className="font-semibold text-lg text-white">Drag & drop your documents</h3>
-                      <p className="text-on-surface-dark-secondary text-sm">or click to select files (Image, PDF, EML, TXT)</p>
+                      <h3 className="font-semibold text-lg text-white">{t('bulk_ai_drag_drop_title')}</h3>
+                      <p className="text-on-surface-dark-secondary text-sm">{t('bulk_ai_drag_drop_subtitle')}</p>
                       <input type="file" multiple accept="image/*,application/pdf,.txt,.eml,message/rfc822" onChange={handleAiFileSelected} id="ai-upload" className="hidden" />
                   </div>
                    <button onClick={handleDriveImport} disabled={isProcessing} className="w-full bg-surface-dark hover:bg-surface-dark/80 text-on-surface-dark font-bold py-2 px-4 rounded-lg cursor-pointer inline-flex items-center justify-center gap-2 transition-colors disabled:opacity-50 border border-gray-600/50">
@@ -766,13 +766,13 @@ const tempNewProjectsForReview = Array.from(newlyCreatedProjects.entries()).map(
                  {mode === 'ai' && (
           <button onClick={handleProcessAi} disabled={isProcessing || (aiFiles.length === 0 && aiText.trim().length === 0)} className="flex items-center justify-center bg-brand-primary hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-lg disabled:opacity-50 w-auto min-w-60">
             {isProcessing ? (
-              <><LoaderIcon className="w-5 h-5 mr-2 animate-spin"/> Processing ({aiExtractMode === 'direct' ? 'Direct' : 'Agent (OCR)'})...</>
+              <><LoaderIcon className="w-5 h-5 mr-2 animate-spin"/> {t('bulk_ai_processing', { mode: aiExtractMode === 'direct' ? t('bulk_extraction_mode_direct') : t('bulk_extraction_mode_agent') })}</>
             ) : mapsLoading ? (
-              <><LoaderIcon className="w-5 h-5 mr-2 animate-spin"/> Loading Maps...</>
+              <><LoaderIcon className="w-5 h-5 mr-2 animate-spin"/> {t('bulk_ai_loading_maps')}</>
             ) : aiFiles.length > 0 ? (
-              <><SparklesIcon className="w-5 h-5 mr-2" /> {`Process ${aiFiles.length} file${aiFiles.length > 1 ? 's' : ''}`} ({aiExtractMode === 'direct' ? 'Direct' : 'Agent (OCR)'})</>
+              <><SparklesIcon className="w-5 h-5 mr-2" /> {t('bulk_ai_process_files', { count: aiFiles.length, plural: aiFiles.length > 1 ? 's' : '', mode: aiExtractMode === 'direct' ? t('bulk_extraction_mode_direct') : t('bulk_extraction_mode_agent') })}</>
             ) : (
-              <><SparklesIcon className="w-5 h-5 mr-2" /> Process text ({aiExtractMode === 'direct' ? 'Direct' : 'Agent (OCR)'})</>
+              <><SparklesIcon className="w-5 h-5 mr-2" /> {t('bulk_ai_process_text', { mode: aiExtractMode === 'direct' ? t('bulk_extraction_mode_direct') : t('bulk_extraction_mode_agent') })}</>
             )}
           </button>
                  )}
