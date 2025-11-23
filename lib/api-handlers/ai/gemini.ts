@@ -223,9 +223,33 @@ async function runAgent(text: string, ai: GoogleGenAI, useCrewFirst = false): Pr
     } as any);
 
     // Log full response for debugging
-    console.log('[Gemini runAgent] Full Response:', JSON.stringify(response, null, 2));
+    console.log('[Gemini runAgent] Full Response (schema):', JSON.stringify(response, null, 2));
 
-    const parts = response?.response?.candidates?.[0]?.content?.parts || [];
+    let parts = response?.response?.candidates?.[0]?.content?.parts || [];
+    
+    // Fallback for models that fail with responseSchema
+    if (parts.length === 0) {
+      console.warn('[Gemini runAgent] Empty response with schema, retrying without it.');
+      const fallbackResponse = await ai.models.generateContent({
+        model: GEMINI_MODEL,
+        contents,
+        tools: [{ functionDeclarations: toolDeclarations.map((t: any) => t.function) }],
+        toolConfig: { functionCallingConfig: { mode: 'AUTO' } },
+        generationConfig: {
+          temperature: 0,
+        },
+        safetySettings: [
+          { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_NONE' },
+          { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_NONE' },
+          { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_NONE' },
+          { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' },
+        ]
+      } as any);
+
+      console.log('[Gemini runAgent] Full Response (fallback):', JSON.stringify(fallbackResponse, null, 2));
+      parts = fallbackResponse?.response?.candidates?.[0]?.content?.parts || [];
+    }
+
     const fnCall = parts.find((p: any) => p?.functionCall);
 
     if (fnCall?.functionCall) {
