@@ -195,7 +195,24 @@ Si después de los 5 pasos NO has encontrado nada claro:
 
 ### ESTO ES LO MÁS IMPORTANTE - Lee con atención:
 
-**Tu misión**: Extraer SOLO las ubicaciones donde se FILMA (donde ruedan las cámaras)
+**Tu misión**: Extraer SOLO las ubicaciones donde se FILMA (donde ruedan las cámaras) **EN EL DÍA ESPECÍFICO DE ESTA CALLSHEET**
+
+### 🚨 REGLA CRÍTICA - SOLO UN DÍA 🚨
+
+**⚠️ EXTRAE ÚNICAMENTE locaciones del día de rodaje de esta callsheet**:
+- Las callsheets a veces incluyen información de días futuros (mañana, próxima semana, etc.)
+- Pueden aparecer con fechas como: "Tomorrow (26.02.2025): Location XYZ" o "Next shoot day: Studio 5"
+- **IGNORA COMPLETAMENTE** cualquier locación que tenga una fecha diferente a la fecha principal de la callsheet
+- **IGNORA** locaciones marcadas como "Tomorrow", "Next day", "Mañana", "Morgen", "Future shoots", "Upcoming locations"
+- Si ves una sección tipo "PRÓXIMOS RODAJES" o "FUTURE SCHEDULE" → **NO extraigas esas locaciones**
+
+**Regla simple**: Si una locación tiene asociada una fecha DIFERENTE a la fecha principal de la callsheet, NO la incluyas.
+
+**Ejemplo**:
+- Callsheet fecha: 25.02.2025
+- "Location today: Studio 3" → ✅ EXTRAER
+- "Tomorrow (26.02.2025): Exterior Park" → ❌ IGNORAR (fecha diferente)
+- "Next week: Location B" → ❌ IGNORAR (fecha futura)
 
 ### ¿Cómo distinguir FILMACIÓN vs LOGÍSTICA?
 
