@@ -89,13 +89,13 @@ const ProjectRow: React.FC<{
               project.efficiencyRating.level === 'poor' ? 'bg-yellow-500/20 text-yellow-400' :
               'bg-red-500/20 text-red-400'
             }`}>
-              efficiency_{project.efficiencyRating.label}
+              {t(`efficiency_${project.efficiencyRating.label}`)}
             </span>
             <span className={`px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1 ${
               project.efficiency >= 0 ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'
             }`}>
               {project.efficiency >= 0 ? <CheckCircleIcon className="w-3 h-3" /> : <XCircleIcon className="w-3 h-3" />}
-              trend_{project.efficiency >= 0 ? 'improving' : 'worsening'}
+              {t(project.efficiency >= 0 ? 'trend_improving' : 'trend_worsening')}
             </span>
           </div>
         </div>
@@ -108,29 +108,29 @@ const ProjectRow: React.FC<{
         <p className="text-xl font-bold text-white">{project.totalCO2.toFixed(1)}</p>
       </div>
       <div>
-        <p className="text-sm text-on-surface-dark-secondary">Efficiency (kg/km)</p>
+        <p className="text-sm text-on-surface-dark-secondary">{t('co2_metric_efficiency')} (kg/km)</p>
         <p className="text-xl font-bold text-white">{project.averageEfficiency.toFixed(2)}</p>
       </div>
       <div>
-        <p className="text-sm text-on-surface-dark-secondary">Distance (km)</p>
+        <p className="text-sm text-on-surface-dark-secondary">{t('co2_metric_distance')} (km)</p>
         <p className="text-xl font-bold text-white">{project.totalDistance.toFixed(0)}</p>
       </div>
       <div>
-        <p className="text-sm text-on-surface-dark-secondary">Trips</p>
+        <p className="text-sm text-on-surface-dark-secondary">{t('co2_metric_trips')}</p>
         <p className="text-xl font-bold text-white">{project.tripCount}</p>
       </div>
     </div>
 
     <div className="border-t border-gray-700 pt-4">
-      <h4 className="text-sm font-medium text-white mb-2">Recommendations:</h4>
+      <h4 className="text-sm font-medium text-white mb-2">{t('co2_recommendations_title')}:</h4>
       <ul className="text-sm text-on-surface-dark-secondary space-y-1">
         <li className="flex items-start gap-2">
           <span className="w-1 h-1 bg-current rounded-full mt-2 flex-shrink-0"></span>
-          Combine multiple trips to one destination for efficiency
+          {t('co2_recommendation_combine')}
         </li>
         <li className="flex items-start gap-2">
           <span className="w-1 h-1 bg-current rounded-full mt-2 flex-shrink-0"></span>
-          Use public transport for shorter distances where possible
+          {t('co2_recommendation_transport')}
         </li>
       </ul>
     </div>

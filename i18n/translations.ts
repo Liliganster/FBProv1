@@ -497,6 +497,24 @@ export const translations = {
     co2_metric_avg_efficiency: 'Avg. Efficiency',
     co2_metric_fuel_consumption: 'Fuel Consumption',
     co2_metric_trees_needed: 'Trees Needed',
+    co2_metric_efficiency: 'Efficiency',
+    co2_metric_distance: 'Distance',
+    co2_metric_trips: 'Trips',
+    
+    // CO2 Efficiency Ratings
+    efficiency_excellent: 'Excellent',
+    efficiency_good: 'Good',
+    efficiency_poor: 'Poor',
+    efficiency_very_poor: 'Very Poor',
+    
+    // CO2 Trends
+    trend_improving: 'Improving',
+    trend_worsening: 'Worsening',
+    
+    // CO2 Recommendations
+    co2_recommendations_title: 'Recommendations',
+    co2_recommendation_combine: 'Combine multiple trips to one destination for efficiency',
+    co2_recommendation_transport: 'Use public transport for shorter distances where possible',
     
     // Route Templates View
     route_templates_title: 'Route Templates',
@@ -1136,6 +1154,24 @@ export const translations = {
     co2_metric_avg_efficiency: 'Durchschn. Effizienz',
     co2_metric_fuel_consumption: 'Kraftstoffverbrauch',
     co2_metric_trees_needed: 'Benötigte Bäume',
+    co2_metric_efficiency: 'Effizienz',
+    co2_metric_distance: 'Distanz',
+    co2_metric_trips: 'Fahrten',
+    
+    // CO2 Efficiency Ratings
+    efficiency_excellent: 'Ausgezeichnet',
+    efficiency_good: 'Gut',
+    efficiency_poor: 'Schlecht',
+    efficiency_very_poor: 'Sehr schlecht',
+    
+    // CO2 Trends
+    trend_improving: 'Verbessernd',
+    trend_worsening: 'Verschlechternd',
+    
+    // CO2 Recommendations
+    co2_recommendations_title: 'Empfehlungen',
+    co2_recommendation_combine: 'Kombinieren Sie mehrere Fahrten zu einem Ziel für mehr Effizienz',
+    co2_recommendation_transport: 'Nutzen Sie öffentliche Verkehrsmittel für kürzere Strecken, wo möglich',
 
     // Route Templates View
     route_templates_title: 'Routenvorlagen',
@@ -1770,6 +1806,43 @@ export const translations = {
     co2_settings_unsaved_changes: 'Tienes cambios sin guardar. ¿¸Estás seguro de que quieres cerrar?',
     co2_settings_unsaved_indicator: 'Cambios sin guardar',
     co2_settings_save: 'Guardar Configuración',
+    
+    co2_welcome_title: 'Bienvenido al Análisis de CO₂',
+    co2_welcome_desc: 'Obtén información sobre el impacto ambiental de tus viajes. Configura tus preferencias de análisis para comenzar a rastrear tu huella de carbono y descubrir oportunidades para viajes más sostenibles.',
+    co2_welcome_setup: 'Configurar Análisis CO₂',
+    co2_no_data_title: 'No Hay Datos Disponibles',
+    co2_no_data_desc: 'Ningún viaje coincide con tus criterios de filtro actuales. Intenta ajustar tu configuración o agregar algunos viajes para ver tu análisis de CO₂.',
+    co2_adjust_settings: 'Ajustar Configuración',
+    co2_add_trips: 'Agregar Viajes',
+    
+    // CO2 Metrics
+    co2_metric_total_emissions: 'Emisiones Totales de CO₂',
+    co2_metric_avg_efficiency: 'Eficiencia Promedio',
+    co2_metric_fuel_consumption: 'Consumo de Combustible',
+    co2_metric_trees_needed: 'Árboles Necesarios',
+    co2_metric_efficiency: 'Eficiencia',
+    co2_metric_distance: 'Distancia',
+    co2_metric_trips: 'Viajes',
+    
+    // CO2 Efficiency Ratings
+    efficiency_excellent: 'Excelente',
+    efficiency_good: 'Buena',
+    efficiency_poor: 'Pobre',
+    efficiency_very_poor: 'Muy Pobre',
+    
+    // CO2 Trends
+    trend_improving: 'Mejorando',
+    trend_worsening: 'Empeorando',
+    
+    // CO2 Recommendations
+    co2_recommendations_title: 'Recomendaciones',
+    co2_recommendation_combine: 'Combina múltiples viajes a un destino para mayor eficiencia',
+    co2_recommendation_transport: 'Usa transporte público para distancias cortas cuando sea posible',
+    
+    co2_ranking_title: 'Ranking de CO₂',
+    co2_ranking_card_description: 'Evalúa el impacto ambiental de tus viajes y compáralos',
+    co2_results_title: 'Resultados del Ranking CO₂',
+    co2_export_data: 'Exportar Datos',
     
     // Route Templates View
     route_templates_title: 'Plantillas de Rutas',
