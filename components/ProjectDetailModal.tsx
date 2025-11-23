@@ -3,7 +3,7 @@ import React, { useState, useRef, useMemo } from 'react';
 import { Project, CallsheetFile, SpecialOrigin, Trip, DocumentType, ExpenseDocument } from '../types';
 import useTrips from '../hooks/useTrips';
 import useProjects from '../hooks/useProjects';
-import { XIcon, FileTextIcon, EyeIcon, TrashIcon, LoaderIcon, SparklesIcon, LeafIcon, LineChartIcon, PieChartIcon, CarIcon, UploadCloudIcon } from './Icons';
+import { XIcon, FileTextIcon, EyeIcon, TrashIcon, LoaderIcon, SparklesIcon, TreePineIcon, CalendarIcon, RouteIcon, CarIcon, UploadCloudIcon } from './Icons';
 import useTranslation from '../hooks/useTranslation';
 import { formatDateForDisplay } from '../i18n/translations';
 import useToast from '../hooks/useToast';
@@ -110,13 +110,13 @@ const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({ projectId, trip
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/60 backdrop-blur-sm" onClick={onClose}>
         <div className="bg-background-dark border border-red-500/50 rounded-lg p-6 max-w-md mx-auto">
-          <h2 className="text-lg font-semibold text-red-400 mb-2">Project Not Found</h2>
-          <p className="text-gray-300 mb-4">The requested project could not be found.</p>
+          <h2 className="text-lg font-semibold text-red-400 mb-2">{t('project_not_found_title')}</h2>
+          <p className="text-gray-300 mb-4">{t('project_not_found_message')}</p>
           <button 
             onClick={onClose}
             className="px-4 py-2 bg-brand-primary text-white rounded-md hover:brightness-110 transition-all"
           >
-            Close
+            {t('common_close')}
           </button>
         </div>
       </div>
@@ -269,9 +269,9 @@ const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({ projectId, trip
           {/* Stats grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             <StatCard title={t('projectDetail_stats_total_km')} value={`${stats.totalKm.toFixed(1)} km`} icon={<CarIcon className="w-6 h-6 text-brand-primary" />} />
-            <StatCard title={t('projectDetail_stats_shooting_days')} value={stats.shootingDaysCount.toString()} icon={<LineChartIcon className="w-6 h-6 text-brand-secondary" />} />
-            <StatCard title={t('projectDetail_stats_km_per_day')} value={`${stats.kmPerDay.toFixed(1)} km`} icon={<PieChartIcon className="w-6 h-6 text-blue-400" />} />
-            <StatCard title={t('projectDetail_stats_co2')} value={`${stats.totalCo2.toFixed(1)} kg`} icon={<LeafIcon className="w-6 h-6 text-green-400" />} />
+            <StatCard title={t('projectDetail_stats_shooting_days')} value={stats.shootingDaysCount.toString()} icon={<CalendarIcon className="w-6 h-6 text-brand-secondary" />} />
+            <StatCard title={t('projectDetail_stats_km_per_day')} value={`${stats.kmPerDay.toFixed(1)} km`} icon={<RouteIcon className="w-6 h-6 text-blue-400" />} />
+            <StatCard title={t('projectDetail_stats_co2')} value={`${stats.totalCo2.toFixed(1)} kg`} icon={<TreePineIcon className="w-6 h-6 text-green-400" />} />
           </div>
           {/* Callsheets section */}
           <section className="bg-background-dark/60 border border-gray-700/50 rounded-lg p-5">

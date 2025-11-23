@@ -642,6 +642,10 @@ export const translations = {
     common_edit: 'Edit',
     common_delete: 'Delete',
     common_refresh: 'Refresh',
+    common_export: 'Export',
+    common_error_unknown: 'Unknown error',
+    project_not_found_title: 'Project Not Found',
+    project_not_found_message: 'The requested project could not be found.',
 
     // Unsaved changes indicators and warnings
     common_unsaved_changes_warning: 'You have unsaved changes. Are you sure you want to close?',
@@ -720,6 +724,8 @@ export const translations = {
     register_switch_to_login: 'Bereits ein Konto? Anmelden',
     login_password_mismatch: 'Passwörter stimmen nicht überein.',
     login_or_continue_with: 'Oder weiter mit',
+    login_continue_google: 'Mit Google fortfahren',
+    login_signing_in: 'Anmeldung läuft...',
 
     dashboard_title: 'Dashboard',
     dashboard_totalKm: 'Gesamtkilometer',
@@ -1310,6 +1316,10 @@ export const translations = {
     common_save: 'Speichern',
     common_edit: 'Bearbeiten',
     common_delete: 'Löschen',
+    common_export: 'Exportieren',
+    common_error_unknown: 'Unbekannter Fehler',
+    project_not_found_title: 'Projekt nicht gefunden',
+    project_not_found_message: 'Das angeforderte Projekt konnte nicht gefunden werden.',
     common_refresh: 'Aktualisieren',
 
     // Unsaved changes indicators and warnings
@@ -1837,6 +1847,7 @@ export const translations = {
     co2_welcome_title: 'Bienvenido al Análisis de CO₂',
     co2_welcome_desc: 'Obtén información sobre el impacto ambiental de tus viajes. Configura tus preferencias de análisis para comenzar a rastrear tu huella de carbono y descubrir oportunidades para viajes más sostenibles.',
     co2_welcome_setup: 'Configurar Análisis CO₂',
+    co2_results_title: 'Resultados del Ranking CO₂',
     co2_no_data_title: 'No Hay Datos Disponibles',
     co2_no_data_desc: 'Ningún viaje coincide con tus criterios de filtro actuales. Intenta ajustar tu configuración o agregar algunos viajes para ver tu análisis de CO₂.',
     co2_adjust_settings: 'Ajustar Configuración',
@@ -1979,6 +1990,10 @@ export const translations = {
     common_close: 'Cerrar',
     common_save: 'Guardar',
     common_edit: 'Editar',
+    common_export: 'Exportar',
+    common_error_unknown: 'Error desconocido',
+    project_not_found_title: 'Proyecto No Encontrado',
+    project_not_found_message: 'No se pudo encontrar el proyecto solicitado.',
     common_delete: 'Eliminar',
     common_refresh: 'Actualizar',
 

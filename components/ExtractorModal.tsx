@@ -28,7 +28,7 @@ const ExtractorModal: React.FC<ExtractorModalProps> = ({ onClose }) => {
       const data = await extractUniversalStructured({ mode, input: { text, file }, contentType });
       setResult(data);
     } catch (e: any) {
-      setError(e?.message || 'Unknown error');
+      setError(e?.message || t('common_error_unknown'));
     } finally {
       setLoading(false);
     }

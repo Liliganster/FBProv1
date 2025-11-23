@@ -369,7 +369,7 @@ const CO2RankingView: React.FC<CO2RankingViewProps> = ({
             className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded-lg transition-colors"
           >
             <DownloadIcon className="w-4 h-4" />
-            Export
+            {t('common_export')}
           </button>
         </div>
       </header>
