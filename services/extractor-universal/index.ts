@@ -107,9 +107,15 @@ function resolveProvider(
   if (provider === 'gemini') return { provider: 'gemini', creds: c };
   if (provider === 'openrouter') return { provider: 'openrouter', creds: c };
   
-  // Caso 'auto': SIEMPRE usar Gemini (servidor) por defecto
+  // Caso 'auto': Preferir OpenRouter si el usuario lo ha configurado
+  if (c.openRouterApiKey && c.openRouterModel) {
+    console.log('[ExtractorUniversal] Auto-selecting OpenRouter (user has API key configured)');
+    return { provider: 'openrouter', creds: c };
+  }
+  
+  // Fallback a Gemini si no hay OpenRouter configurado
   // Gemini es gratis para el usuario (usa API key del servidor)
-  // El usuario puede elegir explícitamente 'openrouter' si configuró su API key
+  console.log('[ExtractorUniversal] Auto-selecting Gemini (default/fallback)');
   return { provider: 'gemini', creds: c };
 }
 
