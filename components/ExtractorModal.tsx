@@ -8,6 +8,7 @@ interface ExtractorModalProps {
 
 const ExtractorModal: React.FC<ExtractorModalProps> = ({ onClose }) => {
   const [mode, setMode] = useState<ExtractMode>('direct');
+  const [contentType, setContentType] = useState<'callsheet' | 'email'>('callsheet');
   const [text, setText] = useState('');
   const [file, setFile] = useState<File | undefined>();
   const [loading, setLoading] = useState(false);
@@ -22,7 +23,7 @@ const ExtractorModal: React.FC<ExtractorModalProps> = ({ onClose }) => {
   const onExtract = async () => {
     setLoading(true); setError(null); setResult(null);
     try {
-      const data = await extractUniversalStructured({ mode, input: { text, file } });
+      const data = await extractUniversalStructured({ mode, input: { text, file }, contentType });
       setResult(data);
     } catch (e: any) {
       setError(e?.message || 'Unknown error');
@@ -86,6 +87,36 @@ const ExtractorModal: React.FC<ExtractorModalProps> = ({ onClose }) => {
                   <div className="text-xs text-on-surface-dark-secondary">Con OCR para PDFs e im├ígenes</div>
                 </div>
               </div>
+            </button>
+          </div>
+        </div>
+
+        <div className="mb-3">
+          <label className="mb-2 block text-sm font-medium text-on-surface-dark">Tipo de contenido:</label>
+          <div className="flex gap-3 mb-2">
+            <button
+              type="button"
+              onClick={() => setContentType('callsheet')}
+              className={`flex-1 rounded-lg border-2 px-4 py-3 text-left transition-all ${
+                contentType === 'callsheet'
+                  ? 'border-brand-primary bg-brand-primary/20 shadow-md'
+                  : 'border-surface-light/30 bg-background-dark hover:border-surface-light/50'
+              }`}
+            >
+              <div className="font-semibold">Callsheet / PDF</div>
+              <div className="text-xs text-on-surface-dark-secondary">Documento completo de rodaje</div>
+            </button>
+            <button
+              type="button"
+              onClick={() => setContentType('email')}
+              className={`flex-1 rounded-lg border-2 px-4 py-3 text-left transition-all ${
+                contentType === 'email'
+                  ? 'border-brand-primary bg-brand-primary/20 shadow-md'
+                  : 'border-surface-light/30 bg-background-dark hover:border-surface-light/50'
+              }`}
+            >
+              <div className="font-semibold">Email / Texto</div>
+              <div className="text-xs text-on-surface-dark-secondary">Direcciones breves en correos/notas</div>
             </button>
           </div>
         </div>

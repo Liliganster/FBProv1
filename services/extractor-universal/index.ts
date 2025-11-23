@@ -119,14 +119,16 @@ export async function extractUniversalStructured({
   provider = 'auto',
   credentials,
   useCrewFirst = false, // Use simple schema by default
+  contentType = 'callsheet', // 'callsheet' | 'email'
 }: {
   mode: ExtractMode;
   input: ExtractInput;
   provider?: ExtractProvider;
   credentials?: ProviderCredentials;
   useCrewFirst?: boolean; // Optional parameter to use CrewFirst schema
+  contentType?: 'callsheet' | 'email';
 }): Promise<CallsheetExtraction> {
-  console.log('[ExtractorUniversal] Starting extraction:', { mode, provider, useCrewFirst, hasFile: !!input.file, hasText: !!input.text });
+  console.log('[ExtractorUniversal] Starting extraction:', { mode, provider, useCrewFirst, contentType, hasFile: !!input.file, hasText: !!input.text });
   
   // Get filename if available for fallback inference
   const fileName = input.file?.name || '';
@@ -138,6 +140,12 @@ export async function extractUniversalStructured({
     
     const { provider: chosen, creds } = resolveProvider(provider, credentials);
     console.log('[ExtractorUniversal] Using provider:', chosen);
+
+    // Optional hint to the model depending on content type
+    const textForModel =
+      contentType === 'email'
+        ? `[CONTEXT: The following text is an email or short message that may contain filming addresses. Extract date, project name, production companies and ONLY filming locations (not parking/catering).]\n\n${normalized.text}`
+        : normalized.text;
     
     const tools = {
       geocode_address: async ({ address }: { address: string }) => ({ lat: 40.4168, lng: -3.7038, confidence: 0.4, address }),
@@ -149,8 +157,8 @@ export async function extractUniversalStructured({
     let parsed: any;
     try {
       parsed = mode === 'agent'
-        ? await agenticParse(normalized.text, tools, chosen, creds, useCrewFirst)
-        : await directParse(normalized.text, chosen, creds, useCrewFirst);
+        ? await agenticParse(textForModel, tools, chosen, creds, useCrewFirst)
+        : await directParse(textForModel, chosen, creds, useCrewFirst);
     } catch (err) {
       // Do NOT fallback to Gemini when OpenRouter is selected or configured.
       // Surface the OpenRouter error to the UI so the user can fix API key/model/network issues.
