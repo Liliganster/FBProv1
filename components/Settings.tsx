@@ -291,23 +291,53 @@ const SettingsView: React.FC<{
                                 </div>
 
                                 {/* Gemini Status (Server) */}
-                                <div className="flex items-center justify-between p-3 bg-green-900/20 border border-green-700/50 rounded">
+                                <div className={`flex items-center justify-between p-3 rounded ${
+                                    localProfile.openRouterApiKey && localProfile.openRouterModel
+                                        ? 'bg-gray-900/20 border border-gray-700/50'
+                                        : 'bg-green-900/20 border border-green-700/50'
+                                }`}>
                                     <div>
-                                        <p className="font-medium text-green-200">{t('settings_api_gemini_status')}</p>
-                                        <p className="text-xs text-green-300">{t('settings_api_gemini_desc')}</p>
+                                        <p className={`font-medium ${
+                                            localProfile.openRouterApiKey && localProfile.openRouterModel
+                                                ? 'text-gray-300'
+                                                : 'text-green-200'
+                                        }`}>{t('settings_api_gemini_status')}</p>
+                                        <p className={`text-xs ${
+                                            localProfile.openRouterApiKey && localProfile.openRouterModel
+                                                ? 'text-gray-400'
+                                                : 'text-green-300'
+                                        }`}>{t('settings_api_gemini_desc')}</p>
                                     </div>
-                                    <span className="text-green-400">✅ {t('settings_api_gemini_active')}</span>
+                                    {localProfile.openRouterApiKey && localProfile.openRouterModel ? (
+                                        <span className="text-gray-400">🔄 {t('settings_api_fallback')}</span>
+                                    ) : (
+                                        <span className="text-green-400">✅ {t('settings_api_gemini_active')}</span>
+                                    )}
                                 </div>
 
                                 {/* OpenRouter Configuration (User) */}
-                                <div className="space-y-3 p-3 border border-gray-600 rounded">
+                                <div className={`space-y-3 p-3 border rounded ${
+                                    localProfile.openRouterApiKey && localProfile.openRouterModel
+                                        ? 'bg-green-900/20 border-green-700/50'
+                                        : 'border-gray-600'
+                                }`}>
                                     <div className="flex items-center justify-between">
                                         <div>
-                                            <p className="font-medium text-on-surface-dark">{t('settings_api_openrouter_optional')}</p>
-                                            <p className="text-xs text-gray-400">{t('settings_api_openrouter_desc')}</p>
+                                            <p className={`font-medium ${
+                                                localProfile.openRouterApiKey && localProfile.openRouterModel
+                                                    ? 'text-green-200'
+                                                    : 'text-on-surface-dark'
+                                            }`}>{t('settings_api_openrouter_optional')}</p>
+                                            <p className={`text-xs ${
+                                                localProfile.openRouterApiKey && localProfile.openRouterModel
+                                                    ? 'text-green-300'
+                                                    : 'text-gray-400'
+                                            }`}>{t('settings_api_openrouter_desc')}</p>
                                         </div>
-                                        {localProfile.openRouterApiKey ? (
-                                            <span className="text-green-400">✅ {t('settings_api_openrouter_configured')}</span>
+                                        {localProfile.openRouterApiKey && localProfile.openRouterModel ? (
+                                            <span className="text-green-400">✅ {t('settings_api_active')}</span>
+                                        ) : localProfile.openRouterApiKey ? (
+                                            <span className="text-yellow-400">⚠️ {t('settings_api_select_model')}</span>
                                         ) : (
                                             <span className="text-gray-500">⚪ {t('settings_api_openrouter_not_configured')}</span>
                                         )}
