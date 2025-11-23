@@ -1,6 +1,7 @@
 ﻿import React, { useState } from 'react';
 import { XCircleIcon, LoaderIcon } from './Icons';
 import { extractUniversalStructured, type ExtractMode } from '../services/extractor-universal/index';
+import useTranslation from '../hooks/useTranslation';
 
 interface ExtractorModalProps {
   onClose: () => void;
@@ -14,6 +15,7 @@ const ExtractorModal: React.FC<ExtractorModalProps> = ({ onClose }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<any>(null);
+  const { t } = useTranslation();
 
   const onSelectFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
@@ -36,14 +38,14 @@ const ExtractorModal: React.FC<ExtractorModalProps> = ({ onClose }) => {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={onClose}>
       <div className="w-full max-w-xs sm:max-w-lg md:max-w-2xl lg:max-w-3xl rounded-lg bg-frost-glass p-4 shadow-xl" onClick={(e) => e.stopPropagation()}>
         <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-lg font-semibold">Extractor de Hoja de Rodaje</h2>
+          <h2 className="text-lg font-semibold">{t('extractor_title')}</h2>
           <button onClick={onClose} className="p-2 hover:opacity-80" aria-label="Close">
             <XCircleIcon className="h-5 w-5" />
           </button>
         </div>
 
         <div className="mb-4">
-          <label className="mb-2 block text-sm font-medium text-on-surface-dark">Modo de Extracci├│n:</label>
+          <label className="mb-2 block text-sm font-medium text-on-surface-dark">{t('extractor_mode_label')}:</label>
           <div className="flex gap-3">
             <button
               type="button"
@@ -61,8 +63,8 @@ const ExtractorModal: React.FC<ExtractorModalProps> = ({ onClose }) => {
                   {mode === 'direct' && <div className="h-2 w-2 rounded-full bg-white"></div>}
                 </div>
                 <div>
-                  <div className="font-semibold">Direct Mode</div>
-                  <div className="text-xs text-on-surface-dark-secondary">R├ípido, texto limpio</div>
+                  <div className="font-semibold">{t('extractor_mode_direct')}</div>
+                  <div className="text-xs text-on-surface-dark-secondary">{t('extractor_mode_direct_desc')}</div>
                 </div>
               </div>
             </button>
@@ -83,8 +85,8 @@ const ExtractorModal: React.FC<ExtractorModalProps> = ({ onClose }) => {
                   {mode === 'agent' && <div className="h-2 w-2 rounded-full bg-white"></div>}
                 </div>
                 <div>
-                  <div className="font-semibold">Agent Mode</div>
-                  <div className="text-xs text-on-surface-dark-secondary">Con OCR para PDFs e im├ígenes</div>
+                  <div className="font-semibold">{t('extractor_mode_agent')}</div>
+                  <div className="text-xs text-on-surface-dark-secondary">{t('extractor_mode_agent_desc')}</div>
                 </div>
               </div>
             </button>
@@ -92,7 +94,7 @@ const ExtractorModal: React.FC<ExtractorModalProps> = ({ onClose }) => {
         </div>
 
         <div className="mb-3">
-          <label className="mb-2 block text-sm font-medium text-on-surface-dark">Tipo de contenido:</label>
+          <label className="mb-2 block text-sm font-medium text-on-surface-dark">{t('extractor_content_label')}:</label>
           <div className="flex gap-3 mb-2">
             <button
               type="button"
@@ -103,8 +105,8 @@ const ExtractorModal: React.FC<ExtractorModalProps> = ({ onClose }) => {
                   : 'border-surface-light/30 bg-background-dark hover:border-surface-light/50'
               }`}
             >
-              <div className="font-semibold">Callsheet / PDF</div>
-              <div className="text-xs text-on-surface-dark-secondary">Documento completo de rodaje</div>
+              <div className="font-semibold">{t('extractor_content_callsheet_title')}</div>
+              <div className="text-xs text-on-surface-dark-secondary">{t('extractor_content_callsheet_desc')}</div>
             </button>
             <button
               type="button"
@@ -115,8 +117,8 @@ const ExtractorModal: React.FC<ExtractorModalProps> = ({ onClose }) => {
                   : 'border-surface-light/30 bg-background-dark hover:border-surface-light/50'
               }`}
             >
-              <div className="font-semibold">Email / Texto</div>
-              <div className="text-xs text-on-surface-dark-secondary">Direcciones breves en correos/notas</div>
+              <div className="font-semibold">{t('extractor_content_email_title')}</div>
+              <div className="text-xs text-on-surface-dark-secondary">{t('extractor_content_email_desc')}</div>
             </button>
           </div>
         </div>
@@ -124,7 +126,7 @@ const ExtractorModal: React.FC<ExtractorModalProps> = ({ onClose }) => {
         <div className="mb-3">
           <textarea
             className="h-40 w-full resize-y rounded-md bg-background-dark p-3 outline-none"
-            placeholder="Pega aqu├¡ el contenido de la hoja (texto/CSV)"
+            placeholder={t('extractor_text_placeholder')}
             value={text}
             onChange={(e)=>setText(e.target.value)}
           />
@@ -142,7 +144,7 @@ const ExtractorModal: React.FC<ExtractorModalProps> = ({ onClose }) => {
             className="flex items-center gap-2 rounded-md bg-brand-primary px-4 py-2 text-white hover:opacity-90 disabled:opacity-60"
           >
             {loading && <LoaderIcon className="h-4 w-4 animate-spin" />} 
-            {loading ? `Extrayendo (${mode === 'direct' ? 'Direct' : 'Agent con OCR'})...` : 'Extract with AI'}
+            {loading ? (mode === 'direct' ? t('extractor_loading_direct') : t('extractor_loading_agent')) : t('extractor_button')}
           </button>
         </div>
 
@@ -155,7 +157,7 @@ const ExtractorModal: React.FC<ExtractorModalProps> = ({ onClose }) => {
                 className="rounded-md bg-brand-secondary px-3 py-1 text-black hover:opacity-90"
                 onClick={()=>navigator.clipboard.writeText(JSON.stringify(result, null, 2))}
               >
-                Copiar JSON
+                {t('extractor_copy_json')}
               </button>
             </div>
           </div>
