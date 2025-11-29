@@ -406,7 +406,6 @@ const CO2RankingView: React.FC<CO2RankingViewProps> = ({
           <StatCard
             title={t('co2_metric_trees_needed') || 'Trees Needed'}
             value={`${summaryMetrics.treesNeeded}`}
-            icon={<TreePineIcon className="w-8 h-8" />}
             color="text-green-400"
           />
         </div>
