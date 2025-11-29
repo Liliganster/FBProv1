@@ -47,14 +47,8 @@ const StatCard: React.FC<{
   value: string;
   icon?: React.ReactNode;
   color?: string;
-  notificationIcon?: React.ReactNode;
-}> = ({ title, value, icon, color = 'text-white', notificationIcon }) => (
-  <div className="bg-frost-glass p-6 rounded-lg relative">
-    {notificationIcon && (
-      <div className="absolute top-4 right-4 text-yellow-400">
-        {notificationIcon}
-      </div>
-    )}
+}> = ({ title, value, icon, color = 'text-white' }) => (
+  <div className="bg-frost-glass p-6 rounded-lg">
     <div className="flex items-center justify-between">
       <div>
         <h3 className="text-sm font-medium text-on-surface-dark-secondary">{title}</h3>
@@ -125,20 +119,6 @@ const ProjectRow: React.FC<{
         <p className="text-sm text-on-surface-dark-secondary">{t('co2_metric_trips')}</p>
         <p className="text-xl font-bold text-white">{project.tripCount}</p>
       </div>
-    </div>
-
-    <div className="border-t border-gray-700 pt-4">
-      <h4 className="text-sm font-medium text-white mb-2">{t('co2_recommendations_title')}:</h4>
-      <ul className="text-sm text-on-surface-dark-secondary space-y-1">
-        <li className="flex items-start gap-2">
-          <span className="w-1 h-1 bg-current rounded-full mt-2 flex-shrink-0"></span>
-          {t('co2_recommendation_combine')}
-        </li>
-        <li className="flex items-start gap-2">
-          <span className="w-1 h-1 bg-current rounded-full mt-2 flex-shrink-0"></span>
-          {t('co2_recommendation_transport')}
-        </li>
-      </ul>
     </div>
   </div>
 );
@@ -428,7 +408,6 @@ const CO2RankingView: React.FC<CO2RankingViewProps> = ({
             value={`${summaryMetrics.treesNeeded}`}
             icon={<TreePineIcon className="w-8 h-8" />}
             color="text-green-400"
-            notificationIcon={<TreePineIcon className="w-5 h-5" />}
           />
         </div>
       )}
