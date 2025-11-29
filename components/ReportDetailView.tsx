@@ -46,7 +46,7 @@ const ReportDetailView: React.FC<ReportDetailViewProps> = ({ report, projects, o
       <style>
         @page {
           size: A4;
-          margin: 15mm 12mm;
+          margin: 20mm 15mm;
         }
 
         @media print {
@@ -62,66 +62,77 @@ const ReportDetailView: React.FC<ReportDetailViewProps> = ({ report, projects, o
           body {
             margin: 0 !important;
             padding: 0 !important;
+            background: white !important;
           }
           
           .printable-content {
             padding: 0 !important;
             margin: 0 !important;
+            background: white !important;
           }
           
-          /* Headers compactos */
+          /* Headers */
           .printable-content h3 {
             font-size: 14pt !important;
-            margin: 0 0 4px 0 !important;
+            margin: 0 0 6px 0 !important;
+            color: #000 !important;
           }
           
           .printable-content > div:first-child {
-            margin-bottom: 8px !important;
+            margin-bottom: 10px !important;
+            text-align: center !important;
           }
           
           .printable-content > div:first-child p {
-            font-size: 8pt !important;
+            font-size: 9pt !important;
             margin: 0 !important;
+            color: #000 !important;
           }
           
           /* Info del conductor */
           .printable-content > div:nth-child(2) {
-            font-size: 7pt !important;
-            margin-bottom: 10px !important;
-            line-height: 1.3 !important;
+            font-size: 8pt !important;
+            margin-bottom: 12px !important;
+            line-height: 1.4 !important;
           }
           
           .printable-content > div:nth-child(2) p {
-            margin: 0 0 2px 0 !important;
+            margin: 0 0 3px 0 !important;
+            color: #000 !important;
           }
           
           /* Tabla */
           .printable-content table {
             width: 100% !important;
             border-collapse: collapse !important;
-            font-size: 7pt !important;
+            font-size: 8pt !important;
             margin: 0 !important;
           }
           
           .printable-content table th {
-            font-size: 7pt !important;
+            font-size: 8pt !important;
             font-weight: bold !important;
-            padding: 3px 4px !important;
-            background-color: #f0f0f0 !important;
-            border: 1px solid #ddd !important;
+            padding: 4px 6px !important;
+            background-color: #f5f5f5 !important;
             text-align: left !important;
+            color: #000 !important;
+            border-bottom: 1px solid #000 !important;
           }
           
           .printable-content table td {
-            font-size: 7pt !important;
-            padding: 3px 4px !important;
-            border: 1px solid #ddd !important;
+            font-size: 8pt !important;
+            padding: 4px 6px !important;
             vertical-align: top !important;
             word-wrap: break-word !important;
             overflow-wrap: break-word !important;
+            color: #000 !important;
           }
           
-          /* Anchos de columna con porcentajes */
+          .printable-content tbody tr {
+            border-bottom: 1px solid #e0e0e0 !important;
+          }
+          
+          /* Anchos de columna */
           .printable-content table th:nth-child(1),
           .printable-content table td:nth-child(1) {
             width: 10% !important;
@@ -130,18 +141,17 @@ const ReportDetailView: React.FC<ReportDetailViewProps> = ({ report, projects, o
           
           .printable-content table th:nth-child(2),
           .printable-content table td:nth-child(2) {
-            width: 12% !important;
+            width: 13% !important;
           }
           
           .printable-content table th:nth-child(3),
           .printable-content table td:nth-child(3) {
-            width: 12% !important;
+            width: 13% !important;
           }
           
           .printable-content table th:nth-child(4),
           .printable-content table td:nth-child(4) {
-            width: 58% !important;
-            max-width: 0 !important;
+            width: 56% !important;
           }
           
           .printable-content table th:nth-child(5),
@@ -152,34 +162,37 @@ const ReportDetailView: React.FC<ReportDetailViewProps> = ({ report, projects, o
           }
           
           .printable-content table tfoot td {
-            font-size: 8pt !important;
+            font-size: 9pt !important;
             font-weight: bold !important;
-            padding: 4px !important;
-            background-color: #f0f0f0 !important;
+            padding: 6px !important;
+            background-color: #f5f5f5 !important;
+            color: #000 !important;
+            border-top: 2px solid #000 !important;
           }
           
           /* Footer de auditoría */
           .audit-footer {
-            margin-top: 15px !important;
-            padding-top: 10px !important;
-            border-top: 1px solid #999 !important;
-            font-size: 6pt !important;
-            line-height: 1.2 !important;
+            margin-top: 20px !important;
+            padding-top: 12px !important;
+            border-top: 1px solid #ccc !important;
+            font-size: 7pt !important;
+            line-height: 1.3 !important;
             color: #666 !important;
             page-break-inside: avoid !important;
             word-break: break-all !important;
           }
           
           .audit-footer p {
-            margin: 2px 0 !important;
+            margin: 3px 0 !important;
+            color: #666 !important;
           }
         }
         
-        /* Estilos generales */
+        /* Estilos generales para vista previa */
         body {
           background-color: #ffffff !important;
           color: #000000 !important;
-          font-family: Arial, Helvetica, sans-serif !important;
+          font-family: Arial, sans-serif !important;
         }
         
         .printable-content {
@@ -187,12 +200,8 @@ const ReportDetailView: React.FC<ReportDetailViewProps> = ({ report, projects, o
           color: #000000 !important;
         }
         
-        .printable-content * {
-          color: #000000 !important;
-        }
-        
         .text-brand-primary {
-          color: #0066cc !important;
+          color: #000 !important;
         }
       </style>
     `;
