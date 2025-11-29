@@ -46,8 +46,8 @@ const ReportDetailView: React.FC<ReportDetailViewProps> = ({ report, projects, o
       <style>
         /* Reset page margins to remove browser default headers/footers */
         @page {
-          size: A4;
-          margin: 0; /* This removes the browser's default header and footer */
+          size: A4 landscape; /* Landscape orientation for wider tables */
+          margin: 0;
         }
 
         @media print {
@@ -57,28 +57,50 @@ const ReportDetailView: React.FC<ReportDetailViewProps> = ({ report, projects, o
           body {
             -webkit-print-color-adjust: exact;
             print-color-adjust: exact;
-            margin: 20mm; /* We apply the desired page margin to the body instead */
+            margin: 10mm 12mm !important; /* Reduced margins for more space */
           }
           
           /* Fix audit footer positioning - remove fixed position to avoid overlap */
           .audit-footer {
             position: static !important;
-            margin-top: 20px !important;
-            padding-top: 15px !important;
+            margin-top: 15px !important;
+            padding-top: 10px !important;
             border-top: 1px solid #666 !important;
-            font-size: 8pt !important;
+            font-size: 6pt !important;
             color: #666 !important;
             page-break-inside: avoid;
+            word-break: break-all !important;
+            line-height: 1.2 !important;
           }
           
           /* Ensure table doesn't break awkwardly before footer */
           .printable-content table {
-            margin-bottom: 30px !important;
+            margin-bottom: 20px !important;
+            table-layout: auto !important;
+            width: 100% !important;
           }
           
           /* Add page break control */
           .audit-footer {
             break-inside: avoid;
+          }
+          
+          /* Reduce header sizes for print */
+          .printable-content h3 {
+            font-size: 14pt !important;
+            margin-bottom: 8px !important;
+          }
+          
+          .printable-content > div:first-child p {
+            font-size: 8pt !important;
+            margin-bottom: 6px !important;
+          }
+          
+          /* Compact header info section */
+          .printable-content > div:nth-child(2) {
+            font-size: 7pt !important;
+            margin-bottom: 10px !important;
+            line-height: 1.3 !important;
           }
         }
         
@@ -86,12 +108,13 @@ const ReportDetailView: React.FC<ReportDetailViewProps> = ({ report, projects, o
         body {
           background-color: #ffffff !important;
           color: #000000 !important;
-          font-family: sans-serif; /* Use a common font for print */
+          font-family: Arial, sans-serif !important;
         }
         .printable-content {
           background-color: #ffffff !important; 
           border-radius: 0;
           box-shadow: none;
+          padding: 0 !important;
         }
         /* Force black text on most elements */
         .printable-content,
@@ -101,15 +124,54 @@ const ReportDetailView: React.FC<ReportDetailViewProps> = ({ report, projects, o
            color: #000000 !important;
         }
 
-        /* Table-specific styles for smaller font */
+        /* Table-specific styles - optimized for landscape A4 */
+        .printable-content table {
+          font-size: 7pt !important;
+          border-collapse: collapse !important;
+        }
+        
         .printable-content table th,
         .printable-content table td {
-          font-size: 8pt !important;
-          padding: 4px 8px !important; /* Adjust padding for smaller font */
+          font-size: 7pt !important;
+          padding: 3px 4px !important;
           color: #000000 !important;
+          line-height: 1.2 !important;
+          word-wrap: break-word !important;
+          overflow-wrap: break-word !important;
         }
+        
+        /* Specific column widths */
+        .printable-content table th:nth-child(1),
+        .printable-content table td:nth-child(1) {
+          width: 8% !important;
+          white-space: nowrap !important;
+        }
+        
+        .printable-content table th:nth-child(2),
+        .printable-content table td:nth-child(2) {
+          width: 12% !important;
+        }
+        
+        .printable-content table th:nth-child(3),
+        .printable-content table td:nth-child(3) {
+          width: 12% !important;
+        }
+        
+        .printable-content table th:nth-child(4),
+        .printable-content table td:nth-child(4) {
+          width: 60% !important;
+          word-break: break-word !important;
+        }
+        
+        .printable-content table th:nth-child(5),
+        .printable-content table td:nth-child(5) {
+          width: 8% !important;
+          white-space: nowrap !important;
+        }
+        
         .printable-content table tfoot td {
-          font-size: 9pt !important; /* Make total slightly larger */
+          font-size: 8pt !important;
+          font-weight: bold !important;
         }
 
         /* Keep brand color for important numbers */
