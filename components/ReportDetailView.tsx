@@ -46,7 +46,7 @@ const ReportDetailView: React.FC<ReportDetailViewProps> = ({ report, projects, o
       <style>
         /* Reset page margins to remove browser default headers/footers */
         @page {
-          size: A4 landscape; /* Landscape orientation for wider tables */
+          size: A4 portrait;
           margin: 0;
         }
 
@@ -57,50 +57,53 @@ const ReportDetailView: React.FC<ReportDetailViewProps> = ({ report, projects, o
           body {
             -webkit-print-color-adjust: exact;
             print-color-adjust: exact;
-            margin: 10mm 12mm !important; /* Reduced margins for more space */
+            margin: 8mm 10mm !important;
           }
           
-          /* Fix audit footer positioning - remove fixed position to avoid overlap */
-          .audit-footer {
-            position: static !important;
-            margin-top: 15px !important;
-            padding-top: 10px !important;
-            border-top: 1px solid #666 !important;
-            font-size: 6pt !important;
-            color: #666 !important;
-            page-break-inside: avoid;
-            word-break: break-all !important;
-            line-height: 1.2 !important;
-          }
-          
-          /* Ensure table doesn't break awkwardly before footer */
-          .printable-content table {
-            margin-bottom: 20px !important;
-            table-layout: auto !important;
-            width: 100% !important;
-          }
-          
-          /* Add page break control */
-          .audit-footer {
-            break-inside: avoid;
-          }
-          
-          /* Reduce header sizes for print */
+          /* Compact header */
           .printable-content h3 {
-            font-size: 14pt !important;
-            margin-bottom: 8px !important;
+            font-size: 12pt !important;
+            margin-bottom: 4px !important;
           }
           
           .printable-content > div:first-child p {
-            font-size: 8pt !important;
-            margin-bottom: 6px !important;
+            font-size: 7pt !important;
+            margin-bottom: 4px !important;
           }
           
-          /* Compact header info section */
+          /* Compact info section */
           .printable-content > div:nth-child(2) {
-            font-size: 7pt !important;
-            margin-bottom: 10px !important;
-            line-height: 1.3 !important;
+            font-size: 6.5pt !important;
+            margin-bottom: 8px !important;
+            line-height: 1.2 !important;
+          }
+          
+          .printable-content > div:nth-child(2) p {
+            margin-bottom: 2px !important;
+          }
+          
+          /* Fix audit footer positioning */
+          .audit-footer {
+            position: static !important;
+            margin-top: 12px !important;
+            padding-top: 8px !important;
+            border-top: 1px solid #666 !important;
+            font-size: 5pt !important;
+            color: #666 !important;
+            page-break-inside: avoid;
+            word-break: break-all !important;
+            line-height: 1.1 !important;
+          }
+          
+          /* Table optimization */
+          .printable-content table {
+            margin-bottom: 15px !important;
+            table-layout: fixed !important;
+            width: 100% !important;
+          }
+          
+          .audit-footer {
+            break-inside: avoid;
           }
         }
         
@@ -124,54 +127,62 @@ const ReportDetailView: React.FC<ReportDetailViewProps> = ({ report, projects, o
            color: #000000 !important;
         }
 
-        /* Table-specific styles - optimized for landscape A4 */
+        /* Table-specific styles */
         .printable-content table {
-          font-size: 7pt !important;
+          font-size: 6.5pt !important;
           border-collapse: collapse !important;
         }
         
         .printable-content table th,
         .printable-content table td {
-          font-size: 7pt !important;
-          padding: 3px 4px !important;
+          font-size: 6.5pt !important;
+          padding: 2px 3px !important;
           color: #000000 !important;
-          line-height: 1.2 !important;
-          word-wrap: break-word !important;
-          overflow-wrap: break-word !important;
+          line-height: 1.3 !important;
+          vertical-align: top !important;
         }
         
-        /* Specific column widths */
+        /* Date column - fixed width, no wrap */
         .printable-content table th:nth-child(1),
         .printable-content table td:nth-child(1) {
-          width: 8% !important;
+          width: 60px !important;
           white-space: nowrap !important;
         }
         
+        /* Project column */
         .printable-content table th:nth-child(2),
         .printable-content table td:nth-child(2) {
-          width: 12% !important;
+          width: 80px !important;
+          word-wrap: break-word !important;
         }
         
+        /* Producer column */
         .printable-content table th:nth-child(3),
         .printable-content table td:nth-child(3) {
-          width: 12% !important;
+          width: 80px !important;
+          word-wrap: break-word !important;
         }
         
+        /* Route column - takes remaining space and wraps */
         .printable-content table th:nth-child(4),
         .printable-content table td:nth-child(4) {
-          width: 60% !important;
-          word-break: break-word !important;
+          word-wrap: break-word !important;
+          overflow-wrap: break-word !important;
+          hyphens: auto !important;
         }
         
+        /* Distance column - fixed width, no wrap */
         .printable-content table th:nth-child(5),
         .printable-content table td:nth-child(5) {
-          width: 8% !important;
+          width: 50px !important;
           white-space: nowrap !important;
+          text-align: right !important;
         }
         
         .printable-content table tfoot td {
-          font-size: 8pt !important;
+          font-size: 7pt !important;
           font-weight: bold !important;
+          padding: 4px 3px !important;
         }
 
         /* Keep brand color for important numbers */
