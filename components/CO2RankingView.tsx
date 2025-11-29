@@ -19,7 +19,8 @@ import {
   CheckCircleIcon,
   XCircleIcon,
   TreePineIcon,
-  SettingsIcon
+  SettingsIcon,
+  BellIcon
 } from './Icons';
 import CO2AnalysisSettings from './CO2AnalysisSettings';
 
@@ -47,8 +48,14 @@ const StatCard: React.FC<{
   value: string;
   icon?: React.ReactNode;
   color?: string;
-}> = ({ title, value, icon, color = 'text-white' }) => (
-  <div className="bg-frost-glass p-6 rounded-lg">
+  notificationIcon?: React.ReactNode;
+}> = ({ title, value, icon, color = 'text-white', notificationIcon }) => (
+  <div className="bg-frost-glass p-6 rounded-lg relative">
+    {notificationIcon && (
+      <div className="absolute top-4 right-4 text-yellow-400">
+        {notificationIcon}
+      </div>
+    )}
     <div className="flex items-center justify-between">
       <div>
         <h3 className="text-sm font-medium text-on-surface-dark-secondary">{title}</h3>
@@ -422,6 +429,7 @@ const CO2RankingView: React.FC<CO2RankingViewProps> = ({
             value={`${summaryMetrics.treesNeeded}`}
             icon={<TreePineIcon className="w-8 h-8" />}
             color="text-green-400"
+            notificationIcon={<BellIcon className="w-5 h-5" />}
           />
         </div>
       )}
