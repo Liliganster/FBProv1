@@ -46,7 +46,7 @@ const ReportDetailView: React.FC<ReportDetailViewProps> = ({ report, projects, o
       <style>
         @page {
           size: A4;
-          margin: 20mm 15mm;
+          margin: 0;
         }
 
         @media print {
@@ -61,7 +61,7 @@ const ReportDetailView: React.FC<ReportDetailViewProps> = ({ report, projects, o
           
           body {
             margin: 0 !important;
-            padding: 0 !important;
+            padding: 20mm 15mm !important;
             background: white !important;
           }
           
