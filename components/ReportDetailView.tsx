@@ -44,155 +44,155 @@ const ReportDetailView: React.FC<ReportDetailViewProps> = ({ report, projects, o
 
     const printOverrideStyles = `
       <style>
-        /* Reset page margins to remove browser default headers/footers */
         @page {
-          size: A4 portrait;
-          margin: 0;
+          size: A4;
+          margin: 15mm 12mm;
         }
 
         @media print {
+          * {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+          
           .no-print {
             display: none !important;
           }
+          
           body {
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
-            margin: 8mm 10mm !important;
+            margin: 0 !important;
+            padding: 0 !important;
           }
           
-          /* Compact header */
+          .printable-content {
+            padding: 0 !important;
+            margin: 0 !important;
+          }
+          
+          /* Headers compactos */
           .printable-content h3 {
-            font-size: 12pt !important;
-            margin-bottom: 4px !important;
+            font-size: 14pt !important;
+            margin: 0 0 4px 0 !important;
+          }
+          
+          .printable-content > div:first-child {
+            margin-bottom: 8px !important;
           }
           
           .printable-content > div:first-child p {
-            font-size: 7pt !important;
-            margin-bottom: 4px !important;
+            font-size: 8pt !important;
+            margin: 0 !important;
           }
           
-          /* Compact info section */
+          /* Info del conductor */
           .printable-content > div:nth-child(2) {
-            font-size: 6.5pt !important;
-            margin-bottom: 8px !important;
-            line-height: 1.2 !important;
+            font-size: 7pt !important;
+            margin-bottom: 10px !important;
+            line-height: 1.3 !important;
           }
           
           .printable-content > div:nth-child(2) p {
-            margin-bottom: 2px !important;
+            margin: 0 0 2px 0 !important;
           }
           
-          /* Fix audit footer positioning */
-          .audit-footer {
-            position: static !important;
-            margin-top: 12px !important;
-            padding-top: 8px !important;
-            border-top: 1px solid #666 !important;
-            font-size: 5pt !important;
-            color: #666 !important;
-            page-break-inside: avoid;
-            word-break: break-all !important;
-            line-height: 1.1 !important;
-          }
-          
-          /* Table optimization */
+          /* Tabla */
           .printable-content table {
-            margin-bottom: 15px !important;
-            table-layout: fixed !important;
             width: 100% !important;
+            border-collapse: collapse !important;
+            font-size: 7pt !important;
+            margin: 0 !important;
           }
           
+          .printable-content table th {
+            font-size: 7pt !important;
+            font-weight: bold !important;
+            padding: 3px 4px !important;
+            background-color: #f0f0f0 !important;
+            border: 1px solid #ddd !important;
+            text-align: left !important;
+          }
+          
+          .printable-content table td {
+            font-size: 7pt !important;
+            padding: 3px 4px !important;
+            border: 1px solid #ddd !important;
+            vertical-align: top !important;
+            word-wrap: break-word !important;
+            overflow-wrap: break-word !important;
+          }
+          
+          /* Anchos de columna con porcentajes */
+          .printable-content table th:nth-child(1),
+          .printable-content table td:nth-child(1) {
+            width: 10% !important;
+            white-space: nowrap !important;
+          }
+          
+          .printable-content table th:nth-child(2),
+          .printable-content table td:nth-child(2) {
+            width: 12% !important;
+          }
+          
+          .printable-content table th:nth-child(3),
+          .printable-content table td:nth-child(3) {
+            width: 12% !important;
+          }
+          
+          .printable-content table th:nth-child(4),
+          .printable-content table td:nth-child(4) {
+            width: 58% !important;
+            max-width: 0 !important;
+          }
+          
+          .printable-content table th:nth-child(5),
+          .printable-content table td:nth-child(5) {
+            width: 8% !important;
+            white-space: nowrap !important;
+            text-align: right !important;
+          }
+          
+          .printable-content table tfoot td {
+            font-size: 8pt !important;
+            font-weight: bold !important;
+            padding: 4px !important;
+            background-color: #f0f0f0 !important;
+          }
+          
+          /* Footer de auditoría */
           .audit-footer {
-            break-inside: avoid;
+            margin-top: 15px !important;
+            padding-top: 10px !important;
+            border-top: 1px solid #999 !important;
+            font-size: 6pt !important;
+            line-height: 1.2 !important;
+            color: #666 !important;
+            page-break-inside: avoid !important;
+            word-break: break-all !important;
+          }
+          
+          .audit-footer p {
+            margin: 2px 0 !important;
           }
         }
         
-        /* General styles for the print preview window */
+        /* Estilos generales */
         body {
           background-color: #ffffff !important;
           color: #000000 !important;
-          font-family: Arial, sans-serif !important;
+          font-family: Arial, Helvetica, sans-serif !important;
         }
+        
         .printable-content {
-          background-color: #ffffff !important; 
-          border-radius: 0;
-          box-shadow: none;
-          padding: 0 !important;
-        }
-        /* Force black text on most elements */
-        .printable-content,
-        .printable-content p,
-        .printable-content h3,
-        .printable-content div {
-           color: #000000 !important;
-        }
-
-        /* Table-specific styles */
-        .printable-content table {
-          font-size: 6.5pt !important;
-          border-collapse: collapse !important;
-        }
-        
-        .printable-content table th,
-        .printable-content table td {
-          font-size: 6.5pt !important;
-          padding: 2px 3px !important;
+          background-color: #ffffff !important;
           color: #000000 !important;
-          line-height: 1.3 !important;
-          vertical-align: top !important;
         }
         
-        /* Date column - fixed width, no wrap */
-        .printable-content table th:nth-child(1),
-        .printable-content table td:nth-child(1) {
-          width: 60px !important;
-          white-space: nowrap !important;
+        .printable-content * {
+          color: #000000 !important;
         }
         
-        /* Project column */
-        .printable-content table th:nth-child(2),
-        .printable-content table td:nth-child(2) {
-          width: 80px !important;
-          word-wrap: break-word !important;
-        }
-        
-        /* Producer column */
-        .printable-content table th:nth-child(3),
-        .printable-content table td:nth-child(3) {
-          width: 80px !important;
-          word-wrap: break-word !important;
-        }
-        
-        /* Route column - takes remaining space and wraps */
-        .printable-content table th:nth-child(4),
-        .printable-content table td:nth-child(4) {
-          word-wrap: break-word !important;
-          overflow-wrap: break-word !important;
-          hyphens: auto !important;
-        }
-        
-        /* Distance column - fixed width, no wrap */
-        .printable-content table th:nth-child(5),
-        .printable-content table td:nth-child(5) {
-          width: 50px !important;
-          white-space: nowrap !important;
-          text-align: right !important;
-        }
-        
-        .printable-content table tfoot td {
-          font-size: 7pt !important;
-          font-weight: bold !important;
-          padding: 4px 3px !important;
-        }
-
-        /* Keep brand color for important numbers */
         .text-brand-primary {
-          color: #007aff !important;
-        }
-
-        /* Use a light grey for table headers/footers for better contrast on white */
-        thead.bg-gray-700\\/50, tfoot.bg-gray-700\\/50 {
-          background-color: #f0f0f0 !important;
+          color: #0066cc !important;
         }
       </style>
     `;
