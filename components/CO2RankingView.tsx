@@ -19,8 +19,7 @@ import {
   CheckCircleIcon,
   XCircleIcon,
   TreePineIcon,
-  SettingsIcon,
-  BellIcon
+  SettingsIcon
 } from './Icons';
 import CO2AnalysisSettings from './CO2AnalysisSettings';
 
@@ -429,7 +428,7 @@ const CO2RankingView: React.FC<CO2RankingViewProps> = ({
             value={`${summaryMetrics.treesNeeded}`}
             icon={<TreePineIcon className="w-8 h-8" />}
             color="text-green-400"
-            notificationIcon={<BellIcon className="w-5 h-5" />}
+            notificationIcon={<TreePineIcon className="w-5 h-5" />}
           />
         </div>
       )}
