@@ -220,7 +220,6 @@ const ReportDetailView: React.FC<ReportDetailViewProps> = ({ report, projects, o
               <th className="p-2">{t('report_col_project')}</th>
               <th className="p-2">{t('report_col_producer')}</th>
               <th className="p-2">{t('report_col_route')}</th>
-              <th className="p-2">{t('report_col_reason')}</th>
               <th className="p-2 text-right">{t('report_col_distance')}</th>
             </tr>
           </thead>
@@ -235,7 +234,6 @@ const ReportDetailView: React.FC<ReportDetailViewProps> = ({ report, projects, o
                     <td className="p-2">{projectNameDisplay}</td>
                     <td className="p-2">{producerDisplay}</td>
                     <td className="p-2">{trip.locations.join(' → ')}</td>
-                    <td className="p-2">{trip.reason}</td>
                     <td className="p-2 text-right font-bold text-brand-primary">{trip.distance.toFixed(1)} km</td>
                   </tr>
                 );
@@ -243,7 +241,7 @@ const ReportDetailView: React.FC<ReportDetailViewProps> = ({ report, projects, o
           </tbody>
           <tfoot className="bg-gray-700/50 font-bold">
             <tr>
-              <td className="p-2" colSpan={5}>{t('report_total_kms')}</td>
+              <td className="p-2" colSpan={4}>{t('report_total_kms')}</td>
               <td className="p-2 text-right text-brand-primary text-base">
                 {totalDistance.toFixed(1)} km
               </td>
