@@ -17,16 +17,16 @@ import { formatDateForDisplay } from '../i18n/translations';
 import { Button } from './Button';
 
 interface ProjectsViewProps {
-    setCurrentView: (view: View) => void;
-    personalization: PersonalizationSettings;
-    theme: 'light' | 'dark';
+  setCurrentView: (view: View) => void;
+  personalization: PersonalizationSettings;
+  theme: 'light' | 'dark';
 }
 
 const ProjectsView: React.FC<ProjectsViewProps> = ({ setCurrentView, personalization, theme }) => {
   const { projects, trips, addProject, deleteProject, deleteMultipleProjects } = useTrips();
   const { userProfile } = useUserProfile();
   const { visibleProjectIds, toggleProjectVisibility } = useDashboardSettings();
-  
+
   const [isEditorOpen, setIsEditorOpen] = useState(false);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
@@ -36,7 +36,7 @@ const ProjectsView: React.FC<ProjectsViewProps> = ({ setCurrentView, personaliza
   const [showUndoToast, setShowUndoToast] = useState(false);
   const { expenses } = useExpenses();
   const isMobile = useMobile();
-  
+
   const { t } = useTranslation();
 
   const projectsById = useMemo(() => {
@@ -140,7 +140,7 @@ const ProjectsView: React.FC<ProjectsViewProps> = ({ setCurrentView, personaliza
 
   const filteredProjects = useMemo(() => {
     if (!searchQuery) return userProjects;
-    return userProjects.filter(p => 
+    return userProjects.filter(p =>
       p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       p.producer.toLowerCase().includes(searchQuery.toLowerCase())
     );
@@ -155,7 +155,7 @@ const ProjectsView: React.FC<ProjectsViewProps> = ({ setCurrentView, personaliza
     setSelectedProject(project);
     setIsEditorOpen(true);
   };
-  
+
   const handleViewDetails = (project: Project) => {
     setSelectedProject(project);
     setIsDetailOpen(true);
@@ -163,20 +163,20 @@ const ProjectsView: React.FC<ProjectsViewProps> = ({ setCurrentView, personaliza
 
   const handleDelete = async (e: React.MouseEvent, project: Project) => {
     e.stopPropagation();
-     if (window.confirm(t('projects_deleteConfirm'))) {
-        await deleteProject(project.id);
-        
-        // Add undo action
-        addAction({
-          type: 'delete',
-          description: t('undo_action_delete_project'),
-          undo: () => {
-            addProject(project);
-          }
-        });
-        
-        setShowUndoToast(true);
-     }
+    if (window.confirm(t('projects_deleteConfirm'))) {
+      await deleteProject(project.id);
+
+      // Add undo action
+      addAction({
+        type: 'delete',
+        description: t('undo_action_delete_project'),
+        undo: () => {
+          addProject(project);
+        }
+      });
+
+      setShowUndoToast(true);
+    }
   };
 
   const handleSelectProject = (id: string) => {
@@ -197,7 +197,7 @@ const ProjectsView: React.FC<ProjectsViewProps> = ({ setCurrentView, personaliza
     if (window.confirm(t('projects_delete_selected_confirm', { count: selectedProjectIds.length }))) {
       const projectsToDelete = projects.filter(p => selectedProjectIds.includes(p.id));
       await deleteMultipleProjects(selectedProjectIds);
-      
+
       // Add undo action for multiple projects
       addAction({
         type: 'bulk_delete',
@@ -206,7 +206,7 @@ const ProjectsView: React.FC<ProjectsViewProps> = ({ setCurrentView, personaliza
           projectsToDelete.forEach(project => addProject(project));
         }
       });
-      
+
       setSelectedProjectIds([]);
       setShowUndoToast(true);
     }
@@ -245,16 +245,16 @@ const ProjectsView: React.FC<ProjectsViewProps> = ({ setCurrentView, personaliza
             </div>
             <div className="flex items-center gap-4">
               <div className="relative">
-                  <input
-                      type="text"
-                      placeholder={t('projects_search_placeholder')}
-                      value={searchQuery}
-                      onChange={e => setSearchQuery(e.target.value)}
-                      className="bg-surface-dark border border-gray-600 rounded-soft py-2 pl-10 pr-4 focus:ring-2 focus:ring-brand-primary focus:outline-none text-on-surface-dark"
-                  />
-                  <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-on-surface-dark-secondary" />
+                <input
+                  type="text"
+                  placeholder={t('projects_search_placeholder')}
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                  className="bg-surface-dark border border-gray-600 rounded-smooth py-2 pl-10 pr-4 focus:ring-2 focus:ring-brand-primary focus:outline-none text-on-surface-dark text-sm font-medium h-[38px]"
+                />
+                <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-on-surface-dark-secondary" />
               </div>
-              <Button 
+              <Button
                 variant="primary"
                 onClick={handleAddNew}
               >
@@ -265,8 +265,8 @@ const ProjectsView: React.FC<ProjectsViewProps> = ({ setCurrentView, personaliza
           </>
         )}
       </div>
-      
-{isMobile ? (
+
+      {isMobile ? (
         // Vista mobile con cards
         <div className="space-y-4">
           {filteredProjects.length > 0 ? (
@@ -294,9 +294,8 @@ const ProjectsView: React.FC<ProjectsViewProps> = ({ setCurrentView, personaliza
                 return (
                   <div
                     key={project.id}
-                    className={`bg-frost-glass border-glass rounded-fluid p-4 backdrop-blur-glass transition-all duration-200 ${
-                      isSelected ? 'ring-2 ring-brand-primary bg-brand-primary/10' : 'hover:bg-gray-800/40'
-                    }`}
+                    className={`bg-frost-glass border-glass rounded-fluid p-4 backdrop-blur-glass transition-all duration-200 ${isSelected ? 'ring-2 ring-brand-primary bg-brand-primary/10' : 'hover:bg-gray-800/40'
+                      }`}
                   >
                     {/* Header con checkbox, nombre y acciones */}
                     <div className="flex items-center justify-between mb-3">
@@ -311,36 +310,35 @@ const ProjectsView: React.FC<ProjectsViewProps> = ({ setCurrentView, personaliza
                           {project.name}
                         </h3>
                       </div>
-                      
+
                       <div className="flex items-center gap-1">
                         <button
                           onClick={() => toggleProjectVisibility(project.id)}
                           title={t('projects_dashboard_toggle_tooltip')}
                           className="p-2 rounded-smooth hover:bg-gray-700/50 transition-colors"
                         >
-                          <StarIcon className={`w-5 h-5 transition-all duration-150 transform hover:scale-125 ${
-                              visibleProjectIds.includes(project.id)
+                          <StarIcon className={`w-5 h-5 transition-all duration-150 transform hover:scale-125 ${visibleProjectIds.includes(project.id)
                               ? 'text-yellow-400 fill-current'
                               : 'text-gray-600 hover:text-yellow-500'
-                          }`} />
+                            }`} />
                         </button>
-                        <Button 
+                        <Button
                           variant="icon"
                           size="sm"
                           onClick={(e) => { e.stopPropagation(); handleEdit(project); }}
                           className="text-blue-400 hover:text-blue-300"
                           title={t('common_edit')}
                         >
-                          <EditIcon className="w-4 h-4"/>
+                          <EditIcon className="w-4 h-4" />
                         </Button>
-                        <Button 
+                        <Button
                           variant="icon"
                           size="sm"
                           onClick={(e) => handleDelete(e, project)}
                           className="text-red-400 hover:text-red-300"
                           title={t('common_delete')}
                         >
-                          <TrashIcon className="w-4 h-4"/>
+                          <TrashIcon className="w-4 h-4" />
                         </Button>
                       </div>
                     </div>
@@ -433,73 +431,72 @@ const ProjectsView: React.FC<ProjectsViewProps> = ({ setCurrentView, personaliza
                 const invoiceLabel = t(invoiceCount === 1 ? 'expense_badge_single' : 'expense_badge_plural');
                 const invoiceAriaLabel = t('expense_badge_aria_project', { count: invoiceCount, label: invoiceLabel });
                 return (
-                <tr
-                  key={project.id}
-                  className={`${isSelected ? 'bg-brand-primary/20' : ''} hover:bg-gray-800/40 transition-colors cursor-pointer`}
-                  onClick={() => handleViewDetails(project)}
-                >
-                  <td className="p-3" onClick={(e) => e.stopPropagation()}>
-                    <input
-                      type="checkbox"
-                      checked={isSelected}
-                      onChange={() => handleSelectProject(project.id)}
-                      className="bg-background-dark border-gray-600 rounded text-brand-primary focus:ring-brand-primary focus:ring-2 h-5 w-5"
-                    />
-                  </td>
-                  <td className="p-3 font-semibold text-white text-sm">{project.name}</td>
-                  <td className="p-3 text-sm">{project.producer}</td>
-                  <td className="p-3 text-sm">{project.tripCount}</td>
-                  <td className="p-3 text-sm">{project.documentCount}</td>
-                  <td className="p-3">
-                    {invoiceCount > 0 ? (
-                      <span
-                        className="inline-flex items-center gap-1.5 rounded-full bg-brand-secondary/10 px-2.5 py-1 text-[11px] font-semibold text-brand-secondary"
-                        title={invoiceTooltip}
-                        aria-label={invoiceAriaLabel}
-                      >
-                        <FileTextIcon className="h-3.5 w-3.5" />
-                        <span>{invoiceCount}</span>
-                      </span>
-                    ) : (
-                      <span className="text-on-surface-dark-secondary">—</span>
-                    )}
-                  </td>
-                  <td className="p-3 font-semibold text-brand-primary text-sm">{project.totalKm.toFixed(1)} km</td>
-                  <td className="p-3 font-semibold text-brand-secondary text-sm">€{project.totalReimbursement.toFixed(2)}</td>
-                  <td className="p-3 text-center" onClick={(e) => e.stopPropagation()}>
+                  <tr
+                    key={project.id}
+                    className={`${isSelected ? 'bg-brand-primary/20' : ''} hover:bg-gray-800/40 transition-colors cursor-pointer`}
+                    onClick={() => handleViewDetails(project)}
+                  >
+                    <td className="p-3" onClick={(e) => e.stopPropagation()}>
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={() => handleSelectProject(project.id)}
+                        className="bg-background-dark border-gray-600 rounded text-brand-primary focus:ring-brand-primary focus:ring-2 h-5 w-5"
+                      />
+                    </td>
+                    <td className="p-3 font-semibold text-white text-sm">{project.name}</td>
+                    <td className="p-3 text-sm">{project.producer}</td>
+                    <td className="p-3 text-sm">{project.tripCount}</td>
+                    <td className="p-3 text-sm">{project.documentCount}</td>
+                    <td className="p-3">
+                      {invoiceCount > 0 ? (
+                        <span
+                          className="inline-flex items-center gap-1.5 rounded-full bg-brand-secondary/10 px-2.5 py-1 text-[11px] font-semibold text-brand-secondary"
+                          title={invoiceTooltip}
+                          aria-label={invoiceAriaLabel}
+                        >
+                          <FileTextIcon className="h-3.5 w-3.5" />
+                          <span>{invoiceCount}</span>
+                        </span>
+                      ) : (
+                        <span className="text-on-surface-dark-secondary">—</span>
+                      )}
+                    </td>
+                    <td className="p-3 font-semibold text-brand-primary text-sm">{project.totalKm.toFixed(1)} km</td>
+                    <td className="p-3 font-semibold text-brand-secondary text-sm">€{project.totalReimbursement.toFixed(2)}</td>
+                    <td className="p-3 text-center" onClick={(e) => e.stopPropagation()}>
                       <button
-                          onClick={() => toggleProjectVisibility(project.id)}
-                          title={t('projects_dashboard_toggle_tooltip')}
-                          className="p-2 rounded-smooth hover:bg-gray-700/50 transition-colors"
+                        onClick={() => toggleProjectVisibility(project.id)}
+                        title={t('projects_dashboard_toggle_tooltip')}
+                        className="p-2 rounded-smooth hover:bg-gray-700/50 transition-colors"
                       >
-                          <StarIcon className={`w-5 h-5 mx-auto transition-all duration-150 transform hover:scale-125 ${
-                              visibleProjectIds.includes(project.id)
-                              ? 'text-yellow-400 fill-current'
-                              : 'text-gray-600 hover:text-yellow-500'
+                        <StarIcon className={`w-5 h-5 mx-auto transition-all duration-150 transform hover:scale-125 ${visibleProjectIds.includes(project.id)
+                            ? 'text-yellow-400 fill-current'
+                            : 'text-gray-600 hover:text-yellow-500'
                           }`} />
                       </button>
-                  </td>
-                  <td className="p-3 text-right" onClick={(e) => e.stopPropagation()}>
-                    <Button 
-                      variant="icon"
-                      size="sm"
-                      onClick={(e) => { e.stopPropagation(); handleEdit(project); }}
-                      className="text-blue-400 hover:text-blue-300 mr-3"
-                      title={t('common_edit')}
-                    >
-                      <EditIcon className="w-4 h-4"/>
-                    </Button>
-                    <Button 
-                      variant="icon"
-                      size="sm"
-                      onClick={(e) => handleDelete(e, project)}
-                      className="text-red-400 hover:text-red-300"
-                      title={t('common_delete')}
-                    >
-                      <TrashIcon className="w-4 h-4"/>
-                    </Button>
-                  </td>
-                </tr>
+                    </td>
+                    <td className="p-3 text-right" onClick={(e) => e.stopPropagation()}>
+                      <Button
+                        variant="icon"
+                        size="sm"
+                        onClick={(e) => { e.stopPropagation(); handleEdit(project); }}
+                        className="text-blue-400 hover:text-blue-300 mr-3"
+                        title={t('common_edit')}
+                      >
+                        <EditIcon className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="icon"
+                        size="sm"
+                        onClick={(e) => handleDelete(e, project)}
+                        className="text-red-400 hover:text-red-300"
+                        title={t('common_delete')}
+                      >
+                        <TrashIcon className="w-4 h-4" />
+                      </Button>
+                    </td>
+                  </tr>
                 );
               }) : (
                 <tr>
@@ -512,14 +509,14 @@ const ProjectsView: React.FC<ProjectsViewProps> = ({ setCurrentView, personaliza
           </table>
         </div>
       )}
-      
+
       {isEditorOpen && (
         <ProjectEditorModal
           project={selectedProject}
           onClose={() => setIsEditorOpen(false)}
         />
       )}
-      
+
       {isDetailOpen && selectedProject && (
         <ProjectDetailModal
           projectId={selectedProject.id}
@@ -527,7 +524,7 @@ const ProjectsView: React.FC<ProjectsViewProps> = ({ setCurrentView, personaliza
           onClose={() => setIsDetailOpen(false)}
         />
       )}
-      
+
       <UndoToast
         action={getLastAction()}
         onUndo={undo}

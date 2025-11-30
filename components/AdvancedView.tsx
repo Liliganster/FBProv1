@@ -9,18 +9,18 @@ import useExpenses from '../hooks/useExpenses';
 import useReports from '../hooks/useReports';
 import { useAuth } from '../hooks/useAuth';
 import {
-  LuDownload as DownloadIcon,
-  LuUpload as UploadIcon,
-  LuCircleCheck as CheckCircleIcon,
-  LuCircleX as XCircleIcon,
-  LuTriangleAlert as AlertTriangleIcon,
-  LuShieldCheck as ShieldCheckIcon,
-  LuDollarSign as DollarSign,
-  LuSave as SaveIcon,
-  LuArrowLeft as ArrowLeftIcon,
-  LuRoute as Route,
-  LuTreePine as TreePine,
-  LuX as X,
+    LuDownload as DownloadIcon,
+    LuUpload as UploadIcon,
+    LuCircleCheck as CheckCircleIcon,
+    LuCircleX as XCircleIcon,
+    LuTriangleAlert as AlertTriangleIcon,
+    LuShieldCheck as ShieldCheckIcon,
+    LuDollarSign as DollarSign,
+    LuSave as SaveIcon,
+    LuArrowLeft as ArrowLeftIcon,
+    LuRoute as Route,
+    LuTreePine as TreePine,
+    LuX as X,
 } from 'react-icons/lu';
 import { Trip, PersonalizationSettings, UserProfile } from '../types';
 import { formatDateForDisplay } from '../i18n/translations';
@@ -73,7 +73,7 @@ const CostAnalysisDashboard: React.FC<{
         const { name, value } = e.target;
         const type = 'type' in e.target ? e.target.type : 'text';
         const finalValue = type === 'number' ? (value === '' ? undefined : parseFloat(value)) : value;
-        
+
         setVehicleForm(prev => {
             if (!prev) return null;
             return { ...prev, [name]: finalValue as any };
@@ -92,7 +92,7 @@ const CostAnalysisDashboard: React.FC<{
         const now = new Date();
         let startDate = new Date(0);
 
-        switch(timeRange) {
+        switch (timeRange) {
             case '3m':
                 startDate = new Date(new Date().setMonth(now.getMonth() - 3));
                 break;
@@ -135,7 +135,7 @@ const CostAnalysisDashboard: React.FC<{
 
     const costData = useMemo(() => {
         if (!userProfile) return null;
-        
+
         const totalKm = filteredTrips.reduce((sum, trip) => sum + trip.distance, 0);
         const totalTrips = filteredTrips.length;
 
@@ -184,7 +184,7 @@ const CostAnalysisDashboard: React.FC<{
             maintenanceInvoicesTotal,
         };
     }, [userProfile, filteredTrips, expensesForRange]);
-    
+
     const monthlyChartData = useMemo(() => {
         if (!costData || !userProfile) return [];
 
@@ -193,7 +193,7 @@ const CostAnalysisDashboard: React.FC<{
 
         filteredTrips.forEach(trip => {
             const monthYear = new Date(trip.date).toLocaleDateString(language, { year: '2-digit', month: 'short' });
-            
+
             let tripCost = 0;
             if (userProfile.vehicleType === 'combustion' && userProfile.fuelConsumption && userProfile.fuelPrice) {
                 tripCost += trip.distance * (userProfile.fuelConsumption / 100) * userProfile.fuelPrice;
@@ -205,7 +205,7 @@ const CostAnalysisDashboard: React.FC<{
                 + (userProfile.tollsCostPerKm ?? 0)
                 + (userProfile.finesCostPerKm ?? 0)
                 + (userProfile.miscCostPerKm ?? 0);
-            
+
             estimatedByMonth[monthYear] = (estimatedByMonth[monthYear] || 0) + tripCost;
         });
 
@@ -217,7 +217,7 @@ const CostAnalysisDashboard: React.FC<{
             const monthYear = invoiceDate.toLocaleDateString(language, { year: '2-digit', month: 'short' });
             documentedByMonth[monthYear] = (documentedByMonth[monthYear] || 0) + (expense.amount || 0);
         });
-        
+
         const allKeys = new Set([...Object.keys(estimatedByMonth), ...Object.keys(documentedByMonth)]);
         const sortedKeys = Array.from(allKeys).sort((a, b) => {
             const [m1, y1] = a.split(/[\s'./-]+/);
@@ -226,7 +226,7 @@ const CostAnalysisDashboard: React.FC<{
             const dateB = new Date(parseInt(`20${y2}`), new Date(Date.parse(`${m2} 1, 2000`)).getMonth(), 1);
             return dateA.getTime() - dateB.getTime();
         });
-        
+
         return sortedKeys.map(key => {
             const estimated = estimatedByMonth[key] || 0;
             const documented = documentedByMonth[key] || 0;
@@ -242,28 +242,30 @@ const CostAnalysisDashboard: React.FC<{
     const availableProjects = useMemo(() => {
         const projectIds = [...new Set(filteredTrips.map(trip => trip.projectId).filter(Boolean))];
         const projectList = projectIds.map(id => projects.find(p => p.id === id)).filter(Boolean) as any[];
-        
+
         // Verificar si hay viajes sin proyecto
         const hasUnassignedTrips = filteredTrips.some(trip => !trip.projectId);
         if (hasUnassignedTrips) {
             projectList.push({ id: 'unassigned', name: 'Sin Proyecto' });
         }
-        
+
         return projectList.sort((a, b) => a.name.localeCompare(b.name));
     }, [filteredTrips, projects]);
 
     const projectChartData = useMemo(() => {
         if (!costData || !userProfile) return [];
 
-        const costsByProject: { [key: string]: {
-            name: string;
-            cost: number;
-            distance: number;
-            trips: number;
-        } } = {};
+        const costsByProject: {
+            [key: string]: {
+                name: string;
+                cost: number;
+                distance: number;
+                trips: number;
+            }
+        } = {};
 
         // Filtrar viajes por proyecto seleccionado si hay uno
-        const tripsToAnalyze = selectedProjectId 
+        const tripsToAnalyze = selectedProjectId
             ? filteredTrips.filter(trip => {
                 if (selectedProjectId === 'unassigned') {
                     return !trip.projectId;
@@ -275,16 +277,16 @@ const CostAnalysisDashboard: React.FC<{
         tripsToAnalyze.forEach(trip => {
             const project = projects.find(p => p.id === trip.projectId);
             const projectName = project?.name || 'Sin Proyecto';
-            
+
             if (!costsByProject[projectName]) {
-                costsByProject[projectName] = { 
-                    name: projectName, 
-                    cost: 0, 
-                    distance: 0, 
-                    trips: 0 
+                costsByProject[projectName] = {
+                    name: projectName,
+                    cost: 0,
+                    distance: 0,
+                    trips: 0
                 };
             }
-            
+
             let tripCost = 0;
             if (userProfile.vehicleType === 'combustion' && userProfile.fuelConsumption && userProfile.fuelPrice) {
                 tripCost += trip.distance * (userProfile.fuelConsumption / 100) * userProfile.fuelPrice;
@@ -296,7 +298,7 @@ const CostAnalysisDashboard: React.FC<{
                 + (userProfile.tollsCostPerKm ?? 0)
                 + (userProfile.finesCostPerKm ?? 0)
                 + (userProfile.miscCostPerKm ?? 0);
-            
+
             costsByProject[projectName].cost += tripCost;
             costsByProject[projectName].distance += trip.distance;
             costsByProject[projectName].trips += 1;
@@ -316,20 +318,22 @@ const CostAnalysisDashboard: React.FC<{
     const monthlyTableData = useMemo(() => {
         if (!costData || !userProfile) return [];
 
-        const costsByMonth: { [key: string]: {
-            date: Date;
-            distance: number;
-            trips: number;
-            fuel: number;
-            maintenance: number;
-            other: number;
-            total: number;
-        } } = {};
+        const costsByMonth: {
+            [key: string]: {
+                date: Date;
+                distance: number;
+                trips: number;
+                fuel: number;
+                maintenance: number;
+                other: number;
+                total: number;
+            }
+        } = {};
 
         filteredTrips.forEach(trip => {
             const tripDate = new Date(trip.date);
             const monthYearKey = `${tripDate.getFullYear()}-${String(tripDate.getMonth()).padStart(2, '0')}`;
-            
+
             if (!costsByMonth[monthYearKey]) {
                 costsByMonth[monthYearKey] = { date: new Date(tripDate.getFullYear(), tripDate.getMonth(), 1), distance: 0, trips: 0, fuel: 0, maintenance: 0, other: 0, total: 0 };
             }
@@ -374,17 +378,17 @@ const CostAnalysisDashboard: React.FC<{
 
 
     const dashboardStyle = {
-      backgroundColor: theme === 'dark'
-          ? `rgba(18, 18, 18, ${1 - personalization.uiTransparency})`
-          : `rgba(229, 231, 235, ${1 - personalization.uiTransparency})`,
-      backdropFilter: `blur(${personalization.uiBlur}px)`,
+        backgroundColor: theme === 'dark'
+            ? `rgba(18, 18, 18, ${1 - personalization.uiTransparency})`
+            : `rgba(229, 231, 235, ${1 - personalization.uiTransparency})`,
+        backdropFilter: `blur(${personalization.uiBlur}px)`,
     };
 
     return (
         <div className="p-8 rounded-fluid -m-8">
             <header className="flex justify-between items-start mb-6">
                 <div className="flex items-center gap-4">
-                     <button onClick={() => setViewMode('main')} className="flex items-center bg-gray-700 hover:bg-gray-600 text-white font-bold p-3 rounded-smooth">
+                    <button onClick={() => setViewMode('main')} className="flex items-center bg-gray-700 hover:bg-gray-600 text-white font-bold p-3 rounded-smooth">
                         <ArrowLeftIcon className="w-5 h-5" />
                     </button>
                     <div>
@@ -400,7 +404,7 @@ const CostAnalysisDashboard: React.FC<{
                         <UploadIcon className="w-5 h-5" />
                         {t('expense_upload_title') || 'Upload Invoice'}
                     </button>
-                    <select value={timeRange} onChange={(e) => setTimeRange(e.target.value as any)} className="bg-surface-dark border border-gray-600 rounded-soft py-2 px-4 focus:ring-2 focus:ring-brand-primary focus:outline-none text-on-surface-dark">
+                    <select value={timeRange} onChange={(e) => setTimeRange(e.target.value as any)} className="bg-surface-dark border border-gray-600 rounded-smooth py-2 px-4 focus:ring-2 focus:ring-brand-primary focus:outline-none text-on-surface-dark text-sm font-medium h-[38px]">
                         <option value="3m">{t('cost_analysis_time_range_3m')}</option>
                         <option value="6m">{t('cost_analysis_time_range_6m')}</option>
                         <option value="1y">{t('cost_analysis_time_range_1y')}</option>
@@ -408,32 +412,30 @@ const CostAnalysisDashboard: React.FC<{
                     </select>
                 </div>
             </header>
-            
+
             <main>
                 {/* Tabs de navegación */}
                 <div className="flex items-center gap-2 mb-6">
-                    <button 
-                        onClick={() => setCostView('summary')} 
-                        className={`px-6 py-2 rounded-smooth font-semibold transition-colors ${
-                            costView === 'summary' 
-                                ? 'bg-brand-primary text-white' 
+                    <button
+                        onClick={() => setCostView('summary')}
+                        className={`px-6 py-2 rounded-smooth font-semibold transition-colors ${costView === 'summary'
+                                ? 'bg-brand-primary text-white'
                                 : 'bg-surface-dark text-on-surface-dark-secondary hover:bg-gray-700/50'
-                        }`}
+                            }`}
                     >
                         {t('cost_analysis_summary_tab')}
                     </button>
-                    <button 
-                        onClick={() => setCostView('monthly')} 
-                        className={`px-6 py-2 rounded-smooth font-semibold transition-colors ${
-                            costView === 'monthly' 
-                                ? 'bg-brand-primary text-white' 
+                    <button
+                        onClick={() => setCostView('monthly')}
+                        className={`px-6 py-2 rounded-smooth font-semibold transition-colors ${costView === 'monthly'
+                                ? 'bg-brand-primary text-white'
                                 : 'bg-surface-dark text-on-surface-dark-secondary hover:bg-gray-700/50'
-                        }`}
+                            }`}
                     >
                         {t('cost_view_monthly')}
                     </button>
                 </div>
-                
+
                 {/* Tarjetas de métricas principales */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                     <StatCard title={t('cost_total_distance')} value={`${(costData?.totalKm || 0).toFixed(1)} km`} theme={theme} />
@@ -449,49 +451,49 @@ const CostAnalysisDashboard: React.FC<{
                         {/* Desglose de costos con barras de progreso */}
                         <div className="bg-frost-glass p-6 rounded-gentle">
                             <h3 className="text-lg font-semibold mb-6 text-white">{t('cost_basic_breakdown')}</h3>
-                            
+
                             <div className="space-y-4">
                                 {(() => {
                                     if (!costData || !userProfile) return null;
-                                    
+
                                     const fuelCost = userProfile.vehicleType === 'combustion' && userProfile.fuelConsumption && userProfile.fuelPrice
                                         ? costData.totalKm * (userProfile.fuelConsumption / 100) * userProfile.fuelPrice
                                         : userProfile.vehicleType === 'electric' && userProfile.energyConsumption && userProfile.energyPrice
-                                        ? costData.totalKm * (userProfile.energyConsumption / 100) * userProfile.energyPrice
-                                        : 0;
-                                        
+                                            ? costData.totalKm * (userProfile.energyConsumption / 100) * userProfile.energyPrice
+                                            : 0;
+
                                     const maintenanceCost = (userProfile.maintenanceCostPerKm || 0);
                                     const otherCost = ((userProfile.parkingCostPerKm || 0) + (userProfile.tollsCostPerKm || 0) + (userProfile.finesCostPerKm || 0) + (userProfile.miscCostPerKm || 0));
                                     const avgTripCost = costData.totalTrips > 0 ? costData.totalCost / costData.totalTrips : 0;
-                                    
+
                                     return (
                                         <>
-                                            <CostProgressBar 
-                                                label={t('cost_fuel')} 
+                                            <CostProgressBar
+                                                label={t('cost_fuel')}
                                                 amount={fuelCost}
                                                 percentage={costData.totalCost > 0 ? (fuelCost / costData.totalCost) * 100 : 0}
                                                 color="bg-red-500"
                                                 formatCurrency={formatCurrency}
                                             />
-                                            
-                                            <CostProgressBar 
-                                                label={t('cost_maintenance')} 
+
+                                            <CostProgressBar
+                                                label={t('cost_maintenance')}
                                                 amount={maintenanceCost}
                                                 percentage={costData.totalCost > 0 ? (maintenanceCost / costData.totalCost) * 100 : 0}
                                                 color="bg-blue-500"
                                                 formatCurrency={formatCurrency}
                                             />
-                                            
-                                            <CostProgressBar 
-                                                label={t('cost_other')} 
+
+                                            <CostProgressBar
+                                                label={t('cost_other')}
                                                 amount={otherCost}
                                                 percentage={costData.totalCost > 0 ? (otherCost / costData.totalCost) * 100 : 0}
                                                 color="bg-purple-500"
                                                 formatCurrency={formatCurrency}
                                             />
-                                            
-                                            <CostProgressBar 
-                                                label={t('cost_avg_trip')} 
+
+                                            <CostProgressBar
+                                                label={t('cost_avg_trip')}
                                                 amount={avgTripCost}
                                                 percentage={100}
                                                 color="bg-green-500"
@@ -506,7 +508,7 @@ const CostAnalysisDashboard: React.FC<{
                         {/* Supuestos de costos */}
                         <div className="bg-frost-glass p-6 rounded-lg">
                             <h3 className="text-lg font-semibold mb-6 text-white">{t('cost_assumptions')}</h3>
-                            
+
                             <div className="space-y-3">
                                 {userProfile && (
                                     <>
@@ -516,8 +518,8 @@ const CostAnalysisDashboard: React.FC<{
                                                 userProfile.vehicleType === 'combustion' && userProfile.fuelConsumption && userProfile.fuelPrice
                                                     ? (userProfile.fuelConsumption * userProfile.fuelPrice / 100).toFixed(2)
                                                     : userProfile.vehicleType === 'electric' && userProfile.energyConsumption && userProfile.energyPrice
-                                                    ? (userProfile.energyConsumption * userProfile.energyPrice / 100).toFixed(2)
-                                                    : '0.00'
+                                                        ? (userProfile.energyConsumption * userProfile.energyPrice / 100).toFixed(2)
+                                                        : '0.00'
                                             )}/km</span>
                                         </div>
                                         <div className="flex items-center text-sm text-gray-300">
@@ -592,7 +594,7 @@ const CostAnalysisDashboard: React.FC<{
                                 <select
                                     value={selectedProjectId}
                                     onChange={(e) => setSelectedProjectId(e.target.value)}
-                                    className="bg-surface-dark border border-gray-600 rounded-lg py-2 px-3 text-sm focus:ring-2 focus:ring-brand-primary focus:outline-none text-on-surface-dark min-w-[200px]"
+                                    className="bg-surface-dark border border-gray-600 rounded-smooth py-2 px-3 text-sm focus:ring-2 focus:ring-brand-primary focus:outline-none text-on-surface-dark min-w-[200px] font-medium h-[38px]"
                                 >
                                     <option value="">{t('cost_project_selector_all')}</option>
                                     {availableProjects.map(project => (
@@ -610,30 +612,30 @@ const CostAnalysisDashboard: React.FC<{
                                     <ResponsiveContainer width="100%" height={300}>
                                         <BarChart data={projectChartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                                             <CartesianGrid strokeDasharray="3 3" stroke="#4a4a4a" />
-                                            <XAxis 
-                                                dataKey="name" 
-                                                stroke="#a0a0a0" 
-                                                tick={{fontSize: 10}} 
+                                            <XAxis
+                                                dataKey="name"
+                                                stroke="#a0a0a0"
+                                                tick={{ fontSize: 10 }}
                                                 angle={-45}
                                                 textAnchor="end"
                                                 height={70}
                                             />
-                                            <YAxis 
-                                                stroke="#a0a0a0" 
-                                                tickFormatter={(value) => formatCurrency(value)} 
-                                                tick={{fontSize: 10}} 
+                                            <YAxis
+                                                stroke="#a0a0a0"
+                                                tickFormatter={(value) => formatCurrency(value)}
+                                                tick={{ fontSize: 10 }}
                                             />
                                             {/* Tooltip removed: only bar hover color change remains */}
-                                            <Bar 
-                                                dataKey="cost" 
-                                                fill="#007aff" 
+                                            <Bar
+                                                dataKey="cost"
+                                                fill="#007aff"
                                                 name="Costo Total"
                                                 radius={[4, 4, 0, 0]}
                                             />
                                         </BarChart>
                                     </ResponsiveContainer>
                                 </div>
-                                
+
                                 {/* Tabla a la derecha del gráfico */}
                                 <div className="overflow-x-auto">
                                     <table className="w-full text-left">
@@ -674,7 +676,7 @@ const CostAnalysisDashboard: React.FC<{
             {/* Modal de Configuración de Vehículo */}
             {showVehicleModal && vehicleForm && (
                 <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
-                    <div 
+                    <div
                         style={{
                             backgroundColor: theme === 'dark'
                                 ? `rgba(30, 30, 30, ${1 - personalization.uiTransparency})`
@@ -696,7 +698,7 @@ const CostAnalysisDashboard: React.FC<{
 
                             <div className="space-y-6">
                                 <h3 className="text-xl font-semibold text-white">{t('settings_vehicle_title')}</h3>
-                                
+
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                     {/* Tipo de Vehículo */}
                                     <div>
@@ -861,13 +863,13 @@ const AdvancedView: React.FC<AdvancedViewProps> = ({ personalization, theme }) =
     // Check if CO2 settings are configured
     const hasCO2Settings = useMemo(() => {
         if (!userProfile?.vehicleType) return false;
-        
+
         if (userProfile.vehicleType === 'combustion') {
             return !!userProfile.fuelConsumption && userProfile.fuelConsumption > 0;
         } else if (userProfile.vehicleType === 'electric') {
             return !!userProfile.energyConsumption && userProfile.energyConsumption > 0;
         }
-        
+
         return false;
     }, [userProfile]);
 
@@ -881,7 +883,7 @@ const AdvancedView: React.FC<AdvancedViewProps> = ({ personalization, theme }) =
         const { name, value } = e.target;
         const type = 'type' in e.target ? e.target.type : 'text';
         const finalValue = type === 'number' ? (value === '' ? undefined : parseFloat(value)) : value;
-        
+
         setCostingProfile(prev => {
             if (!prev) return null;
             return { ...prev, [name]: finalValue as any };
@@ -894,19 +896,19 @@ const AdvancedView: React.FC<AdvancedViewProps> = ({ personalization, theme }) =
             showToast(t('settings_alert_saveSuccess'), 'success');
         }
     };
-    
+
     const contentStyle = {
-      backgroundColor: `rgba(30, 30, 30, ${1 - personalization.uiTransparency})`,
-      backdropFilter: `blur(${personalization.uiBlur}px)`,
-      WebkitBackdropFilter: `blur(${personalization.uiBlur}px)`,
-      border: '1px solid rgba(255, 255, 255, 0.08)',
+        backgroundColor: `rgba(30, 30, 30, ${1 - personalization.uiTransparency})`,
+        backdropFilter: `blur(${personalization.uiBlur}px)`,
+        WebkitBackdropFilter: `blur(${personalization.uiBlur}px)`,
+        border: '1px solid rgba(255, 255, 255, 0.08)',
     };
-    
+
     const dangerContentStyle = {
-      backgroundColor: theme === 'dark'
-          ? `rgba(127, 29, 29, ${1 - personalization.uiTransparency})` 
-          : `rgba(254, 226, 226, ${1 - personalization.uiTransparency})`,
-      backdropFilter: `blur(${personalization.uiBlur}px)`,
+        backgroundColor: theme === 'dark'
+            ? `rgba(127, 29, 29, ${1 - personalization.uiTransparency})`
+            : `rgba(254, 226, 226, ${1 - personalization.uiTransparency})`,
+        backdropFilter: `blur(${personalization.uiBlur}px)`,
     };
 
     const handleExportData = () => {
@@ -943,13 +945,13 @@ const AdvancedView: React.FC<AdvancedViewProps> = ({ personalization, theme }) =
             try {
                 const text = e.target?.result;
                 if (typeof text !== 'string') throw new Error('File content is not readable text.');
-                
+
                 const data = JSON.parse(text);
 
                 if (!data.userProfile || !Array.isArray(data.trips) || !Array.isArray(data.projects) || !Array.isArray(data.reports)) {
                     throw new Error('Invalid backup file structure.');
                 }
-                
+
                 if (window.confirm(t('advanced_import_confirm'))) {
                     await replaceAllTrips(data.trips);
                     await replaceAllProjects(data.projects);
@@ -961,7 +963,7 @@ const AdvancedView: React.FC<AdvancedViewProps> = ({ personalization, theme }) =
                 console.error("Import failed:", error);
                 showToast(t('advanced_import_error'), 'error');
             } finally {
-                if(event.target) event.target.value = '';
+                if (event.target) event.target.value = '';
             }
         };
         reader.readAsText(file);
@@ -973,7 +975,7 @@ const AdvancedView: React.FC<AdvancedViewProps> = ({ personalization, theme }) =
             showToast('All trips have been deleted.', 'success');
         }
     };
-    
+
     const handleDeleteAllProjects = async () => {
         if (window.confirm(t('advanced_delete_all_projects_confirm'))) {
             await replaceAllProjects([]);
@@ -986,13 +988,13 @@ const AdvancedView: React.FC<AdvancedViewProps> = ({ personalization, theme }) =
             await deleteAllData();
             deleteAllReports();
             setUserProfile(null);
-             if(user) {
+            if (user) {
                 Object.keys(localStorage).forEach(key => {
                     if (key.includes(user.id)) {
                         localStorage.removeItem(key);
                     }
                 });
-             }
+            }
             showToast('Application has been reset.', 'success');
             logout();
         }
@@ -1000,22 +1002,22 @@ const AdvancedView: React.FC<AdvancedViewProps> = ({ personalization, theme }) =
 
     const handleVerifyHashes = async () => {
         const result = await verifyLedgerIntegrity();
-        setAuditResult({ 
-            ok: result.isValid, 
-            errors: result.errors.map(error => ({ 
-                trip: {} as Trip, 
-                reason: error 
+        setAuditResult({
+            ok: result.isValid,
+            errors: result.errors.map(error => ({
+                trip: {} as Trip,
+                reason: error
             }))
         });
     };
-    
+
     const Section: React.FC<{ title: string; isDanger?: boolean; children: React.ReactNode }> = ({ title, isDanger = false, children }) => (
         <div style={isDanger ? dangerContentStyle : contentStyle} className={`p-6 rounded-lg shadow-lg ${isDanger ? 'border border-red-500/30' : ''}`}>
             <h2 className={`text-xl font-semibold mb-4 border-b pb-2 ${isDanger ? 'text-red-300 border-red-500/30' : 'text-white border-gray-700'}`}>{title}</h2>
             {children}
         </div>
     );
-    
+
     const renderCostSettingsView = () => (
         <div>
             <div className="flex items-center mb-8">
@@ -1025,7 +1027,7 @@ const AdvancedView: React.FC<AdvancedViewProps> = ({ personalization, theme }) =
                 </button>
                 <h1 className="text-3xl font-bold text-white ml-4">{t('settings_vehicle_title')}</h1>
             </div>
-             <div className="space-y-8">
+            <div className="space-y-8">
                 <Section title={t('settings_vehicle_title')}>
                     {costingProfile ? (
                         <>
@@ -1040,22 +1042,22 @@ const AdvancedView: React.FC<AdvancedViewProps> = ({ personalization, theme }) =
                                 </div>
                                 {costingProfile.vehicleType === 'combustion' && (
                                     <>
-                                        <InputField label={t('settings_vehicle_fuel_consumption')} name="fuelConsumption" type="number" value={costingProfile.fuelConsumption} onChange={handleCostingProfileChange} placeholder="L/100km"/>
-                                        <InputField label={t('settings_vehicle_fuel_price')} name="fuelPrice" type="number" value={costingProfile.fuelPrice} onChange={handleCostingProfileChange} placeholder="€/L"/>
+                                        <InputField label={t('settings_vehicle_fuel_consumption')} name="fuelConsumption" type="number" value={costingProfile.fuelConsumption} onChange={handleCostingProfileChange} placeholder="L/100km" />
+                                        <InputField label={t('settings_vehicle_fuel_price')} name="fuelPrice" type="number" value={costingProfile.fuelPrice} onChange={handleCostingProfileChange} placeholder="€/L" />
                                     </>
                                 )}
                                 {costingProfile.vehicleType === 'electric' && (
                                     <>
-                                        <InputField label={t('settings_vehicle_energy_consumption')} name="energyConsumption" type="number" value={costingProfile.energyConsumption} onChange={handleCostingProfileChange} placeholder="kWh/100km"/>
-                                        <InputField label={t('settings_vehicle_energy_price')} name="energyPrice" type="number" value={costingProfile.energyPrice} onChange={handleCostingProfileChange} placeholder="€/kWh"/>
+                                        <InputField label={t('settings_vehicle_energy_consumption')} name="energyConsumption" type="number" value={costingProfile.energyConsumption} onChange={handleCostingProfileChange} placeholder="kWh/100km" />
+                                        <InputField label={t('settings_vehicle_energy_price')} name="energyPrice" type="number" value={costingProfile.energyPrice} onChange={handleCostingProfileChange} placeholder="€/kWh" />
                                     </>
                                 )}
-                                <div className="md:col-span-2"><hr className="border-gray-700/50 my-2"/></div>
-                                <InputField label={t('settings_vehicle_maintenance_cost')} name="maintenanceCostPerKm" type="number" value={costingProfile.maintenanceCostPerKm} onChange={handleCostingProfileChange} placeholder="€/km"/>
-                                <InputField label={t('settings_vehicle_parking_cost')} name="parkingCostPerKm" type="number" value={costingProfile.parkingCostPerKm} onChange={handleCostingProfileChange} placeholder="€/km"/>
-                                <InputField label={t('settings_vehicle_tolls_cost')} name="tollsCostPerKm" type="number" value={costingProfile.tollsCostPerKm} onChange={handleCostingProfileChange} placeholder="€/km"/>
-                                <InputField label={t('settings_vehicle_fines_cost')} name="finesCostPerKm" type="number" value={costingProfile.finesCostPerKm} onChange={handleCostingProfileChange} placeholder="€/km"/>
-                                <InputField label={t('settings_vehicle_misc_cost')} name="miscCostPerKm" type="number" value={costingProfile.miscCostPerKm} onChange={handleCostingProfileChange} placeholder="€/km"/>
+                                <div className="md:col-span-2"><hr className="border-gray-700/50 my-2" /></div>
+                                <InputField label={t('settings_vehicle_maintenance_cost')} name="maintenanceCostPerKm" type="number" value={costingProfile.maintenanceCostPerKm} onChange={handleCostingProfileChange} placeholder="€/km" />
+                                <InputField label={t('settings_vehicle_parking_cost')} name="parkingCostPerKm" type="number" value={costingProfile.parkingCostPerKm} onChange={handleCostingProfileChange} placeholder="€/km" />
+                                <InputField label={t('settings_vehicle_tolls_cost')} name="tollsCostPerKm" type="number" value={costingProfile.tollsCostPerKm} onChange={handleCostingProfileChange} placeholder="€/km" />
+                                <InputField label={t('settings_vehicle_fines_cost')} name="finesCostPerKm" type="number" value={costingProfile.finesCostPerKm} onChange={handleCostingProfileChange} placeholder="€/km" />
+                                <InputField label={t('settings_vehicle_misc_cost')} name="miscCostPerKm" type="number" value={costingProfile.miscCostPerKm} onChange={handleCostingProfileChange} placeholder="€/km" />
                             </div>
                             <div className="mt-6 flex justify-end">
                                 <ActionButton icon={<SaveIcon size={20} />} onClick={handleSaveCostingSettings} color="blue">
@@ -1070,9 +1072,9 @@ const AdvancedView: React.FC<AdvancedViewProps> = ({ personalization, theme }) =
             </div>
         </div>
     );
-    
+
     const renderMainView = () => (
-         <div>
+        <div>
             <h1 className="text-3xl font-bold mb-8 bg-gradient-title bg-clip-text text-transparent">{t('advanced_title')}</h1>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <ActionCard
@@ -1083,7 +1085,7 @@ const AdvancedView: React.FC<AdvancedViewProps> = ({ personalization, theme }) =
                     theme={theme}
                     personalization={personalization}
                 />
-                
+
                 <ActionCard
                     title={t('cost_analysis_title')}
                     description={t('cost_analysis_description_personal')}
@@ -1092,7 +1094,7 @@ const AdvancedView: React.FC<AdvancedViewProps> = ({ personalization, theme }) =
                     theme={theme}
                     personalization={personalization}
                 />
-                
+
                 {hasCO2Settings && (
                     <ActionCard
                         title={t('co2_ranking_title')}
@@ -1124,14 +1126,14 @@ const AdvancedView: React.FC<AdvancedViewProps> = ({ personalization, theme }) =
     return renderMainView();
 };
 
-const InputField: React.FC<{label: string, name: string, value?: string | number, onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void, type?: string, placeholder?: string, disabled?: boolean}> = ({ label, name, value, onChange, type = 'text', placeholder, disabled = false }) => (
+const InputField: React.FC<{ label: string, name: string, value?: string | number, onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void, type?: string, placeholder?: string, disabled?: boolean }> = ({ label, name, value, onChange, type = 'text', placeholder, disabled = false }) => (
     <div>
         <label htmlFor={name} className="block text-sm font-medium text-on-surface-dark-secondary mb-1">{label}</label>
-        <input 
-            type={type} 
+        <input
+            type={type}
             id={name}
-            name={name} 
-            value={value ?? ''} 
+            name={name}
+            value={value ?? ''}
             onChange={onChange}
             placeholder={placeholder}
             disabled={disabled}
@@ -1168,10 +1170,10 @@ const ActionCard: React.FC<{
     personalization: PersonalizationSettings;
 }> = ({ title, description, icon, onClick, theme, personalization }) => {
     const cardStyle = {
-      backdropFilter: `blur(${personalization.uiBlur}px)`,
-      WebkitBackdropFilter: `blur(${personalization.uiBlur}px)`,
+        backdropFilter: `blur(${personalization.uiBlur}px)`,
+        WebkitBackdropFilter: `blur(${personalization.uiBlur}px)`,
     } as React.CSSProperties;
-    
+
     return (
         <div
             className="bg-frost-glass p-6 rounded-lg shadow-lg flex items-center gap-6 cursor-pointer hover:ring-2 hover:ring-brand-primary transition-all duration-200"
@@ -1202,7 +1204,7 @@ const CostProgressBar: React.FC<{
             <span className="text-sm font-semibold text-white">{formatCurrency(amount)}</span>
         </div>
         <div className="w-full bg-gray-700 rounded-full h-2">
-            <div 
+            <div
                 className={`h-2 rounded-full ${color}`}
                 style={{ width: `${Math.min(percentage, 100)}%` }}
             />
@@ -1222,11 +1224,11 @@ const VehicleInputField: React.FC<{
         <label htmlFor={name} className="block text-sm font-medium text-gray-300 mb-2">
             {label}
         </label>
-        <input 
-            type={type} 
+        <input
+            type={type}
             id={name}
-            name={name} 
-            value={value ?? ''} 
+            name={name}
+            value={value ?? ''}
             onChange={onChange}
             placeholder={placeholder}
             step={type === 'number' ? '0.01' : undefined}
