@@ -17,6 +17,16 @@ export default {
       fontFamily: {
         sans: ['Inter', 'sans-serif'],
       },
+      fontSize: {
+        'sm': '14px',
+        'base': '16px',
+        'lg': '28px',
+        'xl': '28px',
+        '2xl': '28px',
+        '3xl': '28px',
+        '4xl': '28px',
+        '5xl': '28px',
+      },
       colors: {
         // Brand Colors - Professional Blue
         'brand-primary': '#007aff',
