@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { UserProfile, AiModelInfo, View, PersonalizationSettings } from '../types';
+import { UserProfile, AiModelInfo, View, PersonalizationSettings, DEFAULT_PERSONALIZATION_SETTINGS } from '../types';
 import { SaveIcon, LockIcon, XIcon, UserCircleIcon, SparklesIcon, TrashIcon, LoaderIcon } from './Icons';
 import useTranslation from '../hooks/useTranslation';
 import useToast from '../hooks/useToast';
@@ -18,6 +18,8 @@ import {
   LuCloudUpload as UploadCloud,
   LuImageOff as ImageOff,
   LuFileText as FileText,
+  LuSunMedium as Sun,
+  LuMoonStar as Moon,
 } from 'react-icons/lu';
 import { Button } from './Button';
 
@@ -45,6 +47,7 @@ const SettingsView: React.FC<{
     const showExtractorUi = (import.meta as any)?.env?.VITE_ENABLE_EXTRACTOR_UI === 'true';
 
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const currentTheme = personalization.theme || 'light';
 
     // Initialize unsaved changes tracker for profile data
     const { hasUnsavedChanges, markAsSaved, checkUnsavedChanges, resetInitialData } = useUnsavedChanges(
@@ -120,6 +123,13 @@ const SettingsView: React.FC<{
         }));
     };
 
+    const handleThemeChange = (theme: 'light' | 'dark') => {
+        setPersonalization(prev => ({
+            ...prev,
+            theme,
+        }));
+    };
+
     const handleSaveAllSettings = () => {
         if (localProfile && user) {
             setUserProfile(localProfile);
@@ -139,7 +149,7 @@ const SettingsView: React.FC<{
     };
     
     const resetPersonalization = () => {
-        setPersonalization({ backgroundImage: '', uiTransparency: 0.2, uiBlur: 16, backgroundBlur: 0 });
+        setPersonalization({ ...DEFAULT_PERSONALIZATION_SETTINGS });
     };
 
     const PRESET_BACKGROUNDS = [
@@ -395,10 +405,45 @@ const SettingsView: React.FC<{
                         </div>
                     </div>
                 );
-            case 'personalization':
+            case 'personalization': {
+                const isLightSelected = currentTheme === 'light';
+                const isDarkSelected = currentTheme === 'dark';
                 return (
                     <div className="space-y-6">
                         <h2 className="text-xl font-semibold bg-gradient-to-r from-white to-brand-primary bg-clip-text text-transparent">{t('settings_personalization_title')}</h2>
+                        
+                        <div className="space-y-3">
+                            <h3 className="text-sm font-medium text-on-surface-dark-secondary">{t('settings_personalization_theme_label') || 'Tema de la interfaz'}</h3>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <button
+                                    type="button"
+                                    onClick={() => handleThemeChange('light')}
+                                    className={`flex items-center gap-3 p-3 rounded-lg border transition-all duration-200 ${isLightSelected ? 'border-brand-primary/80 bg-white/90 shadow-lg shadow-brand-primary/30' : 'border-gray-600/60 bg-white/70 hover:border-brand-primary/60'}`}
+                                >
+                                    <div className="flex items-center justify-center w-10 h-10 rounded-full bg-yellow-100 text-yellow-600 shadow-sm">
+                                        <Sun size={18} />
+                                    </div>
+                                    <div className="text-left">
+                                        <p className="font-semibold text-gray-900">{t('settings_personalization_theme_light') || 'Claro (actual)'}</p>
+                                        <p className="text-xs text-gray-600">{t('settings_personalization_theme_light_hint') || 'Fondos claros y vidrio suave.'}</p>
+                                    </div>
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => handleThemeChange('dark')}
+                                    className={`flex items-center gap-3 p-3 rounded-lg border transition-all duration-200 ${isDarkSelected ? 'border-brand-primary/80 bg-gray-900/80 shadow-lg shadow-brand-primary/30' : 'border-gray-700/70 bg-background-dark/60 hover:border-brand-primary/60'}`}
+                                >
+                                    <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-800 text-white shadow-sm">
+                                        <Moon size={18} />
+                                    </div>
+                                    <div className="text-left">
+                                        <p className={`font-semibold ${isDarkSelected ? 'text-white' : 'text-on-surface-dark'}`}>{t('settings_personalization_theme_dark') || 'Oscuro'}</p>
+                                        <p className="text-xs text-on-surface-dark-secondary">{t('settings_personalization_theme_dark_hint') || 'Contraste alto para trabajar de noche.'}</p>
+                                    </div>
+                                </button>
+                            </div>
+                            <p className="text-xs text-on-surface-dark-secondary">{t('settings_personalization_theme_hint') || 'Cámbialo cuando quieras; no modifica el resto de estilos.'}</p>
+                        </div>
                         
                         <div>
                             <label className="block text-sm font-medium text-on-surface-dark-secondary mb-2">{t('settings_personalization_bg_image_label')}</label>
@@ -480,6 +525,7 @@ const SettingsView: React.FC<{
                         </button>
                     </div>
                 );
+            }
             case 'language':
                  return (
                     <div className="space-y-4">
@@ -530,18 +576,21 @@ const SettingsView: React.FC<{
                             isActive={activeTab === 'profile'}
                             onClick={() => setActiveTab('profile')}
                             icon={<UserCircleIcon className="w-5 h-5" />}
+                            theme={theme}
                         />
                         <TabButton
                             label={t('settings_tab_compliance')}
                             isActive={activeTab === 'compliance'}
                             onClick={() => setActiveTab('compliance')}
                             icon={<LockIcon className="w-5 h-5" />}
+                            theme={theme}
                         />
                         <TabButton
                             label={t('settings_tab_api')}
                             isActive={activeTab === 'api'}
                             onClick={() => setActiveTab('api')}
                             icon={<SparklesIcon className="w-5 h-5" />}
+                            theme={theme}
                         />
                         <div className="pt-2 mt-2 border-t border-gray-700/50" />
                         <TabButton
@@ -549,12 +598,14 @@ const SettingsView: React.FC<{
                             isActive={activeTab === 'personalization'}
                             onClick={() => setActiveTab('personalization')}
                             icon={<Palette size={20} />}
+                            theme={theme}
                         />
                         <TabButton
                             label={t('settings_tab_language')}
                             isActive={activeTab === 'language'}
                             onClick={() => setActiveTab('language')}
                             icon={<Languages size={20} />}
+                            theme={theme}
                         />
                         <div className="pt-2 mt-2 border-t border-gray-700/50" />
                         <TabButton
@@ -562,12 +613,14 @@ const SettingsView: React.FC<{
                             isActive={activeTab === 'changelog'}
                             onClick={() => setActiveTab('changelog')}
                             icon={<Newspaper size={20} />}
+                            theme={theme}
                         />
                         <TabButton
                             label={t('settings_tab_help')}
                             isActive={activeTab === 'help'}
                             onClick={() => setActiveTab('help')}
                             icon={<HelpCircle size={20} />}
+                            theme={theme}
                         />
                     </nav>
 
@@ -660,15 +713,15 @@ const SettingsView: React.FC<{
     );
 };
 
-const TabButton: React.FC<{ label: string; isActive: boolean; onClick: () => void; icon: React.ReactNode }> = ({ label, isActive, onClick, icon }) => (
+const TabButton: React.FC<{ label: string; isActive: boolean; onClick: () => void; icon: React.ReactNode; theme: 'light' | 'dark'; }> = ({ label, isActive, onClick, icon, theme }) => (
     <button
         onClick={onClick}
         className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-colors text-sm font-medium ${
             isActive
-                ? 'text-white'
-                : 'text-on-surface-dark-secondary hover:bg-gray-700/50'
+                ? (theme === 'dark' ? 'text-white' : 'text-gray-900')
+                : (theme === 'dark' ? 'text-on-surface-dark-secondary hover:bg-gray-700/50' : 'text-gray-700 hover:bg-white/80')
         }`}
-        style={isActive ? { backgroundColor: 'rgba(26, 26, 26, 0.8)' } : undefined}
+        style={isActive ? { backgroundColor: theme === 'dark' ? 'rgba(26, 26, 26, 0.8)' : 'rgba(255, 255, 255, 0.85)' } : undefined}
     >
         {icon}
         {label}

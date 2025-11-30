@@ -24,7 +24,7 @@ const AdvancedView = lazy(() => import('./components/AdvancedView'));
 const PlansView = lazy(() => import('./components/PlansView'));
 import useTranslation from './hooks/useTranslation';
 import { useMobile } from './hooks/useMediaQuery';
-import { View, PersonalizationSettings } from './types';
+import { View, PersonalizationSettings, DEFAULT_PERSONALIZATION_SETTINGS } from './types';
 
 // Extendemos View para incluir la ruta de autenticación
 type ExtendedView = View | 'auth-callback';
@@ -118,17 +118,14 @@ const App: React.FC = () => {
     };
   }, [mobileMenuOpen]);
 
-  const theme: 'dark' = 'dark';
-  
   const { t } = useTranslation();
   const { userProfile } = useUserProfile();
   
-  const [personalization, setPersonalization] = useState<PersonalizationSettings>({
-      backgroundImage: '',
-      uiTransparency: 0.2,
-      uiBlur: 16,
-      backgroundBlur: 0,
-  });
+  const [personalization, setPersonalization] = useState<PersonalizationSettings>(() => ({
+      ...DEFAULT_PERSONALIZATION_SETTINGS,
+  }));
+
+  const theme: 'light' | 'dark' = personalization.theme || 'light';
 
   // Load personalization settings on mount/user change
   useEffect(() => {
@@ -139,21 +136,24 @@ const App: React.FC = () => {
                 const parsed = JSON.parse(savedSettings);
                 // Basic validation
                 if (typeof parsed.backgroundImage === 'string' && typeof parsed.uiTransparency === 'number' && typeof parsed.uiBlur === 'number') {
-                    // Add backgroundBlur if missing for backwards compatibility
-                    if (typeof parsed.backgroundBlur !== 'number') {
-                        parsed.backgroundBlur = 0;
-                    }
-                    setPersonalization(parsed);
+                    const backgroundBlur = typeof parsed.backgroundBlur === 'number' ? parsed.backgroundBlur : DEFAULT_PERSONALIZATION_SETTINGS.backgroundBlur;
+                    const theme = parsed.theme === 'dark' ? 'dark' : 'light';
+                    setPersonalization({
+                        ...DEFAULT_PERSONALIZATION_SETTINGS,
+                        ...parsed,
+                        backgroundBlur,
+                        theme,
+                    });
                 } else {
                     throw new Error("Invalid settings format");
                 }
             } catch (e) {
                 console.error("Failed to parse personalization settings, resetting to default.", e);
-                setPersonalization({ backgroundImage: '', uiTransparency: 0.2, uiBlur: 16, backgroundBlur: 0 });
+                setPersonalization({ ...DEFAULT_PERSONALIZATION_SETTINGS });
             }
         } else {
             // Reset to default if nothing is saved for this user
-            setPersonalization({ backgroundImage: '', uiTransparency: 0.2, uiBlur: 16, backgroundBlur: 0 });
+            setPersonalization({ ...DEFAULT_PERSONALIZATION_SETTINGS });
         }
     }
   }, [user]);
@@ -240,26 +240,37 @@ const App: React.FC = () => {
     }
   }, [sidebarCollapsed, user]);
 
-  // Professional dark theme styling
+  // Professional theme styling (light/dark)
   useEffect(() => {
     const body = document.body;
-    body.classList.remove('text-gray-900', 'theme-light');
-    body.classList.add('text-on-surface-dark', 'theme-dark');
-
+    const useCustomImage = Boolean(personalization.backgroundImage) && personalization.backgroundBlur === 0;
     body.style.transition = 'all 0.3s ease-in-out';
 
-    if (personalization.backgroundImage && personalization.backgroundBlur === 0) {
-      body.style.backgroundImage = `url(${personalization.backgroundImage})`;
-      body.style.backgroundSize = 'cover';
-      body.style.backgroundPosition = 'center';
-      body.style.backgroundAttachment = 'fixed';
+    if (theme === 'dark') {
+      body.classList.remove('theme-light', 'text-gray-900');
+      body.classList.add('text-on-surface-dark', 'theme-dark');
+      if (useCustomImage) {
+        body.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.85)), url(${personalization.backgroundImage})`;
+      } else {
+        body.style.backgroundImage = 'linear-gradient(135deg, #111827 0%, #0b1224 100%)';
+      }
       body.style.backgroundColor = '#0a0a0a';
     } else {
-      body.style.backgroundImage = 'linear-gradient(135deg, #111827 0%, #8fbf99 100%)';
-      body.style.backgroundAttachment = 'fixed';
-      body.style.backgroundColor = '#0a0a0a';
+      body.classList.remove('theme-dark', 'text-on-surface-dark');
+      body.classList.add('theme-light', 'text-gray-900');
+      if (useCustomImage) {
+        body.style.backgroundImage = `linear-gradient(rgba(255,255,255,0.82), rgba(255,255,255,0.9)), url(${personalization.backgroundImage})`;
+      } else {
+        body.style.backgroundImage = 'linear-gradient(135deg, #f7fafc 0%, #e7f4ef 50%, #e0ebff 100%)';
+      }
+      body.style.backgroundColor = '#f3f4f6';
     }
-  }, [personalization.backgroundImage, personalization.backgroundBlur]);
+
+    body.style.backgroundSize = 'cover';
+    body.style.backgroundPosition = 'center';
+    body.style.backgroundAttachment = 'fixed';
+    body.style.backgroundRepeat = 'no-repeat';
+  }, [personalization.backgroundImage, personalization.backgroundBlur, theme]);
 
 
   const renderView = () => {
@@ -313,10 +324,19 @@ const App: React.FC = () => {
     { view: 'plans', label: 'Planes', icon: <Star size={20} /> },
   ];
   
-  const navStyle = {
-    backgroundColor: `rgba(0, 0, 0, ${1 - personalization.uiTransparency})`,
-    backdropFilter: `blur(${personalization.uiBlur}px)`,
-  };
+  const baseBackground = theme === 'dark'
+    ? 'linear-gradient(135deg, #111827 0%, #0b1224 100%)'
+    : 'linear-gradient(135deg, #f7fafc 0%, #e7f4ef 50%, #e0ebff 100%)';
+
+  const imageOverlay = theme === 'dark'
+    ? 'linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.7))'
+    : 'linear-gradient(rgba(255,255,255,0.75), rgba(255,255,255,0.92))';
+
+  const activeNavBackground = theme === 'dark' ? 'rgba(26, 26, 26, 0.8)' : 'rgba(255, 255, 255, 0.95)';
+  const activeNavTextClass = theme === 'dark' ? 'text-white' : 'text-gray-900';
+  const inactiveNavClasses = theme === 'dark'
+    ? 'hover:bg-gradient-surface text-on-surface-secondary hover:text-on-surface-dark hover:scale-[1.02] hover:shadow-lg hover:shadow-blue-500/20'
+    : 'text-gray-700 hover:bg-white/80 hover:text-gray-900 hover:scale-[1.02] hover:shadow-lg hover:shadow-blue-500/10';
 
   const renderSidebarContent = () => (
     <>
@@ -348,10 +368,10 @@ const App: React.FC = () => {
             title={sidebarCollapsed ? item.label : undefined}
             className={`w-full flex items-center gap-3 px-4 py-3 rounded-smooth transition-all duration-300 transform ${sidebarCollapsed ? 'justify-center' : ''} ${
               currentView === item.view
-                ? 'text-white scale-[1.02] shadow-lg'
-                : 'hover:bg-gradient-surface text-on-surface-secondary hover:text-on-surface-dark hover:scale-[1.02] hover:shadow-lg hover:shadow-blue-500/20'
+                ? `${activeNavTextClass} scale-[1.02] shadow-lg`
+                : inactiveNavClasses
             }`}
-            style={currentView === item.view ? { backgroundColor: 'rgba(26, 26, 26, 0.8)' } : undefined}
+            style={currentView === item.view ? { backgroundColor: activeNavBackground } : undefined}
           >
             {item.icon}
             {!sidebarCollapsed && <span className="font-medium">{item.label}</span>}
@@ -369,10 +389,10 @@ const App: React.FC = () => {
             title={sidebarCollapsed ? t('nav_settings') : undefined}
             className={`w-full flex items-center gap-3 px-4 py-3 rounded-smooth transition-all duration-300 transform ${sidebarCollapsed ? 'justify-center' : ''} ${
               currentView === 'settings'
-                ? 'text-white scale-[1.02] shadow-lg'
-                : 'hover:bg-gradient-surface text-on-surface-secondary hover:text-on-surface-dark hover:scale-[1.02] hover:shadow-lg hover:shadow-blue-500/20'
+                ? `${activeNavTextClass} scale-[1.02] shadow-lg`
+                : inactiveNavClasses
             }`}
-            style={currentView === 'settings' ? { backgroundColor: 'rgba(26, 26, 26, 0.8)' } : undefined}
+            style={currentView === 'settings' ? { backgroundColor: activeNavBackground } : undefined}
           >
             <Settings size={20} />
             {!sidebarCollapsed && <span className="font-medium">{t('nav_settings')}</span>}
@@ -413,9 +433,9 @@ const App: React.FC = () => {
       style={{
         background: personalization.backgroundImage
           ? (personalization.backgroundBlur > 0
-              ? 'linear-gradient(135deg, #111827 0%, #8fbf99 100%)'
-              : `linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.7)), url(${personalization.backgroundImage})`)
-          : 'linear-gradient(135deg, #111827 0%, #8fbf99 100%)',
+              ? baseBackground
+              : `${imageOverlay}, url(${personalization.backgroundImage})`)
+          : baseBackground,
         backgroundSize: personalization.backgroundImage && personalization.backgroundBlur === 0 ? 'cover, cover' : 'cover',
         backgroundPosition: personalization.backgroundImage && personalization.backgroundBlur === 0 ? 'center, center' : 'center',
         backgroundAttachment: personalization.backgroundImage && personalization.backgroundBlur === 0 ? 'fixed, fixed' : 'fixed',

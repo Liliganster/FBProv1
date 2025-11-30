@@ -3,7 +3,16 @@ export interface PersonalizationSettings {
     uiTransparency: number;
     uiBlur: number;
     backgroundBlur: number;
+    theme: 'light' | 'dark';
 }
+
+export const DEFAULT_PERSONALIZATION_SETTINGS: PersonalizationSettings = {
+    backgroundImage: '',
+    uiTransparency: 0.2,
+    uiBlur: 16,
+    backgroundBlur: 0,
+    theme: 'light',
+};
 
 
 // FIX: Add View type definition to be shared across components.

@@ -268,6 +268,48 @@ select {
   background: linear-gradient(135deg, #4a4a4a 0%, #5a5a5a 100%);
 }
 
+/* LIGHT THEME OVERRIDES */
+body.theme-light {
+  background: linear-gradient(135deg, #f7fafc 0%, #e7f4ef 50%, #e0ebff 100%);
+  color: #0f172a !important;
+}
+
+body.theme-light input,
+body.theme-light textarea,
+body.theme-light select {
+  background: rgba(255, 255, 255, 0.9) !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  color: #0f172a !important;
+  box-shadow: none !important;
+}
+
+body.theme-light input:focus,
+body.theme-light textarea:focus,
+body.theme-light select:focus {
+  border-color: #0ea5e9 !important;
+  box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.15) !important;
+  background: #ffffff !important;
+}
+
+body.theme-light input::placeholder,
+body.theme-light textarea::placeholder {
+  color: #6b7280 !important;
+}
+
+body.theme-light select option {
+  background: #ffffff !important;
+  color: #0f172a !important;
+}
+
+body.theme-light ::-webkit-scrollbar-track {
+  background: rgba(229, 231, 235, 0.8);
+}
+
+body.theme-light ::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #cbd5e1 0%, #94a3b8 100%);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+}
+
 /* GLOBAL RESET */
 * {
   box-sizing: border-box;
@@ -689,4 +731,3 @@ body.theme-light .rounded-fluid {
     border: 1px solid rgba(64, 64, 64, 0.5) !important;
   }
 }
-
