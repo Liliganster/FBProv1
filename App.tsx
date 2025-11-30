@@ -125,7 +125,9 @@ const App: React.FC = () => {
       ...DEFAULT_PERSONALIZATION_SETTINGS,
   }));
 
-  const theme: 'light' | 'dark' = personalization.theme || 'light';
+  // Keep UI theme consistent with the original design; dark mode uses an extra overlay only.
+  const isDarkMode = personalization.theme === 'dark';
+  const theme: 'light' | 'dark' = 'dark';
 
   // Load personalization settings on mount/user change
   useEffect(() => {
@@ -240,30 +242,30 @@ const App: React.FC = () => {
     }
   }, [sidebarCollapsed, user]);
 
-  // Professional theme styling (light/dark)
+  // Theme styling (default look preserved, optional dark mode)
   useEffect(() => {
     const body = document.body;
     const useCustomImage = Boolean(personalization.backgroundImage) && personalization.backgroundBlur === 0;
     body.style.transition = 'all 0.3s ease-in-out';
 
-    if (theme === 'dark') {
-      body.classList.remove('theme-light', 'text-gray-900');
-      body.classList.add('text-on-surface-dark', 'theme-dark');
+    body.classList.add('text-on-surface-dark', 'theme-dark');
+    body.classList.remove('theme-light');
+
+    if (isDarkMode) {
       if (useCustomImage) {
-        body.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.85)), url(${personalization.backgroundImage})`;
+        body.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.9)), url(${personalization.backgroundImage})`;
       } else {
-        body.style.backgroundImage = 'linear-gradient(135deg, #111827 0%, #0b1224 100%)';
+        body.style.backgroundImage = 'linear-gradient(135deg, #070a12 0%, #0b1224 100%)';
+      }
+      body.style.backgroundColor = '#05070c';
+    } else {
+      // Preserve the previous default look
+      if (useCustomImage) {
+        body.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.7)), url(${personalization.backgroundImage})`;
+      } else {
+        body.style.backgroundImage = 'linear-gradient(135deg, #111827 0%, #8fbf99 100%)';
       }
       body.style.backgroundColor = '#0a0a0a';
-    } else {
-      body.classList.remove('theme-dark', 'text-on-surface-dark');
-      body.classList.add('theme-light', 'text-gray-900');
-      if (useCustomImage) {
-        body.style.backgroundImage = `linear-gradient(rgba(255,255,255,0.82), rgba(255,255,255,0.9)), url(${personalization.backgroundImage})`;
-      } else {
-        body.style.backgroundImage = 'linear-gradient(135deg, #f7fafc 0%, #e7f4ef 50%, #e0ebff 100%)';
-      }
-      body.style.backgroundColor = '#f3f4f6';
     }
 
     body.style.backgroundSize = 'cover';
@@ -324,19 +326,14 @@ const App: React.FC = () => {
     { view: 'plans', label: 'Planes', icon: <Star size={20} /> },
   ];
   
-  const baseBackground = theme === 'dark'
-    ? 'linear-gradient(135deg, #111827 0%, #0b1224 100%)'
-    : 'linear-gradient(135deg, #f7fafc 0%, #e7f4ef 50%, #e0ebff 100%)';
+  const baseBackground = 'linear-gradient(135deg, #111827 0%, #8fbf99 100%)';
+  const imageOverlay = isDarkMode
+    ? 'linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.8))'
+    : 'linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.7))';
 
-  const imageOverlay = theme === 'dark'
-    ? 'linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.7))'
-    : 'linear-gradient(rgba(255,255,255,0.75), rgba(255,255,255,0.92))';
-
-  const activeNavBackground = theme === 'dark' ? 'rgba(26, 26, 26, 0.8)' : 'rgba(255, 255, 255, 0.95)';
-  const activeNavTextClass = theme === 'dark' ? 'text-white' : 'text-gray-900';
-  const inactiveNavClasses = theme === 'dark'
-    ? 'hover:bg-gradient-surface text-on-surface-secondary hover:text-on-surface-dark hover:scale-[1.02] hover:shadow-lg hover:shadow-blue-500/20'
-    : 'text-gray-700 hover:bg-white/80 hover:text-gray-900 hover:scale-[1.02] hover:shadow-lg hover:shadow-blue-500/10';
+  const activeNavBackground = isDarkMode ? 'rgba(12, 12, 12, 0.9)' : 'rgba(26, 26, 26, 0.8)';
+  const activeNavTextClass = 'text-white';
+  const inactiveNavClasses = 'hover:bg-gradient-surface text-on-surface-secondary hover:text-on-surface-dark hover:scale-[1.02] hover:shadow-lg hover:shadow-blue-500/20';
 
   const renderSidebarContent = () => (
     <>
