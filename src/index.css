@@ -187,6 +187,14 @@ button {
   box-shadow: var(--shadow-glass) !important;
 }
 
+/* Lightweight border/shadow helpers for glass panels */
+.border-glass {
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+.shadow-glass {
+  box-shadow: var(--shadow-glass) !important;
+}
+
 /* Fix Recharts tooltip styles */
 /* Recharts: disable tooltip visuals (we removed components) and add hover highlight */
 .recharts-tooltip-wrapper {
@@ -422,4 +430,3 @@ select {
     z-index: 2;
   }
 }
-
