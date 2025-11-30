@@ -211,43 +211,43 @@ const StatCard = ({ title, value, cta, onClick, children }: { title: string, val
                     <h1 className="text-3xl font-bold bg-gradient-title bg-clip-text text-transparent">{t('dashboard_title')}</h1>
                     {userProfile && <h2 className="text-lg font-semibold text-brand-primary">{userProfile.name}</h2>}
                 </div>
-                <div className="relative" ref={alertsRef}>
-                    <Button variant="icon" onClick={() => setIsAlertsOpen(!isAlertsOpen)} className="relative">
-                        <BellIcon className="w-6 h-6 text-on-surface-secondary"/>
-                        {alerts.length > 0 && <span className="absolute top-0 right-0 h-3 w-3 rounded-full bg-red-600 border-2 border-surface-dark animate-pulse"></span>}
-                    </Button>
-                    {isAlertsOpen && (
-                        <div className="absolute right-0 mt-2 w-80 bg-frost-glass border-glass rounded-gentle shadow-glass z-20 backdrop-blur-glass">
-                            <div className="p-3 font-semibold border-b border-glass text-white">{t('dashboard_proactive_alerts_title')}</div>
-                            <div className="max-h-80 overflow-y-auto">
-                                {alerts.length > 0 ? (
-                                    alerts.slice(0, 10).map((alert, index) => (
-                                        <div key={index} className="p-3 border-b border-glass hover:bg-gradient-surface transition-colors duration-200">
-                                            <p className="text-sm text-on-surface-medium">{alert.message}</p>
-                                            <button onClick={() => { setViewingTrip(alert.trip); setIsAlertsOpen(false); }} className="text-xs text-yellow-400 hover:text-yellow-300 transition-colors duration-200 mt-1 cursor-pointer underline" type="button">{t('dashboard_alert_view_trip_cta')}</button>
-                                        </div>
-                                    ))
-                                ) : (
-                                    <p className="p-4 text-sm text-on-surface-secondary">{t('dashboard_alert_no_alerts')}</p>
-                                )}
+                <div className="flex items-center gap-3">
+                    <div className="relative" ref={alertsRef}>
+                        <Button variant="icon" onClick={() => setIsAlertsOpen(!isAlertsOpen)} className="relative">
+                            <BellIcon className="w-6 h-6 text-on-surface-secondary"/>
+                            {alerts.length > 0 && <span className="absolute top-0 right-0 h-3 w-3 rounded-full bg-red-600 border-2 border-surface-dark animate-pulse"></span>}
+                        </Button>
+                        {isAlertsOpen && (
+                            <div className="absolute right-0 mt-2 w-80 bg-frost-glass border-glass rounded-gentle shadow-glass z-20 backdrop-blur-glass">
+                                <div className="p-3 font-semibold border-b border-glass text-white">{t('dashboard_proactive_alerts_title')}</div>
+                                <div className="max-h-80 overflow-y-auto">
+                                    {alerts.length > 0 ? (
+                                        alerts.slice(0, 10).map((alert, index) => (
+                                            <div key={index} className="p-3 border-b border-glass hover:bg-gradient-surface transition-colors duration-200">
+                                                <p className="text-sm text-on-surface-medium">{alert.message}</p>
+                                                <button onClick={() => { setViewingTrip(alert.trip); setIsAlertsOpen(false); }} className="text-xs text-yellow-400 hover:text-yellow-300 transition-colors duration-200 mt-1 cursor-pointer underline" type="button">{t('dashboard_alert_view_trip_cta')}</button>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <p className="p-4 text-sm text-on-surface-secondary">{t('dashboard_alert_no_alerts')}</p>
+                                    )}
+                                </div>
                             </div>
-                        </div>
-                    )}
+                        )}
+                    </div>
+                    <div
+                        className="flex items-center gap-2 px-3 py-2 rounded-full bg-brand-primary/15 border border-brand-primary/30 text-sm text-white"
+                        title={renderPlanHint()}
+                    >
+                        <SparklesIcon className="w-4 h-4 text-brand-primary" />
+                        <span className="font-semibold">
+                            {aiQuotaLoading ? 'IA…' : renderPlanValue()}
+                        </span>
+                    </div>
                 </div>
             </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-                <StatCard
-                  title="Plan y cupo IA"
-                  value={renderPlanValue()}
-                  cta="Gestionar plan"
-                  onClick={() => setCurrentView('settings')}
-                >
-                  <div className="flex items-center gap-2 text-sm text-on-surface-secondary">
-                    <SparklesIcon className="w-4 h-4 text-brand-primary" />
-                    <span>{renderPlanHint()}</span>
-                  </div>
-                </StatCard>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
                 <StatCard title={t('dashboard_totalKm')} value={`${totalKm.toFixed(1)} km`} cta={t('dashboard_viewAllTrips')} onClick={() => setCurrentView('trips')} />
                 <StatCard title={t('dashboard_activeProjects')} value={activeProjectsCount.toString()} cta={t('dashboard_manageProjects')} onClick={() => setCurrentView('projects')} />
                 {hasCO2Settings ? (
