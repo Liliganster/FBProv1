@@ -552,19 +552,16 @@ const SettingsView: React.FC<{
         }
     };
 
+    const contentStyle = {
+        backgroundColor: theme === 'dark'
+            ? `rgba(30, 30, 30, ${1 - personalization.uiTransparency})`
+            : `rgba(243, 244, 246, ${1 - personalization.uiTransparency})`,
+        backdropFilter: `blur(${personalization.uiBlur}px)`,
+    };
+
     return (
         <div className="fixed inset-0 bg-gradient-overlay backdrop-blur-glass flex items-center justify-center p-4 z-50" onClick={handleClose}>
-            <div
-                className="glass-panel no-border rounded-organic shadow-glass-lg w-full max-w-4xl max-h-[90vh] flex flex-col relative"
-                style={{
-                    backgroundColor: theme === 'dark'
-                        ? `rgba(30, 30, 30, ${1 - personalization.uiTransparency})`
-                        : `rgba(243, 244, 246, ${1 - personalization.uiTransparency})`,
-                    backdropFilter: `blur(${personalization.uiBlur}px)`,
-                    WebkitBackdropFilter: `blur(${personalization.uiBlur}px)`,
-                }}
-                onClick={e => e.stopPropagation()}
-            >
+            <div className="bg-frost-glass no-border rounded-organic shadow-glass-lg w-full max-w-4xl max-h-[90vh] flex flex-col backdrop-blur-glass relative" onClick={e => e.stopPropagation()}>
                 <header className="flex items-center justify-between p-4 flex-shrink-0">
                     <h2 className="text-xl font-bold bg-gradient-title bg-clip-text text-transparent">{t('settings_title')}</h2>
                     <Button variant="icon" onClick={handleClose} title={t('common_close')}>

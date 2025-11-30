@@ -4,8 +4,8 @@
 :root {
   --app-radius: 12px;
   --app-button-radius: 8px;
-  /* Default app background: gray ��' green */
-  /* Default app background: dark gray ��' pastel earthy green */
+  /* Default app background: gray → green */
+  /* Default app background: dark gray → pastel earthy green */
   --gradient-dark: linear-gradient(135deg, #111827 0%, #8fbf99 100%);
   --gradient-surface: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
   --gradient-glass: linear-gradient(135deg, rgba(26, 26, 26, 0.8) 0%, rgba(42, 42, 42, 0.8) 100%);
@@ -184,14 +184,6 @@ button {
   background: var(--gradient-glass) !important;
   backdrop-filter: blur(12px) !important;
   border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  box-shadow: var(--shadow-glass) !important;
-}
-
-/* Lightweight border/shadow helpers for glass panels */
-.border-glass {
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-}
-.shadow-glass {
   box-shadow: var(--shadow-glass) !important;
 }
 
@@ -426,7 +418,274 @@ select {
   table td:first-child {
     position: sticky;
     left: 0;
-    background: #111827;
-    z-index: 2;
+    background: inherit;
+    z-index: 1;
+  }
+
+  /* Form inputs full width */
+  input, textarea, select {
+    width: 100% !important;
+  }
+
+  /* Button adjustments - Don't override all buttons */
+  button:not(.p-2):not(.px-4) {
+    padding: 0.5rem 1rem !important;
+    font-size: 0.875rem !important;
+  }
+
+  /* Modal adjustments */
+  .modal-content, [role="dialog"] {
+    margin: 1rem !important;
+    max-height: calc(100vh - 2rem) !important;
+    max-height: calc(100dvh - 2rem) !important;
+    overflow-y: auto !important;
+    width: calc(100vw - 2rem) !important;
+    max-width: calc(100vw - 2rem) !important;
+  }
+
+  /* Improve touch targets for interactive elements */
+  a:not(.inline), button:not(.inline) {
+    min-height: 44px;
+    min-width: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Chart containers */
+  .recharts-wrapper {
+    font-size: 0.75rem !important;
+  }
+
+  /* Dropdown menus */
+  [role="menu"], [role="listbox"] {
+    max-width: calc(100vw - 2rem) !important;
+  }
+
+  /* Calendar views */
+  .calendar-grid {
+    font-size: 0.75rem !important;
+  }
+
+  /* Hide overflow on body when mobile menu is open */
+  body.mobile-menu-open {
+    overflow: hidden !important;
+  }
+}
+
+/* Tablet styles */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .sidebar-desktop {
+    width: 240px !important;
+  }
+
+  main {
+    padding: 1.5rem !important;
+  }
+}
+
+/* Desktop styles */
+@media (min-width: 1025px) {
+  /* Desktop specific styles here */
+}
+
+/* Extra small devices (portrait phones, less than 576px) */
+@media (max-width: 575.98px) {
+  h1 {
+    font-size: 1.25rem !important;
+  }
+
+  h2 {
+    font-size: 1.1rem !important;
+  }
+
+  h3 {
+    font-size: 1rem !important;
+  }
+
+  /* Even tighter spacing */
+  .p-8 {
+    padding: 0.75rem !important;
+  }
+
+  .p-6 {
+    padding: 0.5rem !important;
+  }
+
+  /* Smaller buttons on very small screens */
+  button {
+    padding: 0.4rem 0.75rem !important;
+    font-size: 0.8125rem !important;
+  }
+
+  /* Charts take full width */
+  .recharts-wrapper {
+    width: 100% !important;
+  }
+}
+
+/* Landscape orientation on mobile */
+@media (max-height: 500px) and (orientation: landscape) {
+  /* Reduce vertical padding in landscape */
+  main {
+    padding: 0.5rem !important;
+  }
+
+  /* Compact header */
+  .mobile-header {
+    padding: 0.5rem !important;
+  }
+
+  /* Smaller font sizes in landscape */
+  body {
+    font-size: 0.875rem !important;
+  }
+}
+
+@keyframes toast-in {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+.animate-toast-in {
+  animation: toast-in 0.5s ease-out forwards;
+}
+
+/* Enhanced Border Radius for Frost Effects */
+body.theme-light .rounded-gentle {
+  backdrop-filter: blur(12px) saturate(160%);
+  box-shadow: 
+    0 8px 32px rgba(51, 143, 255, 0.12),
+    0 2px 8px rgba(51, 143, 255, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+body.theme-light .rounded-organic {
+  backdrop-filter: blur(16px) saturate(180%);
+  box-shadow: 
+    0 16px 48px rgba(51, 143, 255, 0.15),
+    0 4px 12px rgba(51, 143, 255, 0.10),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+body.theme-light .rounded-fluid {
+  backdrop-filter: blur(10px) saturate(140%);
+  box-shadow: 
+    0 6px 24px rgba(51, 143, 255, 0.10),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+/* PROFESSIONAL UTILITY CLASSES */
+@layer utilities {
+  /* Force remove borders when needed */
+  .no-border { border: 0 !important; }
+  /* Title gradient with white to blue */
+  .bg-gradient-title {
+    background-image: linear-gradient(135deg, #ffffff 0%, #007aff 100%) !important;
+  }
+
+  /* Ensure gradient text works across browsers (Safari/Chrome) */
+  .bg-clip-text {
+    -webkit-background-clip: text;
+    background-clip: text;
+  }
+
+  .text-transparent {
+    -webkit-text-fill-color: transparent;
+  }
+
+  /* Convenience utility for title gradients */
+  .title-gradient {
+    background: linear-gradient(135deg, #007aff 0%, #5856d6 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
+  .rounded-micro {
+    border-radius: 2px !important;
+  }
+  
+  .rounded-subtle {
+    border-radius: 4px !important;
+  }
+  
+  .rounded-soft {
+    border-radius: 6px !important;
+  }
+  
+  .rounded-smooth {
+    border-radius: 8px !important;
+  }
+  
+  .rounded-gentle {
+    border-radius: 12px !important;
+  }
+  
+  .rounded-fluid {
+    border-radius: 16px !important;
+  }
+  
+  .rounded-organic {
+    border-radius: 20px !important;
+  }
+  
+  .rounded-natural {
+    border-radius: 24px !important;
+  }
+
+  /* GRADIENT BACKGROUNDS */
+  .bg-gradient-dark {
+    background: linear-gradient(135deg, #111827 0%, #8fbf99 100%);
+  }
+  
+  .bg-gradient-surface {
+    background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+  }
+  
+  .bg-gradient-brand {
+    background: linear-gradient(135deg, #007aff 0%, #5856d6 100%);
+  }
+  
+  .bg-gradient-glass {
+    background-color: rgba(30, 30, 30, 0.55);
+    backdrop-filter: blur(16px) saturate(150%);
+    -webkit-backdrop-filter: blur(16px) saturate(150%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  /* Frost glass effect - white and blue */
+  .bg-frost-glass {
+    background-color: rgba(30, 30, 30, 0.55);
+    backdrop-filter: blur(16px) saturate(150%);
+    -webkit-backdrop-filter: blur(16px) saturate(150%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  /* SHADOW UTILITIES */
+  .shadow-glass {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15), 0 1px 4px rgba(0, 0, 0, 0.1) !important;
+  }
+
+  .shadow-glass-lg {
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2), 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+  }
+
+  .shadow-brand {
+    box-shadow: 0 2px 8px rgba(0, 122, 255, 0.15) !important;
+  }
+
+  /* BORDER UTILITIES */
+  .border-glass {
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  }
+  
+  .border-surface {
+    border: 1px solid rgba(64, 64, 64, 0.5) !important;
   }
 }
