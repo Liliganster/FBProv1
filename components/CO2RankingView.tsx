@@ -56,7 +56,7 @@ const StatCard: React.FC<{
         <p className={`text-3xl font-bold mt-1 ${color}`}>{value}</p>
       </div>
       {icon && (
-        <div className={`${iconColor || color}`}>
+        <div className={`flex items-center justify-center h-8 ${iconColor || color}`}>
           {icon}
         </div>
       )}
