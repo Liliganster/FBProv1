@@ -631,6 +631,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
                   <div className="flex gap-1 rounded-md bg-background-dark/60 p-1 border border-gray-700/60">
                     <Button
                       type="button"
+                      variant={documentType === DocumentType.CALLSHEET ? 'primary' : 'ghost'}
                       onClick={() => setDocumentType(DocumentType.CALLSHEET)}
                       className={`w-full text-center px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${documentType === DocumentType.CALLSHEET
                         ? 'bg-brand-primary text-white'
@@ -641,6 +642,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
                     </Button>
                     <Button
                       type="button"
+                      variant={documentType === DocumentType.EMAIL ? 'primary' : 'ghost'}
                       onClick={() => setDocumentType(DocumentType.EMAIL)}
                       className={`w-full text-center px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${documentType === DocumentType.EMAIL
                         ? 'bg-brand-primary text-white'
@@ -656,6 +658,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
                   <div className="flex gap-2">
                     <Button
                       type="button"
+                      variant="ghost"
                       aria-pressed={aiExtractMode === 'direct'}
                       onClick={() => setAiExtractMode('direct')}
                       className={`flex-1 flex items-center justify-between gap-2 px-3 py-2 rounded-md border transition-all ${aiExtractMode === 'direct'
@@ -675,6 +678,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
                     </Button>
                     <Button
                       type="button"
+                      variant="ghost"
                       aria-pressed={aiExtractMode === 'agent'}
                       onClick={() => setAiExtractMode('agent')}
                       className={`flex-1 flex items-center justify-between gap-2 px-3 py-2 rounded-md border transition-all ${aiExtractMode === 'agent'
