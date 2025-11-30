@@ -1,10 +1,11 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend, ResponsiveContainer } from 'recharts';
 import useTrips from '../hooks/useTrips';
-import { BarChartIcon, BellIcon, Co2EmissionIcon, ListIcon, FolderIcon } from './Icons';
+import { BarChartIcon, BellIcon, Co2EmissionIcon, ListIcon, FolderIcon, SparklesIcon } from './Icons';
 import useTranslation from '../hooks/useTranslation';
 import useUserProfile from '../hooks/useUserProfile';
 import { Trip, View, PersonalizationSettings } from '../types';
+import { AiQuotaCheck } from '../services/aiQuotaService';
 import TripDetailModal from './TripDetailModal';
 
 import useDashboardSettings from '../hooks/useDashboardSettings';
@@ -20,12 +21,14 @@ interface DashboardProps {
 }
 
 const Dashboard: React.FC<DashboardProps> = ({ setCurrentView, personalization, theme }) => {
-    const { trips, projects } = useTrips();
+    const { trips, projects, getAiQuota } = useTrips();
     const { userProfile } = useUserProfile();
     const { visibleProjectIds, hasSettings } = useDashboardSettings();
     const [chartType, setChartType] = useState<ChartType>('projectKm');
     const [viewingTrip, setViewingTrip] = useState<Trip | null>(null);
     const [isAlertsOpen, setIsAlertsOpen] = useState(false);
+    const [aiQuota, setAiQuota] = useState<AiQuotaCheck | null>(null);
+    const [aiQuotaLoading, setAiQuotaLoading] = useState(false);
     const alertsRef = useRef<HTMLDivElement>(null);
     const { t } = useTranslation();
 
@@ -54,6 +57,22 @@ const Dashboard: React.FC<DashboardProps> = ({ setCurrentView, personalization, 
     }, []);
 
     const totalKm = userTrips.reduce((sum, trip) => sum + trip.distance, 0);
+    
+    useEffect(() => {
+        const loadQuota = async () => {
+            if (!getAiQuota) return;
+            setAiQuotaLoading(true);
+            try {
+                const q = await getAiQuota();
+                setAiQuota(q);
+            } catch (err) {
+                console.error('Failed to load AI quota', err);
+            } finally {
+                setAiQuotaLoading(false);
+            }
+        };
+        loadQuota();
+    }, [getAiQuota]);
 
     // Check if CO2 settings are configured (vehicleType and fuel/energy consumption)
     const hasCO2Settings = useMemo(() => {
@@ -130,6 +149,20 @@ const Dashboard: React.FC<DashboardProps> = ({ setCurrentView, personalization, 
     
     const PIE_COLORS = ['#007aff', '#34c759', '#ff9500', '#ff3b30', '#5856d6', '#5ac8fa'];
     
+    const renderPlanValue = () => {
+        if (!aiQuota) return aiQuotaLoading ? 'Cargando…' : 'Plan no asignado';
+        if (aiQuota.limit === null) {
+            return `${aiQuota.plan.toUpperCase()} · IA ∞`;
+        }
+        return `${aiQuota.plan.toUpperCase()} · ${aiQuota.used}/${aiQuota.limit} días IA`;
+    };
+
+    const renderPlanHint = () => {
+        if (!aiQuota || aiQuota.limit === null) return 'IA ilimitada en este plan.';
+        if (aiQuota.remaining === 0) return 'Sin días IA restantes. Sube de plan para más.';
+        return `Te quedan ${aiQuota.remaining} día(s) IA este ciclo.`;
+    };
+    
     const contentStyle = theme === 'dark' 
         ? {
             backgroundColor: `rgba(30, 30, 30, ${1 - personalization.uiTransparency})`,
@@ -203,7 +236,18 @@ const StatCard = ({ title, value, cta, onClick, children }: { title: string, val
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                <StatCard
+                  title="Plan y cupo IA"
+                  value={renderPlanValue()}
+                  cta="Gestionar plan"
+                  onClick={() => setCurrentView('settings')}
+                >
+                  <div className="flex items-center gap-2 text-sm text-on-surface-secondary">
+                    <SparklesIcon className="w-4 h-4 text-brand-primary" />
+                    <span>{renderPlanHint()}</span>
+                  </div>
+                </StatCard>
                 <StatCard title={t('dashboard_totalKm')} value={`${totalKm.toFixed(1)} km`} cta={t('dashboard_viewAllTrips')} onClick={() => setCurrentView('trips')} />
                 <StatCard title={t('dashboard_activeProjects')} value={activeProjectsCount.toString()} cta={t('dashboard_manageProjects')} onClick={() => setCurrentView('projects')} />
                 {hasCO2Settings ? (

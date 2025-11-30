@@ -5,7 +5,7 @@ import { createTripLedgerService, TripLedgerService } from '../services/supabase
 import { useProjects } from '../hooks/useProjects';
 import useToast from '../hooks/useToast';
 import useUserProfile from '../hooks/useUserProfile';
-import { checkAiQuota, buildQuotaError } from '../services/aiQuotaService';
+import { checkAiQuota, buildQuotaError, AiQuotaCheck } from '../services/aiQuotaService';
 
 interface LedgerTripsContextType {
   trips: Trip[];
@@ -21,6 +21,7 @@ interface LedgerTripsContextType {
   addMultipleTrips: (newTrips: Omit<Trip, 'id'>[]) => Promise<void>;
   addAiTrips: (newTrips: Omit<Trip, 'id'>[]) => Promise<void>;
   addCsvTrips: (drafts: Omit<Trip, 'id'>[]) => Promise<void>;
+  getAiQuota: () => Promise<AiQuotaCheck>;
   
   // Project operations (proxied to ProjectsContext)
   projects: any[];
@@ -314,6 +315,25 @@ export const LedgerTripsProvider: React.FC<{ children: ReactNode }> = ({ childre
     }
   }, [ledgerService, user?.id, userProfile, supabaseUser, refreshTrips, showToast]);
 
+  const getAiQuota = useCallback(async (): Promise<AiQuotaCheck> => {
+    if (!user?.id) {
+      return {
+        plan: 'free',
+        limit: 15,
+        used: 0,
+        needed: 0,
+        remaining: 15,
+        allowed: true
+      };
+    }
+    return checkAiQuota({
+      userId: user.id,
+      trips: [],
+      profile: userProfile,
+      supabaseUser
+    });
+  }, [user?.id, userProfile, supabaseUser]);
+
   const addCsvTrips = useCallback(async (drafts: Omit<Trip, 'id'>[]): Promise<void> => {
     if (!ledgerService) {
       throw new Error('Ledger service not available');
@@ -507,6 +527,7 @@ export const LedgerTripsProvider: React.FC<{ children: ReactNode }> = ({ childre
     addAiTrips,
     addMultipleTrips,
     addCsvTrips,
+    getAiQuota,
     
     // Project operations (proxied)
     projects: projectsContext.projects,
