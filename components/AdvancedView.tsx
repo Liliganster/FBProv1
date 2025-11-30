@@ -419,8 +419,8 @@ const CostAnalysisDashboard: React.FC<{
                     <button
                         onClick={() => setCostView('summary')}
                         className={`px-6 py-2 rounded-smooth font-semibold transition-colors ${costView === 'summary'
-                                ? 'bg-brand-primary text-white'
-                                : 'bg-surface-dark text-on-surface-dark-secondary hover:bg-gray-700/50'
+                            ? 'bg-brand-primary text-white'
+                            : 'bg-surface-dark text-on-surface-dark-secondary hover:bg-gray-700/50'
                             }`}
                     >
                         {t('cost_analysis_summary_tab')}
@@ -428,8 +428,8 @@ const CostAnalysisDashboard: React.FC<{
                     <button
                         onClick={() => setCostView('monthly')}
                         className={`px-6 py-2 rounded-smooth font-semibold transition-colors ${costView === 'monthly'
-                                ? 'bg-brand-primary text-white'
-                                : 'bg-surface-dark text-on-surface-dark-secondary hover:bg-gray-700/50'
+                            ? 'bg-brand-primary text-white'
+                            : 'bg-surface-dark text-on-surface-dark-secondary hover:bg-gray-700/50'
                             }`}
                     >
                         {t('cost_view_monthly')}
@@ -678,9 +678,7 @@ const CostAnalysisDashboard: React.FC<{
                 <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
                     <div
                         style={{
-                            backgroundColor: theme === 'dark'
-                                ? `rgba(30, 30, 30, ${1 - personalization.uiTransparency})`
-                                : `rgba(243, 244, 246, ${1 - personalization.uiTransparency})`,
+                            backgroundColor: `rgba(30, 30, 30, ${1 - personalization.uiTransparency})`,
                             backdropFilter: `blur(${personalization.uiBlur}px)`,
                         }}
                         className="bg-frost-glass rounded-organic shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
