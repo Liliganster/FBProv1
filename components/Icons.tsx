@@ -300,8 +300,10 @@ export const TreePineIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => 
     strokeLinecap="round"
     strokeLinejoin="round"
   >
-    <path d="M12 2 7 10h3l-4 5h4l-5 6h14l-5-6h4l-4-5h3Z" />
-    <path d="M12 21v-6" />
+    <path d="m17 14-5-10-5 10" />
+    <path d="M17 14H7" />
+    <path d="M15 18H9" />
+    <path d="M13 22h-2" />
   </svg>
 );
 
