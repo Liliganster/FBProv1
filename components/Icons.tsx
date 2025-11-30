@@ -290,11 +290,20 @@ export const DriveIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
 );
 
 export const TreePineIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
-  <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M12 2 L8 8 h8 Z" fill="currentColor" />
-    <path d="M10 8 L7 13 h10 l-3-5" fill="currentColor" />
-    <path d="M8 13 L6 17 h12 l-2-4" fill="currentColor" />
-    <rect x="10" y="17" width="4" height="5" fill="currentColor" />
+  <svg
+    {...props}
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="m17 14-5-10-5 10" />
+    <path d="M17 14H7" />
+    <path d="M15 18H9" />
+    <path d="M13 22h-2" />
   </svg>
 );
 
