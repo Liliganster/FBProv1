@@ -163,23 +163,21 @@ const Dashboard: React.FC<DashboardProps> = ({ setCurrentView, personalization, 
         return `Te quedan ${aiQuota.remaining} solicitudes IA este ciclo.`;
     };
     
-    const contentStyle = theme === 'dark' 
+    const panelStyle = theme === 'dark' 
         ? {
             backgroundColor: `rgba(30, 30, 30, ${1 - personalization.uiTransparency})`,
             backdropFilter: `blur(${personalization.uiBlur}px)`,
             WebkitBackdropFilter: `blur(${personalization.uiBlur}px)`,
           }
         : {
-            backgroundColor: 'rgba(255, 255, 255, 0.55)',
-            backdropFilter: 'blur(14px) saturate(160%)',
-            WebkitBackdropFilter: 'blur(14px) saturate(160%)',
-            borderRadius: '20px',
+            backgroundColor: 'rgba(255, 255, 255, 0.65)',
+            backdropFilter: `blur(${personalization.uiBlur}px)`,
+            WebkitBackdropFilter: `blur(${personalization.uiBlur}px)`,
             border: '1px solid rgba(255, 255, 255, 0.4)',
-            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.05)',
           };
 
 const StatCard = ({ title, value, cta, onClick, children }: { title: string, value: string, cta?: string, onClick?: () => void, children?: React.ReactNode }) => (
-    <div style={contentStyle} className="bg-frost-glass border-glass rounded-fluid p-6 flex flex-col justify-between min-h-[140px] transition-all duration-300 hover:transform hover:translate-y-[-2px] hover:shadow-glass backdrop-blur-glass">
+    <div style={panelStyle} className="glass-panel rounded-fluid p-6 flex flex-col justify-between min-h-[140px] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-glass">
             <div>
                 <div className="flex items-start justify-between">
                     <h3 className="text-sm font-medium text-on-surface-secondary uppercase tracking-wider">{title}</h3>
@@ -262,7 +260,7 @@ const StatCard = ({ title, value, cta, onClick, children }: { title: string, val
                 {hasCO2Settings ? (
                     <StatCard title={t('dashboard_total_co2')} value={`${totalCo2.toFixed(1)} kg`} />
                 ) : (
-                    <div style={contentStyle} className="bg-frost-glass border-glass rounded-fluid p-6 backdrop-blur-glass">
+                    <div style={panelStyle} className="glass-panel rounded-fluid p-6">
                         <h4 className="text-sm font-medium text-on-surface-secondary mb-2">{t('dashboard_total_co2')}</h4>
                         <p className="text-xs text-on-surface-secondary mb-3">{t('co2_settings_required_notice')}</p>
                         <button 
@@ -276,7 +274,7 @@ const StatCard = ({ title, value, cta, onClick, children }: { title: string, val
             </div>
             
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div style={contentStyle} className="lg:col-span-2 bg-frost-glass border-glass rounded-fluid p-6 backdrop-blur-glass">
+                <div style={panelStyle} className="lg:col-span-2 glass-panel rounded-fluid p-6">
                     <div className="flex justify-between items-center mb-4">
                         <h3 className="text-lg font-semibold text-white">{t('dashboard_visualAnalysis')}</h3>
                     </div>
@@ -296,7 +294,7 @@ const StatCard = ({ title, value, cta, onClick, children }: { title: string, val
                         </BarChart>
                     </ResponsiveContainer>
                 </div>
-                <div style={contentStyle} className="bg-frost-glass border-glass rounded-fluid p-6 backdrop-blur-glass">
+                <div style={panelStyle} className="glass-panel rounded-fluid p-6">
                     <h3 className="text-lg font-semibold mb-4 text-white">{t('dashboard_recentTrips')}</h3>
                     <div className="space-y-3">
                         {recentTrips.length > 0 ? recentTrips.map(trip => (
