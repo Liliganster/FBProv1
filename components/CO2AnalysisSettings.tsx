@@ -116,10 +116,10 @@ const CO2AnalysisSettings: React.FC<CO2AnalysisSettingsProps> = ({
   if (!isOpen) return null;
 
   const modalStyle = {
-    backgroundColor: theme === 'dark'
-      ? `rgba(18, 18, 18, ${1 - personalization.uiTransparency})`
-      : `rgba(229, 231, 235, ${1 - personalization.uiTransparency})`,
+    backgroundColor: `rgba(18, 18, 18, ${1 - personalization.uiTransparency})`,
     backdropFilter: `blur(${personalization.uiBlur}px)`,
+    WebkitBackdropFilter: `blur(${personalization.uiBlur}px)`,
+    border: '1px solid rgba(255,255,255,0.08)',
   };
 
   // Visual consistency with Settings modal: rely on predefined bg tokens and tailwind classes
