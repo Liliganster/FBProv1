@@ -1,66 +1,68 @@
 <!DOCTYPE html>
 <html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
-    <meta name="theme-color" content="#0a0a0a" />
-    <meta name="mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <script>
-      // URL Cleaner & Anti-Loop Protection
-      (function() {
-        var path = window.location.pathname;
-        
-        // IMPORTANTE: No procesar rutas de autenticación - dejar que React las maneje
-        if (path.includes('/auth/')) {
-          return;
-        }
-        
-        // Prevenir bucles infinitos - verificar si ya procesamos esta URL
-        var processedKey = 'url_cleanup_done';
-        var alreadyProcessed = sessionStorage.getItem(processedKey);
-        
-        if (alreadyProcessed === 'true') {
-          return; // Ya procesamos la limpieza en esta sesión
-        }
-        
-        var needsCleanup = false;
-        var cleanPath = path;
-        
-        // Check for duplicate index.html in the path
-        if (path.includes('/index.html/') || path.match(/\/index\.html$/i)) {
-          cleanPath = path.replace(/\/index\.html/g, '');
-          needsCleanup = true;
-        }
-        
-        // Normalize empty path
-        if (!cleanPath || cleanPath === '') {
-          cleanPath = '/';
-        }
-        
-        // Only apply cleanup if needed
-        if (needsCleanup && cleanPath !== path) {
-          var baseUrl = window.location.origin;
-          var query = window.location.search;
-          var hash = window.location.hash;
-          var newUrl = baseUrl + cleanPath + query + hash;
-          
-          // Mark cleanup as done for this session
-          sessionStorage.setItem(processedKey, 'true');
-          
-          // Replace current URL without a page reload
-          window.history.replaceState(null, document.title, newUrl);
-        }
-      })();
-    </script>
-    <title>Fahrtenbuch Pro</title>
-    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
-    <link rel="preconnect" href="https://openrouter.ai" crossorigin>
-    <link rel="preconnect" href="https://aistudiocdn.com" crossorigin>
-    <link rel="stylesheet" href="/src/index.css">
-    <script type="importmap">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
+  <meta name="theme-color" content="#0a0a0a" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <script>
+    // URL Cleaner & Anti-Loop Protection
+    (function () {
+      var path = window.location.pathname;
+
+      // IMPORTANTE: No procesar rutas de autenticación - dejar que React las maneje
+      if (path.includes('/auth/')) {
+        return;
+      }
+
+      // Prevenir bucles infinitos - verificar si ya procesamos esta URL
+      var processedKey = 'url_cleanup_done';
+      var alreadyProcessed = sessionStorage.getItem(processedKey);
+
+      if (alreadyProcessed === 'true') {
+        return; // Ya procesamos la limpieza en esta sesión
+      }
+
+      var needsCleanup = false;
+      var cleanPath = path;
+
+      // Check for duplicate index.html in the path
+      if (path.includes('/index.html/') || path.match(/\/index\.html$/i)) {
+        cleanPath = path.replace(/\/index\.html/g, '');
+        needsCleanup = true;
+      }
+
+      // Normalize empty path
+      if (!cleanPath || cleanPath === '') {
+        cleanPath = '/';
+      }
+
+      // Only apply cleanup if needed
+      if (needsCleanup && cleanPath !== path) {
+        var baseUrl = window.location.origin;
+        var query = window.location.search;
+        var hash = window.location.hash;
+        var newUrl = baseUrl + cleanPath + query + hash;
+
+        // Mark cleanup as done for this session
+        sessionStorage.setItem(processedKey, 'true');
+
+        // Replace current URL without a page reload
+        window.history.replaceState(null, document.title, newUrl);
+      }
+    })();
+  </script>
+  <title>Fahrtenbuch Pro</title>
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+  <link rel="preconnect" href="https://openrouter.ai" crossorigin>
+  <link rel="preconnect" href="https://aistudiocdn.com" crossorigin>
+  <link rel="stylesheet" href="/src/index.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script type="importmap">
 {
   "imports": {
     "react": "https://aistudiocdn.com/react@^19.1.1",
@@ -74,13 +76,16 @@
   }
 }
 </script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.mjs" type="module"></script>
-    <script src="https://apis.google.com/js/api.js" async defer></script>
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.mjs" type="module"></script>
+  <script src="https://apis.google.com/js/api.js" async defer></script>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
-  <body class="bg-background-dark text-on-surface-dark transition-colors duration-300" style="background-color: #0f0f0f; color: #e5e5e5;">
-    <div id="root"></div>
-    <script type="module" src="/index.tsx"></script>
-  </body>
+
+<body class="bg-background-dark text-on-surface-dark transition-colors duration-300"
+  style="background-color: #0f0f0f; color: #e5e5e5;">
+  <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>
+
 </html>
 <!-- Force deploy - API proxy fix -->

@@ -14,31 +14,34 @@ export default {
       '2xl': '1536px',
     },
     extend: {
+      fontFamily: {
+        sans: ['Inter', 'sans-serif'],
+      },
       colors: {
         // Brand Colors - Professional Blue
         'brand-primary': '#007aff',
         'brand-primary-dark': '#0056cc',
         'brand-secondary': '#34c759',
         'brand-accent': '#5856d6',
-        
+
         // Dark Theme Base Colors
         'background-dark': '#0a0a0a',
         'background-darker': '#000000',
         'surface-dark': '#1a1a1a',
         'surface-medium': '#2a2a2a',
         'surface-light': '#3a3a3a',
-        
+
         // Text Colors
         'on-surface-dark': '#ffffff',
         'on-surface-medium': '#e5e5e5',
         'on-surface-secondary': '#a3a3a3',
         'on-surface-tertiary': '#6b7280',
-        
+
         // Border Colors
         'border-dark': '#2a2a2a',
         'border-medium': '#404040',
         'border-light': '#525252',
-        
+
         // Status Colors (Dark Theme)
         'success-dark': '#10b981',
         'warning-dark': '#f59e0b',
