@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { Trip, Project } from '../types';
 import { XIcon, MapPinIcon, FileTextIcon, TrashIcon, UploadCloudIcon } from './Icons';
+import { Button } from './Button';
 import InteractiveMap from './InteractiveMap';
 import useTranslation from '../hooks/useTranslation';
 import { formatDateForDisplay } from '../i18n/translations';
@@ -68,13 +69,14 @@ const TripDetailModal: React.FC<TripDetailModalProps> = ({ trip, project, onClos
       >
         <header className="flex items-start justify-between px-6 py-4 border-b border-glass flex-shrink-0">
           <h2 className="text-lg font-semibold tracking-tight text-white">{t('detail_title')}</h2>
-          <button
+          <Button
+            variant="icon"
             onClick={onClose}
             aria-label={t('common_close')}
-            className="p-2 text-on-surface-secondary hover:text-white hover:bg-gradient-surface rounded-smooth focus:outline-none focus:ring-2 focus:ring-brand-primary transition-all duration-200"
+            title={t('common_close')}
           >
             <XIcon className="w-5 h-5" />
-          </button>
+          </Button>
         </header>
         <main className="flex-1 flex flex-col md:flex-row min-h-0">
           {/* Sidebar */}
@@ -95,13 +97,12 @@ const TripDetailModal: React.FC<TripDetailModalProps> = ({ trip, project, onClos
                 {trip.locations.map((location, index) => (
                   <li key={index} className="mb-4 ml-4">
                     <div
-                      className={`absolute w-3 h-3 ${
-                        index === 0
-                          ? 'bg-brand-primary'
-                          : index === trip.locations.length - 1
+                      className={`absolute w-3 h-3 ${index === 0
+                        ? 'bg-brand-primary'
+                        : index === trip.locations.length - 1
                           ? 'bg-brand-secondary'
                           : 'bg-gray-500'
-                      } rounded-full mt-1.5 -left-1.5 border border-background-dark`}
+                        } rounded-full mt-1.5 -left-1.5 border border-background-dark`}
                     ></div>
                     <p className="text-sm text-gray-200 leading-snug">{location}</p>
                   </li>
@@ -117,14 +118,14 @@ const TripDetailModal: React.FC<TripDetailModalProps> = ({ trip, project, onClos
                   <FileTextIcon className="w-4 h-4" />
                   {t('expense_section_title') || 'Fuel & maintenance invoices'}
                 </h3>
-                <button
-                  type="button"
+                <Button
+                  variant="primary"
+                  size="sm"
                   onClick={() => setIsExpenseModalOpen(true)}
-                  className="flex items-center gap-1 rounded-md bg-brand-primary/80 px-2.5 py-1.5 text-xs font-medium text-white transition hover:bg-brand-primary"
                 >
-                  <UploadCloudIcon className="h-4 w-4" />
+                  <UploadCloudIcon className="h-4 w-4 mr-1" />
                   {t('expense_attach_btn') || 'Attach'}
-                </button>
+                </Button>
               </div>
               <p className="text-sm text-on-surface-secondary">
                 {t('expense_section_total') || 'Total documented'}:{' '}
@@ -174,24 +175,26 @@ const TripDetailModal: React.FC<TripDetailModalProps> = ({ trip, project, onClos
                             {expense.description && (
                               <p className="text-sm text-on-surface-secondary">{expense.description}</p>
                             )}
-                            <button
-                              type="button"
+                            <Button
+                              variant="ghost"
+                              size="sm"
                               onClick={() => openInvoice(expense.url)}
-                              className="text-xs font-medium text-brand-primary transition hover:text-white"
+                              className="text-xs font-medium text-brand-primary hover:text-white p-0 h-auto"
                             >
                               {t('expense_open_document') || 'View invoice'}
-                            </button>
+                            </Button>
                           </div>
                         </div>
-                        <button
-                          type="button"
+                        <Button
+                          variant="icon"
+                          size="sm"
                           onClick={() => handleDeleteExpense(expense.id)}
-                          className="ml-3 rounded-md p-1 text-on-surface-secondary transition hover:text-red-400 disabled:opacity-50 flex-shrink-0"
+                          className="ml-3 text-on-surface-secondary hover:text-red-400"
                           aria-label={t('expense_delete_btn') || 'Delete invoice'}
                           disabled={expensesLoading}
                         >
                           <TrashIcon className="h-4 w-4" />
-                        </button>
+                        </Button>
                       </div>
                     );
                   })}
@@ -217,11 +220,11 @@ const TripDetailModal: React.FC<TripDetailModalProps> = ({ trip, project, onClos
   );
 };
 
-const InfoItem: React.FC<{label: string, value: string, highlight?: boolean}> = ({label, value, highlight}) => (
-    <div>
-        <h3 className="text-xs font-medium text-on-surface-dark-secondary uppercase tracking-wide">{label}</h3>
-        <p className={`text-base mt-1 ${highlight ? 'font-bold text-brand-primary' : 'text-white'}`}>{value}</p>
-    </div>
+const InfoItem: React.FC<{ label: string, value: string, highlight?: boolean }> = ({ label, value, highlight }) => (
+  <div>
+    <h3 className="text-xs font-medium text-on-surface-dark-secondary uppercase tracking-wide">{label}</h3>
+    <p className={`text-base mt-1 ${highlight ? 'font-bold text-brand-primary' : 'text-white'}`}>{value}</p>
+  </div>
 );
 
 export default React.memo(TripDetailModal);

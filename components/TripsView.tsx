@@ -26,7 +26,7 @@ const SpecialOriginTag = React.memo(({ originType }: { originType: SpecialOrigin
     [SpecialOrigin.CONTINUATION]: 'bg-blue-500/20 text-blue-300',
     [SpecialOrigin.END_OF_CONTINUATION]: 'bg-green-500/20 text-green-300',
   };
-  
+
   const textKey: { [key in SpecialOrigin]: string } = {
     [SpecialOrigin.HOME]: '',
     [SpecialOrigin.CONTINUATION]: 'specialOrigin_continuation_tag',
@@ -43,8 +43,8 @@ const SpecialOriginTag = React.memo(({ originType }: { originType: SpecialOrigin
 });
 
 interface TripsViewProps {
-    personalization: PersonalizationSettings;
-    theme: 'light' | 'dark';
+  personalization: PersonalizationSettings;
+  theme: 'light' | 'dark';
 }
 
 const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
@@ -127,7 +127,7 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
     }
     return t('trips_unknownProject');
   };
-  
+
   const handleViewTrip = (trip: Trip) => {
     setSelectedTrip(trip);
     setIsDetailModalOpen(true);
@@ -142,7 +142,7 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
     setEditingTrip(trip);
     setIsEditorModalOpen(true);
   };
-  
+
   const handleSaveTrip = async (trip: Trip) => {
     try {
       if (editingTrip) {
@@ -182,13 +182,13 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
       showToast('Error updating trips', 'error');
     }
   };
-  
+
   const handleDeleteTrip = (id: string) => {
     if (window.confirm(t('trips_deleteConfirm'))) {
       const tripToDelete = trips.find(t => t.id === id);
       if (tripToDelete) {
         deleteTrip(id);
-        
+
         // Add undo action
         addAction({
           type: 'delete',
@@ -197,12 +197,12 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
             addTrip(tripToDelete);
           }
         });
-        
+
         setShowUndoToast(true);
       }
     }
   };
-  
+
   const handleSelectTrip = (id: string) => {
     setSelectedTripIds(prev =>
       prev.includes(id) ? prev.filter(tripId => tripId !== id) : [...prev, id]
@@ -211,30 +211,30 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
 
   const handleAddToCalendar = async (trip: Trip) => {
     try {
-        const projectName = getProjectName(trip.projectId);
-        await createCalendarEvent(trip, projectName);
-        showToast(t('toast_calendar_event_success'), 'success');
+      const projectName = getProjectName(trip.projectId);
+      await createCalendarEvent(trip, projectName);
+      showToast(t('toast_calendar_event_success'), 'success');
     } catch (error) {
-        console.error('Failed to create calendar event:', error);
-        const errorMessage = error instanceof Error ? error.message : t('toast_calendar_event_error');
-        if (errorMessage.includes('No primary calendar selected')) {
-            showToast(t('toast_calendar_no_primary'), 'warning');
-        } else {
-            showToast(errorMessage, 'error');
-        }
+      console.error('Failed to create calendar event:', error);
+      const errorMessage = error instanceof Error ? error.message : t('toast_calendar_event_error');
+      if (errorMessage.includes('No primary calendar selected')) {
+        showToast(t('toast_calendar_no_primary'), 'warning');
+      } else {
+        showToast(errorMessage, 'error');
+      }
     }
   };
 
   const filteredTrips = useMemo(() => {
     if (!userProfile) return [];
-    
+
     const userTrips = trips.filter(trip => (projectFilter === 'all' || trip.projectId === projectFilter));
-    
+
     if (sortOrder === 'desc') {
-        return userTrips.reverse(); // The trips are already sorted asc by date from context
+      return userTrips.reverse(); // The trips are already sorted asc by date from context
     }
     return userTrips;
-    
+
   }, [trips, projectFilter, userProfile, sortOrder]);
 
   // Reset pagination when filters/sorting change
@@ -263,7 +263,7 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
     if (window.confirm(t('trips_delete_selected_confirm', { count: selectedTripIds.length }))) {
       const tripsToDelete = trips.filter(t => selectedTripIds.includes(t.id));
       deleteMultipleTrips(selectedTripIds);
-      
+
       // Add undo action for multiple trips
       addAction({
         type: 'bulk_delete',
@@ -272,12 +272,12 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
           tripsToDelete.forEach(trip => addTrip(trip));
         }
       });
-      
+
       setSelectedTripIds([]);
       setShowUndoToast(true);
     }
   };
-  
+
   const handleSortByDate = () => {
     setSortOrder(prev => (prev === 'asc' ? 'desc' : 'asc'));
   };
@@ -288,8 +288,8 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
 
   const contentStyle = {
     backgroundColor: theme === 'dark'
-        ? `rgba(30, 30, 30, ${1 - personalization.uiTransparency})`
-        : `rgba(243, 244, 246, ${1 - personalization.uiTransparency})`,
+      ? `rgba(30, 30, 30, ${1 - personalization.uiTransparency})`
+      : `rgba(243, 244, 246, ${1 - personalization.uiTransparency})`,
     backdropFilter: `blur(${personalization.uiBlur}px)`,
   };
 
@@ -319,8 +319,8 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
         ) : (
           <>
             <div>
-                <h1 className="text-3xl font-bold bg-gradient-title bg-clip-text text-transparent">{t('trips_title')}</h1>
-                {userProfile && <h2 className="text-lg font-semibold text-brand-primary">{userProfile.name}</h2>}
+              <h1 className="text-3xl font-bold bg-gradient-title bg-clip-text text-transparent">{t('trips_title')}</h1>
+              {userProfile && <h2 className="text-lg font-semibold text-brand-primary">{userProfile.name}</h2>}
             </div>
             <div className="flex items-center gap-4">
               <div>
@@ -338,11 +338,11 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
                 </select>
               </div>
               <Button variant="success" onClick={() => setIsBulkModalOpen(true)}>
-                <UploadCloudIcon className="w-5 h-5 mr-2"/>
+                <UploadCloudIcon className="w-5 h-5 mr-2" />
                 {t('trips_bulkUpload')}
               </Button>
               <Button variant="primary" onClick={handleAddTrip}>
-                <PlusIcon className="w-5 h-5 mr-2"/>
+                <PlusIcon className="w-5 h-5 mr-2" />
                 {t('trips_addTrip')}
               </Button>
             </div>
@@ -350,7 +350,7 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
         )}
       </div>
 
-{isMobile ? (
+      {isMobile ? (
         // Vista mobile con cards
         <div className="space-y-4">
           {filteredTrips.length > 0 ? (
@@ -402,9 +402,8 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
                     return (
                       <div
                         key={trip.id}
-                        className={`bg-frost-glass border-glass rounded-fluid p-4 mb-3 backdrop-blur-glass transition-all duration-200 ${
-                          isSelected ? 'ring-2 ring-brand-primary bg-brand-primary/10' : 'hover:bg-gradient-surface/50'
-                        }`}
+                        className={`bg-frost-glass border-glass rounded-fluid p-4 mb-3 backdrop-blur-glass transition-all duration-200 ${isSelected ? 'ring-2 ring-brand-primary bg-brand-primary/10' : 'hover:bg-gradient-surface/50'
+                          }`}
                       >
                         <div className="flex items-center justify-between mb-3">
                           <div className="flex items-center gap-3">
@@ -431,7 +430,7 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
                           </div>
                           <div className="flex items-center gap-1">
                             <Button variant="icon" size="sm" onClick={() => handleViewTrip(trip)} title={t('trips_view_trip')}>
-                              <MapIcon className="w-4 h-4"/>
+                              <MapIcon className="w-4 h-4" />
                             </Button>
                             <Button
                               variant="icon"
@@ -441,27 +440,27 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
                               className="text-green-400 hover:text-green-300"
                               title={isSignedIn ? t('trips_col_actions_add_to_calendar') : t('trips_col_actions_add_to_calendar_disabled')}
                             >
-                              <CalendarPlusIcon className="w-4 h-4"/>
+                              <CalendarPlusIcon className="w-4 h-4" />
                             </Button>
-                            <Button 
+                            <Button
                               variant="icon"
                               size="sm"
-                              onClick={() => handleEditTrip(trip)} 
+                              onClick={() => handleEditTrip(trip)}
                               disabled={isLocked}
                               className="text-blue-400 hover:text-blue-300"
                               title={t('common_edit')}
                             >
-                              <EditIcon className="w-4 h-4"/>
+                              <EditIcon className="w-4 h-4" />
                             </Button>
-                            <Button 
+                            <Button
                               variant="icon"
                               size="sm"
-                              onClick={() => handleDeleteTrip(trip.id)} 
+                              onClick={() => handleDeleteTrip(trip.id)}
                               disabled={isLocked}
                               className="text-red-400 hover:text-red-300"
                               title={t('common_delete')}
                             >
-                              <TrashIcon className="w-4 h-4"/>
+                              <TrashIcon className="w-4 h-4" />
                             </Button>
                           </div>
                         </div>
@@ -510,7 +509,7 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
                 pagedTrips.map((trip) => {
                   const isSelected = selectedTripIds.includes(trip.id);
                   const isLocked = userProfile?.lockedUntilDate ? new Date(trip.date) <= new Date(userProfile.lockedUntilDate) : false;
-                  
+
                   const allWarnings = [...(trip.warnings || [])];
                   if (trip.distance > 1000) {
                     allWarnings.push(t('trips_warning_improbable_distance'));
@@ -529,118 +528,117 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
                   const invoiceCount = tripExpenses.length;
 
                   return (
-                  <div
-                    key={trip.id}
-                    className={`bg-frost-glass border-glass rounded-fluid p-4 backdrop-blur-glass transition-all duration-200 ${
-                      isSelected ? 'ring-2 ring-brand-primary bg-brand-primary/10' : 'hover:bg-gradient-surface/50'
-                    }`}
-                  >
-                    {/* Header con checkbox, fecha y acciones */}
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center gap-3">
-                        <input
-                          type="checkbox"
-                          checked={isSelected}
-                          onChange={() => handleSelectTrip(trip.id)}
-                          className="bg-gradient-surface border-surface rounded text-brand-primary focus:ring-brand-primary focus:ring-2 h-5 w-5 transition-all duration-200"
-                          disabled={isLocked}
-                        />
-                        <div className="flex items-center gap-2">
-                          {isLocked && (
-                            <span title={t('trips_locked_tooltip')} className="cursor-pointer hover:scale-110 transition-transform">
-                              <LockIcon className="w-4 h-4 text-yellow-400 hover:text-yellow-300" />
-                            </span>
-                          )}
-                          <span className="text-white font-medium">{formatDateForDisplay(trip.date)}</span>
-                          {allWarnings.length > 0 && (
-                            <div className="cursor-pointer hover:scale-110 transition-transform" title={allWarnings.join('\n')}>
-                              <WarningIcon className="w-4 h-4 text-yellow-400 hover:text-yellow-300" />
-                            </div>
-                          )}
+                    <div
+                      key={trip.id}
+                      className={`bg-frost-glass border-glass rounded-fluid p-4 backdrop-blur-glass transition-all duration-200 ${isSelected ? 'ring-2 ring-brand-primary bg-brand-primary/10' : 'hover:bg-gradient-surface/50'
+                        }`}
+                    >
+                      {/* Header con checkbox, fecha y acciones */}
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-3">
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => handleSelectTrip(trip.id)}
+                            className="bg-gradient-surface border-surface rounded text-brand-primary focus:ring-brand-primary focus:ring-2 h-5 w-5 transition-all duration-200"
+                            disabled={isLocked}
+                          />
+                          <div className="flex items-center gap-2">
+                            {isLocked && (
+                              <span title={t('trips_locked_tooltip')} className="cursor-pointer hover:scale-110 transition-transform">
+                                <LockIcon className="w-4 h-4 text-yellow-400 hover:text-yellow-300" />
+                              </span>
+                            )}
+                            <span className="text-white font-medium">{formatDateForDisplay(trip.date)}</span>
+                            {allWarnings.length > 0 && (
+                              <div className="cursor-pointer hover:scale-110 transition-transform" title={allWarnings.join('\n')}>
+                                <WarningIcon className="w-4 h-4 text-yellow-400 hover:text-yellow-300" />
+                              </div>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                      
-                      <div className="flex items-center gap-1">
-                        <Button variant="icon" size="sm" onClick={() => handleViewTrip(trip)} title={t('trips_view_trip')}>
-                          <MapIcon className="w-4 h-4"/>
-                        </Button>
-                        <Button
-                          variant="icon"
-                          size="sm"
-                          onClick={() => handleAddToCalendar(trip)}
-                          disabled={isLocked || !isSignedIn}
-                          className="text-green-400 hover:text-green-300"
-                          title={isSignedIn ? t('trips_col_actions_add_to_calendar') : t('trips_col_actions_add_to_calendar_disabled')}
-                        >
-                          <CalendarPlusIcon className="w-4 h-4"/>
-                        </Button>
-                        <Button 
-                          variant="icon"
-                          size="sm"
-                          onClick={() => handleEditTrip(trip)} 
-                          disabled={isLocked}
-                          className="text-blue-400 hover:text-blue-300"
-                          title={t('common_edit')}
-                        >
-                          <EditIcon className="w-4 h-4"/>
-                        </Button>
-                        <Button 
-                          variant="icon"
-                          size="sm"
-                          onClick={() => handleDeleteTrip(trip.id)} 
-                          disabled={isLocked}
-                          className="text-red-400 hover:text-red-300"
-                          title={t('common_delete')}
-                        >
-                          <TrashIcon className="w-4 h-4"/>
-                        </Button>
-                      </div>
-                    </div>
 
-                    {/* Contenido principal clickeable */}
-                    <div className="cursor-pointer" onClick={() => handleViewTrip(trip)}>
-                      {/* Ruta */}
-                      <div className="mb-2">
                         <div className="flex items-center gap-1">
-                          <span className="text-white text-sm font-medium">{trip.locations.join(' -> ')}</span>
-                          <SpecialOriginTag originType={trip.specialOrigin} />
+                          <Button variant="icon" size="sm" onClick={() => handleViewTrip(trip)} title={t('trips_view_trip')}>
+                            <MapIcon className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="icon"
+                            size="sm"
+                            onClick={() => handleAddToCalendar(trip)}
+                            disabled={isLocked || !isSignedIn}
+                            className="text-green-400 hover:text-green-300"
+                            title={isSignedIn ? t('trips_col_actions_add_to_calendar') : t('trips_col_actions_add_to_calendar_disabled')}
+                          >
+                            <CalendarPlusIcon className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="icon"
+                            size="sm"
+                            onClick={() => handleEditTrip(trip)}
+                            disabled={isLocked}
+                            className="text-blue-400 hover:text-blue-300"
+                            title={t('common_edit')}
+                          >
+                            <EditIcon className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="icon"
+                            size="sm"
+                            onClick={() => handleDeleteTrip(trip.id)}
+                            disabled={isLocked}
+                            className="text-red-400 hover:text-red-300"
+                            title={t('common_delete')}
+                          >
+                            <TrashIcon className="w-4 h-4" />
+                          </Button>
                         </div>
                       </div>
 
-                      {/* Info en grid */}
-                      <div className="grid grid-cols-2 gap-4 text-sm">
-                        <div>
-                          <span className="text-on-surface-dark-secondary text-xs uppercase tracking-wider">{t('trips_col_project')}</span>
-                          <p className="text-white">{getProjectName(trip.projectId)}</p>
+                      {/* Contenido principal clickeable */}
+                      <div className="cursor-pointer" onClick={() => handleViewTrip(trip)}>
+                        {/* Ruta */}
+                        <div className="mb-2">
+                          <div className="flex items-center gap-1">
+                            <span className="text-white text-sm font-medium">{trip.locations.join(' -> ')}</span>
+                            <SpecialOriginTag originType={trip.specialOrigin} />
+                          </div>
                         </div>
-                        <div>
-                          <span className="text-on-surface-dark-secondary text-xs uppercase tracking-wider">{t('trips_col_distance')}</span>
-                          <p className="text-brand-primary font-semibold">{trip.distance.toFixed(1)} km</p>
-                        </div>
-                        <div>
-                          <span className="text-on-surface-dark-secondary text-xs uppercase tracking-wider">{t('trips_col_emissions')}</span>
-                          <p className="text-white">
-                            <span className="font-semibold">{emissions.toFixed(1)}</span>
-                            <span className="text-xs text-on-surface-dark-secondary ml-1">kg</span>
-                          </p>
-                        </div>
-                        <div>
-                          <span className="text-on-surface-dark-secondary text-xs uppercase tracking-wider">{t('trips_col_earnings')}</span>
-                          <p className="text-brand-secondary font-semibold">EUR {reimbursement.toFixed(2)}</p>
-                        </div>
-                      </div>
 
-                      {/* Invoices */}
-                      {invoiceCount > 0 && (
-                        <div className="mt-2">
-                          <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-secondary/10 px-2.5 py-1 text-[11px] font-semibold text-brand-secondary">
-                            <FileTextIcon className="h-3.5 w-3.5" />
-                            <span>{invoiceCount}</span>
-                          </span>
+                        {/* Info en grid */}
+                        <div className="grid grid-cols-2 gap-4 text-sm">
+                          <div>
+                            <span className="text-on-surface-dark-secondary text-xs uppercase tracking-wider">{t('trips_col_project')}</span>
+                            <p className="text-white">{getProjectName(trip.projectId)}</p>
+                          </div>
+                          <div>
+                            <span className="text-on-surface-dark-secondary text-xs uppercase tracking-wider">{t('trips_col_distance')}</span>
+                            <p className="text-brand-primary font-semibold">{trip.distance.toFixed(1)} km</p>
+                          </div>
+                          <div>
+                            <span className="text-on-surface-dark-secondary text-xs uppercase tracking-wider">{t('trips_col_emissions')}</span>
+                            <p className="text-white">
+                              <span className="font-semibold">{emissions.toFixed(1)}</span>
+                              <span className="text-xs text-on-surface-dark-secondary ml-1">kg</span>
+                            </p>
+                          </div>
+                          <div>
+                            <span className="text-on-surface-dark-secondary text-xs uppercase tracking-wider">{t('trips_col_earnings')}</span>
+                            <p className="text-brand-secondary font-semibold">EUR {reimbursement.toFixed(2)}</p>
+                          </div>
                         </div>
-                      )}
+
+                        {/* Invoices */}
+                        {invoiceCount > 0 && (
+                          <div className="mt-2">
+                            <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-secondary/10 px-2.5 py-1 text-[11px] font-semibold text-brand-secondary">
+                              <FileTextIcon className="h-3.5 w-3.5" />
+                              <span>{invoiceCount}</span>
+                            </span>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </div>
                   );
                 })
               )}
@@ -651,23 +649,25 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
                     {t('trips_total') || 'Total'}: {filteredTrips.length}
                   </span>
                   <div className="flex items-center gap-2">
-                    <button
-                      className="px-3 py-1 rounded-smooth bg-gradient-surface disabled:opacity-50"
+                    <Button
+                      variant="secondary"
+                      size="sm"
                       onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                       disabled={currentPage === 1}
                     >
                       {t('prev') || 'Previous'}
-                    </button>
+                    </Button>
                     <span className="text-sm text-on-surface-dark-secondary">
                       {t('page') || 'Page'} {currentPage} / {totalPages}
                     </span>
-                    <button
-                      className="px-3 py-1 rounded-smooth bg-gradient-surface disabled:opacity-50"
+                    <Button
+                      variant="secondary"
+                      size="sm"
                       onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                       disabled={currentPage >= totalPages}
                     >
                       {t('next') || 'Next'}
-                    </button>
+                    </Button>
                   </div>
                 </div>
               )}
@@ -694,13 +694,13 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
                   />
                 </th>
                 <th className="p-3 text-[11px] font-semibold text-on-surface-secondary uppercase tracking-wider">
-                  <button onClick={handleSortByDate} className="uppercase flex items-center gap-1 hover:text-white transition-colors duration-200">
+                  <div onClick={handleSortByDate} className="uppercase flex items-center gap-1 hover:text-white transition-colors duration-200 cursor-pointer select-none">
                     {t('trips_col_date')}
                     <div className="flex flex-col -space-y-2">
                       <ChevronUpIcon className={`w-4 h-4 transition-colors ${sortOrder === 'asc' ? 'text-brand-primary' : 'text-on-surface-tertiary'}`} />
                       <ChevronDownIcon className={`w-4 h-4 transition-colors ${sortOrder === 'desc' ? 'text-brand-primary' : 'text-on-surface-tertiary'}`} />
                     </div>
-                  </button>
+                  </div>
                 </th>
                 <th className="p-3 text-[11px] font-semibold text-on-surface-dark-secondary uppercase tracking-wider">{t('trips_col_route')}</th>
                 <th className="p-3 text-[11px] font-semibold text-on-surface-dark-secondary uppercase tracking-wider">{t('trips_col_project')}</th>
@@ -715,16 +715,16 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
               {filteredTrips.length > 0 ? pagedTrips.map((trip) => {
                 const isSelected = selectedTripIds.includes(trip.id);
                 const isLocked = userProfile?.lockedUntilDate ? new Date(trip.date) <= new Date(userProfile.lockedUntilDate) : false;
-                
+
                 const allWarnings = [...(trip.warnings || [])];
                 if (trip.distance > 1000) {
-                    allWarnings.push(t('trips_warning_improbable_distance'));
+                  allWarnings.push(t('trips_warning_improbable_distance'));
                 }
                 if (trip.distance === 0) {
-                    allWarnings.push(t('trips_warning_zero_distance'));
+                  allWarnings.push(t('trips_warning_zero_distance'));
                 }
                 if (!trip.reason?.trim()) {
-                    allWarnings.push(t('dashboard_alert_missing_reason'));
+                  allWarnings.push(t('dashboard_alert_missing_reason'));
                 }
 
                 const project = projects.find(p => p.id === trip.projectId);
@@ -737,85 +737,85 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
                 const invoiceAriaLabel = t('expense_badge_aria_trip', { count: invoiceCount, label: invoiceLabel });
 
                 return (
-                <tr
-                  key={trip.id}
-                  className={`${isSelected ? 'bg-brand-primary/20' : ''} hover:bg-gradient-surface/50 transition-all duration-200 text-white border-b border-glass/20 last:border-b-0`}
-                >
-                  <td className="p-3" onClick={(e) => e.stopPropagation()}>
-                    <input
-                      type="checkbox"
-                      checked={isSelected}
-                      onChange={() => handleSelectTrip(trip.id)}
-                      className="bg-gradient-surface border-surface rounded text-brand-primary focus:ring-brand-primary focus:ring-2 h-5 w-5 transition-all duration-200"
-                      disabled={isLocked}
-                    />
-                  </td>
-                  <td className="p-3 whitespace-nowrap cursor-pointer text-sm" onClick={() => handleViewTrip(trip)}>
-                    <div className="flex items-center gap-2">
-{/* FIX: Wrap LockIcon in a span with a title attribute to fix prop assignment error. */}
+                  <tr
+                    key={trip.id}
+                    className={`${isSelected ? 'bg-brand-primary/20' : ''} hover:bg-gradient-surface/50 transition-all duration-200 text-white border-b border-glass/20 last:border-b-0`}
+                  >
+                    <td className="p-3" onClick={(e) => e.stopPropagation()}>
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={() => handleSelectTrip(trip.id)}
+                        className="bg-gradient-surface border-surface rounded text-brand-primary focus:ring-brand-primary focus:ring-2 h-5 w-5 transition-all duration-200"
+                        disabled={isLocked}
+                      />
+                    </td>
+                    <td className="p-3 whitespace-nowrap cursor-pointer text-sm" onClick={() => handleViewTrip(trip)}>
+                      <div className="flex items-center gap-2">
+                        {/* FIX: Wrap LockIcon in a span with a title attribute to fix prop assignment error. */}
                         {isLocked && <span title={t('trips_locked_tooltip')} className="cursor-pointer hover:scale-110 transition-transform"><LockIcon className="w-4 h-4 text-yellow-400 hover:text-yellow-300" /></span>}
                         {formatDateForDisplay(trip.date)}
-                    </div>
-                  </td>
-                  <td className="p-3 cursor-pointer text-sm" onClick={() => handleViewTrip(trip)}>
-                    <div className="flex items-center gap-1">
-                      <span className="truncate max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg" title={trip.locations.join(' -> ')}>{trip.locations.join(' -> ')}</span>
-                      <SpecialOriginTag originType={trip.specialOrigin} />
-                      {allWarnings.length > 0 && (
-                        <div className="ml-1 cursor-pointer hover:scale-110 transition-transform flex-shrink-0" title={allWarnings.join('\n')}>
-                          <WarningIcon className="w-5 h-5 text-yellow-400 hover:text-yellow-300" />
-                        </div>
+                      </div>
+                    </td>
+                    <td className="p-3 cursor-pointer text-sm" onClick={() => handleViewTrip(trip)}>
+                      <div className="flex items-center gap-1">
+                        <span className="truncate max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg" title={trip.locations.join(' -> ')}>{trip.locations.join(' -> ')}</span>
+                        <SpecialOriginTag originType={trip.specialOrigin} />
+                        {allWarnings.length > 0 && (
+                          <div className="ml-1 cursor-pointer hover:scale-110 transition-transform flex-shrink-0" title={allWarnings.join('\n')}>
+                            <WarningIcon className="w-5 h-5 text-yellow-400 hover:text-yellow-300" />
+                          </div>
+                        )}
+                      </div>
+                    </td>
+                    <td className="p-3 whitespace-nowrap cursor-pointer text-sm" onClick={() => handleViewTrip(trip)}>{getProjectName(trip.projectId)}</td>
+                    <td className="p-3 whitespace-nowrap cursor-pointer" onClick={() => handleViewTrip(trip)}>
+                      {invoiceCount > 0 ? (
+                        <span
+                          className="inline-flex items-center gap-1.5 rounded-full bg-brand-secondary/10 px-2.5 py-1 text-[11px] font-semibold text-brand-secondary"
+                          title={invoiceTooltip}
+                          aria-label={invoiceAriaLabel}
+                        >
+                          <FileTextIcon className="h-3.5 w-3.5" />
+                          <span>{invoiceCount}</span>
+                        </span>
+                      ) : (
+                        // Use an em dash via HTML entity to avoid mojibake in some environments
+                        <span className="text-on-surface-dark-secondary" aria-hidden="true">&mdash;</span>
                       )}
-                    </div>
-                  </td>
-                  <td className="p-3 whitespace-nowrap cursor-pointer text-sm" onClick={() => handleViewTrip(trip)}>{getProjectName(trip.projectId)}</td>
-                  <td className="p-3 whitespace-nowrap cursor-pointer" onClick={() => handleViewTrip(trip)}>
-                    {invoiceCount > 0 ? (
-                      <span
-                        className="inline-flex items-center gap-1.5 rounded-full bg-brand-secondary/10 px-2.5 py-1 text-[11px] font-semibold text-brand-secondary"
-                        title={invoiceTooltip}
-                        aria-label={invoiceAriaLabel}
-                      >
-                        <FileTextIcon className="h-3.5 w-3.5" />
-                        <span>{invoiceCount}</span>
-                      </span>
-                    ) : (
-                      // Use an em dash via HTML entity to avoid mojibake in some environments
-                      <span className="text-on-surface-dark-secondary" aria-hidden="true">&mdash;</span>
-                    )}
-                  </td>
-                  <td className="p-3 whitespace-nowrap text-brand-primary font-semibold text-sm cursor-pointer" onClick={() => handleViewTrip(trip)}>{trip.distance.toFixed(1)} km</td>
-                  <td className="p-3 whitespace-nowrap cursor-pointer text-sm" onClick={() => handleViewTrip(trip)}>
-                    <span className="font-semibold">{emissions.toFixed(1)}</span>
-                    <span className="text-xs text-on-surface-dark-secondary ml-1">kg</span>
-                  </td>
-                  <td className="p-3 whitespace-nowrap font-semibold text-sm text-brand-secondary cursor-pointer" onClick={() => handleViewTrip(trip)}>EUR {reimbursement.toFixed(2)}</td>
+                    </td>
+                    <td className="p-3 whitespace-nowrap text-brand-primary font-semibold text-sm cursor-pointer" onClick={() => handleViewTrip(trip)}>{trip.distance.toFixed(1)} km</td>
+                    <td className="p-3 whitespace-nowrap cursor-pointer text-sm" onClick={() => handleViewTrip(trip)}>
+                      <span className="font-semibold">{emissions.toFixed(1)}</span>
+                      <span className="text-xs text-on-surface-dark-secondary ml-1">kg</span>
+                    </td>
+                    <td className="p-3 whitespace-nowrap font-semibold text-sm text-brand-secondary cursor-pointer" onClick={() => handleViewTrip(trip)}>EUR {reimbursement.toFixed(2)}</td>
 
-                  <td
-                    className="p-3 whitespace-nowrap text-right"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <Button variant="icon" size="sm" onClick={() => handleViewTrip(trip)} className="mr-2" title={t('trips_view_trip')}>
-                      <MapIcon className="w-4 h-4"/>
-                    </Button>
-                    <Button
+                    <td
+                      className="p-3 whitespace-nowrap text-right"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <Button variant="icon" size="sm" onClick={() => handleViewTrip(trip)} className="mr-2" title={t('trips_view_trip')}>
+                        <MapIcon className="w-4 h-4" />
+                      </Button>
+                      <Button
                         variant="icon"
                         size="sm"
                         onClick={() => handleAddToCalendar(trip)}
                         disabled={isLocked || !isSignedIn}
                         className="mr-2 text-green-400 hover:text-green-300"
                         title={isSignedIn ? t('trips_col_actions_add_to_calendar') : t('trips_col_actions_add_to_calendar_disabled')}
-                    >
-                        <CalendarPlusIcon className="w-4 h-4"/>
-                    </Button>
-                    <Button variant="icon" size="sm" onClick={() => handleEditTrip(trip)} disabled={isLocked} className="mr-2 text-blue-400 hover:text-blue-300" title={t('common_edit')}>
-                      <EditIcon className="w-4 h-4"/>
-                    </Button>
-                    <Button variant="icon" size="sm" onClick={() => handleDeleteTrip(trip.id)} disabled={isLocked} className="text-red-400 hover:text-red-300" title={t('common_delete')}>
-                      <TrashIcon className="w-4 h-4"/>
-                    </Button>
-                  </td>
-                </tr>
+                      >
+                        <CalendarPlusIcon className="w-4 h-4" />
+                      </Button>
+                      <Button variant="icon" size="sm" onClick={() => handleEditTrip(trip)} disabled={isLocked} className="mr-2 text-blue-400 hover:text-blue-300" title={t('common_edit')}>
+                        <EditIcon className="w-4 h-4" />
+                      </Button>
+                      <Button variant="icon" size="sm" onClick={() => handleDeleteTrip(trip.id)} disabled={isLocked} className="text-red-400 hover:text-red-300" title={t('common_delete')}>
+                        <TrashIcon className="w-4 h-4" />
+                      </Button>
+                    </td>
+                  </tr>
                 );
               }) : (
                 <tr>
@@ -871,12 +871,12 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
         />
       )}
       {isBatchEditModalOpen && (
-          <BatchEditModal
-              onClose={() => setIsBatchEditModalOpen(false)}
-              onSave={handleSaveBatch}
-              projects={projects}
-              selectedTripCount={selectedTripIds.length}
-          />
+        <BatchEditModal
+          onClose={() => setIsBatchEditModalOpen(false)}
+          onSave={handleSaveBatch}
+          projects={projects}
+          selectedTripCount={selectedTripIds.length}
+        />
       )}
       {isDetailModalOpen && selectedTrip && (
         <TripDetailModal
@@ -885,7 +885,7 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
           onClose={() => setIsDetailModalOpen(false)}
         />
       )}
-      
+
       <UndoToast
         action={getLastAction()}
         onUndo={undo}

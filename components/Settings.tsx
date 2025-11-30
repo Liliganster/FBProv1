@@ -11,21 +11,21 @@ import { useAuth } from '../hooks/useAuth';
 import { databaseService } from '../services/databaseService';
 import LanguageSwitcher from './LanguageSwitcher';
 import {
-  LuPalette as Palette,
-  LuLanguages as Languages,
-  LuNewspaper as Newspaper,
-  LuCircleHelp as HelpCircle,
-  LuCloudUpload as UploadCloud,
-  LuImageOff as ImageOff,
-  LuFileText as FileText,
-  LuSunMedium as Sun,
-  LuMoonStar as Moon,
+    LuPalette as Palette,
+    LuLanguages as Languages,
+    LuNewspaper as Newspaper,
+    LuCircleHelp as HelpCircle,
+    LuCloudUpload as UploadCloud,
+    LuImageOff as ImageOff,
+    LuFileText as FileText,
+    LuSunMedium as Sun,
+    LuMoonStar as Moon,
 } from 'react-icons/lu';
 import { Button } from './Button';
 
 type Tab = 'profile' | 'compliance' | 'api' | 'personalization' | 'language' | 'changelog' | 'help';
 
-const SettingsView: React.FC<{ 
+const SettingsView: React.FC<{
     setCurrentView: (view: View) => void;
     personalization: PersonalizationSettings;
     setPersonalization: React.Dispatch<React.SetStateAction<PersonalizationSettings>>;
@@ -66,7 +66,7 @@ const SettingsView: React.FC<{
             setPassengerSurcharge(getPassengerSurchargeForCountry(userProfile.country));
         }
     }, [userProfile, resetInitialData]);
-    
+
     useEffect(() => {
         if (!localProfile) return;
         const fetchModels = async () => {
@@ -103,7 +103,7 @@ const SettingsView: React.FC<{
         const { name, value } = e.target;
         const type = 'type' in e.target ? e.target.type : 'text';
         const finalValue = type === 'number' ? (value === '' ? undefined : parseFloat(value)) : value;
-        
+
         setLocalProfile(prev => {
             if (!prev) return null;
             const newProfile = { ...prev, [name]: finalValue as any };
@@ -114,7 +114,7 @@ const SettingsView: React.FC<{
             return newProfile;
         });
     };
-    
+
     const handlePersonalizationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value, type } = e.target;
         setPersonalization(prev => ({
@@ -138,16 +138,16 @@ const SettingsView: React.FC<{
             onClose();
         }
     };
-    
+
     const onClose = () => setCurrentView('dashboard');
-    
+
     const handleClose = async () => {
         const shouldClose = await checkUnsavedChanges();
         if (shouldClose) {
             onClose();
         }
     };
-    
+
     const resetPersonalization = () => {
         setPersonalization({ ...DEFAULT_PERSONALIZATION_SETTINGS });
     };
@@ -157,11 +157,11 @@ const SettingsView: React.FC<{
         { id: 'city', url: 'https://images.unsplash.com/photo-1519817914152-22d216bb9170?q=80&w=1920&auto=format&fit=crop', alt: 'Cityscape at night with light trails' },
         { id: 'forest', url: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?q=80&w=1920&auto=format&fit=crop', alt: 'Sunlight filtering through a forest road' },
     ];
-    
+
     const handleUploadClick = () => {
         fileInputRef.current?.click();
     };
-    
+
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
@@ -237,7 +237,7 @@ const SettingsView: React.FC<{
                                 <InputField label={t('rate_per_km')} name="ratePerKm" type="number" value={localProfile.ratePerKm} onChange={handleProfileChange} />
                                 <ReadOnlyField label={t('passenger_surcharge_rate')} value={`€ ${passengerSurcharge.toFixed(2)} / km`} />
                                 <div className="md:col-span-2">
-                                   <InputField label={t('settings_profile_address')} name="address" value={localProfile.address} onChange={handleProfileChange} />
+                                    <InputField label={t('settings_profile_address')} name="address" value={localProfile.address} onChange={handleProfileChange} />
                                 </div>
                                 <InputField label={t('settings_profile_city')} name="city" value={localProfile.city} onChange={handleProfileChange} />
                                 <InputField label={t('settings_profile_country')} name="country" value={localProfile.country} onChange={handleProfileChange} />
@@ -269,13 +269,13 @@ const SettingsView: React.FC<{
                         </h2>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
                             <div>
-                               <InputField 
-                                    label={t('settings_compliance_lock_label')} 
-                                    name="lockedUntilDate" 
+                                <InputField
+                                    label={t('settings_compliance_lock_label')}
+                                    name="lockedUntilDate"
                                     type="date"
-                                    value={localProfile.lockedUntilDate} 
-                                    onChange={handleProfileChange} 
-                               />
+                                    value={localProfile.lockedUntilDate}
+                                    onChange={handleProfileChange}
+                                />
                             </div>
                             <div className="text-sm text-on-surface-dark-secondary bg-background-dark p-4 rounded-lg mt-1 md:mt-6">
                                 <p className="font-semibold">{t('settings_compliance_lock_info_title')}</p>
@@ -292,7 +292,7 @@ const SettingsView: React.FC<{
                             {/* AI Configuration Section */}
                             <div className="space-y-4 p-4 border border-gray-700 rounded-lg bg-gray-800/50">
                                 <h3 className="text-lg font-medium mb-2 text-white">🤖 {t('settings_api_ai_title')}</h3>
-                                
+
                                 {/* Info Banner */}
                                 <div className="p-3 bg-blue-900/20 border border-blue-700/50 rounded">
                                     <p className="text-sm text-blue-200">
@@ -301,22 +301,19 @@ const SettingsView: React.FC<{
                                 </div>
 
                                 {/* Gemini Status (Server) */}
-                                <div className={`flex items-center justify-between p-3 rounded ${
-                                    localProfile.openRouterApiKey && localProfile.openRouterModel
+                                <div className={`flex items-center justify-between p-3 rounded ${localProfile.openRouterApiKey && localProfile.openRouterModel
                                         ? 'bg-gray-900/20 border border-gray-700/50'
                                         : 'bg-green-900/20 border border-green-700/50'
-                                }`}>
+                                    }`}>
                                     <div>
-                                        <p className={`font-medium ${
-                                            localProfile.openRouterApiKey && localProfile.openRouterModel
+                                        <p className={`font-medium ${localProfile.openRouterApiKey && localProfile.openRouterModel
                                                 ? 'text-gray-300'
                                                 : 'text-green-200'
-                                        }`}>{t('settings_api_gemini_status')}</p>
-                                        <p className={`text-xs ${
-                                            localProfile.openRouterApiKey && localProfile.openRouterModel
+                                            }`}>{t('settings_api_gemini_status')}</p>
+                                        <p className={`text-xs ${localProfile.openRouterApiKey && localProfile.openRouterModel
                                                 ? 'text-gray-400'
                                                 : 'text-green-300'
-                                        }`}>{t('settings_api_gemini_desc')}</p>
+                                            }`}>{t('settings_api_gemini_desc')}</p>
                                     </div>
                                     {localProfile.openRouterApiKey && localProfile.openRouterModel ? (
                                         <span className="text-gray-400">🔄 {t('settings_api_fallback')}</span>
@@ -326,23 +323,20 @@ const SettingsView: React.FC<{
                                 </div>
 
                                 {/* OpenRouter Configuration (User) */}
-                                <div className={`space-y-3 p-3 border rounded ${
-                                    localProfile.openRouterApiKey && localProfile.openRouterModel
+                                <div className={`space-y-3 p-3 border rounded ${localProfile.openRouterApiKey && localProfile.openRouterModel
                                         ? 'bg-green-900/20 border-green-700/50'
                                         : 'border-gray-600'
-                                }`}>
+                                    }`}>
                                     <div className="flex items-center justify-between">
                                         <div>
-                                            <p className={`font-medium ${
-                                                localProfile.openRouterApiKey && localProfile.openRouterModel
+                                            <p className={`font-medium ${localProfile.openRouterApiKey && localProfile.openRouterModel
                                                     ? 'text-green-200'
                                                     : 'text-on-surface-dark'
-                                            }`}>{t('settings_api_openrouter_optional')}</p>
-                                            <p className={`text-xs ${
-                                                localProfile.openRouterApiKey && localProfile.openRouterModel
+                                                }`}>{t('settings_api_openrouter_optional')}</p>
+                                            <p className={`text-xs ${localProfile.openRouterApiKey && localProfile.openRouterModel
                                                     ? 'text-green-300'
                                                     : 'text-gray-400'
-                                            }`}>{t('settings_api_openrouter_desc')}</p>
+                                                }`}>{t('settings_api_openrouter_desc')}</p>
                                         </div>
                                         {localProfile.openRouterApiKey && localProfile.openRouterModel ? (
                                             <span className="text-green-400">✅ {t('settings_api_active')}</span>
@@ -354,11 +348,11 @@ const SettingsView: React.FC<{
                                     </div>
 
                                     <ProviderConfigContainer>
-                                        <InputField 
+                                        <InputField
                                             label={t('settings_api_or_key')}
-                                            name="openRouterApiKey" 
-                                            value={localProfile.openRouterApiKey} 
-                                            onChange={handleProfileChange} 
+                                            name="openRouterApiKey"
+                                            value={localProfile.openRouterApiKey}
+                                            onChange={handleProfileChange}
                                             placeholder="sk-or-v1-..."
                                             type="password"
                                         />
@@ -386,21 +380,23 @@ const SettingsView: React.FC<{
                                     </ProviderConfigContainer>
                                 </div>
                             </div>
-                            
+
                             {showExtractorUi && (
-                            <div className="space-y-2 p-4 border border-brand-primary/30 rounded-lg bg-brand-primary/5">
-                                <h3 className="text-lg font-medium mb-2 text-on-surface-dark flex items-center gap-2">
-                                    <FileText className="w-5 h-5 text-brand-primary" />
-                                </h3>
-                                <p className="text-sm text-on-surface-dark-secondary mb-3">
-                                    Extrae datos de hojas de rodaje automáticamente usando inteligencia artificial. Soporta PDFs, imágenes y texto.
-                                </p>
-                                <button
-                                    className="inline-flex items-center gap-2 bg-brand-primary hover:bg-brand-primary/90 text-white font-semibold py-2 px-4 rounded-md transition-colors"
-                                >
-                                    <SparklesIcon className="w-4 h-4" />
-                                </button>
-                            </div>
+                                <div className="space-y-2 p-4 border border-brand-primary/30 rounded-lg bg-brand-primary/5">
+                                    <h3 className="text-lg font-medium mb-2 text-on-surface-dark flex items-center gap-2">
+                                        <FileText className="w-5 h-5 text-brand-primary" />
+                                    </h3>
+                                    <p className="text-sm text-on-surface-dark-secondary mb-3">
+                                        Extrae datos de hojas de rodaje automáticamente usando inteligencia artificial. Soporta PDFs, imágenes y texto.
+                                    </p>
+                                    <Button
+                                        variant="primary"
+                                        onClick={() => { }} // Add handler if needed
+                                    >
+                                        <SparklesIcon className="w-4 h-4 mr-2" />
+                                        Empezar
+                                    </Button>
+                                </div>
                             )}
                         </div>
                     </div>
@@ -411,7 +407,7 @@ const SettingsView: React.FC<{
                 return (
                     <div className="space-y-6">
                         <h2 className="text-xl font-semibold bg-gradient-to-r from-white to-brand-primary bg-clip-text text-transparent">{t('settings_personalization_title')}</h2>
-                        
+
                         <div className="space-y-3">
                             <h3 className="text-sm font-medium text-on-surface-dark-secondary">{t('settings_personalization_theme_label') || 'Tema de la interfaz'}</h3>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -444,13 +440,13 @@ const SettingsView: React.FC<{
                             </div>
                             <p className="text-xs text-on-surface-dark-secondary">{t('settings_personalization_theme_hint') || 'Cámbialo cuando quieras; no modifica el resto de estilos.'}</p>
                         </div>
-                        
+
                         <div>
                             <label className="block text-sm font-medium text-on-surface-dark-secondary mb-2">{t('settings_personalization_bg_image_label')}</label>
                             {personalization.backgroundImage && (
                                 <div className="mb-4">
                                     <p className="text-xs text-on-surface-dark-secondary mb-2">Vista previa actual:</p>
-                                    <div 
+                                    <div
                                         className="w-full h-20 rounded-lg border border-gray-600 bg-cover bg-center"
                                         style={{
                                             backgroundImage: `url(${personalization.backgroundImage})`,
@@ -460,29 +456,29 @@ const SettingsView: React.FC<{
                                 </div>
                             )}
                             <div className="flex flex-col sm:flex-row gap-4">
-                                <button onClick={handleUploadClick} className="flex items-center justify-center gap-2 bg-brand-primary hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition-colors">
-                                    <UploadCloud size={18}/>
+                                <Button onClick={handleUploadClick} variant="primary">
+                                    <UploadCloud size={18} className="mr-2" />
                                     {t('settings_personalization_upload_image_btn') || 'Subir Imagen'}
-                                </button>
+                                </Button>
                                 <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept="image/png, image/jpeg, image/webp" />
                                 {personalization.backgroundImage && (
-                                    <button onClick={handleRemoveImage} className="flex items-center justify-center gap-2 bg-red-600/80 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg transition-colors">
-                                        <ImageOff size={18}/>
+                                    <Button onClick={handleRemoveImage} variant="danger">
+                                        <ImageOff size={18} className="mr-2" />
                                         {t('settings_personalization_remove_image_btn')}
-                                    </button>
+                                    </Button>
                                 )}
                             </div>
                         </div>
-            
+
                         <div>
-                             <h3 className="text-sm font-medium text-on-surface-dark-secondary mb-2">{t('settings_personalization_presets_title')}</h3>
-                             <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+                            <h3 className="text-sm font-medium text-on-surface-dark-secondary mb-2">{t('settings_personalization_presets_title')}</h3>
+                            <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
                                 {PRESET_BACKGROUNDS.map(bg => {
                                     const isSelected = personalization.backgroundImage === bg.url;
                                     return (
-                                        <div 
-                                            key={bg.id} 
-                                            onClick={() => handlePresetClick(bg.url)} 
+                                        <div
+                                            key={bg.id}
+                                            onClick={() => handlePresetClick(bg.url)}
                                             className={`relative aspect-video rounded-md overflow-hidden cursor-pointer group border-2 transition-all ${isSelected ? 'border-brand-primary' : 'border-transparent hover:border-gray-500'}`}
                                             title={bg.alt}
                                         >
@@ -491,11 +487,11 @@ const SettingsView: React.FC<{
                                         </div>
                                     )
                                 })}
-                             </div>
+                            </div>
                         </div>
-                        
-                        <hr className="border-gray-700/50"/>
-            
+
+                        <hr className="border-gray-700/50" />
+
                         <SliderField
                             label={t('settings_personalization_transparency_label')}
                             name="uiTransparency"
@@ -520,28 +516,28 @@ const SettingsView: React.FC<{
                             min={0} max={20} step={1}
                             displayValue={`${personalization.backgroundBlur}px`}
                         />
-                         <button onClick={resetPersonalization} className="text-sm text-green-500 hover:text-green-400 hover:underline mt-2">
+                        <Button onClick={resetPersonalization} variant="ghost" className="text-green-500 hover:text-green-400 mt-2 p-0 h-auto font-normal hover:bg-transparent hover:underline justify-start">
                             {t('settings_personalization_reset_btn')}
-                        </button>
+                        </Button>
                     </div>
                 );
             }
             case 'language':
-                 return (
+                return (
                     <div className="space-y-4">
                         <h2 className="text-xl font-semibold bg-gradient-to-r from-white to-brand-primary bg-clip-text text-transparent">{t('settings_language_title')}</h2>
                         <LanguageSwitcher />
                     </div>
                 );
             case 'changelog':
-                 return (
+                return (
                     <div className="space-y-4">
                         <h2 className="text-xl font-semibold text-white">{t('settings_changelog_title')}</h2>
                         <p className="text-on-surface-dark-secondary">{t('settings_changelog_empty')}</p>
                     </div>
                 );
             case 'help':
-                 return (
+                return (
                     <div className="space-y-4">
                         <h2 className="text-xl font-semibold text-white">{t('settings_help_title')}</h2>
                         <p className="text-on-surface-dark-secondary">{t('settings_help_empty')}</p>
@@ -574,10 +570,10 @@ const SettingsView: React.FC<{
                 <header className="flex items-center justify-between p-4 flex-shrink-0">
                     <h2 className="text-xl font-bold bg-gradient-title bg-clip-text text-transparent">{t('settings_title')}</h2>
                     <Button variant="icon" onClick={handleClose} title={t('common_close')}>
-                      <XIcon className="w-6 h-6" />
+                        <XIcon className="w-6 h-6" />
                     </Button>
                 </header>
-                
+
                 <div className="flex-grow flex min-h-0">
                     <nav className="w-1/4 p-4 border-r border-glass flex-shrink-0 space-y-1">
                         <TabButton
@@ -637,7 +633,7 @@ const SettingsView: React.FC<{
                         {renderTabContent()}
                     </main>
                 </div>
-                
+
                 <footer className="flex justify-between items-center p-4 bg-transparent border-t border-gray-700/50 flex-shrink-0">
                     <div className="flex items-center gap-2">
                         {hasUnsavedChanges && (
@@ -651,13 +647,13 @@ const SettingsView: React.FC<{
                     </div>
                     <div className="flex items-center gap-4">
                         <span className="text-[10px] text-on-surface-dark-secondary">
-                          Build: {typeof __COMMIT_HASH__ !== 'undefined' && __COMMIT_HASH__ ? __COMMIT_HASH__.slice(0,7) : 'local'} @ {typeof __BUILD_TIME__ !== 'undefined' ? __BUILD_TIME__ : 'dev'}
+                            Build: {typeof __COMMIT_HASH__ !== 'undefined' && __COMMIT_HASH__ ? __COMMIT_HASH__.slice(0, 7) : 'local'} @ {typeof __BUILD_TIME__ !== 'undefined' ? __BUILD_TIME__ : 'dev'}
                         </span>
                         <Button variant="secondary" onClick={handleClose}>
-                          {t('common_cancel')}
+                            {t('common_cancel')}
                         </Button>
                         <Button variant="primary" onClick={handleSaveAllSettings}>
-                            <SaveIcon className="w-5 h-5 mr-2"/>
+                            <SaveIcon className="w-5 h-5 mr-2" />
                             {t('settings_saveAll')}
                         </Button>
                     </div>
@@ -717,40 +713,39 @@ const SettingsView: React.FC<{
                     </div>
                 )}
             </div>
-            
+
         </div>
     );
 };
 
 const TabButton: React.FC<{ label: string; isActive: boolean; onClick: () => void; icon: React.ReactNode; theme: 'light' | 'dark'; }> = ({ label, isActive, onClick, icon }) => (
-    <button
+    <Button
+        variant="ghost"
         onClick={onClick}
-        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-colors text-sm font-medium ${
-            isActive
-                ? 'text-white'
-                : 'text-on-surface-dark-secondary hover:bg-gray-700/50'
-        }`}
-        style={isActive ? { backgroundColor: 'rgba(26, 26, 26, 0.8)' } : undefined}
+        className={`w-full justify-start px-3 py-2.5 text-sm font-medium ${isActive
+                ? 'bg-surface-medium text-white shadow-sm border border-white/5'
+                : 'text-on-surface-dark-secondary hover:bg-surface-light/50'
+            }`}
     >
-        {icon}
+        <span className="mr-3">{icon}</span>
         {label}
-    </button>
+    </Button>
 );
 
-const ProviderConfigContainer: React.FC<{children: React.ReactNode}> = ({ children }) => (
+const ProviderConfigContainer: React.FC<{ children: React.ReactNode }> = ({ children }) => (
     <div className="mt-2 space-y-2 p-3 bg-background-dark/50 rounded-md border border-gray-700/50">
         {children}
     </div>
 );
 
-const InputField: React.FC<{label: string, name: string, value?: string | number, onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void, type?: string, placeholder?: string, disabled?: boolean}> = ({ label, name, value, onChange, type = 'text', placeholder, disabled = false }) => (
+const InputField: React.FC<{ label: string, name: string, value?: string | number, onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void, type?: string, placeholder?: string, disabled?: boolean }> = ({ label, name, value, onChange, type = 'text', placeholder, disabled = false }) => (
     <div>
         <label htmlFor={name} className="block text-sm font-medium text-on-surface-dark-secondary mb-1">{label}</label>
-        <input 
-            type={type} 
+        <input
+            type={type}
             id={name}
-            name={name} 
-            value={value ?? ''} 
+            name={name}
+            value={value ?? ''}
             onChange={onChange}
             placeholder={placeholder}
             disabled={disabled}
@@ -776,7 +771,7 @@ const SliderField: React.FC<{ label: string; name: string; value: number; onChan
             max={max}
             step={step}
             className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer range-thumb:bg-brand-primary"
-            style={{ accentColor: 'var(--brand-primary, #007aff)'}}
+            style={{ accentColor: 'var(--brand-primary, #007aff)' }}
         />
     </div>
 );
@@ -800,9 +795,8 @@ const ModelSelect: React.FC<{
                 value={value || ''}
                 onChange={onChange}
                 disabled={isDisabled}
-                className={`w-full bg-background-dark border rounded-md p-2 focus:ring-2 focus:ring-brand-primary focus:outline-none disabled:bg-gray-800 disabled:text-gray-400 disabled:cursor-not-allowed ${
-                    hasError ? 'border-red-500' : 'border-gray-600'
-                }`}
+                className={`w-full bg-background-dark border rounded-md p-2 focus:ring-2 focus:ring-brand-primary focus:outline-none disabled:bg-gray-800 disabled:text-gray-400 disabled:cursor-not-allowed ${hasError ? 'border-red-500' : 'border-gray-600'
+                    }`}
             >
                 {isLoading ? (
                     <option>{loadingText || 'Loading models...'}</option>
@@ -832,7 +826,7 @@ const ModelSelect: React.FC<{
     );
 };
 
-const ReadOnlyField: React.FC<{label: string, value: string}> = ({ label, value }) => (
+const ReadOnlyField: React.FC<{ label: string, value: string }> = ({ label, value }) => (
     <div>
         <label className="block text-sm font-medium text-on-surface-dark-secondary mb-1">{label}</label>
         <div className="w-full bg-background-dark border border-gray-600 rounded-md p-2 text-on-surface-dark-secondary">
