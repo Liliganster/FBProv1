@@ -14,7 +14,7 @@ const plans = [
     id: 'free',
     name: 'Free',
     price: '0€',
-    badge: '15 días IA',
+    badge: '15 solicitudes',
     features: [
       '15 días de itinerarios con IA',
       'CSV/Excel ilimitado (sin IA)',
@@ -26,7 +26,7 @@ const plans = [
     id: 'pro',
     name: 'Pro',
     price: '€€',
-    badge: '150 días IA',
+    badge: '150 solicitudes',
     highlight: true,
     features: [
       '150 días de itinerarios con IA',
@@ -39,7 +39,7 @@ const plans = [
     id: 'enterprise',
     name: 'Enterprise',
     price: 'Custom',
-    badge: 'IA ilimitada',
+    badge: 'Solicitudes ilimitadas',
     features: [
       'Días IA ilimitados',
       'CSV/Excel ilimitado (sin IA)',

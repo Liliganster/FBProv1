@@ -154,13 +154,13 @@ const Dashboard: React.FC<DashboardProps> = ({ setCurrentView, personalization, 
         if (aiQuota.limit === null) {
             return `${aiQuota.plan.toUpperCase()} · IA ∞`;
         }
-        return `${aiQuota.plan.toUpperCase()} · ${aiQuota.used}/${aiQuota.limit} días IA`;
+        return `${aiQuota.plan.toUpperCase()} · ${aiQuota.used}/${aiQuota.limit} solicitudes`;
     };
 
     const renderPlanHint = () => {
         if (!aiQuota || aiQuota.limit === null) return 'IA ilimitada en este plan.';
-        if (aiQuota.remaining === 0) return 'Sin días IA restantes. Sube de plan para más.';
-        return `Te quedan ${aiQuota.remaining} día(s) IA este ciclo.`;
+        if (aiQuota.remaining === 0) return 'Sin solicitudes restantes. Mejora tu plan para más IA.';
+        return `Te quedan ${aiQuota.remaining} solicitudes IA este ciclo.`;
     };
     
     const contentStyle = theme === 'dark' 
@@ -243,6 +243,15 @@ const StatCard = ({ title, value, cta, onClick, children }: { title: string, val
                         <span className="font-semibold">
                             {aiQuotaLoading ? 'IA…' : renderPlanValue()}
                         </span>
+                        {aiQuota && aiQuota.limit !== null && aiQuota.remaining === 0 && (
+                            <button
+                                onClick={() => setCurrentView('plans')}
+                                className="text-xs underline text-brand-primary hover:text-white"
+                                type="button"
+                            >
+                                Mejorar plan
+                            </button>
+                        )}
                     </div>
                 </div>
             </div>
