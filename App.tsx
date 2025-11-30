@@ -310,6 +310,7 @@ const App: React.FC = () => {
     { view: 'reports', label: t('nav_reports'), icon: <FileText size={20} /> },
     { view: 'calendar', label: t('nav_calendar'), icon: <CalendarDays size={20} /> },
     { view: 'advanced', label: t('nav_advanced'), icon: <Rocket size={20} /> },
+    { view: 'plans', label: 'Planes', icon: <Star size={20} /> },
   ];
   
   const navStyle = {
