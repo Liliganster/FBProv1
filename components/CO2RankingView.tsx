@@ -47,7 +47,8 @@ const StatCard: React.FC<{
   value: string;
   icon?: React.ReactNode;
   color?: string;
-}> = ({ title, value, icon, color = 'text-white' }) => (
+  iconColor?: string;
+}> = ({ title, value, icon, color = 'text-white', iconColor }) => (
   <div className="bg-frost-glass p-6 rounded-lg">
     <div className="flex items-center justify-between">
       <div>
@@ -55,7 +56,7 @@ const StatCard: React.FC<{
         <p className={`text-3xl font-bold mt-1 ${color}`}>{value}</p>
       </div>
       {icon && (
-        <div className={`${color} opacity-40`}>
+        <div className={`${iconColor || color} opacity-40`}>
           {icon}
         </div>
       )}
@@ -406,7 +407,8 @@ const CO2RankingView: React.FC<CO2RankingViewProps> = ({
           <StatCard
             title={t('co2_metric_trees_needed') || 'Trees Needed'}
             value={`${summaryMetrics.treesNeeded}`}
-            icon={<TreePineIcon className="w-8 h-8 text-white" />}
+            icon={<TreePineIcon className="w-8 h-8" />}
+            iconColor="text-white"
             color="text-green-400"
           />
         </div>
