@@ -561,7 +561,16 @@ const SettingsView: React.FC<{
 
     return (
         <div className="fixed inset-0 bg-gradient-overlay backdrop-blur-glass flex items-center justify-center p-4 z-50" onClick={handleClose}>
-            <div className="bg-frost-glass no-border rounded-organic shadow-glass-lg w-full max-w-4xl max-h-[90vh] flex flex-col backdrop-blur-glass relative" onClick={e => e.stopPropagation()}>
+            <div
+                className="glass-surface no-border rounded-organic shadow-glass-lg w-full max-w-4xl max-h-[90vh] flex flex-col backdrop-blur-glass relative"
+                style={{
+                    backgroundColor: `rgba(30, 30, 30, ${1 - personalization.uiTransparency})`,
+                    backdropFilter: `blur(${personalization.uiBlur}px)`,
+                    WebkitBackdropFilter: `blur(${personalization.uiBlur}px)`,
+                    border: '1px solid rgba(255, 255, 255, 0.08)',
+                }}
+                onClick={e => e.stopPropagation()}
+            >
                 <header className="flex items-center justify-between p-4 flex-shrink-0">
                     <h2 className="text-xl font-bold bg-gradient-title bg-clip-text text-transparent">{t('settings_title')}</h2>
                     <Button variant="icon" onClick={handleClose} title={t('common_close')}>

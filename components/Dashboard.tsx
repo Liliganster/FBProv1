@@ -163,20 +163,13 @@ const Dashboard: React.FC<DashboardProps> = ({ setCurrentView, personalization, 
         return `Te quedan ${aiQuota.remaining} solicitudes IA este ciclo.`;
     };
     
-    const contentStyle = theme === 'dark' 
-        ? {
-            backgroundColor: `rgba(30, 30, 30, ${1 - personalization.uiTransparency})`,
-            backdropFilter: `blur(${personalization.uiBlur}px)`,
-            WebkitBackdropFilter: `blur(${personalization.uiBlur}px)`,
-          }
-        : {
-            backgroundColor: 'rgba(255, 255, 255, 0.55)',
-            backdropFilter: 'blur(14px) saturate(160%)',
-            WebkitBackdropFilter: 'blur(14px) saturate(160%)',
-            borderRadius: '20px',
-            border: '1px solid rgba(255, 255, 255, 0.4)',
-            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.05)',
-          };
+    // Force dark-style panels in both modes to maintain contrast
+    const contentStyle = {
+        backgroundColor: `rgba(30, 30, 30, ${1 - personalization.uiTransparency})`,
+        backdropFilter: `blur(${personalization.uiBlur}px)`,
+        WebkitBackdropFilter: `blur(${personalization.uiBlur}px)`,
+        border: '1px solid rgba(255, 255, 255, 0.08)',
+    };
 
 const StatCard = ({ title, value, cta, onClick, children }: { title: string, value: string, cta?: string, onClick?: () => void, children?: React.ReactNode }) => (
     <div style={contentStyle} className="bg-frost-glass border-glass rounded-fluid p-6 flex flex-col justify-between min-h-[140px] transition-all duration-300 hover:transform hover:translate-y-[-2px] hover:shadow-glass backdrop-blur-glass">
