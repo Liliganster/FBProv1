@@ -56,7 +56,7 @@ const StatCard: React.FC<{
         <p className={`text-3xl font-bold mt-1 ${color}`}>{value}</p>
       </div>
       {icon && (
-        <div className={`${iconColor || color} opacity-40`}>
+        <div className={`${iconColor || color}`}>
           {icon}
         </div>
       )}
@@ -407,7 +407,7 @@ const CO2RankingView: React.FC<CO2RankingViewProps> = ({
           <StatCard
             title={t('co2_metric_trees_needed') || 'Trees Needed'}
             value={`${summaryMetrics.treesNeeded}`}
-            icon={<TreePineIcon className="w-8 h-8" />}
+            icon={<TreePineIcon className="w-8 h-8 text-white" />}
             iconColor="text-white"
             color="text-green-400"
           />
