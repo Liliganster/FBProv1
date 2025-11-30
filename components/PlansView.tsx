@@ -64,9 +64,8 @@ const PlansView: React.FC<PlansViewProps> = ({ setCurrentView }) => {
         {plans.map(plan => (
           <div
             key={plan.id}
-            className={`rounded-2xl border border-white/10 bg-gradient-to-br from-white/5 via-white/3 to-white/5 p-6 shadow-lg relative overflow-hidden ${
-              plan.highlight ? 'ring-2 ring-brand-primary/70 shadow-brand-primary/30' : ''
-            }`}
+            className={`rounded-2xl border border-white/10 bg-gradient-to-br from-white/5 via-white/3 to-white/5 p-6 shadow-lg relative overflow-hidden ${plan.highlight ? 'ring-2 ring-brand-primary/70 shadow-brand-primary/30' : ''
+              }`}
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -89,7 +88,13 @@ const PlansView: React.FC<PlansViewProps> = ({ setCurrentView }) => {
             <div className="mt-6">
               <Button
                 variant={plan.highlight ? 'primary' : 'secondary'}
-                onClick={() => setCurrentView('settings')}
+                onClick={() => {
+                  if (plan.id === 'pro') {
+                    window.open('https://buy.stripe.com/test_dRm00icpY8Zy5tG46aeUU00', '_blank');
+                  } else {
+                    setCurrentView('settings');
+                  }
+                }}
                 className="w-full"
               >
                 {plan.cta}
