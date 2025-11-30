@@ -1,197 +1,425 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+/* Responsive design fix - v2 */
 
 :root {
   --app-radius: 12px;
   --app-button-radius: 8px;
+  /* Default app background: gray ��' green */
+  /* Default app background: dark gray ��' pastel earthy green */
   --gradient-dark: linear-gradient(135deg, #111827 0%, #8fbf99 100%);
   --gradient-surface: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
   --gradient-glass: linear-gradient(135deg, rgba(26, 26, 26, 0.8) 0%, rgba(42, 42, 42, 0.8) 100%);
   --shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.3), 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
-@layer base {
-  html {
-    -webkit-text-size-adjust: 100%;
-    touch-action: manipulation;
-    height: 100%;
-    width: 100%;
+/* Force professional dark background for entire document */
+html {
+  /* Prevent iOS zoom on input focus */
+  -webkit-text-size-adjust: 100%;
+  touch-action: manipulation;
+  height: 100%;
+  width: 100%;
+}
+
+body {
+  background: var(--gradient-dark);
+  color: #ffffff !important;
+  min-height: 100vh;
+  min-height: 100dvh; /* Dynamic viewport height for mobile */
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+}
+
+#root {
+  /* Allow app to override background for custom images */
+  background: transparent;
+  color: inherit;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+/* Homogeneous border radius */
+[class*="rounded"]:not([class*="rounded-full"]):not([class*="rounded-none"]) {
+  border-radius: var(--app-radius) !important;
+}
+
+/* Buttons use a slightly tighter radius */
+button:not([class*="rounded-full"]) {
+  border-radius: var(--app-button-radius) !important;
+}
+
+/* PROFESSIONAL DARK THEME FORM ELEMENTS */
+input, textarea, select {
+  background: rgba(26, 26, 26, 0.8) !important;
+  border: 1px solid rgba(64, 64, 64, 0.5) !important;
+  color: #ffffff !important;
+  border-radius: var(--app-button-radius) !important;
+  transition: all 0.2s ease-in-out;
+  backdrop-filter: blur(8px);
+}
+
+input:focus, textarea:focus, select:focus {
+  outline: none !important;
+  border-color: #007aff !important;
+  box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1) !important;
+  background: rgba(42, 42, 42, 0.9) !important;
+}
+
+input:hover, textarea:hover, select:hover {
+  border-color: rgba(82, 82, 82, 0.8) !important;
+}
+
+/* PLACEHOLDER COLORS - Professional dark theme */
+input::placeholder,
+textarea::placeholder,
+input::-webkit-input-placeholder,
+input::-moz-placeholder,
+input::-ms-input-placeholder,
+textarea::-webkit-input-placeholder,
+textarea::-moz-placeholder,
+textarea::-ms-input-placeholder {
+  color: #a3a3a3 !important;
+  opacity: 0.8 !important;
+}
+
+/* All dark backgrounds - most specific selectors */
+.bg-background-dark input::placeholder,
+.bg-background-dark textarea::placeholder,
+input.bg-background-dark::placeholder,
+textarea.bg-background-dark::placeholder,
+.bg-surface-dark input::placeholder,
+.bg-surface-dark textarea::placeholder,
+input.bg-surface-dark::placeholder,
+textarea.bg-surface-dark::placeholder,
+.bg-gray-800 input::placeholder,
+.bg-gray-800 textarea::placeholder,
+input.bg-gray-800::placeholder,
+textarea.bg-gray-800::placeholder,
+.bg-gray-700 input::placeholder,
+.bg-gray-700 textarea::placeholder,
+input.bg-gray-700::placeholder,
+textarea.bg-gray-700::placeholder,
+/* Semi-transparent dark backgrounds */
+input[class*="bg-background-dark"]::placeholder,
+textarea[class*="bg-background-dark"]::placeholder,
+input[class*="bg-surface-dark"]::placeholder,
+textarea[class*="bg-surface-dark"]::placeholder,
+input[class*="bg-gray-800"]::placeholder,
+textarea[class*="bg-gray-800"]::placeholder,
+input[class*="bg-gray-700"]::placeholder,
+textarea[class*="bg-gray-700"]::placeholder {
+  color: #9ca3af !important; /* Gray-400 - good contrast on dark */
+  opacity: 1 !important;
+}
+
+/* White/light backgrounds */
+.bg-white input::placeholder,
+.bg-white textarea::placeholder,
+input.bg-white::placeholder,
+textarea.bg-white::placeholder,
+.bg-gray-50 input::placeholder,
+.bg-gray-50 textarea::placeholder,
+input.bg-gray-50::placeholder,
+textarea.bg-gray-50::placeholder,
+.bg-gray-100 input::placeholder,
+.bg-gray-100 textarea::placeholder,
+input.bg-gray-100::placeholder,
+textarea.bg-gray-100::placeholder {
+  color: #6b7280 !important; /* Gray-500 for light backgrounds */
+  opacity: 1 !important;
+}
+
+/* PROFESSIONAL BUTTONS */
+button {
+  border-radius: var(--app-button-radius) !important;
+  transition: all 0.2s ease-in-out;
+  font-weight: 500;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #007aff 0%, #5856d6 100%) !important;
+  color: white !important;
+  border: none !important;
+  box-shadow: 0 4px 16px rgba(0, 122, 255, 0.2) !important;
+}
+
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(0, 122, 255, 0.3) !important;
+}
+
+.btn-secondary {
+  background: var(--gradient-surface) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(64, 64, 64, 0.5) !important;
+  backdrop-filter: blur(8px);
+}
+
+.btn-secondary:hover {
+  background: linear-gradient(135deg, #2a2a2a 0%, #0c348b 100%) !important;
+  border-color: rgba(82, 82, 82, 0.8) !important;
+}
+
+/* Success button (solid, on-brand green) */
+.btn-success {
+  background-color: #34c759 !important; /* brand-secondary */
+  color: #ffffff !important;
+  border: none !important;
+  box-shadow: 0 4px 16px rgba(52, 199, 89, 0.18) !important;
+}
+
+.btn-success:hover {
+  background-color: #2fb250 !important;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(52, 199, 89, 0.28) !important;
+}
+
+/* GLASS MORPHISM EFFECTS */
+.glass-surface {
+  background: var(--gradient-glass) !important;
+  backdrop-filter: blur(12px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  box-shadow: var(--shadow-glass) !important;
+}
+
+/* Fix Recharts tooltip styles */
+/* Recharts: disable tooltip visuals (we removed components) and add hover highlight */
+.recharts-tooltip-wrapper {
+  display: none !important;
+}
+
+/* Bar hover: subtle color change */
+.recharts-rectangle {
+  transition: fill 0.2s ease-in-out;
+}
+.recharts-rectangle:hover {
+  fill: #2891ff !important; /* brighter brand-primary */
+  cursor: pointer;
+}
+/* Some builds wrap rectangles in bar-rectangle groups */
+.recharts-bar-rectangle:hover path {
+  fill: #2891ff !important;
+}
+
+/* UNIVERSAL PLACEHOLDER FIX - Override all placeholder styles */
+body *::placeholder,
+body *::-webkit-input-placeholder,
+body *::-moz-placeholder,
+body *::-ms-input-placeholder {
+  color: #9ca3af !important; /* Gray-400 */
+  opacity: 1 !important;
+}
+
+/* Even more specific - target any input/textarea regardless of classes */
+body input[type="text"]::placeholder,
+body input[type="email"]::placeholder,
+body input[type="password"]::placeholder,
+body input[type="number"]::placeholder,
+body input[type="search"]::placeholder,
+body input[type="tel"]::placeholder,
+body input[type="url"]::placeholder,
+body textarea::placeholder {
+  color: #9ca3af !important; /* Consistent gray for all inputs */
+  opacity: 1 !important;
+}
+
+/* PROFESSIONAL SELECT DROPDOWNS */
+select option {
+  background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%) !important;
+  color: #ffffff !important;
+  padding: 8px 12px;
+}
+
+select {
+  color: #ffffff !important;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23a3a3a3' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e") !important;
+  background-position: right 8px center !important;
+  background-repeat: no-repeat !important;
+  background-size: 16px 16px !important;
+  padding-right: 40px !important;
+}
+
+/* SCROLLBARS */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(26, 26, 26, 0.5);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #3a3a3a 0%, #4a4a4a 100%);
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #4a4a4a 0%, #5a5a5a 100%);
+}
+
+/* GLOBAL RESET */
+* {
+  box-sizing: border-box;
+}
+
+/* ===== RESPONSIVE DESIGN - MOBILE FIRST ===== */
+
+/* Mobile styles (default) */
+@media (max-width: 768px) {
+  /* Hide sidebar on mobile by default */
+  .sidebar-desktop {
+    display: none !important;
   }
 
-  body {
-    background: var(--gradient-dark);
-    color: #ffffff;
-    min-height: 100vh;
-    min-height: 100dvh;
-    height: 100%;
-    width: 100%;
-    margin: 0;
-    padding: 0;
-    overflow: hidden;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+  /* Mobile navigation overlay */
+  .mobile-nav-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh; /* Dynamic viewport height for mobile browsers */
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 40;
+    animation: fadeIn 0.2s ease-in-out;
   }
 
-  #root {
-    background: transparent;
-    color: inherit;
-    height: 100%;
-    width: 100%;
-    overflow: hidden;
+  /* Mobile sidebar */
+  .mobile-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 80%;
+    max-width: 300px;
+    height: 100vh;
+    height: 100dvh; /* Dynamic viewport height for mobile browsers */
+    z-index: 50;
+    animation: slideInLeft 0.3s ease-out;
+    overflow-y: auto;
   }
 
-  * {
-    box-sizing: border-box;
+  @keyframes slideInLeft {
+    from {
+      transform: translateX(-100%);
+    }
+    to {
+      transform: translateX(0);
+    }
   }
 
-  button {
-    background: transparent;
-    border: none;
-    color: inherit;
-    cursor: pointer;
-    border-radius: var(--app-button-radius);
-    transition: all 0.2s ease-in-out;
-    font-weight: 500;
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
   }
 
-  input,
-  textarea,
-  select {
-    background: rgba(26, 26, 26, 0.8);
-    border: 1px solid rgba(64, 64, 64, 0.5);
-    color: #ffffff;
-    border-radius: var(--app-button-radius);
-    transition: all 0.2s ease-in-out;
-    backdrop-filter: blur(8px);
+  /* Main content adjustments */
+  main {
+    width: 100% !important;
+    height: auto !important;
+    min-height: calc(100vh - 4rem);
+    min-height: calc(100dvh - 4rem); /* Dynamic viewport height */
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch;
   }
 
-  input:focus,
-  textarea:focus,
-  select:focus {
-    outline: none;
-    border-color: #007aff;
-    box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
-    background: rgba(42, 42, 42, 0.9);
+  /* Reduce heading sizes on mobile */
+  h1 {
+    font-size: 1.5rem !important;
+    line-height: 1.3 !important;
   }
 
-  input:hover,
-  textarea:hover,
-  select:hover {
-    border-color: rgba(82, 82, 82, 0.8);
+  h2 {
+    font-size: 1.25rem !important;
+    line-height: 1.3 !important;
   }
 
-  input::placeholder,
-  textarea::placeholder {
-    color: #a3a3a3;
-    opacity: 0.8;
+  h3 {
+    font-size: 1.1rem !important;
+    line-height: 1.3 !important;
   }
 
-  select {
-    color: #ffffff;
-    appearance: none;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23a3a3a3' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
-    background-position: right 8px center;
-    background-repeat: no-repeat;
-    background-size: 16px 16px;
-    padding-right: 40px;
+  /* Stack cards vertically */
+  .grid {
+    grid-template-columns: 1fr !important;
+    gap: 1rem !important;
   }
 
-  /* Scrollbars */
-  ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+  /* Make buttons full width on mobile */
+  .mobile-full-width {
+    width: 100% !important;
   }
 
-  ::-webkit-scrollbar-track {
-    background: rgba(26, 26, 26, 0.5);
-    border-radius: 4px;
+  /* Adjust padding and margins */
+  .p-8 {
+    padding: 1rem !important;
   }
 
-  ::-webkit-scrollbar-thumb {
-    background: linear-gradient(135deg, #3a3a3a 0%, #4a4a4a 100%);
-    border-radius: 4px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+  .p-6 {
+    padding: 0.75rem !important;
   }
 
-  ::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(135deg, #4a4a4a 0%, #5a5a5a 100%);
+  .p-4 {
+    padding: 0.5rem !important;
+  }
+
+  /* Container width */
+  .container {
+    max-width: 100% !important;
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+
+  /* Table responsiveness */
+  table {
+    display: block;
+    width: 100% !important;
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+    border-collapse: collapse;
+  }
+
+  thead {
+    display: table-header-group;
+  }
+
+  tbody {
+    display: table-row-group;
+  }
+
+  tr {
+    display: table-row;
+  }
+
+  td, th {
+    padding: 0.5rem !important;
+    font-size: 0.875rem !important;
+    min-width: 100px;
+  }
+
+  /* First column should be sticky in tables if possible */
+  table th:first-child,
+  table td:first-child {
+    position: sticky;
+    left: 0;
+    background: #111827;
+    z-index: 2;
   }
 }
 
-@layer components {
-  /* Glass utility */
-  .glass-panel {
-    background: var(--gradient-glass);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: var(--shadow-glass);
-    border-radius: var(--app-radius);
-  }
-
-  .btn-primary {
-    background: linear-gradient(135deg, #007aff 0%, #5856d6 100%);
-    color: white;
-    border: none;
-    box-shadow: 0 4px 16px rgba(0, 122, 255, 0.2);
-  }
-
-  .btn-primary:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 6px 20px rgba(0, 122, 255, 0.3);
-  }
-
-  .btn-secondary {
-    background: var(--gradient-surface);
-    color: #ffffff;
-    border: 1px solid rgba(64, 64, 64, 0.5);
-    backdrop-filter: blur(8px);
-  }
-
-  .btn-secondary:hover {
-    background: linear-gradient(135deg, #2a2a2a 0%, #0c348b 100%);
-    border-color: rgba(82, 82, 82, 0.8);
-  }
-
-  .btn-success {
-    background-color: #34c759;
-    color: #ffffff;
-    border: none;
-    box-shadow: 0 4px 16px rgba(52, 199, 89, 0.18);
-  }
-
-  .btn-success:hover {
-    background-color: #2fb250;
-    transform: translateY(-1px);
-    box-shadow: 0 6px 20px rgba(52, 199, 89, 0.28);
-  }
-
-  /* Legacy helper aliases */
-  .bg-frost-glass { background: var(--gradient-glass); }
-  .border-glass { border: 1px solid rgba(255, 255, 255, 0.1); }
-  .shadow-glass { box-shadow: var(--shadow-glass); }
-  .shadow-glass-lg { box-shadow: 0 16px 64px rgba(0, 0, 0, 0.4), 0 4px 16px rgba(0, 0, 0, 0.3); }
-  .backdrop-blur-glass { backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
-  .bg-gradient-overlay { background: linear-gradient(135deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.75) 100%); }
-
-  /* Rounded helpers */
-  [class*="rounded"]:not([class*="rounded-full"]):not([class*="rounded-none"]) {
-    border-radius: var(--app-radius);
-  }
-
-  /* Mobile tweaks */
-  @media (max-width: 768px) {
-    .grid {
-      grid-template-columns: 1fr !important;
-      gap: 1rem !important;
-    }
-    .mobile-full-width {
-      width: 100% !important;
-    }
-    .p-8 { padding: 1rem !important; }
-    .p-6 { padding: 0.75rem !important; }
-    .p-4 { padding: 0.5rem !important; }
-  }
-}
