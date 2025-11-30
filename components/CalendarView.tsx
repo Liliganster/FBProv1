@@ -94,10 +94,10 @@ const CalendarView: React.FC<CalendarViewProps> = ({ setCurrentView, personaliza
   }, [isSignedIn, selectedCalendars, currentDate, fetchEvents]);
   
   const contentStyle = {
-    backgroundColor: theme === 'dark'
-        ? `rgba(30, 30, 30, ${1 - personalization.uiTransparency})`
-        : `rgba(243, 244, 246, ${1 - personalization.uiTransparency})`,
+    backgroundColor: `rgba(30, 30, 30, ${1 - personalization.uiTransparency})`,
     backdropFilter: `blur(${personalization.uiBlur}px)`,
+    WebkitBackdropFilter: `blur(${personalization.uiBlur}px)`,
+    border: '1px solid rgba(255, 255, 255, 0.08)',
   };
 
   if (!userProfile) {

@@ -215,10 +215,11 @@ const ProjectsView: React.FC<ProjectsViewProps> = ({ setCurrentView, personaliza
   const isAllSelected = filteredProjects.length > 0 && selectedProjectIds.length === filteredProjects.length;
 
   const contentStyle = {
-    backgroundColor: theme === 'dark'
-        ? `rgba(30, 30, 30, ${1 - personalization.uiTransparency})`
-        : `rgba(243, 244, 246, ${1 - personalization.uiTransparency})`,
+    // Keep dark, high-contrast panels regardless of theme to preserve legibility
+    backgroundColor: `rgba(30, 30, 30, ${1 - personalization.uiTransparency})`,
     backdropFilter: `blur(${personalization.uiBlur}px)`,
+    WebkitBackdropFilter: `blur(${personalization.uiBlur}px)`,
+    border: '1px solid rgba(255, 255, 255, 0.08)',
   };
 
   return (
