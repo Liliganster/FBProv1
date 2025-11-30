@@ -7,7 +7,7 @@ export interface PersonalizationSettings {
 
 
 // FIX: Add View type definition to be shared across components.
-export type View = 'dashboard' | 'trips' | 'projects' | 'settings' | 'reports' | 'advanced' | 'calendar';
+export type View = 'dashboard' | 'trips' | 'projects' | 'settings' | 'reports' | 'advanced' | 'calendar' | 'plans';
 
 export interface User {
   id: string;

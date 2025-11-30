@@ -21,6 +21,7 @@ const SettingsView = lazy(() => import('./components/Settings'));
 const ReportsView = lazy(() => import('./components/ReportsView'));
 const CalendarView = lazy(() => import('./components/CalendarView'));
 const AdvancedView = lazy(() => import('./components/AdvancedView'));
+const PlansView = lazy(() => import('./components/PlansView'));
 import useTranslation from './hooks/useTranslation';
 import { useMobile } from './hooks/useMediaQuery';
 import { View, PersonalizationSettings } from './types';
@@ -45,7 +46,7 @@ const App: React.FC = () => {
   // Helper function to get view from URL
   const getViewFromUrl = (): View | 'auth-callback' => {
     let path = window.location.pathname;
-    const validViews: View[] = ['dashboard', 'trips', 'projects', 'reports', 'calendar', 'advanced', 'settings'];
+    const validViews: View[] = ['dashboard', 'trips', 'projects', 'reports', 'calendar', 'advanced', 'settings', 'plans'];
 
     // Clean up any repeated /index.html in the path
     path = path.replace(/\/index\.html/g, '');
@@ -84,7 +85,7 @@ const App: React.FC = () => {
     
     // If there's a specific view in the URL (not dashboard/root), use it
     if (urlView !== 'dashboard' && window.location.pathname !== '/' && window.location.pathname !== '') {
-      const validViews: View[] = ['dashboard', 'trips', 'projects', 'reports', 'calendar', 'advanced', 'settings'];
+      const validViews: View[] = ['dashboard', 'trips', 'projects', 'reports', 'calendar', 'advanced', 'settings', 'plans'];
       if (validViews.includes(urlView as View)) {
         return urlView as View;
       }
@@ -224,7 +225,8 @@ const App: React.FC = () => {
         reports: t('nav_reports'),
         calendar: t('nav_calendar'),
         advanced: t('nav_advanced'),
-        settings: t('nav_settings')
+        settings: t('nav_settings'),
+        plans: 'Planes'
       };
       return `${titles[view]} - Fahrtenbuch Pro`;
     };
@@ -292,6 +294,8 @@ const App: React.FC = () => {
             setPersonalization={setPersonalization}
             theme={theme}
         />, 'Settings');
+      case 'plans':
+        return withErrorBoundary(<PlansView setCurrentView={setCurrentView} {...commonProps} />, 'Plans');
       case 'advanced':
         return withErrorBoundary(<AdvancedView {...commonProps} />, 'Advanced');
       default:
@@ -306,6 +310,7 @@ const App: React.FC = () => {
     { view: 'reports', label: t('nav_reports'), icon: <FileText size={20} /> },
     { view: 'calendar', label: t('nav_calendar'), icon: <CalendarDays size={20} /> },
     { view: 'advanced', label: t('nav_advanced'), icon: <Rocket size={20} /> },
+    { view: 'plans', label: 'Planes', icon: <Star size={20} /> },
   ];
   
   const navStyle = {
