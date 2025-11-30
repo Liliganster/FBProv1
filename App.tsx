@@ -125,9 +125,9 @@ const App: React.FC = () => {
       ...DEFAULT_PERSONALIZATION_SETTINGS,
   }));
 
-  // Keep UI theme consistent with the original design; dark mode uses an extra overlay only.
-  const isDarkMode = personalization.theme === 'dark';
-  const theme: 'light' | 'dark' = 'dark';
+  // Default stays on the original look; dark mode is user-selectable.
+  const theme: 'light' | 'dark' = personalization.theme === 'dark' ? 'dark' : 'light';
+  const isDarkMode = theme === 'dark';
 
   // Load personalization settings on mount/user change
   useEffect(() => {
@@ -248,22 +248,29 @@ const App: React.FC = () => {
     const useCustomImage = Boolean(personalization.backgroundImage) && personalization.backgroundBlur === 0;
     body.style.transition = 'all 0.3s ease-in-out';
 
-    body.classList.add('text-on-surface-dark', 'theme-dark');
-    body.classList.remove('theme-light');
+    body.classList.add('text-on-surface-dark');
+    if (isDarkMode) {
+      body.classList.add('theme-dark');
+    } else {
+      body.classList.remove('theme-dark');
+    }
 
     if (isDarkMode) {
+      const darkBase = 'linear-gradient(135deg, #060912 0%, #0b1224 100%)';
+      const darkOverlay = 'linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.92))';
       if (useCustomImage) {
-        body.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.9)), url(${personalization.backgroundImage})`;
+        body.style.backgroundImage = `${darkOverlay}, url(${personalization.backgroundImage})`;
       } else {
-        body.style.backgroundImage = 'linear-gradient(135deg, #070a12 0%, #0b1224 100%)';
+        body.style.backgroundImage = darkBase;
       }
       body.style.backgroundColor = '#05070c';
     } else {
-      // Preserve the previous default look
+      const defaultBase = 'linear-gradient(135deg, #111827 0%, #8fbf99 100%)';
+      const defaultOverlay = 'linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.7))';
       if (useCustomImage) {
-        body.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.7)), url(${personalization.backgroundImage})`;
+        body.style.backgroundImage = `${defaultOverlay}, url(${personalization.backgroundImage})`;
       } else {
-        body.style.backgroundImage = 'linear-gradient(135deg, #111827 0%, #8fbf99 100%)';
+        body.style.backgroundImage = defaultBase;
       }
       body.style.backgroundColor = '#0a0a0a';
     }
@@ -326,9 +333,12 @@ const App: React.FC = () => {
     { view: 'plans', label: 'Planes', icon: <Star size={20} /> },
   ];
   
-  const baseBackground = 'linear-gradient(135deg, #111827 0%, #8fbf99 100%)';
+  const baseBackground = isDarkMode
+    ? 'linear-gradient(135deg, #060912 0%, #0b1224 100%)'
+    : 'linear-gradient(135deg, #111827 0%, #8fbf99 100%)';
+
   const imageOverlay = isDarkMode
-    ? 'linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.8))'
+    ? 'linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.92))'
     : 'linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.7))';
 
   const activeNavBackground = isDarkMode ? 'rgba(12, 12, 12, 0.9)' : 'rgba(26, 26, 26, 0.8)';
