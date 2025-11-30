@@ -4,6 +4,8 @@ import { useAuth } from '../hooks/useAuth';
 import { createTripLedgerService, TripLedgerService } from '../services/supabaseTripLedgerService';
 import { useProjects } from '../hooks/useProjects';
 import useToast from '../hooks/useToast';
+import useUserProfile from '../hooks/useUserProfile';
+import { checkAiQuota, buildQuotaError } from '../services/aiQuotaService';
 
 interface LedgerTripsContextType {
   trips: Trip[];
@@ -17,6 +19,7 @@ interface LedgerTripsContextType {
   deleteMultipleTrips: (tripIds: string[]) => Promise<void>;
   updateMultipleTrips: (tripIds: string[], updates: Partial<Omit<Trip, 'id'>>) => Promise<void>;
   addMultipleTrips: (newTrips: Omit<Trip, 'id'>[]) => Promise<void>;
+  addAiTrips: (newTrips: Omit<Trip, 'id'>[]) => Promise<void>;
   addCsvTrips: (drafts: Omit<Trip, 'id'>[]) => Promise<void>;
   
   // Project operations (proxied to ProjectsContext)
@@ -46,8 +49,9 @@ interface LedgerTripsContextType {
 export const LedgerTripsContext = createContext<LedgerTripsContextType | undefined>(undefined);
 
 export const LedgerTripsProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const { user } = useAuth();
+  const { user, supabaseUser } = useAuth();
   const { showToast } = useToast();
+  const { userProfile } = useUserProfile();
   
   // Use ProjectsContext for project operations
   const projectsContext = useProjects();
@@ -274,6 +278,42 @@ export const LedgerTripsProvider: React.FC<{ children: ReactNode }> = ({ childre
     }
   }, [ledgerService, refreshTrips, showToast]);
 
+  const addAiTrips = useCallback(async (newTrips: Omit<Trip, 'id'>[]): Promise<void> => {
+    if (!ledgerService) {
+      throw new Error('Ledger service not available');
+    }
+    if (!user?.id) {
+      throw new Error('User not available');
+    }
+
+    setLoading(true);
+    try {
+      const quota = await checkAiQuota({
+        userId: user.id,
+        trips: newTrips,
+        profile: userProfile,
+        supabaseUser,
+      });
+
+      if (!quota.allowed) {
+        const message = buildQuotaError(quota);
+        showToast(message, 'error');
+        throw new Error(message);
+      }
+
+      const { entries } = await ledgerService.importTripsBatch(newTrips, TripLedgerSource.AI_AGENT);
+      await refreshTrips();
+      showToast(`${entries.length} trips imported via AI`, 'success');
+    } catch (err) {
+      console.error('Error adding AI trips:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Failed to import AI trips';
+      showToast(errorMessage, 'error');
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, [ledgerService, user?.id, userProfile, supabaseUser, refreshTrips, showToast]);
+
   const addCsvTrips = useCallback(async (drafts: Omit<Trip, 'id'>[]): Promise<void> => {
     if (!ledgerService) {
       throw new Error('Ledger service not available');
@@ -464,6 +504,7 @@ export const LedgerTripsProvider: React.FC<{ children: ReactNode }> = ({ childre
     deleteTrip,
     deleteMultipleTrips,
     updateMultipleTrips,
+    addAiTrips,
     addMultipleTrips,
     addCsvTrips,
     

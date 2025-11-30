@@ -19,6 +19,7 @@ export interface Database {
           address: string | null
           city: string | null
           country: string | null
+          plan?: string | null
           profile_picture: string | null
           color: string | null
           rate_per_km: number | null
@@ -50,6 +51,7 @@ export interface Database {
           address?: string | null
           city?: string | null
           country?: string | null
+          plan?: string | null
           profile_picture?: string | null
           color?: string | null
           rate_per_km?: number | null
@@ -81,6 +83,7 @@ export interface Database {
           address?: string | null
           city?: string | null
           country?: string | null
+          plan?: string | null
           profile_picture?: string | null
           color?: string | null
           rate_per_km?: number | null

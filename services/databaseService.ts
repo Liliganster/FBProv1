@@ -1277,6 +1277,7 @@ class DatabaseService {
       openRouterApiKey: await this.decryptApiKeyAsync(dbProfile.open_router_api_key),
       openRouterModel: dbProfile.open_router_model,
       lockedUntilDate: dbProfile.locked_until_date,
+      plan: (dbProfile as any).plan ?? null,
       vehicleType: dbProfile.vehicle_type ?? null,
       fuelConsumption: dbProfile.fuel_consumption ?? null,
       fuelPrice: dbProfile.fuel_price ?? null,
@@ -1631,6 +1632,30 @@ class DatabaseService {
   }
 
   /**
+   * Get only ledger entries created via AI to compute usage limits
+   */
+  async getAiLedgerEntries(userId: string): Promise<TripLedgerEntry[]> {
+    try {
+      const { data, error } = await supabase
+        .from('trip_ledger')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('source', 'AI_AGENT')
+        .in('operation', ['CREATE', 'IMPORT_BATCH']);
+
+      if (error) {
+        console.error('Error fetching AI ledger entries:', error);
+        return [];
+      }
+
+      return (data || []).map(this.transformDbLedgerToLegacy);
+    } catch (error) {
+      console.error('Error fetching AI ledger entries (unexpected):', error);
+      return [];
+    }
+  }
+
+  /**
    * Transform database report to legacy format
    */
   private transformDbReportToLegacy(dbReport: DbReport): Report {
@@ -1669,7 +1694,7 @@ class DatabaseService {
       storagePath: dbExpense.storage_path,
       createdAt: dbExpense.created_at,
       updatedAt: dbExpense.updated_at
-    }
+    };
   }
 }
 

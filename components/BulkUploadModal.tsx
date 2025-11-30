@@ -18,7 +18,7 @@ import useGoogleCalendar from '../hooks/useGoogleCalendar';
 
 interface BulkUploadModalProps {
   projects: Project[];
-  onSave: (trips: Omit<Trip, 'id'>[]) => void;
+  onSave: (trips: Omit<Trip, 'id'>[], source: Mode) => void;
   onClose: () => void;
 }
 
@@ -510,7 +510,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
 
       console.log('[BulkUpload] Updated drafts after mapping:', updatedDrafts);
 
-      await onSave(updatedDrafts);
+      await onSave(updatedDrafts, mode);
     } catch (error) {
       console.error('[BulkUpload] handleConfirmSave error:', error);
       showToast('Error saving trips', 'error');

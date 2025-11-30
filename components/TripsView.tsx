@@ -48,7 +48,7 @@ interface TripsViewProps {
 }
 
 const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
-  const { trips, projects, addTrip, updateTrip, deleteTrip, deleteMultipleTrips, addCsvTrips, updateMultipleTrips } = useTrips();
+  const { trips, projects, addTrip, updateTrip, deleteTrip, deleteMultipleTrips, addCsvTrips, addAiTrips, updateMultipleTrips } = useTrips();
   const { userProfile } = useUserProfile();
   const { isSignedIn, createCalendarEvent } = useGoogleCalendar();
   const { showToast } = useToast();
@@ -158,9 +158,13 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
     }
   };
 
-  const handleSaveBulkTrips = async (newTrips: Omit<Trip, 'id'>[]) => {
+  const handleSaveBulkTrips = async (newTrips: Omit<Trip, 'id'>[], source: 'ai' | 'csv') => {
     try {
-      await addCsvTrips(newTrips);
+      if (source === 'ai' && addAiTrips) {
+        await addAiTrips(newTrips);
+      } else {
+        await addCsvTrips(newTrips);
+      }
       setIsBulkModalOpen(false);
     } catch (error) {
       console.error('Error saving bulk trips:', error);

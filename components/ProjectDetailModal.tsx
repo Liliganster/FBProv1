@@ -24,6 +24,7 @@ const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({ projectId, trip
   const tripsContext = useTrips();
   const { projects, addCallsheetsToProject, deleteCallsheetFromProject } = useProjects();
   const addMultipleTrips = tripsContext.addMultipleTrips || (() => Promise.resolve());
+  const addAiTrips = tripsContext.addAiTrips || (() => Promise.resolve());
   const { userProfile } = useUserProfile();
   const [isUploading, setIsUploading] = useState(false);
   const [uploadingFiles, setUploadingFiles] = useState<string[]>([]);
@@ -227,7 +228,7 @@ const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({ projectId, trip
       const downloadedFile = new File([fileData], callsheetData.filename, { type: fileData.type });
       const { tripData } = await processFileForTrip(downloadedFile, userProfile, DocumentType.CALLSHEET);
       
-      addMultipleTrips([{
+      await addAiTrips([{
         ...tripData,
         projectId: project.id,
         reason: `${project.name} - ${tripData.reason}`,

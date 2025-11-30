@@ -57,6 +57,7 @@ export interface UserProfile {
   email?: string | null
   fullName?: string | null
   name?: string | null
+  plan?: PlanTier | null
   licensePlate?: string | null
   uid?: string | null
   address?: string | null
@@ -198,6 +199,8 @@ export interface TripLedgerBatch {
     type: string;
   }[];
 }
+
+export type PlanTier = 'free' | 'pro' | 'enterprise';
 
 export interface TripLedgerVerification {
   isValid: boolean;
