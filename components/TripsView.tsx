@@ -329,7 +329,7 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
                   id="project-filter"
                   value={projectFilter}
                   onChange={(e) => setProjectFilter(e.target.value)}
-                  className="bg-gradient-surface border-surface rounded-smooth py-2 px-4 focus:ring-2 focus:ring-brand-primary focus:outline-none text-white transition-all duration-200"
+                  className="bg-gradient-surface border-surface rounded-smooth py-2 px-4 focus:ring-2 focus:ring-brand-primary focus:outline-none text-white transition-all duration-200 text-sm font-medium h-[38px]"
                 >
                   <option value="all">{t('trips_filter_all_projects')}</option>
                   {projects.map(p => (
