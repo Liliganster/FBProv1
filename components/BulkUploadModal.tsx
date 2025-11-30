@@ -560,11 +560,12 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
 
   const ModeButton: React.FC<{ type: Mode, label: string, icon: React.ReactNode }> = ({ type, label, icon }) => (
     <Button
+      type="button"
       variant={mode === type ? 'primary' : 'ghost'}
       onClick={() => handleModeChange(type)}
       className={`flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${mode === type
-          ? 'bg-brand-primary/20 text-brand-primary'
-          : 'text-on-surface-dark-secondary hover:bg-gray-700/50'
+        ? 'bg-brand-primary/20 text-brand-primary'
+        : 'text-on-surface-dark-secondary hover:bg-gray-700/50'
         }`}
     >
       {icon}
@@ -629,19 +630,21 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
                   <label className="block text-xs font-medium uppercase tracking-wide text-on-surface-dark-secondary mb-2">{t('bulk_document_type_label')}</label>
                   <div className="flex gap-1 rounded-md bg-background-dark/60 p-1 border border-gray-700/60">
                     <Button
+                      type="button"
                       onClick={() => setDocumentType(DocumentType.CALLSHEET)}
                       className={`w-full text-center px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${documentType === DocumentType.CALLSHEET
-                          ? 'bg-brand-primary text-white'
-                          : 'text-on-surface-dark-secondary hover:bg-gray-700/50'
+                        ? 'bg-brand-primary text-white'
+                        : 'text-on-surface-dark-secondary hover:bg-gray-700/50'
                         }`}
                     >
                       {t('bulk_document_type_callsheet')}
                     </Button>
                     <Button
+                      type="button"
                       onClick={() => setDocumentType(DocumentType.EMAIL)}
                       className={`w-full text-center px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${documentType === DocumentType.EMAIL
-                          ? 'bg-brand-primary text-white'
-                          : 'text-on-surface-dark-secondary hover:bg-gray-700/50'
+                        ? 'bg-brand-primary text-white'
+                        : 'text-on-surface-dark-secondary hover:bg-gray-700/50'
                         }`}
                     >
                       {t('bulk_document_type_email')}
@@ -656,8 +659,8 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
                       aria-pressed={aiExtractMode === 'direct'}
                       onClick={() => setAiExtractMode('direct')}
                       className={`flex-1 flex items-center justify-between gap-2 px-3 py-2 rounded-md border transition-all ${aiExtractMode === 'direct'
-                          ? 'border-brand-primary bg-brand-primary/20 text-white shadow'
-                          : 'border-gray-700/60 text-on-surface-dark-secondary hover:border-gray-500 hover:bg-gray-700/30'
+                        ? 'border-brand-primary bg-brand-primary/20 text-white shadow'
+                        : 'border-gray-700/60 text-on-surface-dark-secondary hover:border-gray-500 hover:bg-gray-700/30'
                         }`}
                       title={t('bulk_extraction_mode_direct_description')}
                     >
@@ -675,8 +678,8 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
                       aria-pressed={aiExtractMode === 'agent'}
                       onClick={() => setAiExtractMode('agent')}
                       className={`flex-1 flex items-center justify-between gap-2 px-3 py-2 rounded-md border transition-all ${aiExtractMode === 'agent'
-                          ? 'border-brand-primary bg-brand-primary/20 text-white shadow'
-                          : 'border-gray-700/60 text-on-surface-dark-secondary hover:border-gray-500 hover:bg-gray-700/30'
+                        ? 'border-brand-primary bg-brand-primary/20 text-white shadow'
+                        : 'border-gray-700/60 text-on-surface-dark-secondary hover:border-gray-500 hover:bg-gray-700/30'
                         }`}
                       title={t('bulk_extraction_mode_agent_description')}
                     >
