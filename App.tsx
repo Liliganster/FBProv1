@@ -310,7 +310,6 @@ const App: React.FC = () => {
     { view: 'reports', label: t('nav_reports'), icon: <FileText size={20} /> },
     { view: 'calendar', label: t('nav_calendar'), icon: <CalendarDays size={20} /> },
     { view: 'advanced', label: t('nav_advanced'), icon: <Rocket size={20} /> },
-    { view: 'plans', label: 'Planes', icon: <Star size={20} /> },
   ];
   
   const navStyle = {
@@ -360,22 +359,6 @@ const App: React.FC = () => {
         </div>
 
         <div className="p-4 space-y-2 border-t border-glass">
-          <button
-            onClick={() => {
-              setCurrentView('plans');
-              setMobileMenuOpen(false);
-            }}
-            title={sidebarCollapsed ? 'Planes' : undefined}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-smooth transition-all duration-300 transform ${sidebarCollapsed ? 'justify-center' : ''} ${
-              currentView === 'plans'
-                ? 'text-white scale-[1.02] shadow-lg'
-                : 'hover:bg-gradient-surface text-on-surface-secondary hover:text-on-surface-dark hover:scale-[1.02] hover:shadow-lg hover:shadow-blue-500/20'
-            }`}
-            style={currentView === 'plans' ? { backgroundColor: 'rgba(26, 26, 26, 0.8)' } : undefined}
-          >
-            <Star size={20} />
-            {!sidebarCollapsed && <span className="font-medium">Planes</span>}
-          </button>
 
           <button
             onClick={() => {

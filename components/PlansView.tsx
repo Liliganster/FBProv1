@@ -1,6 +1,6 @@
 import React from 'react';
 import { SparklesIcon, CheckIcon, UploadCloudIcon } from './Icons';
-import { View, PersonalizationSettings } from '../types';
+import { PersonalizationSettings, View } from '../types';
 import { Button } from './Button';
 
 interface PlansViewProps {
@@ -58,9 +58,6 @@ const PlansView: React.FC<PlansViewProps> = ({ setCurrentView }) => {
           <h1 className="text-3xl font-bold text-white mt-2">Elige tu modalidad</h1>
           <p className="text-on-surface-secondary mt-2">Comparte IA limitada o ilimitada según tu equipo.</p>
         </div>
-        <Button variant="secondary" onClick={() => setCurrentView('settings')}>
-          Volver a ajustes
-        </Button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
