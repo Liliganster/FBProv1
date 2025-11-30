@@ -149,9 +149,9 @@ const CO2AnalysisSettings: React.FC<CO2AnalysisSettingsProps> = ({
         </div>
 
         {/* Scrollable Content */}
-        <div className={`flex-1 overflow-y-auto px-6 py-6 space-y-8 scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent min-h-0 ${panelBgClass}`}>
+        <div className={`flex-1 overflow-y-auto px-6 py-6 grid grid-cols-1 md:grid-cols-2 gap-6 scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent min-h-0 ${panelBgClass}`}>
             {/* View Mode Setting */}
-            <div>
+            <div className="space-y-2">
               <label className="block text-xs font-medium uppercase tracking-wide text-on-surface-dark-secondary mb-2">
                 {t('co2_settings_view_mode') || 'View Mode'}
               </label>
@@ -169,7 +169,7 @@ const CO2AnalysisSettings: React.FC<CO2AnalysisSettingsProps> = ({
             </div>
 
             {/* Sort By Setting */}
-            <div>
+            <div className="space-y-2">
               <label className="block text-xs font-medium uppercase tracking-wide text-on-surface-dark-secondary mb-2">
                 {t('co2_settings_sort_by') || 'Sort By'}
               </label>
@@ -188,7 +188,7 @@ const CO2AnalysisSettings: React.FC<CO2AnalysisSettingsProps> = ({
             </div>
 
             {/* Time Range Setting */}
-            <div>
+            <div className="space-y-2">
               <label className="block text-xs font-medium uppercase tracking-wide text-on-surface-dark-secondary mb-2">
                 {t('co2_settings_time_range') || 'Time Range'}
               </label>
@@ -208,7 +208,7 @@ const CO2AnalysisSettings: React.FC<CO2AnalysisSettingsProps> = ({
             </div>
 
             {/* Fuel Efficiency Setting */}
-            <div>
+            <div className="space-y-2">
               <label className="block text-xs font-medium uppercase tracking-wide text-on-surface-dark-secondary mb-2">
                 {t('co2_settings_fuel_efficiency') || 'Fuel Efficiency (L/100km)'}
               </label>
@@ -243,7 +243,7 @@ const CO2AnalysisSettings: React.FC<CO2AnalysisSettingsProps> = ({
 
 
             {/* CO2 Information */}
-            <div className="rounded-lg border border-gray-700/60 bg-background-dark/60 p-4 shadow-inner">
+            <div className="rounded-lg border border-gray-700/60 bg-background-dark/60 p-4 shadow-inner md:col-span-2">
               <h4 className="text-xs font-semibold text-blue-400 mb-2 flex items-center gap-2 tracking-wide">
                 <InfoIcon className="w-4 h-4" />
                 {t('co2_settings_info_title') || 'About CO₂ Calculations'}
