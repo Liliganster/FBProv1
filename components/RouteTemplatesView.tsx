@@ -108,8 +108,8 @@ const RouteTemplatesView: React.FC<RouteTemplatesViewProps> = ({ onBack, theme, 
     }
   };
 
-  const bgCard = theme === 'dark' ? `rgba(30,30,30,${1 - personalization.uiTransparency})` : `rgba(243,244,246,${1 - personalization.uiTransparency})`;
-  const containerBg = theme === 'dark' ? `rgba(18,18,18,${1 - personalization.uiTransparency})` : `rgba(229,231,235,${1 - personalization.uiTransparency})`;
+  const bgCard = `rgba(30,30,30,${1 - personalization.uiTransparency})`;
+  const containerBg = `rgba(18,18,18,${1 - personalization.uiTransparency})`;
 
   return (
     <div className="p-8 rounded-lg -m-8 min-h-full">
@@ -206,10 +206,10 @@ const RouteTemplatesView: React.FC<RouteTemplatesViewProps> = ({ onBack, theme, 
         <div className="fixed inset-0 flex items-center justify-center p-4 z-50" onClick={() => setShowModal(false)}>
           <div
             style={{
-              backgroundColor: theme === 'dark'
-                ? `rgba(30, 30, 30, ${1 - personalization.uiTransparency})`
-                : `rgba(243, 244, 246, ${1 - personalization.uiTransparency})`,
+              backgroundColor: `rgba(30, 30, 30, ${1 - personalization.uiTransparency})`,
               backdropFilter: `blur(${personalization.uiBlur}px)`,
+              WebkitBackdropFilter: `blur(${personalization.uiBlur}px)`,
+              border: '1px solid rgba(255,255,255,0.08)',
             }}
             className="rounded-lg shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col"
             onClick={e => e.stopPropagation()}
