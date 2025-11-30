@@ -562,7 +562,7 @@ const SettingsView: React.FC<{
     return (
         <div className="fixed inset-0 bg-gradient-overlay backdrop-blur-glass flex items-center justify-center p-4 z-50" onClick={handleClose}>
             <div
-                className="glass-surface no-border rounded-organic shadow-glass-lg w-full max-w-4xl max-h-[90vh] flex flex-col backdrop-blur-glass relative"
+                className="glass-surface no-border rounded-organic shadow-glass-lg w-full max-w-4xl max-h-[90vh] flex flex-col backdrop-blur-glass relative text-on-surface-dark"
                 style={{
                     backgroundColor: `rgba(30, 30, 30, ${1 - personalization.uiTransparency})`,
                     backdropFilter: `blur(${personalization.uiBlur}px)`,
@@ -722,15 +722,15 @@ const SettingsView: React.FC<{
     );
 };
 
-const TabButton: React.FC<{ label: string; isActive: boolean; onClick: () => void; icon: React.ReactNode; theme: 'light' | 'dark'; }> = ({ label, isActive, onClick, icon, theme }) => (
+const TabButton: React.FC<{ label: string; isActive: boolean; onClick: () => void; icon: React.ReactNode; theme: 'light' | 'dark'; }> = ({ label, isActive, onClick, icon }) => (
     <button
         onClick={onClick}
         className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-colors text-sm font-medium ${
             isActive
-                ? (theme === 'dark' ? 'text-white' : 'text-gray-900')
-                : (theme === 'dark' ? 'text-on-surface-dark-secondary hover:bg-gray-700/50' : 'text-gray-700 hover:bg-white/80')
+                ? 'text-white'
+                : 'text-on-surface-dark-secondary hover:bg-gray-700/50'
         }`}
-        style={isActive ? { backgroundColor: theme === 'dark' ? 'rgba(26, 26, 26, 0.8)' : 'rgba(255, 255, 255, 0.85)' } : undefined}
+        style={isActive ? { backgroundColor: 'rgba(26, 26, 26, 0.8)' } : undefined}
     >
         {icon}
         {label}
