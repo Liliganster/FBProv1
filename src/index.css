@@ -262,6 +262,12 @@ select {
   padding-right: 40px !important;
 }
 
+/* Fix date picker calendar icon color for dark theme */
+::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  cursor: pointer;
+}
+
 /* SCROLLBARS */
 ::-webkit-scrollbar {
   width: 8px;
