@@ -658,42 +658,36 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
                   <div className="flex gap-2">
                     <Button
                       type="button"
-                      variant="ghost"
+                      variant={aiExtractMode === 'direct' ? 'primary' : 'secondary'}
                       aria-pressed={aiExtractMode === 'direct'}
                       onClick={() => setAiExtractMode('direct')}
-                      className={`flex-1 flex items-center justify-between gap-2 px-3 py-2 rounded-md border transition-all ${aiExtractMode === 'direct'
-                        ? 'border-brand-primary bg-brand-primary/20 text-white shadow'
-                        : 'border-gray-700/60 text-on-surface-dark-secondary hover:border-gray-500 hover:bg-gray-700/30'
-                        }`}
+                      className="flex-1 flex items-center justify-between gap-2"
                       title={t('bulk_extraction_mode_direct_description')}
                     >
                       <span className="text-xs font-medium">{t('bulk_extraction_mode_direct')}</span>
                       {aiExtractMode === 'direct' ? (
-                        <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-brand-primary">
-                          <CheckIcon className="w-3 h-3 text-white" />
+                        <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-white">
+                          <CheckIcon className="w-3 h-3 text-brand-primary" />
                         </span>
                       ) : (
-                        <span className="inline-block w-4 h-4 rounded-full border border-gray-500" />
+                        <span className="inline-block w-4 h-4 rounded-full border border-gray-400" />
                       )}
                     </Button>
                     <Button
                       type="button"
-                      variant="ghost"
+                      variant={aiExtractMode === 'agent' ? 'primary' : 'secondary'}
                       aria-pressed={aiExtractMode === 'agent'}
                       onClick={() => setAiExtractMode('agent')}
-                      className={`flex-1 flex items-center justify-between gap-2 px-3 py-2 rounded-md border transition-all ${aiExtractMode === 'agent'
-                        ? 'border-brand-primary bg-brand-primary/20 text-white shadow'
-                        : 'border-gray-700/60 text-on-surface-dark-secondary hover:border-gray-500 hover:bg-gray-700/30'
-                        }`}
+                      className="flex-1 flex items-center justify-between gap-2"
                       title={t('bulk_extraction_mode_agent_description')}
                     >
                       <span className="text-xs font-medium">{t('bulk_extraction_mode_agent')}</span>
                       {aiExtractMode === 'agent' ? (
-                        <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-brand-primary">
-                          <CheckIcon className="w-3 h-3 text-white" />
+                        <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-white">
+                          <CheckIcon className="w-3 h-3 text-brand-primary" />
                         </span>
                       ) : (
-                        <span className="inline-block w-4 h-4 rounded-full border border-gray-500" />
+                        <span className="inline-block w-4 h-4 rounded-full border border-gray-400" />
                       )}
                     </Button>
                   </div>
