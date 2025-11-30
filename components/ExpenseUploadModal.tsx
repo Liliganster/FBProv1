@@ -4,6 +4,7 @@ import useExpenses from '../hooks/useExpenses';
 import useTrips from '../hooks/useTrips';
 import { ExpenseCategory } from '../types';
 import { XIcon, UploadCloudIcon } from './Icons';
+import { Button } from './Button';
 
 interface ExpenseUploadModalProps {
   isOpen: boolean;
@@ -109,13 +110,14 @@ const ExpenseUploadModal: React.FC<ExpenseUploadModalProps> = ({
         className="relative w-full max-w-lg rounded-lg border border-glass bg-surface-dark p-6 shadow-glass-lg"
         onClick={event => event.stopPropagation()}
       >
-        <button
+        <Button
+          variant="icon"
           onClick={handleClose}
           aria-label={t('common_close')}
-          className="absolute right-4 top-4 rounded-full p-2 text-on-surface-secondary transition hover:bg-surface-light/40 hover:text-white"
+          className="absolute right-4 top-4 text-on-surface-secondary hover:text-white"
         >
           <XIcon className="h-5 w-5" />
-        </button>
+        </Button>
         <h2 className="mb-5 text-xl font-semibold text-white">
           {t('expense_upload_title') || 'Upload Invoice'}
         </h2>
@@ -169,31 +171,31 @@ const ExpenseUploadModal: React.FC<ExpenseUploadModalProps> = ({
             </div>
           </div>
 
-  <div className="grid grid-cols-2 gap-4">
-    <div>
-      <label className="mb-2 block text-sm font-medium text-on-surface-secondary">
-        {t('expense_upload_date') || 'Invoice Date'}
-      </label>
-      <input
-        type="date"
-        value={invoiceDate}
-        onChange={event => setInvoiceDate(event.target.value)}
-        className="w-full rounded-md border border-glass bg-background-dark/80 px-3 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-brand-primary"
-      />
-    </div>
-    <div>
-      <label className="mb-2 block text-sm font-medium text-on-surface-secondary">
-        {t('expense_upload_description') || 'Description'}
-      </label>
-      <input
-        type="text"
-        value={description}
-        onChange={event => setDescription(event.target.value)}
-        placeholder={t('expense_upload_description_placeholder') || 'Optional note'}
-        className="w-full rounded-md border border-glass bg-background-dark/80 px-3 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-brand-primary"
-      />
-    </div>
-  </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="mb-2 block text-sm font-medium text-on-surface-secondary">
+                {t('expense_upload_date') || 'Invoice Date'}
+              </label>
+              <input
+                type="date"
+                value={invoiceDate}
+                onChange={event => setInvoiceDate(event.target.value)}
+                className="w-full rounded-md border border-glass bg-background-dark/80 px-3 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-brand-primary"
+              />
+            </div>
+            <div>
+              <label className="mb-2 block text-sm font-medium text-on-surface-secondary">
+                {t('expense_upload_description') || 'Description'}
+              </label>
+              <input
+                type="text"
+                value={description}
+                onChange={event => setDescription(event.target.value)}
+                placeholder={t('expense_upload_description_placeholder') || 'Optional note'}
+                className="w-full rounded-md border border-glass bg-background-dark/80 px-3 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-brand-primary"
+              />
+            </div>
+          </div>
 
           <div>
             <label className="mb-2 block text-sm font-medium text-on-surface-secondary">
@@ -214,24 +216,25 @@ const ExpenseUploadModal: React.FC<ExpenseUploadModalProps> = ({
           {error && <p className="text-sm text-red-400 mt-2">{error}</p>}
 
           <div className="flex justify-end gap-3 pt-3">
-            <button
-              type="button"
+            <Button
+              variant="secondary"
+              size="sm"
               onClick={handleClose}
               disabled={isSubmitting}
-              className="rounded-md border border-glass px-5 py-2.5 text-sm font-medium text-on-surface-secondary transition hover:text-white hover:bg-surface-light/40"
             >
               {t('common_cancel')}
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="primary"
+              size="sm"
               type="submit"
               disabled={isSubmitting || loading}
-              className="flex items-center gap-2 rounded-md bg-brand-primary px-5 py-2.5 text-sm font-semibold text-white transition hover:brightness-110 disabled:opacity-60"
             >
-              <UploadCloudIcon className="h-4 w-4" />
+              <UploadCloudIcon className="h-4 w-4 mr-2" />
               {isSubmitting
                 ? (t('expense_upload_submitting') || 'Uploading...')
                 : (t('expense_upload_submit') || 'Upload Invoice')}
-            </button>
+            </Button>
           </div>
         </form>
       </div>

@@ -4,6 +4,7 @@ import { Project, CallsheetFile, SpecialOrigin, Trip, DocumentType, ExpenseDocum
 import useTrips from '../hooks/useTrips';
 import useProjects from '../hooks/useProjects';
 import { XIcon, FileTextIcon, EyeIcon, TrashIcon, LoaderIcon, SparklesIcon, TreePineIcon, CalendarIcon, RouteIcon, CarIcon, UploadCloudIcon } from './Icons';
+import { Button } from './Button';
 import useTranslation from '../hooks/useTranslation';
 import { formatDateForDisplay } from '../i18n/translations';
 import useToast from '../hooks/useToast';
@@ -33,7 +34,7 @@ const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({ projectId, trip
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { t } = useTranslation();
   const { showToast } = useToast();
-  
+
   useGoogleMapsScript();
   const { expenses, getExpensesForProject, deleteExpense, loading: expensesLoading } = useExpenses();
   const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
@@ -113,12 +114,12 @@ const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({ projectId, trip
         <div className="bg-background-dark border border-red-500/50 rounded-lg p-6 max-w-md mx-auto">
           <h2 className="text-lg font-semibold text-red-400 mb-2">{t('project_not_found_title')}</h2>
           <p className="text-gray-300 mb-4">{t('project_not_found_message')}</p>
-          <button 
+          <Button
             onClick={onClose}
-            className="px-4 py-2 bg-brand-primary text-white rounded-md hover:brightness-110 transition-all"
+            variant="primary"
           >
             {t('common_close')}
-          </button>
+          </Button>
         </div>
       </div>
     );
@@ -128,7 +129,7 @@ const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({ projectId, trip
 
   const stats = React.useMemo(() => {
     const totalKm = projectTrips.reduce((sum, trip) => sum + trip.distance, 0);
-    
+
     const shootingDays = new Set(projectTrips.map(t => t.date));
 
     const EMISSION_FACTOR_G_PER_KM = 140;
@@ -159,7 +160,7 @@ const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({ projectId, trip
     try {
       await addCallsheetsToProject(project.id, Array.from(files));
       showToast(files.length > 1 ? t('projects_alert_upload_success_multiple', { count: files.length }) : t('projects_alert_upload_success_single', { fileName: files[0].name }), 'success');
-      
+
       // Clear the file input to allow uploading the same file again if needed
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
@@ -171,7 +172,7 @@ const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({ projectId, trip
       setUploadingFiles([]);
     }
   };
-  
+
   const handleViewFile = async (file: CallsheetFile) => {
     try {
       // Get the callsheet record with URL from database
@@ -227,15 +228,15 @@ const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({ projectId, trip
       // Convert Blob to File object
       const downloadedFile = new File([fileData], callsheetData.filename, { type: fileData.type });
       const { tripData } = await processFileForTrip(downloadedFile, userProfile, DocumentType.CALLSHEET);
-      
+
       await addAiTrips([{
         ...tripData,
         projectId: project.id,
         reason: `${project.name} - ${tripData.reason}`,
       }]);
-      
+
       showToast('Successfully extracted and created a new trip!', 'success');
-    } catch(err) {
+    } catch (err) {
       const message = err instanceof Error ? err.message : 'An unknown error occurred during processing.';
       showToast(message, 'error');
     } finally {
@@ -258,13 +259,14 @@ const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({ projectId, trip
             <h2 className="text-lg font-semibold tracking-tight text-white">{project.name}</h2>
             <p className="text-xs text-gray-400 mt-1">{project.producer}</p>
           </div>
-          <button
+          <Button
+            variant="icon"
             onClick={onClose}
             aria-label={t('common_close')}
-            className="p-2 text-gray-400 hover:text-white hover:bg-white/5 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-primary/50 transition-colors"
+            className="text-gray-400 hover:text-white"
           >
             <XIcon className="w-5 h-5" />
-          </button>
+          </Button>
         </header>
         <main className="flex-1 overflow-y-auto px-6 py-6 space-y-8">
           {/* Stats grid */}
@@ -290,18 +292,19 @@ const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({ projectId, trip
                   className="hidden"
                   accept="image/*,application/pdf,.pdf,.txt,.eml,message/rfc822,.doc,.docx,.xls,.xlsx,.csv,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                 />
-                <button
+                <Button
                   onClick={() => fileInputRef.current?.click()}
                   disabled={isUploading}
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium bg-brand-primary hover:brightness-110 text-white shadow disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-brand-primary/50"
+                  variant="primary"
+                  size="sm"
                 >
                   {isUploading ? (
-                    <LoaderIcon className="w-4 h-4 animate-spin" />
+                    <LoaderIcon className="w-4 h-4 animate-spin mr-2" />
                   ) : (
-                    <FileTextIcon className="w-4 h-4" />
+                    <FileTextIcon className="w-4 h-4 mr-2" />
                   )}
                   {t('projects_uploadCallsheets', { count: 20 })}
-                </button>
+                </Button>
               </div>
             </div>
             <ul className="space-y-2 max-h-64 overflow-y-auto pr-1">
@@ -320,7 +323,7 @@ const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({ projectId, trip
                   </div>
                 </li>
               ))}
-              
+
               {/* Show existing callsheets */}
               {(project.callsheets || []).map(file => (
                 <li
@@ -332,10 +335,12 @@ const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({ projectId, trip
                     <span className="text-xs text-gray-200 truncate" title={file.name}>{file.name}</span>
                   </div>
                   <div className="flex items-center gap-1 flex-shrink-0">
-                    <button
+                    <Button
+                      variant="ghost"
+                      size="sm"
                       onClick={() => handleProcessFile(file)}
                       disabled={isProcessing}
-                      className="p-1.5 text-purple-400 hover:text-purple-300 hover:bg-purple-400/10 rounded-md disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      className="text-purple-400 hover:text-purple-300 hover:bg-purple-400/10 p-1.5 h-auto"
                       title="Extract Trip with AI"
                     >
                       {isProcessing && processingFileId === file.id ? (
@@ -343,32 +348,36 @@ const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({ projectId, trip
                       ) : (
                         <SparklesIcon className="w-4 h-4" />
                       )}
-                    </button>
-                    <button
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
                       onClick={() => handleViewFile(file)}
-                      className="p-1.5 text-blue-400 hover:text-blue-300 hover:bg-blue-400/10 rounded-md transition-colors"
+                      className="text-blue-400 hover:text-blue-300 hover:bg-blue-400/10 p-1.5 h-auto"
                     >
                       <EyeIcon className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={async () => { 
-                        if (window.confirm(t('files_deleteConfirm'))) { 
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={async () => {
+                        if (window.confirm(t('files_deleteConfirm'))) {
                           try {
                             await deleteCallsheetFromProject(project.id, file.id);
                             showToast('Callsheet deleted successfully', 'success');
                           } catch (error) {
                             showToast('Error deleting callsheet', 'error');
                           }
-                        } 
+                        }
                       }}
-                      className="p-1.5 text-red-400 hover:text-red-300 hover:bg-red-400/10 rounded-md transition-colors"
+                      className="text-red-400 hover:text-red-300 hover:bg-red-400/10 p-1.5 h-auto"
                     >
                       <TrashIcon className="w-4 h-4" />
-                    </button>
+                    </Button>
                   </div>
                 </li>
               ))}
-              
+
               {/* Show empty state when no callsheets and not uploading */}
               {(project.callsheets || []).length === 0 && uploadingFiles.length === 0 && (
                 <li className="text-center py-8">
@@ -385,14 +394,14 @@ const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({ projectId, trip
                 <FileTextIcon className="w-5 h-5 text-brand-secondary" />
                 {t('expense_section_title_project') || 'Project invoices'}
               </h3>
-              <button
-                type="button"
+              <Button
+                variant="primary"
+                size="sm"
                 onClick={() => setIsExpenseModalOpen(true)}
-                className="inline-flex items-center gap-2 rounded-md bg-brand-primary px-4 py-2 text-sm font-medium text-white transition hover:brightness-110"
               >
-                <UploadCloudIcon className="h-4 w-4" />
+                <UploadCloudIcon className="h-4 w-4 mr-2" />
                 {t('expense_attach_project_btn') || 'Attach invoice'}
-              </button>
+              </Button>
             </div>
             <p className="text-sm text-on-surface-secondary mb-3">
               {t('expense_section_total') || 'Total documented'}:{' '}
@@ -449,24 +458,26 @@ const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({ projectId, trip
                           {expense.description && (
                             <p className="text-on-surface-secondary">{expense.description}</p>
                           )}
-                          <button
-                            type="button"
+                          <Button
+                            variant="ghost"
+                            size="sm"
                             onClick={() => openInvoice(expense.url)}
-                            className="text-[11px] font-medium text-brand-primary transition hover:text-white"
+                            className="text-[11px] font-medium text-brand-primary hover:text-white p-0 h-auto"
                           >
                             {t('expense_open_document') || 'View invoice'}
-                          </button>
+                          </Button>
                         </div>
                       </div>
-                      <button
-                        type="button"
+                      <Button
+                        variant="icon"
+                        size="sm"
                         onClick={() => handleDeleteExpense(expense.id)}
-                        className="ml-3 rounded-md p-1 text-on-surface-secondary transition hover:text-red-400 disabled:opacity-50"
+                        className="ml-3 text-on-surface-secondary hover:text-red-400"
                         aria-label={t('expense_delete_btn') || 'Delete invoice'}
                         disabled={expensesLoading}
                       >
                         <TrashIcon className="h-4 w-4" />
-                      </button>
+                      </Button>
                     </div>
                   );
                 })}
@@ -485,12 +496,12 @@ const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({ projectId, trip
 
 
 const StatCard: React.FC<{ title: string; value: string; icon: React.ReactNode }> = ({ title, value, icon }) => (
-    <div className="bg-background-dark p-4 rounded-lg">
-        <h4 className="text-sm font-medium text-on-surface-dark-secondary">{title}</h4>
-        <div className="flex items-center gap-2 mt-1">
-            {icon}
-            <p className="text-xl font-bold text-white">{value}</p>
-        </div>
+  <div className="bg-background-dark p-4 rounded-lg">
+    <h4 className="text-sm font-medium text-on-surface-dark-secondary">{title}</h4>
+    <div className="flex items-center gap-2 mt-1">
+      {icon}
+      <p className="text-xl font-bold text-white">{value}</p>
     </div>
+  </div>
 );
 export default ProjectDetailModal;

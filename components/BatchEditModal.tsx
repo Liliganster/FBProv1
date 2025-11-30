@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Project } from '../types';
 import { XIcon } from './Icons';
+import { Button } from './Button';
 import useTranslation from '../hooks/useTranslation';
 
 interface BatchEditModalProps {
@@ -19,7 +20,7 @@ const BatchEditModal: React.FC<BatchEditModalProps> = ({ onClose, onSave, projec
     const updates: { projectId?: string; reason?: string } = {};
     if (newProjectId) updates.projectId = newProjectId;
     if (newReason.trim()) updates.reason = newReason.trim();
-    
+
     if (Object.keys(updates).length > 0) {
       onSave(updates);
     }
@@ -33,9 +34,9 @@ const BatchEditModal: React.FC<BatchEditModalProps> = ({ onClose, onSave, projec
           <h2 className="text-lg font-semibold tracking-tight text-white">
             {t('batch_edit_title', { count: selectedTripCount })}
           </h2>
-          <button onClick={onClose} className="text-on-surface-dark-secondary hover:text-white p-2 rounded-md hover:bg-gray-700/40 focus:outline-none focus:ring-2 focus:ring-brand-primary/60">
+          <Button variant="icon" onClick={onClose} className="text-on-surface-dark-secondary hover:text-white">
             <XIcon className="w-5 h-5" />
-          </button>
+          </Button>
         </header>
         <main className="px-6 py-5 space-y-6">
           <div>
@@ -67,12 +68,12 @@ const BatchEditModal: React.FC<BatchEditModalProps> = ({ onClose, onSave, projec
           </div>
         </main>
         <footer className="px-6 py-4 border-t border-gray-700/70 bg-background-dark/70 backdrop-blur-sm flex justify-end gap-3">
-          <button onClick={onClose} className="px-4 py-2 text-sm bg-gray-700 hover:bg-gray-600 text-white rounded-md font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-brand-primary/60">
+          <Button variant="secondary" size="sm" onClick={onClose}>
             {t('common_cancel')}
-          </button>
-          <button onClick={handleSave} className="px-5 py-2 text-sm bg-brand-primary hover:brightness-110 text-white rounded-md font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-brand-primary/60">
+          </Button>
+          <Button variant="primary" size="sm" onClick={handleSave}>
             {t('batch_edit_save_btn')}
-          </button>
+          </Button>
         </footer>
       </div>
     </div>
