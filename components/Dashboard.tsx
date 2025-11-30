@@ -235,20 +235,15 @@ const StatCard = ({ title, value, cta, onClick, children }: { title: string, val
                             </div>
                         )}
                     </div>
-                    <button
-                        onClick={() => setCurrentView('settings')}
-                        className="flex items-center gap-2 px-3 py-2 rounded-full bg-brand-primary/15 border border-brand-primary/30 text-sm text-white hover:bg-brand-primary/25 transition-colors"
+                    <div
+                        className="flex items-center gap-2 px-3 py-2 rounded-full bg-brand-primary/15 border border-brand-primary/30 text-sm text-white"
                         title={renderPlanHint()}
-                        type="button"
                     >
                         <SparklesIcon className="w-4 h-4 text-brand-primary" />
                         <span className="font-semibold">
                             {aiQuotaLoading ? 'IA…' : renderPlanValue()}
                         </span>
-                        <span className="text-xs text-brand-primary underline-offset-2 underline">
-                            Gestionar plan
-                        </span>
-                    </button>
+                    </div>
                 </div>
             </div>
 

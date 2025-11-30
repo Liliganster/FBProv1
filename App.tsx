@@ -341,40 +341,53 @@ const App: React.FC = () => {
               setMobileMenuOpen(false);
             }}
             title={sidebarCollapsed ? item.label : undefined}
-            className={`
-              w-full flex items-center gap-3 px-4 py-3 rounded-smooth transition-all duration-300 transform
-              ${sidebarCollapsed ? 'justify-center' : ''}
-              ${
-                currentView === item.view
-                  ? 'text-white scale-[1.02] shadow-lg'
-                  : 'hover:bg-gradient-surface text-on-surface-secondary hover:text-on-surface-dark hover:scale-[1.02] hover:shadow-lg hover:shadow-blue-500/20'
-              }
-            `}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-smooth transition-all duration-300 transform ${sidebarCollapsed ? 'justify-center' : ''} ${
+              currentView === item.view
+                ? 'text-white scale-[1.02] shadow-lg'
+                : 'hover:bg-gradient-surface text-on-surface-secondary hover:text-on-surface-dark hover:scale-[1.02] hover:shadow-lg hover:shadow-blue-500/20'
+            }`}
             style={currentView === item.view ? { backgroundColor: 'rgba(26, 26, 26, 0.8)' } : undefined}
           >
             {item.icon}
             {!sidebarCollapsed && <span className="font-medium">{item.label}</span>}
           </button>
         ))}
-      </div>
+        </div>
 
-      <div className="p-4 space-y-2 border-t border-glass">
-        <button
-          onClick={() => {
-            setCurrentView('settings');
-            setMobileMenuOpen(false);
-          }}
-          title={sidebarCollapsed ? t('nav_settings') : undefined}
-          className={`w-full flex items-center gap-3 px-4 py-3 rounded-smooth transition-all duration-300 transform ${sidebarCollapsed ? 'justify-center' : ''} ${
-            currentView === 'settings'
-              ? 'text-white scale-[1.02] shadow-lg'
-              : 'hover:bg-gradient-surface text-on-surface-secondary hover:text-on-surface-dark hover:scale-[1.02] hover:shadow-lg hover:shadow-blue-500/20'
-          }`}
-          style={currentView === 'settings' ? { backgroundColor: 'rgba(26, 26, 26, 0.8)' } : undefined}
-        >
-          <Settings size={20} />
-          {!sidebarCollapsed && <span className="font-medium">{t('nav_settings')}</span>}
-        </button>
+        <div className="p-4 space-y-2 border-t border-glass">
+          <button
+            onClick={() => {
+              setCurrentView('settings');
+              setMobileMenuOpen(false);
+            }}
+            title={sidebarCollapsed ? 'Gestionar plan' : undefined}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-smooth transition-all duration-300 transform ${sidebarCollapsed ? 'justify-center' : ''} ${
+              currentView === 'settings'
+                ? 'text-white scale-[1.02] shadow-lg'
+                : 'hover:bg-gradient-surface text-on-surface-secondary hover:text-on-surface-dark hover:scale-[1.02] hover:shadow-lg hover:shadow-blue-500/20'
+            }`}
+            style={currentView === 'settings' ? { backgroundColor: 'rgba(26, 26, 26, 0.8)' } : undefined}
+          >
+            <Star size={20} />
+            {!sidebarCollapsed && <span className="font-medium">Gestionar plan</span>}
+          </button>
+
+          <button
+            onClick={() => {
+              setCurrentView('settings');
+              setMobileMenuOpen(false);
+            }}
+            title={sidebarCollapsed ? t('nav_settings') : undefined}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-smooth transition-all duration-300 transform ${sidebarCollapsed ? 'justify-center' : ''} ${
+              currentView === 'settings'
+                ? 'text-white scale-[1.02] shadow-lg'
+                : 'hover:bg-gradient-surface text-on-surface-secondary hover:text-on-surface-dark hover:scale-[1.02] hover:shadow-lg hover:shadow-blue-500/20'
+            }`}
+            style={currentView === 'settings' ? { backgroundColor: 'rgba(26, 26, 26, 0.8)' } : undefined}
+          >
+            <Settings size={20} />
+            {!sidebarCollapsed && <span className="font-medium">{t('nav_settings')}</span>}
+          </button>
 
         <button
           onClick={logout}
@@ -489,4 +502,3 @@ const App: React.FC = () => {
 };
 
 export default App;
-
