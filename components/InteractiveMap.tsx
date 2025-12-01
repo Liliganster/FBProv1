@@ -31,13 +31,11 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({ locations, region }) =>
 
     const initMap = async () => {
       try {
-        const { Map } = await window.google.maps.importLibrary("maps");
-        const { DirectionsService, DirectionsRenderer } = await window.google.maps.importLibrary("routes");
-        const { AdvancedMarkerElement } = await window.google.maps.importLibrary("marker");
+        const { Map } = await window.google.maps.importLibrary("maps") as google.maps.MapsLibrary;
+        const { DirectionsService, DirectionsRenderer } = await window.google.maps.importLibrary("routes") as google.maps.RoutesLibrary;
+        const { AdvancedMarkerElement } = await window.google.maps.importLibrary("marker") as google.maps.MarkerLibrary;
 
-        if (!mapRef.current) return;
-
-        const map = new Map(mapRef.current, {
+        const map = new Map(mapRef.current as HTMLElement, {
           center: { lat: 48.2082, lng: 16.3738 }, // Default to Vienna
           zoom: 6,
           disableDefaultUI: true,
@@ -107,7 +105,7 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({ locations, region }) =>
       } catch (error) {
         console.error("Error initializing map:", error);
         setStatus('error');
-        setErrorMessage('Error al inicializar el mapa.');
+        setErrorMessage('Error initializing map libraries.');
       }
     };
 
