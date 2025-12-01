@@ -259,6 +259,8 @@ const ReportsView: React.FC<ReportsViewProps> = ({ personalization, theme }) => 
           projects={projects}
           onSave={handleSaveReport}
           onClose={() => setIsGeneratorOpen(false)}
+          personalization={personalization}
+          theme={theme}
         />
       )}
     </div>

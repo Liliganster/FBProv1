@@ -514,6 +514,8 @@ const ProjectsView: React.FC<ProjectsViewProps> = ({ setCurrentView, personaliza
         <ProjectEditorModal
           project={selectedProject}
           onClose={() => setIsEditorOpen(false)}
+          personalization={personalization}
+          theme={theme}
         />
       )}
 
@@ -522,6 +524,8 @@ const ProjectsView: React.FC<ProjectsViewProps> = ({ setCurrentView, personaliza
           projectId={selectedProject.id}
           trips={trips.filter(t => t.projectId === selectedProject.id)}
           onClose={() => setIsDetailOpen(false)}
+          personalization={personalization}
+          theme={theme}
         />
       )}
 

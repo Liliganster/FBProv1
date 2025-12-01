@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Trip, Project, SpecialOrigin, UserProfile } from '../types';
+import { Trip, Project, SpecialOrigin, UserProfile, PersonalizationSettings } from '../types';
 import { getStaticMapUrlViaBackend, calculateDistanceViaBackend, getCountryCode } from '../services/googleMapsService';
 import { XIcon, LoaderIcon, RouteIcon, PlusIcon, TrashIcon, HomeIcon, MapPinIcon } from './Icons';
 import useTranslation from '../hooks/useTranslation';
@@ -24,9 +24,11 @@ interface TripEditorModalProps {
   trips: Trip[];
   onSave?: (trip: Trip) => void; // Made optional since ledger handles persistence
   onClose: () => void;
+  personalization?: PersonalizationSettings;
+  theme?: 'light' | 'dark';
 }
 
-const TripEditorModal: React.FC<TripEditorModalProps> = ({ trip, projects, trips, onSave, onClose }) => {
+const TripEditorModal: React.FC<TripEditorModalProps> = ({ trip, projects, trips, onSave, onClose, personalization, theme }) => {
   const { userProfile } = useUserProfile();
   const { isSignedIn, createCalendarEvent } = useGoogleCalendar();
   const [formData, setFormData] = useState<Partial<Trip>>({
@@ -611,9 +613,16 @@ const TripEditorModal: React.FC<TripEditorModalProps> = ({ trip, projects, trips
       label: t(`specialOrigin_${so.toLowerCase()}`)
   }));
 
+  // Dynamic modal style based on personalization
+  const modalStyle = personalization ? {
+    backgroundColor: `rgba(30, 30, 30, ${1 - personalization.uiTransparency})`,
+    backdropFilter: `blur(${personalization.uiBlur}px)`,
+    WebkitBackdropFilter: `blur(${personalization.uiBlur}px)`,
+  } : {};
+
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center px-4 py-16 overflow-y-auto bg-black/60 backdrop-blur-sm" onClick={handleClose}>
-      <div className="relative w-full max-w-2xl bg-frost-glass border border-gray-700/60 rounded-lg shadow-2xl flex flex-col max-h-[88vh] overflow-hidden" onClick={(e) => e.stopPropagation()}>
+      <div style={modalStyle} className="relative w-full max-w-2xl bg-frost-glass border border-gray-700/60 rounded-lg shadow-2xl flex flex-col max-h-[88vh] overflow-hidden" onClick={(e) => e.stopPropagation()}>
         <header className="flex items-start justify-between px-6 py-4 border-b border-gray-700/60">
           <div className="flex items-center gap-3 pr-6">
             <h2 className="text-lg font-semibold tracking-tight text-white">{trip ? t('tripEditor_title_edit') : t('tripEditor_title_add')}</h2>

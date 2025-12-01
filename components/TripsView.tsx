@@ -861,6 +861,8 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
           trips={trips}
           onSave={handleSaveTrip}
           onClose={() => setIsEditorModalOpen(false)}
+          personalization={personalization}
+          theme={theme}
         />
       )}
       {isBulkModalOpen && (
@@ -868,6 +870,8 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
           projects={projects}
           onSave={handleSaveBulkTrips}
           onClose={() => setIsBulkModalOpen(false)}
+          personalization={personalization}
+          theme={theme}
         />
       )}
       {isBatchEditModalOpen && (
@@ -876,6 +880,8 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
           onSave={handleSaveBatch}
           projects={projects}
           selectedTripCount={selectedTripIds.length}
+          personalization={personalization}
+          theme={theme}
         />
       )}
       {isDetailModalOpen && selectedTrip && (
@@ -883,6 +889,8 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
           trip={selectedTrip}
           project={projects.find(p => p.id === selectedTrip.projectId)}
           onClose={() => setIsDetailModalOpen(false)}
+          personalization={personalization}
+          theme={theme}
         />
       )}
 

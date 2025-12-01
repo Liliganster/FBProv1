@@ -157,6 +157,7 @@ const Dashboard: React.FC<DashboardProps> = ({ setCurrentView, personalization, 
 
     // Dynamic style for glass effect based on personalization
     const glassStyle = {
+        backgroundColor: `rgba(30, 30, 30, ${1 - personalization.uiTransparency})`,
         backdropFilter: `blur(${personalization.uiBlur}px)`,
         WebkitBackdropFilter: `blur(${personalization.uiBlur}px)`,
     };
@@ -355,6 +356,8 @@ const Dashboard: React.FC<DashboardProps> = ({ setCurrentView, personalization, 
                     trip={viewingTrip}
                     project={projects.find(p => p.id === viewingTrip.projectId)}
                     onClose={() => setViewingTrip(null)}
+                    personalization={personalization}
+                    theme={theme}
                 />
             )}
         </div>

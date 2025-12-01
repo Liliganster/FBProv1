@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Trip, Project, Report } from '../types';
+import { Trip, Project, Report, PersonalizationSettings } from '../types';
 import { XIcon, CheckIcon, WarningIcon } from './Icons';
 import { Button } from './Button';
 import useTranslation from '../hooks/useTranslation';
@@ -12,12 +12,14 @@ interface GenerateReportModalProps {
   projects: Project[];
   onSave: (report: Omit<Report, 'id'>) => void;
   onClose: () => void;
+  personalization?: PersonalizationSettings;
+  theme?: 'light' | 'dark';
 }
 
 type Stage = 'setup' | 'audit' | 'generating';
 type AuditWarning = { message: string, count: number };
 
-const GenerateReportModal: React.FC<GenerateReportModalProps> = ({ trips, projects, onSave, onClose }) => {
+const GenerateReportModal: React.FC<GenerateReportModalProps> = ({ trips, projects, onSave, onClose, personalization, theme }) => {
   const [projectId, setProjectId] = useState<string>('all');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
@@ -191,9 +193,16 @@ const GenerateReportModal: React.FC<GenerateReportModalProps> = ({ trips, projec
     </>
   );
 
+  // Dynamic modal style based on personalization
+  const modalStyle = personalization ? {
+    backgroundColor: `rgba(30, 30, 30, ${1 - personalization.uiTransparency})`,
+    backdropFilter: `blur(${personalization.uiBlur}px)`,
+    WebkitBackdropFilter: `blur(${personalization.uiBlur}px)`,
+  } : {};
+
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-start justify-center p-4 pt-20 z-50" onClick={onClose}>
-      <div className="bg-frost-glass border border-gray-700/60 rounded-lg shadow-2xl w-full max-w-xl max-h-[90vh] flex flex-col overflow-hidden animate-fadeIn" onClick={(e) => e.stopPropagation()}>
+      <div style={modalStyle} className="bg-frost-glass border border-gray-700/60 rounded-lg shadow-2xl w-full max-w-xl max-h-[90vh] flex flex-col overflow-hidden animate-fadeIn" onClick={(e) => e.stopPropagation()}>
         <header className="px-6 py-4 border-b border-gray-700/70 flex items-center justify-between gap-4 bg-background-dark/70 backdrop-blur-sm">
           <h2 className="text-lg font-semibold tracking-tight text-white">{t('report_title')}</h2>
           <Button variant="icon" onClick={onClose} className="text-on-surface-dark-secondary hover:text-white">

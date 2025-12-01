@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Project } from '../types';
+import { Project, PersonalizationSettings } from '../types';
 import { XIcon } from './Icons';
 import { Button } from './Button';
 import useTranslation from '../hooks/useTranslation';
@@ -9,9 +9,11 @@ interface BatchEditModalProps {
   onSave: (updates: { projectId?: string; reason?: string }) => void;
   projects: Project[];
   selectedTripCount: number;
+  personalization?: PersonalizationSettings;
+  theme?: 'light' | 'dark';
 }
 
-const BatchEditModal: React.FC<BatchEditModalProps> = ({ onClose, onSave, projects, selectedTripCount }) => {
+const BatchEditModal: React.FC<BatchEditModalProps> = ({ onClose, onSave, projects, selectedTripCount, personalization, theme }) => {
   const [newProjectId, setNewProjectId] = useState('');
   const [newReason, setNewReason] = useState('');
   const { t } = useTranslation();
@@ -27,9 +29,16 @@ const BatchEditModal: React.FC<BatchEditModalProps> = ({ onClose, onSave, projec
     onClose();
   };
 
+  // Dynamic modal style based on personalization
+  const modalStyle = personalization ? {
+    backgroundColor: `rgba(30, 30, 30, ${1 - personalization.uiTransparency})`,
+    backdropFilter: `blur(${personalization.uiBlur}px)`,
+    WebkitBackdropFilter: `blur(${personalization.uiBlur}px)`,
+  } : {};
+
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center p-4 pt-20 bg-black/60 backdrop-blur-sm" onClick={onClose}>
-      <div className="bg-frost-glass border border-gray-700/60 rounded-lg shadow-2xl w-full max-w-lg flex flex-col overflow-hidden animate-fadeIn" onClick={(e) => e.stopPropagation()}>
+      <div style={modalStyle} className="bg-frost-glass border border-gray-700/60 rounded-lg shadow-2xl w-full max-w-lg flex flex-col overflow-hidden animate-fadeIn" onClick={(e) => e.stopPropagation()}>
         <header className="px-5 py-4 border-b border-gray-700/70 flex items-center justify-between bg-background-dark/70 backdrop-blur-sm">
           <h2 className="text-lg font-semibold tracking-tight text-white">
             {t('batch_edit_title', { count: selectedTripCount })}

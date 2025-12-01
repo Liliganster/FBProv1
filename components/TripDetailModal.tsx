@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { Trip, Project } from '../types';
+import { Trip, Project, PersonalizationSettings } from '../types';
 import { XIcon, MapPinIcon, FileTextIcon, TrashIcon, UploadCloudIcon } from './Icons';
 import { Button } from './Button';
 import InteractiveMap from './InteractiveMap';
@@ -14,9 +14,11 @@ interface TripDetailModalProps {
   trip: Trip;
   project: Project | undefined;
   onClose: () => void;
+  personalization?: PersonalizationSettings;
+  theme?: 'light' | 'dark';
 }
 
-const TripDetailModal: React.FC<TripDetailModalProps> = ({ trip, project, onClose }) => {
+const TripDetailModal: React.FC<TripDetailModalProps> = ({ trip, project, onClose, personalization, theme }) => {
   const { userProfile } = useUserProfile();
   const { t } = useTranslation();
   const regionCode = getCountryCode(userProfile?.country);
@@ -58,12 +60,20 @@ const TripDetailModal: React.FC<TripDetailModalProps> = ({ trip, project, onClos
 
   const projectId = project?.id ?? trip.projectId ?? null;
 
+  // Dynamic modal style based on personalization
+  const modalStyle = personalization ? {
+    backgroundColor: `rgba(30, 30, 30, ${1 - personalization.uiTransparency})`,
+    backdropFilter: `blur(${personalization.uiBlur}px)`,
+    WebkitBackdropFilter: `blur(${personalization.uiBlur}px)`,
+  } : {};
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-start justify-center px-4 py-16 overflow-y-auto bg-gradient-overlay backdrop-blur-glass"
       onClick={onClose}
     >
       <div
+        style={modalStyle}
         className="relative w-full max-w-5xl bg-frost-glass border-glass rounded-fluid shadow-glass-lg flex flex-col h-[82vh] overflow-hidden backdrop-blur-glass"
         onClick={e => e.stopPropagation()}
       >

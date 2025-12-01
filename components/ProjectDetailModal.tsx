@@ -1,6 +1,6 @@
 
 import React, { useState, useRef, useMemo } from 'react';
-import { Project, CallsheetFile, SpecialOrigin, Trip, DocumentType, ExpenseDocument } from '../types';
+import { Project, CallsheetFile, SpecialOrigin, Trip, DocumentType, ExpenseDocument, PersonalizationSettings } from '../types';
 import useTrips from '../hooks/useTrips';
 import useProjects from '../hooks/useProjects';
 import { XIcon, FileTextIcon, EyeIcon, TrashIcon, LoaderIcon, SparklesIcon, TreePineIcon, CalendarIcon, RouteIcon, CarIcon, UploadCloudIcon } from './Icons';
@@ -19,9 +19,11 @@ interface ProjectDetailModalProps {
   projectId: string,
   trips: Trip[],
   onClose: () => void;
+  personalization?: PersonalizationSettings;
+  theme?: 'light' | 'dark';
 }
 
-const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({ projectId, trips, onClose }) => {
+const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({ projectId, trips, onClose, personalization, theme }) => {
   const tripsContext = useTrips();
   const { projects, addCallsheetsToProject, deleteCallsheetFromProject } = useProjects();
   const addMultipleTrips = tripsContext.addMultipleTrips || (() => Promise.resolve());
@@ -245,12 +247,20 @@ const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({ projectId, trip
     }
   };
 
+  // Dynamic modal style based on personalization
+  const modalStyle = personalization ? {
+    backgroundColor: `rgba(30, 30, 30, ${1 - personalization.uiTransparency})`,
+    backdropFilter: `blur(${personalization.uiBlur}px)`,
+    WebkitBackdropFilter: `blur(${personalization.uiBlur}px)`,
+  } : {};
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-start justify-center px-4 py-16 overflow-y-auto bg-black/60 backdrop-blur-sm"
       onClick={onClose}
     >
       <div
+        style={modalStyle}
         className="relative w-full max-w-5xl bg-frost-glass border border-gray-700/60 rounded-lg shadow-2xl flex flex-col max-h-[88vh] overflow-hidden"
         onClick={e => e.stopPropagation()}
       >

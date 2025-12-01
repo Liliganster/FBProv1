@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Trip, Project, SpecialOrigin, UserProfile, DocumentType } from '../types';
+import { Trip, Project, SpecialOrigin, UserProfile, DocumentType, PersonalizationSettings } from '../types';
 import useTrips from '../hooks/useTrips';
 import { XIcon, TrashIcon, UploadCloudIcon, CheckIcon, WarningIcon, FileCsvIcon, SparklesIcon, LoaderIcon, FileTextIcon, DriveIcon } from './Icons';
 import { Button } from './Button';
@@ -19,6 +19,8 @@ interface BulkUploadModalProps {
   projects: Project[];
   onSave: (trips: Omit<Trip, 'id'>[], source: Mode) => void;
   onClose: () => void;
+  personalization?: PersonalizationSettings;
+  theme?: 'light' | 'dark';
 }
 
 type Mode = 'csv' | 'ai';
@@ -90,7 +92,7 @@ const robustParseFloat = (numStr: string): number => {
 
 
 
-const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onClose }) => {
+const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onClose, personalization, theme }) => {
   const [mode, setMode] = useState<Mode>('csv');
   const [stage, setStage] = useState<Stage>('upload');
   const [draftTrips, setDraftTrips] = useState<DraftTrip[]>([]);
@@ -575,9 +577,16 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
 
   const mapsLoading = !isMapsScriptLoaded && !mapsScriptError;
 
+  // Dynamic modal style based on personalization
+  const modalStyle = personalization ? {
+    backgroundColor: `rgba(30, 30, 30, ${1 - personalization.uiTransparency})`,
+    backdropFilter: `blur(${personalization.uiBlur}px)`,
+    WebkitBackdropFilter: `blur(${personalization.uiBlur}px)`,
+  } : {};
+
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center p-4 pt-16 bg-black/60 backdrop-blur-sm" onClick={onClose}>
-      <div className="bg-frost-glass border border-gray-700/60 rounded-lg shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden animate-fadeIn" onClick={(e) => e.stopPropagation()}>
+      <div style={modalStyle} className="bg-frost-glass border border-gray-700/60 rounded-lg shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden animate-fadeIn" onClick={(e) => e.stopPropagation()}>
         <header className="px-6 py-4 border-b border-gray-700/70 flex items-center justify-between gap-4 bg-background-dark/70 backdrop-blur-sm">
           <h2 className="text-lg font-semibold tracking-tight text-white">{t('bulk_title')}</h2>
           <div className="flex items-center gap-2 bg-background-dark/60 p-1 rounded-md border border-gray-700/60">

@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Project } from '../types';
+import { Project, PersonalizationSettings } from '../types';
 import { XIcon } from './Icons';
 import useTranslation from '../hooks/useTranslation';
 import useToast from '../hooks/useToast';
@@ -11,9 +11,11 @@ import { Button } from './Button';
 interface ProjectEditorModalProps {
   project: Project | null;
   onClose: () => void;
+  personalization?: PersonalizationSettings;
+  theme?: 'light' | 'dark';
 }
 
-const ProjectEditorModal: React.FC<ProjectEditorModalProps> = ({ project, onClose }) => {
+const ProjectEditorModal: React.FC<ProjectEditorModalProps> = ({ project, onClose, personalization, theme }) => {
   const { addProject, updateProject } = useTrips();
   const [formState, setFormState] = useState({ name: '', producer: '', ratePerKm: '' as string | number });
   const [initialFormState, setInitialFormState] = useState(formState);
@@ -73,9 +75,16 @@ const ProjectEditorModal: React.FC<ProjectEditorModalProps> = ({ project, onClos
 
   const isEditing = !!project;
 
+  // Dynamic modal style based on personalization
+  const modalStyle = personalization ? {
+    backgroundColor: `rgba(30, 30, 30, ${1 - personalization.uiTransparency})`,
+    backdropFilter: `blur(${personalization.uiBlur}px)`,
+    WebkitBackdropFilter: `blur(${personalization.uiBlur}px)`,
+  } : {};
+
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center px-4 py-16 overflow-y-auto bg-black/60 backdrop-blur-sm" onClick={handleClose}>
-      <div className="relative w-full max-w-lg bg-frost-glass border border-gray-700/60 rounded-lg shadow-2xl flex flex-col max-h-[80vh] overflow-hidden" onClick={(e) => e.stopPropagation()}>
+      <div style={modalStyle} className="relative w-full max-w-lg bg-frost-glass border border-gray-700/60 rounded-lg shadow-2xl flex flex-col max-h-[80vh] overflow-hidden" onClick={(e) => e.stopPropagation()}>
         <header className="flex items-start justify-between px-6 py-4 border-b border-gray-700/60">
           <h2 className="text-lg font-semibold tracking-tight text-white">
             {isEditing ? t('projectEditor_title_edit') : t('projectEditor_title_add')}

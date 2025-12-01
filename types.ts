@@ -11,7 +11,7 @@ export const DEFAULT_PERSONALIZATION_SETTINGS: PersonalizationSettings = {
     uiTransparency: 0.2,
     uiBlur: 16,
     backgroundBlur: 0,
-    theme: 'light',
+    theme: 'light'
 };
 
 
