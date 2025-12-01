@@ -81,10 +81,10 @@ const ReportsView: React.FC<ReportsViewProps> = ({ personalization, theme }) => 
       <div className="flex justify-between items-center mb-8">
         {selectedReportIds.length > 0 ? (
           <div className="flex items-center gap-4 w-full">
-            <h2 className="text-xl font-semibold text-white">{t('reports_selected_count', { count: selectedReportIds.length })}</h2>
+            <h2 className="text-base font-semibold text-white">{t('reports_selected_count', { count: selectedReportIds.length })}</h2>
             <button
               onClick={handleDeleteSelected}
-              className="flex items-center bg-red-600 hover:bg-red-500 text-white font-bold py-2 px-4 rounded-lg transition-colors ml-auto"
+              className="flex items-center bg-red-600 hover:bg-red-500 text-white font-bold py-2 px-4 rounded-lg transition-colors ml-auto text-sm"
             >
               <TrashIcon className="w-5 h-5 mr-2" />
               {t('reports_delete_selected_btn')}
@@ -93,8 +93,8 @@ const ReportsView: React.FC<ReportsViewProps> = ({ personalization, theme }) => 
         ) : (
           <>
             <div>
-                <h1 className="text-3xl font-bold bg-gradient-title bg-clip-text text-transparent">{t('reports_title')}</h1>
-                {userProfile && <h2 className="text-lg font-semibold text-brand-primary">{userProfile.name}</h2>}
+                <h1 className="text-[28px] font-bold bg-gradient-title bg-clip-text text-transparent">{t('reports_title')}</h1>
+                {userProfile && <h2 className="text-base font-semibold text-brand-primary">{userProfile.name}</h2>}
             </div>
             <button 
               onClick={() => setIsGeneratorOpen(true)} 
@@ -145,7 +145,7 @@ const ReportsView: React.FC<ReportsViewProps> = ({ personalization, theme }) => 
                           className="bg-background-dark border-gray-600 rounded text-brand-primary focus:ring-brand-primary focus:ring-2 h-5 w-5"
                         />
                         <span className="text-on-surface-dark-secondary text-xs uppercase tracking-wider">{t('reports_col_generated')}</span>
-                        <span className="text-white font-medium">{formatDateForDisplay(report.generationDate)}</span>
+                        <span className="text-white font-medium text-sm">{formatDateForDisplay(report.generationDate)}</span>
                       </div>
                       
                       <div className="flex items-center gap-2">
@@ -169,13 +169,13 @@ const ReportsView: React.FC<ReportsViewProps> = ({ personalization, theme }) => 
                       {/* Período */}
                       <div className="mb-2">
                         <span className="text-on-surface-dark-secondary text-xs uppercase tracking-wider">{t('reports_col_period')}</span>
-                        <p className="text-white">{`${formatDateForDisplay(report.startDate)} - ${formatDateForDisplay(report.endDate)}`}</p>
+                        <p className="text-white text-sm">{`${formatDateForDisplay(report.startDate)} - ${formatDateForDisplay(report.endDate)}`}</p>
                       </div>
 
                       {/* Proyecto */}
                       <div>
                         <span className="text-on-surface-dark-secondary text-xs uppercase tracking-wider">{t('reports_col_project')}</span>
-                        <p className="text-white font-medium">{report.projectName}</p>
+                        <p className="text-white font-medium text-sm">{report.projectName}</p>
                       </div>
                     </div>
                   </div>
@@ -206,10 +206,10 @@ const ReportsView: React.FC<ReportsViewProps> = ({ personalization, theme }) => 
                     className="bg-background-dark border-gray-600 rounded text-brand-primary focus:ring-brand-primary focus:ring-2 h-5 w-5"
                   />
                 </th>
-                <th className="p-4 text-sm font-semibold text-on-surface-dark-secondary uppercase tracking-wider">{t('reports_col_generated')}</th>
-                <th className="p-4 text-sm font-semibold text-on-surface-dark-secondary uppercase tracking-wider">{t('reports_col_period')}</th>
-                <th className="p-4 text-sm font-semibold text-on-surface-dark-secondary uppercase tracking-wider">{t('reports_col_project')}</th>
-                <th className="p-4 text-sm font-semibold text-on-surface-dark-secondary uppercase tracking-wider text-right">{t('reports_col_actions')}</th>
+                <th className="p-4 text-[11px] font-semibold text-on-surface-dark-secondary uppercase tracking-wider">{t('reports_col_generated')}</th>
+                <th className="p-4 text-[11px] font-semibold text-on-surface-dark-secondary uppercase tracking-wider">{t('reports_col_period')}</th>
+                <th className="p-4 text-[11px] font-semibold text-on-surface-dark-secondary uppercase tracking-wider">{t('reports_col_project')}</th>
+                <th className="p-4 text-[11px] font-semibold text-on-surface-dark-secondary uppercase tracking-wider text-right">{t('reports_col_actions')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-700/50">
@@ -229,11 +229,11 @@ const ReportsView: React.FC<ReportsViewProps> = ({ personalization, theme }) => 
                       className="bg-background-dark border-gray-600 rounded text-brand-primary focus:ring-brand-primary focus:ring-2 h-5 w-5"
                     />
                   </td>
-                  <td className="p-4 whitespace-nowrap">{formatDateForDisplay(report.generationDate)}</td>
-                  <td className="p-4 whitespace-nowrap">{`${formatDateForDisplay(report.startDate)} - ${formatDateForDisplay(report.endDate)}`}</td>
-                  <td className="p-4 whitespace-nowrap">{report.projectName}</td>
+                  <td className="p-4 whitespace-nowrap text-sm">{formatDateForDisplay(report.generationDate)}</td>
+                  <td className="p-4 whitespace-nowrap text-sm">{`${formatDateForDisplay(report.startDate)} - ${formatDateForDisplay(report.endDate)}`}</td>
+                  <td className="p-4 whitespace-nowrap text-sm">{report.projectName}</td>
                   <td className="p-4 whitespace-nowrap text-right" onClick={(e) => e.stopPropagation()}>
-                    <button onClick={() => setViewingReport(report)} className="text-blue-400 hover:text-blue-300 mr-4 font-semibold">{t('reports_viewBtn')}</button>
+                    <button onClick={() => setViewingReport(report)} className="text-blue-400 hover:text-blue-300 mr-4 font-semibold text-sm">{t('reports_viewBtn')}</button>
                     <button onClick={() => handleDeleteReport(report.id)} className="text-red-400 hover:text-red-300"><TrashIcon className="w-5 h-5"/></button>
                   </td>
                 </tr>
