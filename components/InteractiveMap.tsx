@@ -31,9 +31,9 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({ locations, region }) =>
 
     const initMap = async () => {
       try {
-        const { Map } = await window.google.maps.importLibrary("maps") as google.maps.MapsLibrary;
-        const { DirectionsService, DirectionsRenderer } = await window.google.maps.importLibrary("routes") as google.maps.RoutesLibrary;
-        const { AdvancedMarkerElement } = await window.google.maps.importLibrary("marker") as google.maps.MarkerLibrary;
+        const { Map } = await window.google.maps.importLibrary("maps") as any;
+        const { DirectionsService, DirectionsRenderer } = await window.google.maps.importLibrary("routes") as any;
+        const { AdvancedMarkerElement } = await window.google.maps.importLibrary("marker") as any;
 
         const map = new Map(mapRef.current as HTMLElement, {
           center: { lat: 48.2082, lng: 16.3738 }, // Default to Vienna
