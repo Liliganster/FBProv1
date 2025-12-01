@@ -384,6 +384,13 @@ const CostAnalysisDashboard: React.FC<{
         backdropFilter: `blur(${personalization.uiBlur}px)`,
     };
 
+    // Dynamic style for glass effect based on personalization
+    const glassStyle = {
+        backgroundColor: `rgba(30, 30, 30, ${1 - personalization.uiTransparency})`,
+        backdropFilter: `blur(${personalization.uiBlur}px)`,
+        WebkitBackdropFilter: `blur(${personalization.uiBlur}px)`,
+    };
+
     return (
         <div className="p-8 rounded-fluid -m-8">
             <header className="flex justify-between items-start mb-6">
@@ -438,10 +445,10 @@ const CostAnalysisDashboard: React.FC<{
 
                 {/* Tarjetas de métricas principales */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                    <StatCard title={t('cost_total_distance')} value={`${(costData?.totalKm || 0).toFixed(1)} km`} theme={theme} />
-                    <StatCard title={t('cost_total_trips')} value={(costData?.totalTrips || 0).toString()} theme={theme} />
-                    <StatCard title={t('cost_est_total')} value={formatCurrency(costData?.totalCost || 0)} theme={theme} />
-                    <StatCard title={t('cost_avg_cost_km')} value={formatCurrency(costData?.avgCostPerKm || 0)} theme={theme} />
+                    <StatCard title={t('cost_total_distance')} value={`${(costData?.totalKm || 0).toFixed(1)} km`} theme={theme} personalization={personalization} />
+                    <StatCard title={t('cost_total_trips')} value={(costData?.totalTrips || 0).toString()} theme={theme} personalization={personalization} />
+                    <StatCard title={t('cost_est_total')} value={formatCurrency(costData?.totalCost || 0)} theme={theme} personalization={personalization} />
+                    <StatCard title={t('cost_avg_cost_km')} value={formatCurrency(costData?.avgCostPerKm || 0)} theme={theme} personalization={personalization} />
                 </div>
 
                 {/* Contenido condicional según el tab seleccionado */}
@@ -449,7 +456,7 @@ const CostAnalysisDashboard: React.FC<{
                     // Vista de Resumen con barras de progreso
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                         {/* Desglose de costos con barras de progreso */}
-                        <div className="bg-frost-glass p-6 rounded-gentle">
+                        <div style={glassStyle} className="bg-frost-glass p-6 rounded-gentle">
                             <h3 className="text-lg font-semibold mb-6 text-white">{t('cost_basic_breakdown')}</h3>
 
                             <div className="space-y-4">
@@ -506,7 +513,7 @@ const CostAnalysisDashboard: React.FC<{
                         </div>
 
                         {/* Supuestos de costos */}
-                        <div className="bg-frost-glass p-6 rounded-lg">
+                        <div style={glassStyle} className="bg-frost-glass p-6 rounded-lg">
                             <h3 className="text-lg font-semibold mb-6 text-white">{t('cost_assumptions')}</h3>
 
                             <div className="space-y-3">
@@ -549,7 +556,7 @@ const CostAnalysisDashboard: React.FC<{
                     </div>
                 ) : (
                     // Vista Mensual con tabla
-                    <div className="bg-frost-glass p-6 rounded-lg">
+                    <div style={glassStyle} className="bg-frost-glass p-6 rounded-lg">
                         <h3 className="text-lg font-semibold mb-4 text-white">{t('cost_monthly_summary')}</h3>
                         <div className="overflow-x-auto">
                             <table className="w-full text-left">
@@ -586,7 +593,7 @@ const CostAnalysisDashboard: React.FC<{
 
                 {/* Análisis por Proyecto - solo en vista Resumen */}
                 {costView === 'summary' && (
-                    <div className="bg-frost-glass p-6 rounded-lg mt-8">
+                    <div style={glassStyle} className="bg-frost-glass p-6 rounded-lg mt-8">
                         <div className="flex justify-between items-center mb-6">
                             <h3 className="text-lg font-semibold text-white">{t('cost_project_analysis_title')}</h3>
                             <div className="flex items-center gap-2">
@@ -834,17 +841,27 @@ const CostAnalysisDashboard: React.FC<{
                 isOpen={isExpenseModalOpen}
                 onClose={() => setIsExpenseModalOpen(false)}
                 defaultProjectId={selectedProjectIdForUpload}
+                personalization={personalization}
+                theme={theme}
             />
         </div>
     );
 };
 
-const StatCard: React.FC<{ title: string; value: string; theme: 'light' | 'dark'; }> = ({ title, value, theme }) => (
-    <div className="bg-frost-glass p-4 rounded-lg">
-        <h3 className="text-sm font-medium text-on-surface-dark-secondary">{title}</h3>
-        <p className="text-3xl font-bold mt-1 text-white">{value}</p>
-    </div>
-);
+const StatCard: React.FC<{ title: string; value: string; theme: 'light' | 'dark'; personalization?: PersonalizationSettings; }> = ({ title, value, theme, personalization }) => {
+    const glassStyle = personalization ? {
+        backgroundColor: `rgba(30, 30, 30, ${1 - personalization.uiTransparency})`,
+        backdropFilter: `blur(${personalization.uiBlur}px)`,
+        WebkitBackdropFilter: `blur(${personalization.uiBlur}px)`,
+    } : {};
+    
+    return (
+        <div style={glassStyle} className="bg-frost-glass p-4 rounded-lg">
+            <h3 className="text-sm font-medium text-on-surface-dark-secondary">{title}</h3>
+            <p className="text-3xl font-bold mt-1 text-white">{value}</p>
+        </div>
+    );
+};
 
 const AdvancedView: React.FC<AdvancedViewProps> = ({ personalization, theme }) => {
     const { t } = useTranslation();
@@ -1168,6 +1185,7 @@ const ActionCard: React.FC<{
     personalization: PersonalizationSettings;
 }> = ({ title, description, icon, onClick, theme, personalization }) => {
     const cardStyle = {
+        backgroundColor: `rgba(30, 30, 30, ${1 - personalization.uiTransparency})`,
         backdropFilter: `blur(${personalization.uiBlur}px)`,
         WebkitBackdropFilter: `blur(${personalization.uiBlur}px)`,
     } as React.CSSProperties;
