@@ -683,7 +683,7 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
         // Vista desktop con tabla
         <div style={contentStyle} className="bg-frost-glass border-glass rounded-fluid shadow-glass overflow-hidden backdrop-blur-glass">
           <table className="w-full text-left text-sm">
-            <thead className="bg-gradient-surface border-b border-glass">
+            <thead className="bg-gray-700/50 border-b border-glass">
               <tr>
                 <th className="p-3 w-12">
                   <input
