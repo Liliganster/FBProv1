@@ -48,29 +48,46 @@ const StatCard: React.FC<{
   icon?: React.ReactNode;
   color?: string;
   iconColor?: string;
-}> = ({ title, value, icon, color = 'text-white', iconColor }) => (
-  <div className="bg-frost-glass p-6 rounded-lg">
-    <div className="flex items-center justify-between">
-      <div>
-        <h3 className="text-sm font-medium text-on-surface-dark-secondary">{title}</h3>
-        <p className={`text-3xl font-bold mt-1 ${color}`}>{value}</p>
-      </div>
-      {icon && (
-        <div className={`flex items-center justify-center h-8 ${iconColor || color}`}>
-          {icon}
+  personalization?: any;
+}> = ({ title, value, icon, color = 'text-white', iconColor, personalization }) => {
+  const glassStyle = personalization ? {
+    backgroundColor: `rgba(30, 30, 30, ${1 - personalization.uiTransparency})`,
+    backdropFilter: `blur(${personalization.uiBlur}px)`,
+    WebkitBackdropFilter: `blur(${personalization.uiBlur}px)`,
+  } : {};
+  
+  return (
+    <div style={glassStyle} className="bg-frost-glass p-6 rounded-lg">
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="text-sm font-medium text-on-surface-dark-secondary">{title}</h3>
+          <p className={`text-3xl font-bold mt-1 ${color}`}>{value}</p>
         </div>
-      )}
+        {icon && (
+          <div className={`flex items-center justify-center h-8 ${iconColor || color}`}>
+            {icon}
+          </div>
+        )}
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 const ProjectRow: React.FC<{
   project: ProjectCO2Data;
   rank: number;
   formatCurrency: (value: number) => string;
   t: (key: string) => string;
-}> = ({ project, rank, formatCurrency, t }) => (
-  <div className="bg-frost-glass p-6 rounded-lg">
+  personalization?: any;
+}> = ({ project, rank, formatCurrency, t, personalization }) => {
+  const glassStyle = personalization ? {
+    backgroundColor: `rgba(30, 30, 30, ${1 - personalization.uiTransparency})`,
+    backdropFilter: `blur(${personalization.uiBlur}px)`,
+    WebkitBackdropFilter: `blur(${personalization.uiBlur}px)`,
+  } : {};
+  
+  return (
+    <div style={glassStyle} className="bg-frost-glass p-6 rounded-lg">
     <div className="flex items-center justify-between mb-4">
       <div className="flex items-center gap-4">
         <div className={`w-10 h-10 rounded-full flex items-center justify-center text-lg font-bold ${
@@ -122,7 +139,8 @@ const ProjectRow: React.FC<{
       </div>
     </div>
   </div>
-);
+  );
+};
 
 const CO2RankingView: React.FC<CO2RankingViewProps> = ({
   onBack,
@@ -391,18 +409,21 @@ const CO2RankingView: React.FC<CO2RankingViewProps> = ({
             value={`${summaryMetrics.totalCO2} kg`}
             icon={<Co2EmissionIcon className="w-8 h-8" />}
             color="text-red-400"
+            personalization={personalization}
           />
           <StatCard
             title={t('co2_metric_avg_efficiency') || 'Avg. Efficiency'}
             value={`${summaryMetrics.averageEfficiency} kg/km`}
             icon={<GaugeIcon className="w-8 h-8" />}
             color="text-blue-400"
+            personalization={personalization}
           />
           <StatCard
             title={t('co2_metric_fuel_consumption') || 'Fuel Consumption'}
             value={`${summaryMetrics.totalFuel} L`}
             icon={<FuelIcon className="w-8 h-8" />}
             color="text-purple-400"
+            personalization={personalization}
           />
           <StatCard
             title={t('co2_metric_trees_needed') || 'Trees Needed'}
@@ -410,6 +431,7 @@ const CO2RankingView: React.FC<CO2RankingViewProps> = ({
             icon={<TreePineIcon className="w-8 h-8 text-white translate-y-[3px]" />}
             iconColor="text-white"
             color="text-green-400"
+            personalization={personalization}
           />
         </div>
       )}
@@ -433,6 +455,7 @@ const CO2RankingView: React.FC<CO2RankingViewProps> = ({
                   rank={index + 1}
                   formatCurrency={formatCurrency}
                   t={t}
+                  personalization={personalization}
                 />
               ))}
             </div>
