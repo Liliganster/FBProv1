@@ -225,6 +225,8 @@ const TripDetailModal: React.FC<TripDetailModalProps> = ({ trip, project, onClos
         onClose={() => setIsExpenseModalOpen(false)}
         defaultTripId={trip.id}
         defaultProjectId={projectId}
+        personalization={personalization}
+        theme={theme}
       />
     </div>
   );

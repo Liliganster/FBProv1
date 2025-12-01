@@ -3,12 +3,15 @@ import { XCircleIcon, LoaderIcon } from './Icons';
 import { Button } from './Button';
 import { extractUniversalStructured, type ExtractMode } from '../services/extractor-universal/index';
 import useTranslation from '../hooks/useTranslation';
+import { PersonalizationSettings } from '../types';
 
 interface ExtractorModalProps {
   onClose: () => void;
+  personalization?: PersonalizationSettings;
+  theme?: 'light' | 'dark';
 }
 
-const ExtractorModal: React.FC<ExtractorModalProps> = ({ onClose }) => {
+const ExtractorModal: React.FC<ExtractorModalProps> = ({ onClose, personalization, theme }) => {
   const [mode, setMode] = useState<ExtractMode>('direct');
   const [contentType, setContentType] = useState<'callsheet' | 'email'>('callsheet');
   const [text, setText] = useState('');
@@ -35,9 +38,16 @@ const ExtractorModal: React.FC<ExtractorModalProps> = ({ onClose }) => {
     }
   };
 
+  // Dynamic modal style based on personalization
+  const modalStyle = personalization ? {
+    backgroundColor: `rgba(30, 30, 30, ${1 - personalization.uiTransparency})`,
+    backdropFilter: `blur(${personalization.uiBlur}px)`,
+    WebkitBackdropFilter: `blur(${personalization.uiBlur}px)`,
+  } : {};
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={onClose}>
-      <div className="w-full max-w-xs sm:max-w-lg md:max-w-2xl lg:max-w-3xl rounded-lg bg-frost-glass p-4 shadow-xl" onClick={(e) => e.stopPropagation()}>
+      <div style={modalStyle} className="w-full max-w-xs sm:max-w-lg md:max-w-2xl lg:max-w-3xl rounded-lg bg-frost-glass p-4 shadow-xl" onClick={(e) => e.stopPropagation()}>
         <div className="mb-3 flex items-center justify-between">
           <h2 className="text-lg font-semibold">{t('extractor_title')}</h2>
           <Button variant="icon" onClick={onClose} aria-label="Close">

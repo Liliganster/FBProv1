@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import useTranslation from '../hooks/useTranslation';
 import useExpenses from '../hooks/useExpenses';
 import useTrips from '../hooks/useTrips';
-import { ExpenseCategory } from '../types';
+import { ExpenseCategory, PersonalizationSettings } from '../types';
 import { XIcon, UploadCloudIcon } from './Icons';
 import { Button } from './Button';
 
@@ -11,6 +11,8 @@ interface ExpenseUploadModalProps {
   onClose: () => void;
   defaultProjectId?: string | null;
   defaultTripId?: string | null;
+  personalization?: PersonalizationSettings;
+  theme?: 'light' | 'dark';
 }
 
 const categories: ExpenseCategory[] = ['fuel', 'maintenance'];
@@ -20,6 +22,8 @@ const ExpenseUploadModal: React.FC<ExpenseUploadModalProps> = ({
   onClose,
   defaultProjectId = null,
   defaultTripId = null,
+  personalization,
+  theme,
 }) => {
   const { t } = useTranslation();
   const { addExpense, loading } = useExpenses();
@@ -101,12 +105,20 @@ const ExpenseUploadModal: React.FC<ExpenseUploadModalProps> = ({
     }
   };
 
+  // Dynamic modal style based on personalization
+  const modalStyle = personalization ? {
+    backgroundColor: `rgba(30, 30, 30, ${1 - personalization.uiTransparency})`,
+    backdropFilter: `blur(${personalization.uiBlur}px)`,
+    WebkitBackdropFilter: `blur(${personalization.uiBlur}px)`,
+  } : {};
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm px-4"
       onClick={handleClose}
     >
       <div
+        style={modalStyle}
         className="relative w-full max-w-lg rounded-lg border border-glass bg-surface-dark p-6 shadow-glass-lg"
         onClick={event => event.stopPropagation()}
       >

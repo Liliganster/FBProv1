@@ -254,6 +254,8 @@ const CalendarView: React.FC<CalendarViewProps> = ({ setCurrentView, personaliza
         <EventActionModal
             event={selectedEvent}
             onClose={() => setSelectedEvent(null)}
+            personalization={personalization}
+            theme={theme}
         />
       )}
     </div>

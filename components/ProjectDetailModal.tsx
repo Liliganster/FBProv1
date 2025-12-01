@@ -499,6 +499,8 @@ const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({ projectId, trip
         isOpen={isExpenseModalOpen}
         onClose={() => setIsExpenseModalOpen(false)}
         defaultProjectId={projectId}
+        personalization={personalization}
+        theme={theme}
       />
     </div>
   );

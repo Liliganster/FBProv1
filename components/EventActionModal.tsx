@@ -5,15 +5,17 @@ import useUserProfile from '../hooks/useUserProfile';
 import useTrips from '../hooks/useTrips';
 import { XIcon, MapPinIcon, CalendarIcon } from './Icons';
 import { Button } from './Button';
-import { SpecialOrigin, Trip } from '../types';
+import { SpecialOrigin, Trip, PersonalizationSettings } from '../types';
 import TripEditorModal from './TripEditorModal';
 
 interface EventActionModalProps {
   event: any;
   onClose: () => void;
+  personalization?: PersonalizationSettings;
+  theme?: 'light' | 'dark';
 }
 
-const EventActionModal: React.FC<EventActionModalProps> = ({ event, onClose }) => {
+const EventActionModal: React.FC<EventActionModalProps> = ({ event, onClose, personalization, theme }) => {
   const { t } = useTranslation();
   const { userProfile } = useUserProfile();
   const { trips, projects, addTrip } = useTrips();
@@ -45,10 +47,18 @@ const EventActionModal: React.FC<EventActionModalProps> = ({ event, onClose }) =
     specialOrigin: SpecialOrigin.HOME,
   };
 
+  // Dynamic modal style based on personalization
+  const modalStyle = personalization ? {
+    backgroundColor: `rgba(30, 30, 30, ${1 - personalization.uiTransparency})`,
+    backdropFilter: `blur(${personalization.uiBlur}px)`,
+    WebkitBackdropFilter: `blur(${personalization.uiBlur}px)`,
+  } : {};
+
   return (
     <>
       <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-start justify-center p-4 pt-20 z-50" onClick={onClose}>
         <div
+          style={modalStyle}
           className="bg-frost-glass border border-gray-700/60 rounded-lg shadow-2xl w-full max-w-xs sm:max-w-md md:max-w-lg flex flex-col overflow-hidden animate-fadeIn"
           onClick={e => e.stopPropagation()}
         >
@@ -88,6 +98,8 @@ const EventActionModal: React.FC<EventActionModalProps> = ({ event, onClose }) =
             setIsTripEditorOpen(false);
             onClose();
           }}
+          personalization={personalization}
+          theme={theme}
         />
       )}
     </>
