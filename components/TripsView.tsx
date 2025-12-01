@@ -290,7 +290,9 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
     backgroundColor: theme === 'dark'
       ? `rgba(30, 30, 30, ${1 - personalization.uiTransparency})`
       : `rgba(243, 244, 246, ${1 - personalization.uiTransparency})`,
-    backdropFilter: `blur(${personalization.uiBlur}px)`,
+    backdropFilter: `blur(${personalization.uiBlur}px) saturate(150%)`,
+    WebkitBackdropFilter: `blur(${personalization.uiBlur}px) saturate(150%)`,
+    border: '1px solid rgba(255, 255, 255, 0.1)',
   };
 
   return (
@@ -356,7 +358,7 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
           {filteredTrips.length > 0 ? (
             <>
               {selectedTripIds.length > 0 && (
-                <div className="bg-frost-glass border-glass rounded-fluid p-4 mb-4 backdrop-blur-glass">
+                <div style={contentStyle} className="rounded-fluid p-4 mb-4 shadow-sm">
                   <div className="flex items-center justify-between">
                     <span className="text-white font-medium">{t('trips_selected_count', { count: selectedTripIds.length })}</span>
                     <div className="flex gap-2">
@@ -402,7 +404,8 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
                     return (
                       <div
                         key={trip.id}
-                        className={`bg-frost-glass border-glass rounded-fluid p-4 mb-3 backdrop-blur-glass transition-all duration-200 ${isSelected ? 'ring-2 ring-brand-primary bg-brand-primary/10' : 'hover:bg-gradient-surface/50'
+                        style={contentStyle}
+                        className={`rounded-fluid p-4 mb-3 transition-all duration-200 shadow-sm ${isSelected ? 'ring-2 ring-brand-primary bg-brand-primary/10' : 'hover:bg-gradient-surface/50'
                           }`}
                       >
                         <div className="flex items-center justify-between mb-3">
@@ -530,7 +533,8 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
                   return (
                     <div
                       key={trip.id}
-                      className={`bg-frost-glass border-glass rounded-fluid p-4 backdrop-blur-glass transition-all duration-200 ${isSelected ? 'ring-2 ring-brand-primary bg-brand-primary/10' : 'hover:bg-gradient-surface/50'
+                      style={contentStyle}
+                      className={`rounded-fluid p-4 transition-all duration-200 shadow-sm ${isSelected ? 'ring-2 ring-brand-primary bg-brand-primary/10' : 'hover:bg-gradient-surface/50'
                         }`}
                     >
                       {/* Header con checkbox, fecha y acciones */}
@@ -673,14 +677,14 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
               )}
             </>
           ) : (
-            <div className="bg-frost-glass border-glass rounded-fluid p-8 backdrop-blur-glass text-center">
+            <div style={contentStyle} className="rounded-fluid p-8 shadow-sm text-center">
               <p className="text-on-surface-dark-secondary">{t('trips_noTrips')}</p>
             </div>
           )}
         </div>
       ) : (
         // Vista desktop con tabla
-        <div className="bg-frost-glass border-glass rounded-fluid shadow-glass overflow-hidden backdrop-blur-glass">
+        <div style={contentStyle} className="rounded-fluid shadow-glass overflow-hidden">
           <table className="w-full text-left text-sm">
             <thead className="bg-gradient-surface border-b border-glass">
               <tr>

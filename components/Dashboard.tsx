@@ -157,12 +157,16 @@ const Dashboard: React.FC<DashboardProps> = ({ setCurrentView, personalization, 
 
     // Dynamic style for glass effect based on personalization
     const glassStyle = {
-        backdropFilter: `blur(${personalization.uiBlur}px)`,
-        WebkitBackdropFilter: `blur(${personalization.uiBlur}px)`,
+        backgroundColor: theme === 'dark'
+            ? `rgba(30, 30, 30, ${1 - personalization.uiTransparency})`
+            : `rgba(243, 244, 246, ${1 - personalization.uiTransparency})`,
+        backdropFilter: `blur(${personalization.uiBlur}px) saturate(150%)`,
+        WebkitBackdropFilter: `blur(${personalization.uiBlur}px) saturate(150%)`,
+        border: '1px solid rgba(255, 255, 255, 0.1)',
     };
 
     const StatCard = ({ title, value, cta, onClick, children }: { title: string, value: string, cta?: string, onClick?: () => void, children?: React.ReactNode }) => (
-        <div style={glassStyle} className="bg-frost-glass border border-white/10 rounded-fluid p-6 flex flex-col justify-between min-h-[140px] transition-all duration-300 hover:-translate-y-[2px] hover:shadow-glass shadow-sm">
+        <div style={glassStyle} className="rounded-fluid p-6 flex flex-col justify-between min-h-[140px] transition-all duration-300 hover:-translate-y-[2px] hover:shadow-glass shadow-sm">
             <div>
                 <div className="flex items-start justify-between">
                     <h3 className="text-sm font-medium text-on-surface-secondary uppercase tracking-wider">{title}</h3>
@@ -260,7 +264,7 @@ const Dashboard: React.FC<DashboardProps> = ({ setCurrentView, personalization, 
                 {hasCO2Settings ? (
                     <StatCard title={t('dashboard_total_co2')} value={`${totalCo2.toFixed(1)} kg`} />
                 ) : (
-                    <div style={glassStyle} className="bg-frost-glass border border-white/10 rounded-fluid p-6 backdrop-blur-glass flex flex-col justify-center items-center text-center hover:shadow-glass transition-all duration-300">
+                    <div style={glassStyle} className="rounded-fluid p-6 flex flex-col justify-center items-center text-center hover:shadow-glass transition-all duration-300">
                         <Co2EmissionIcon className="w-10 h-10 text-on-surface-secondary mb-3 opacity-50" />
                         <h4 className="text-sm font-medium text-on-surface-secondary mb-2">{t('dashboard_total_co2')}</h4>
                         <p className="text-xs text-on-surface-secondary mb-4 max-w-[200px]">{t('co2_settings_required_notice')}</p>
@@ -276,7 +280,7 @@ const Dashboard: React.FC<DashboardProps> = ({ setCurrentView, personalization, 
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div style={glassStyle} className="lg:col-span-2 bg-frost-glass border border-white/10 rounded-fluid p-6 backdrop-blur-glass shadow-sm">
+                <div style={glassStyle} className="lg:col-span-2 rounded-fluid p-6 shadow-sm">
                     <div className="flex justify-between items-center mb-6">
                         <h3 className="text-lg font-semibold text-white flex items-center gap-2">
                             <BarChartIcon className="w-5 h-5 text-brand-primary" />
@@ -312,7 +316,7 @@ const Dashboard: React.FC<DashboardProps> = ({ setCurrentView, personalization, 
                         </ResponsiveContainer>
                     </div>
                 </div>
-                <div style={glassStyle} className="bg-frost-glass border border-white/10 rounded-fluid p-6 backdrop-blur-glass shadow-sm flex flex-col">
+                <div style={glassStyle} className="rounded-fluid p-6 shadow-sm flex flex-col">
                     <h3 className="text-lg font-semibold mb-4 text-white flex items-center gap-2">
                         <ListIcon className="w-5 h-5 text-brand-secondary" />
                         {t('dashboard_recentTrips')}
