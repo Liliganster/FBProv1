@@ -287,10 +287,9 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
   const EMISSION_FACTOR_G_PER_KM = 140;
 
   const contentStyle = {
-    backgroundColor: theme === 'dark'
-      ? `rgba(30, 30, 30, ${1 - personalization.uiTransparency})`
-      : `rgba(243, 244, 246, ${1 - personalization.uiTransparency})`,
+    backgroundColor: `rgba(30, 30, 30, ${1 - personalization.uiTransparency})`,
     backdropFilter: `blur(${personalization.uiBlur}px)`,
+    WebkitBackdropFilter: `blur(${personalization.uiBlur}px)`,
   };
 
   return (
@@ -356,7 +355,7 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
           {filteredTrips.length > 0 ? (
             <>
               {selectedTripIds.length > 0 && (
-                <div className="bg-frost-glass border-glass rounded-fluid p-4 mb-4 backdrop-blur-glass">
+                <div style={contentStyle} className="bg-frost-glass border-glass rounded-fluid p-4 mb-4 backdrop-blur-glass">
                   <div className="flex items-center justify-between">
                     <span className="text-white font-medium">{t('trips_selected_count', { count: selectedTripIds.length })}</span>
                     <div className="flex gap-2">
@@ -402,6 +401,7 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
                     return (
                       <div
                         key={trip.id}
+                        style={contentStyle}
                         className={`bg-frost-glass border-glass rounded-fluid p-4 mb-3 backdrop-blur-glass transition-all duration-200 ${isSelected ? 'ring-2 ring-brand-primary bg-brand-primary/10' : 'hover:bg-gradient-surface/50'
                           }`}
                       >
@@ -530,6 +530,7 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
                   return (
                     <div
                       key={trip.id}
+                      style={contentStyle}
                       className={`bg-frost-glass border-glass rounded-fluid p-4 backdrop-blur-glass transition-all duration-200 ${isSelected ? 'ring-2 ring-brand-primary bg-brand-primary/10' : 'hover:bg-gradient-surface/50'
                         }`}
                     >
@@ -673,14 +674,14 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
               )}
             </>
           ) : (
-            <div className="bg-frost-glass border-glass rounded-fluid p-8 backdrop-blur-glass text-center">
+            <div style={contentStyle} className="bg-frost-glass border-glass rounded-fluid p-8 backdrop-blur-glass text-center">
               <p className="text-on-surface-dark-secondary">{t('trips_noTrips')}</p>
             </div>
           )}
         </div>
       ) : (
         // Vista desktop con tabla
-        <div className="bg-frost-glass border-glass rounded-fluid shadow-glass overflow-hidden backdrop-blur-glass">
+        <div style={contentStyle} className="bg-frost-glass border-glass rounded-fluid shadow-glass overflow-hidden backdrop-blur-glass">
           <table className="w-full text-left text-sm">
             <thead className="bg-gradient-surface border-b border-glass">
               <tr>
