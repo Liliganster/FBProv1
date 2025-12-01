@@ -269,7 +269,8 @@ class AuthService {
         id: user.id,
         email: user.email || null,
         full_name: metadata.full_name || user.user_metadata?.full_name || null,
-        avatar_url: metadata.avatar_url || user.user_metadata?.avatar_url || null
+        avatar_url: metadata.avatar_url || user.user_metadata?.avatar_url || null,
+        plan: (user.user_metadata as any)?.plan || 'free'
       }
 
       const { data, error } = await supabase

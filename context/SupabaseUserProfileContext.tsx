@@ -34,6 +34,7 @@ export const UserProfileProvider: React.FC<{ children: React.ReactNode }> = ({ c
       country: 'AT',
       ratePerKm: getRateForCountry('AT'),
       color: '#374151',
+      plan: 'free',
       email: user?.email || null,
       fullName: null,
       licensePlate: null,

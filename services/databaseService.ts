@@ -1146,6 +1146,7 @@ class DatabaseService {
         address: profileData.address || null,
         city: profileData.city || null,
         country: profileData.country || null,
+        plan: profileData.plan ?? 'free',
         profile_picture: profileData.profilePicture || null,
         color: profileData.color || null,
         rate_per_km: profileData.ratePerKm ?? null,
@@ -1205,6 +1206,7 @@ class DatabaseService {
       if (updates.address !== undefined) updateData.address = updates.address
       if (updates.city !== undefined) updateData.city = updates.city
       if (updates.country !== undefined) updateData.country = updates.country
+      if (updates.plan !== undefined) updateData.plan = updates.plan
       if (updates.profilePicture !== undefined) updateData.profile_picture = updates.profilePicture
       if (updates.color !== undefined) updateData.color = updates.color
       if (updates.ratePerKm !== undefined) updateData.rate_per_km = updates.ratePerKm
