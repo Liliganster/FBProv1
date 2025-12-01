@@ -24,84 +24,100 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({ locations, region }) =>
     if (!isLoaded || !mapRef.current) return;
     const validLocations = locations.filter(loc => loc.trim() !== '');
     if (validLocations.length < 2) {
-        setStatus('error');
-        setErrorMessage('Se necesitan al menos 2 localizaciones para trazar una ruta.');
-        return;
+      setStatus('error');
+      setErrorMessage('Se necesitan al menos 2 localizaciones para trazar una ruta.');
+      return;
     }
-    
-    const map = new window.google.maps.Map(mapRef.current, {
-      center: { lat: 48.2082, lng: 16.3738 }, // Default to Vienna
-      zoom: 6,
-      disableDefaultUI: true,
-      zoomControl: true,
-      mapId: 'FAHRTENBUCH_MAP_ID'
-    });
-    
-    const directionsService = new window.google.maps.DirectionsService();
-    const directionsRenderer = new window.google.maps.DirectionsRenderer({
-        suppressMarkers: true,
-        polylineOptions: {
+
+    const initMap = async () => {
+      try {
+        const { Map } = await window.google.maps.importLibrary("maps");
+        const { DirectionsService, DirectionsRenderer } = await window.google.maps.importLibrary("routes");
+        const { AdvancedMarkerElement } = await window.google.maps.importLibrary("marker");
+
+        if (!mapRef.current) return;
+
+        const map = new Map(mapRef.current, {
+          center: { lat: 48.2082, lng: 16.3738 }, // Default to Vienna
+          zoom: 6,
+          disableDefaultUI: true,
+          zoomControl: true,
+          mapId: 'FAHRTENBUCH_MAP_ID'
+        });
+
+        const directionsService = new DirectionsService();
+        const directionsRenderer = new DirectionsRenderer({
+          suppressMarkers: true,
+          polylineOptions: {
             strokeColor: '#007aff',
             strokeWeight: 5,
             strokeOpacity: 0.8,
-        }
-    });
-    directionsRenderer.setMap(map);
-    
-    const origin = validLocations[0];
-    const destination = validLocations[validLocations.length - 1];
-    const waypoints = validLocations.slice(1, -1).map(location => ({
-        location,
-        stopover: true,
-    }));
+          }
+        });
+        directionsRenderer.setMap(map);
 
-    directionsService.route(
-      {
-        origin: origin,
-        destination: destination,
-        waypoints: waypoints,
-        travelMode: window.google.maps.TravelMode.DRIVING,
-        region: region || undefined,
-      },
-      (result, status) => {
-        if (status === window.google.maps.DirectionsStatus.OK && result) {
-          directionsRenderer.setDirections(result);
-          setStatus('success');
-          
-          const route = result.routes[0];
-          // Add custom markers
-          route.legs.forEach((leg, index) => {
-              // Add start marker for the first leg
-              if (index === 0 && leg.start_location) {
-                 new window.google.maps.marker.AdvancedMarkerElement({
+        const origin = validLocations[0];
+        const destination = validLocations[validLocations.length - 1];
+        const waypoints = validLocations.slice(1, -1).map(location => ({
+          location,
+          stopover: true,
+        }));
+
+        directionsService.route(
+          {
+            origin: origin,
+            destination: destination,
+            waypoints: waypoints,
+            travelMode: window.google.maps.TravelMode.DRIVING,
+            region: region || undefined,
+          },
+          (result, status) => {
+            if (status === window.google.maps.DirectionsStatus.OK && result) {
+              directionsRenderer.setDirections(result);
+              setStatus('success');
+
+              const route = result.routes[0];
+              // Add custom markers
+              route.legs.forEach((leg, index) => {
+                // Add start marker for the first leg
+                if (index === 0 && leg.start_location) {
+                  new AdvancedMarkerElement({
                     map,
                     position: leg.start_location,
                     title: `A: ${leg.start_address}`,
-                 });
-              }
-              // Add end marker for each leg (which is a waypoint or the final destination)
-              if (leg.end_location) {
+                  });
+                }
+                // Add end marker for each leg (which is a waypoint or the final destination)
+                if (leg.end_location) {
                   const isFinalDestination = index === route.legs.length - 1;
-                  new window.google.maps.marker.AdvancedMarkerElement({
+                  new AdvancedMarkerElement({
                     map,
                     position: leg.end_location,
                     title: `${isFinalDestination ? 'B:' : 'Parada:'} ${leg.end_address}`,
-                 });
-              }
-          });
-        } else {
-          setStatus('error');
-          setErrorMessage(`No se pudo trazar la ruta: ${status}`);
-          console.error(`Directions request failed due to ${status}`);
-        }
+                  });
+                }
+              });
+            } else {
+              setStatus('error');
+              setErrorMessage(`No se pudo trazar la ruta: ${status}`);
+              console.error(`Directions request failed due to ${status}`);
+            }
+          }
+        );
+      } catch (error) {
+        console.error("Error initializing map:", error);
+        setStatus('error');
+        setErrorMessage('Error al inicializar el mapa.');
       }
-    );
+    };
+
+    initMap();
   }, [isLoaded, locations, region]);
 
   if (error) {
     return <div className="flex items-center justify-center w-full h-full bg-red-900/50 text-red-300">Error al cargar el script de Google Maps.</div>;
   }
-  
+
   return (
     <div className="relative w-full h-full bg-gray-800 rounded-lg">
       {status !== 'success' && (

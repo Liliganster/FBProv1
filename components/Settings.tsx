@@ -119,7 +119,7 @@ const SettingsView: React.FC<{
         const { name, value, type } = e.target;
         setPersonalization(prev => ({
             ...prev,
-            [name]: type === 'number' ? parseFloat(value) : value
+            [name]: (type === 'number' || type === 'range') ? parseFloat(value) : value
         }));
     };
 
@@ -302,17 +302,17 @@ const SettingsView: React.FC<{
 
                                 {/* Gemini Status (Server) */}
                                 <div className={`flex items-center justify-between p-3 rounded ${localProfile.openRouterApiKey && localProfile.openRouterModel
-                                        ? 'bg-gray-900/20 border border-gray-700/50'
-                                        : 'bg-green-900/20 border border-green-700/50'
+                                    ? 'bg-gray-900/20 border border-gray-700/50'
+                                    : 'bg-green-900/20 border border-green-700/50'
                                     }`}>
                                     <div>
                                         <p className={`font-medium ${localProfile.openRouterApiKey && localProfile.openRouterModel
-                                                ? 'text-gray-300'
-                                                : 'text-green-200'
+                                            ? 'text-gray-300'
+                                            : 'text-green-200'
                                             }`}>{t('settings_api_gemini_status')}</p>
                                         <p className={`text-xs ${localProfile.openRouterApiKey && localProfile.openRouterModel
-                                                ? 'text-gray-400'
-                                                : 'text-green-300'
+                                            ? 'text-gray-400'
+                                            : 'text-green-300'
                                             }`}>{t('settings_api_gemini_desc')}</p>
                                     </div>
                                     {localProfile.openRouterApiKey && localProfile.openRouterModel ? (
@@ -324,18 +324,18 @@ const SettingsView: React.FC<{
 
                                 {/* OpenRouter Configuration (User) */}
                                 <div className={`space-y-3 p-3 border rounded ${localProfile.openRouterApiKey && localProfile.openRouterModel
-                                        ? 'bg-green-900/20 border-green-700/50'
-                                        : 'border-gray-600'
+                                    ? 'bg-green-900/20 border-green-700/50'
+                                    : 'border-gray-600'
                                     }`}>
                                     <div className="flex items-center justify-between">
                                         <div>
                                             <p className={`font-medium ${localProfile.openRouterApiKey && localProfile.openRouterModel
-                                                    ? 'text-green-200'
-                                                    : 'text-on-surface-dark'
+                                                ? 'text-green-200'
+                                                : 'text-on-surface-dark'
                                                 }`}>{t('settings_api_openrouter_optional')}</p>
                                             <p className={`text-xs ${localProfile.openRouterApiKey && localProfile.openRouterModel
-                                                    ? 'text-green-300'
-                                                    : 'text-gray-400'
+                                                ? 'text-green-300'
+                                                : 'text-gray-400'
                                                 }`}>{t('settings_api_openrouter_desc')}</p>
                                         </div>
                                         {localProfile.openRouterApiKey && localProfile.openRouterModel ? (
@@ -723,8 +723,8 @@ const TabButton: React.FC<{ label: string; isActive: boolean; onClick: () => voi
         variant="ghost"
         onClick={onClick}
         className={`w-full justify-start px-3 py-2.5 text-sm font-medium ${isActive
-                ? 'bg-surface-medium text-white shadow-sm border border-white/5'
-                : 'text-on-surface-dark-secondary hover:bg-surface-light/50'
+            ? 'bg-surface-medium text-white shadow-sm border border-white/5'
+            : 'text-on-surface-dark-secondary hover:bg-surface-light/50'
             }`}
     >
         <span className="mr-3">{icon}</span>
