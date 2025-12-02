@@ -9,6 +9,9 @@ interface PlansViewProps {
   theme: 'light' | 'dark';
 }
 
+const proCheckoutUrl = import.meta.env.VITE_STRIPE_CHECKOUT_PRO;
+const enterpriseCheckoutUrl = import.meta.env.VITE_STRIPE_CHECKOUT_ENTERPRISE;
+
 const plans = [
   {
     id: 'free',
@@ -89,11 +92,15 @@ const PlansView: React.FC<PlansViewProps> = ({ setCurrentView }) => {
               <Button
                 variant={plan.highlight ? 'primary' : 'secondary'}
                 onClick={() => {
-                  if (plan.id === 'pro') {
-                    window.open('https://buy.stripe.com/test_dRm00icpY8Zy5tG46aeUU00', '_blank');
-                  } else {
-                    setCurrentView('settings');
+                  if (plan.id === 'pro' && proCheckoutUrl) {
+                    window.open(proCheckoutUrl, '_blank');
+                    return;
                   }
+                  if (plan.id === 'enterprise' && enterpriseCheckoutUrl) {
+                    window.open(enterpriseCheckoutUrl, '_blank');
+                    return;
+                  }
+                  setCurrentView('settings');
                 }}
                 className="w-full"
               >
