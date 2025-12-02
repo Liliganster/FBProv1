@@ -37,7 +37,7 @@ const ReportDetailView: React.FC<ReportDetailViewProps> = ({ report, projects, o
       showToast('Could not open print window. Please disable pop-up blockers.', 'warning');
       return;
     }
-    
+
     const styleSheets = Array.from(document.querySelectorAll('link[rel="stylesheet"], style'));
     const headContent = styleSheets.map(style => style.outerHTML).join('');
     const contentHTML = reportNode.outerHTML;
@@ -220,7 +220,7 @@ const ReportDetailView: React.FC<ReportDetailViewProps> = ({ report, projects, o
     `);
 
     printWindow.document.close();
-    printWindow.focus(); 
+    printWindow.focus();
 
     setTimeout(() => {
       try {
@@ -238,23 +238,22 @@ const ReportDetailView: React.FC<ReportDetailViewProps> = ({ report, projects, o
     showToast(t('report_saveAsPdf_toast'), 'info');
     handlePrint();
   };
-  
+
   const licensePlate = driverSnapshot?.licensePlate || t('detail_unknown');
 
   const transparency = 1 - personalization.uiTransparency;
   const contentStyle = {
-    backgroundColor: theme === 'dark'
-      ? `rgba(17, 24, 39, ${transparency})`
-      : `rgba(255, 255, 255, ${transparency})`,
-    color: theme === 'dark' ? '#e5e7eb' : '#111827',
-    border: theme === 'dark' ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(0,0,0,0.06)',
+    backgroundColor: `rgba(30, 30, 30, ${transparency})`,
+    color: '#e5e7eb',
+    border: '1px solid rgba(255,255,255,0.08)',
     boxShadow: '0 16px 50px rgba(0,0,0,0.3)',
     backdropFilter: `blur(${personalization.uiBlur}px)`,
+    WebkitBackdropFilter: `blur(${personalization.uiBlur}px)`,
   };
 
-  const tableHeaderClass = theme === 'dark' ? 'bg-white/10 text-white' : 'bg-gray-100 text-gray-800';
-  const tableDividerClass = theme === 'dark' ? 'divide-white/10' : 'divide-gray-200';
-  const tableFooterClass = theme === 'dark' ? 'bg-white/10' : 'bg-gray-100';
+  const tableHeaderClass = 'bg-gray-700/50 text-white';
+  const tableDividerClass = 'divide-gray-700/50';
+  const tableFooterClass = 'bg-gray-700/50 text-white';
 
   return (
     <div>
@@ -278,7 +277,7 @@ const ReportDetailView: React.FC<ReportDetailViewProps> = ({ report, projects, o
           </button>
         </div>
       </div>
-      
+
       <div
         style={contentStyle}
         className="printable-content p-6 md:p-8 rounded-xl"
@@ -307,18 +306,18 @@ const ReportDetailView: React.FC<ReportDetailViewProps> = ({ report, projects, o
           </div>
         </div>
         <div className="overflow-hidden rounded-lg border border-gray-500/20 shadow-inner">
-        <table className="w-full text-left text-sm">
-          <thead className={tableHeaderClass}>
-            <tr>
-              <th className="p-2">{t('report_col_date')}</th>
-              <th className="p-2">{t('report_col_project')}</th>
-              <th className="p-2">{t('report_col_producer')}</th>
-              <th className="p-2">{t('report_col_route')}</th>
-              <th className="p-2 text-right">{t('report_col_distance')}</th>
-            </tr>
-          </thead>
-          <tbody className={`divide-y ${tableDividerClass}`}>
-            {reportTrips.map(trip => {
+          <table className="w-full text-left text-sm">
+            <thead className={tableHeaderClass}>
+              <tr>
+                <th className="p-2">{t('report_col_date')}</th>
+                <th className="p-2">{t('report_col_project')}</th>
+                <th className="p-2">{t('report_col_producer')}</th>
+                <th className="p-2">{t('report_col_route')}</th>
+                <th className="p-2 text-right">{t('report_col_distance')}</th>
+              </tr>
+            </thead>
+            <tbody className={`divide-y ${tableDividerClass}`}>
+              {reportTrips.map(trip => {
                 const project = getProjectInfo(trip.projectId);
                 const projectNameDisplay = project ? project.name : t('report_unknownProject');
                 const producerDisplay = project ? project.producer : t('detail_unknown');
@@ -332,25 +331,25 @@ const ReportDetailView: React.FC<ReportDetailViewProps> = ({ report, projects, o
                   </tr>
                 );
               })}
-          </tbody>
-          <tfoot className={`${tableFooterClass} font-bold`}>
-            <tr>
-              <td className="p-2" colSpan={4}>{t('report_total_kms')}</td>
-              <td className="p-2 text-right text-base">
-                {totalDistance.toFixed(1)} km
-              </td>
-            </tr>
-          </tfoot>
-        </table>
+            </tbody>
+            <tfoot className={`${tableFooterClass} font-bold`}>
+              <tr>
+                <td className="p-2" colSpan={4}>{t('report_total_kms')}</td>
+                <td className="p-2 text-right text-base">
+                  {totalDistance.toFixed(1)} km
+                </td>
+              </tr>
+            </tfoot>
+          </table>
         </div>
 
         {report.signature && (
-            <div className="audit-footer mt-6 pt-4 border-t border-gray-600 text-xs text-on-surface-dark-secondary font-mono">
-                <p><strong>{t('report_audit_signature_title')}</strong></p>
-                <p><strong>{t('report_audit_signature')}:</strong> {report.signature}</p>
-                <p><strong>{t('report_audit_chain_start')}:</strong> {report.firstTripHash}</p>
-                <p><strong>{t('report_audit_chain_end')}:</strong> {report.lastTripHash}</p>
-            </div>
+          <div className="audit-footer mt-6 pt-4 border-t border-gray-600 text-xs text-on-surface-dark-secondary font-mono">
+            <p><strong>{t('report_audit_signature_title')}</strong></p>
+            <p><strong>{t('report_audit_signature')}:</strong> {report.signature}</p>
+            <p><strong>{t('report_audit_chain_start')}:</strong> {report.firstTripHash}</p>
+            <p><strong>{t('report_audit_chain_end')}:</strong> {report.lastTripHash}</p>
+          </div>
         )}
       </div>
     </div>
