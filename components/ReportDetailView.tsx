@@ -309,6 +309,7 @@ const ReportDetailView: React.FC<ReportDetailViewProps> = ({ report, projects, o
   const tableHeaderClass = 'bg-gray-700/50 text-white';
   const tableDividerClass = 'divide-gray-700/50';
   const tableFooterClass = 'bg-gray-700/50 text-white';
+  const passengersLabel = t('report_col_passengers');
 
   return (
     <div>
@@ -368,7 +369,7 @@ const ReportDetailView: React.FC<ReportDetailViewProps> = ({ report, projects, o
                 <th className="p-2">{t('report_col_project')}</th>
                 <th className="p-2">{t('report_col_producer')}</th>
                 <th className="p-2">{t('report_col_route')}</th>
-                <th className="p-2 text-center">{t('report_col_passengers') || 'Passengers'}</th>
+                <th className="p-2 text-center">{passengersLabel && passengersLabel !== 'report_col_passengers' ? passengersLabel : 'Pasajeros'}</th>
                 <th className="p-2 text-right">{t('report_col_distance')}</th>
               </tr>
             </thead>
