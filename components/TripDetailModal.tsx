@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { Trip, Project, PersonalizationSettings } from '../types';
-import { XIcon, MapPinIcon, FileTextIcon, TrashIcon, UploadCloudIcon } from './Icons';
+import { XIcon, MapPinIcon, FileTextIcon, TrashIcon, UploadCloudIcon, LoaderIcon } from './Icons';
 import { Button } from './Button';
 import InteractiveMap from './InteractiveMap';
 import useTranslation from '../hooks/useTranslation';
@@ -9,6 +9,7 @@ import { getCountryCode } from '../services/googleMapsService';
 import useUserProfile from '../hooks/useUserProfile';
 import useExpenses from '../hooks/useExpenses';
 import ExpenseUploadModal from './ExpenseUploadModal';
+import useGoogleMapsScript from '../hooks/useGoogleMapsScript';
 
 interface TripDetailModalProps {
   trip: Trip;
@@ -25,6 +26,7 @@ const TripDetailModal: React.FC<TripDetailModalProps> = ({ trip, project, onClos
   const { getExpensesForTrip, deleteExpense, loading: expensesLoading } = useExpenses();
   const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
   const [viewMode, setViewMode] = useState<'map' | 'document'>('map');
+  const { isLoaded: mapsLoaded, error: mapsError } = useGoogleMapsScript();
 
   const tripExpenses = useMemo(() => getExpensesForTrip(trip.id), [getExpensesForTrip, trip.id]);
   const totalExpense = useMemo(
@@ -215,10 +217,23 @@ const TripDetailModal: React.FC<TripDetailModalProps> = ({ trip, project, onClos
           {/* Map/Document area */}
           <div className="w-full md:w-2/3 flex-grow bg-background-dark relative">
             {viewMode === 'map' ? (
-              <InteractiveMap
-                locations={trip.locations}
-                region={regionCode}
-              />
+              mapsLoaded ? (
+                <InteractiveMap
+                  locations={trip.locations}
+                  region={regionCode}
+                />
+              ) : mapsError ? (
+                <div className="w-full h-full flex flex-col items-center justify-center text-on-surface-secondary gap-4">
+                  <p className="text-red-400">{t('tripEditor_alert_gmaps_not_available')}</p>
+                  <Button variant="secondary" size="sm" onClick={() => window.location.reload()}>
+                    {t('common_refresh')}
+                  </Button>
+                </div>
+              ) : (
+                <div className="w-full h-full flex items-center justify-center">
+                  <LoaderIcon className="w-8 h-8 animate-spin text-brand-primary" />
+                </div>
+              )
             ) : trip.sourceDocumentUrl ? (
               <div className="w-full h-full overflow-auto">
                 <iframe
