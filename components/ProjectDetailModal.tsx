@@ -235,6 +235,9 @@ const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({ projectId, trip
         ...tripData,
         projectId: project.id,
         reason: `${project.name} - ${tripData.reason}`,
+        sourceDocumentId: file.id,
+        sourceDocumentName: callsheetData.filename,
+        sourceDocumentUrl: callsheetData.url,
       }]);
 
       showToast('Successfully extracted and created a new trip!', 'success');

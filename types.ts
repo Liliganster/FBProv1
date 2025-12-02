@@ -109,6 +109,9 @@ export interface Trip {
   previousHash?: string;
   ratePerKm?: number;
   editJustification?: string; // Required when editing existing trips
+  sourceDocumentId?: string; // Reference to source callsheet/document
+  sourceDocumentName?: string; // Name of source document
+  sourceDocumentUrl?: string; // URL to view the source document
 }
 
 export interface CallsheetFile {

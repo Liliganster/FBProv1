@@ -24,6 +24,7 @@ const TripDetailModal: React.FC<TripDetailModalProps> = ({ trip, project, onClos
   const regionCode = getCountryCode(userProfile?.country);
   const { getExpensesForTrip, deleteExpense, loading: expensesLoading } = useExpenses();
   const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<'map' | 'document'>('map');
 
   const tripExpenses = useMemo(() => getExpensesForTrip(trip.id), [getExpensesForTrip, trip.id]);
   const totalExpense = useMemo(
@@ -211,14 +212,51 @@ const TripDetailModal: React.FC<TripDetailModalProps> = ({ trip, project, onClos
               </div>
             </div>
           </div>
-          {/* Map area */}
-          <div className="w-full md:w-2/3 flex-grow bg-background-dark">
-            <InteractiveMap
-              locations={trip.locations}
-              region={regionCode}
-            />
+          {/* Map/Document area */}
+          <div className="w-full md:w-2/3 flex-grow bg-background-dark relative">
+            {viewMode === 'map' ? (
+              <InteractiveMap
+                locations={trip.locations}
+                region={regionCode}
+              />
+            ) : trip.sourceDocumentUrl ? (
+              <div className="w-full h-full overflow-auto">
+                <iframe
+                  src={trip.sourceDocumentUrl}
+                  className="w-full h-full border-0"
+                  title={`Documento: ${trip.sourceDocumentName || 'Callsheet'}`}
+                />
+              </div>
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-on-surface-secondary">
+                <p>{t('detail_no_document')}</p>
+              </div>
+            )}
           </div>
         </main>
+        {/* View mode toggle buttons (only show if source document exists) */}
+        {trip.sourceDocumentUrl && (
+          <div className="absolute bottom-4 right-4 z-10 flex gap-2 bg-background-dark/90 backdrop-blur-md rounded-lg p-1 border border-glass">
+            <Button
+              variant={viewMode === 'map' ? 'primary' : 'ghost'}
+              size="sm"
+              onClick={() => setViewMode('map')}
+              className="flex items-center gap-2"
+            >
+              <MapPinIcon className="w-4 h-4" />
+              {t('detail_view_map')}
+            </Button>
+            <Button
+              variant={viewMode === 'document' ? 'primary' : 'ghost'}
+              size="sm"
+              onClick={() => setViewMode('document')}
+              className="flex items-center gap-2"
+            >
+              <FileTextIcon className="w-4 h-4" />
+              {t('detail_view_document')}
+            </Button>
+          </div>
+        )}
       </div>
       <ExpenseUploadModal
         isOpen={isExpenseModalOpen}

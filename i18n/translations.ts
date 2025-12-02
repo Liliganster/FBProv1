@@ -418,6 +418,9 @@ export const translations = {
     detail_totalDistance: 'Total Distance',
     detail_unknown: 'Unknown',
     detail_passengers: 'Passengers',
+    detail_view_map: 'Map',
+    detail_view_document: 'Document',
+    detail_no_document: 'No document available',
 
     calendar_no_driver_selected_prompt: 'Please complete your profile to use the calendar integration.',
     calendar_config_prompt_title: 'Calendar Not Configured',
@@ -1099,6 +1102,9 @@ export const translations = {
     detail_totalDistance: 'Gesamtdistanz',
     detail_unknown: 'Unbekannt',
     detail_passengers: 'Mitfahrer',
+    detail_view_map: 'Karte',
+    detail_view_document: 'Dokument',
+    detail_no_document: 'Kein Dokument verfügbar',
 
     calendar_no_driver_selected_prompt: 'Bitte vervollständigen Sie Ihr Profil, um die Kalenderintegration zu nutzen.',
     calendar_config_prompt_title: 'Kalender nicht konfiguriert',
@@ -1780,6 +1786,9 @@ export const translations = {
     detail_totalDistance: 'Distancia total',
     detail_unknown: 'Desconocido',
     detail_passengers: 'Pasajeros',
+    detail_view_map: 'Mapa',
+    detail_view_document: 'Documento',
+    detail_no_document: 'No hay documento disponible',
 
     calendar_no_driver_selected_prompt: 'Por favor, completa tu perfil para usar la integración con el calendario.',
     calendar_config_prompt_title: 'Calendario no configurado',
