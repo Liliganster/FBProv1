@@ -229,11 +229,12 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
     if (!userProfile) return [];
 
     const userTrips = trips.filter(trip => (projectFilter === 'all' || trip.projectId === projectFilter));
-
-    if (sortOrder === 'desc') {
-      return userTrips.reverse(); // The trips are already sorted asc by date from context
-    }
-    return userTrips;
+    const getTime = (d: string) => {
+      const t = new Date(d).getTime();
+      return Number.isFinite(t) ? t : 0;
+    };
+    const sortedByDateAsc = [...userTrips].sort((a, b) => getTime(a.date) - getTime(b.date));
+    return sortOrder === 'desc' ? [...sortedByDateAsc].reverse() : sortedByDateAsc;
 
   }, [trips, projectFilter, userProfile, sortOrder]);
 
