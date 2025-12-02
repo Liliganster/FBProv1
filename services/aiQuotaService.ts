@@ -3,7 +3,7 @@ import { PlanTier, Trip, TripLedgerOperation, TripLedgerEntry, UserProfile, Trip
 import { databaseService } from './databaseService';
 
 const PLAN_LIMITS: Record<PlanTier, number | null> = {
-  free: 10,
+  free: 15,
   pro: 150,
   enterprise: null, // ilimitado
 };

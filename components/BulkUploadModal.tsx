@@ -25,7 +25,7 @@ interface BulkUploadModalProps {
 
 type Mode = 'csv' | 'ai';
 type Stage = 'upload' | 'review';
-type DraftTrip = Omit<Trip, 'id'> & { warnings?: string[] };
+type DraftTrip = Omit<Trip, 'id'> & { warnings?: string[]; sourceFile?: File };
 
 const KNOWN_HEADERS = {
   date: ['date', 'datum', 'fecha'],
@@ -195,11 +195,14 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
         : await Promise.all(aiFiles.map((file, idx) => attemptProcess({ file }, `${idx + 1}/${aiFiles.length}: ${file.name}`)));
 
       const successfulExtractions: { tripData: Omit<Trip, 'id' | 'projectId'>; projectName: string, productionCompany: string }[] = [];
+      const successfulFiles: (File | undefined)[] = [];
       const errors: { fileName: string; error: string }[] = [];
 
-      results.forEach((result) => {
+      results.forEach((result, index) => {
         if (result.status === 'fulfilled') {
           successfulExtractions.push(result.value);
+          const sourceFile = hasTextOnly ? undefined : aiFiles[index];
+          successfulFiles.push(sourceFile);
         } else {
           const errorMsg = result.reason?.code === 'requires_ocr'
             ? t('bulk_alert_requires_ocr')
@@ -218,11 +221,12 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
       }
 
       if (successfulExtractions.length > 0) {
-        const reviewData = successfulExtractions.map(res => ({
+        const reviewData = successfulExtractions.map((res, idx) => ({
           ...res.tripData,
           projectName: res.projectName,
           productionCompany: res.productionCompany,
           warnings: [],
+          sourceFile: successfulFiles[idx],
         }));
         prepareForReview(reviewData);
         showToast(`Successfully extracted ${successfulExtractions.length} trip(s)`, 'success');
@@ -404,7 +408,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
     const newProjects = new Map<string, string>();
 
     const newDraftTrips = data.map(row => {
-      const { date, projectName, reason, locations: rawLocations, distance, warnings = [], productionCompany } = row;
+      const { date, projectName, reason, locations: rawLocations, distance, warnings = [], productionCompany, sourceFile } = row;
 
       let locations = [...rawLocations];
       if (userHomeAddress) {
@@ -435,6 +439,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
         distance,
         warnings,
         specialOrigin: SpecialOrigin.HOME,
+        sourceFile,
       };
     });
 
@@ -524,7 +529,29 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
 
       console.log('[BulkUpload] Updated drafts after mapping:', updatedDrafts);
 
-      await onSave(updatedDrafts, mode);
+      // Upload source documents to project (callsheets) when available
+      const filesByProject: Record<string, File[]> = {};
+      updatedDrafts.forEach(trip => {
+        if (trip.projectId && trip.sourceFile) {
+          if (!filesByProject[trip.projectId]) filesByProject[trip.projectId] = [];
+          filesByProject[trip.projectId].push(trip.sourceFile);
+        }
+      });
+
+      for (const [projectId, files] of Object.entries(filesByProject)) {
+        try {
+          await databaseService.addCallsheetsToProject(projectId, files);
+          console.log(`[BulkUpload] Uploaded ${files.length} file(s) to project ${projectId}`);
+        } catch (e) {
+          console.error(`[BulkUpload] Failed to upload documents for project ${projectId}:`, e);
+          showToast(`No se pudieron adjuntar algunos documentos al proyecto`, 'warning');
+        }
+      }
+
+      // Remove transient sourceFile before saving trips to ledger
+      const sanitizedDrafts = updatedDrafts.map(({ sourceFile, ...rest }) => rest);
+
+      await onSave(sanitizedDrafts, mode);
     } catch (error) {
       console.error('[BulkUpload] handleConfirmSave error:', error);
       showToast('Error saving trips', 'error');
