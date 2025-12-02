@@ -113,7 +113,6 @@ export default async function handler(
     // Priority 1: User provided their own key (decrypted on client)
     if (userApiKey && typeof userApiKey === 'string' && userApiKey.startsWith('sk-')) {
       apiKey = userApiKey;
-      console.log(`[OpenRouter Proxy] Using user's own API key for user: ${actualUserId}`);
     }
     // Priority 2: Server fallback key
     else {
@@ -125,7 +124,6 @@ export default async function handler(
           message: 'No API key configured. Please add your own OpenRouter API key in Settings.'
         });
       }
-      console.log(`[OpenRouter Proxy] Using server fallback API key for user: ${actualUserId}`);
     }
 
     // Make request to OpenRouter API

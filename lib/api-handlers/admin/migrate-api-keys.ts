@@ -31,7 +31,6 @@ export default async function handler(req: any, res: any) {
   try {
     if (req.method === 'GET') {
       // Dry run - analyze current state
-      console.log('Admin requested API key migration dry run');
       // await dryRunApiKeyMigration(); // Temporarily disabled
       
       toJsonResponse(res, 200, {
@@ -41,7 +40,6 @@ export default async function handler(req: any, res: any) {
       
     } else if (req.method === 'POST') {
       // Actual migration
-      console.log('Admin requested API key migration execution');
       // const result = await migrateApiKeysToEncrypted(); // Temporarily disabled
       const result = { 
         message: 'Migration temporarily disabled',

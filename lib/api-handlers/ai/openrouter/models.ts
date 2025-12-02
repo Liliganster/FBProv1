@@ -33,13 +33,7 @@ async function modelsHandler(req: any, res: any) {
     const queryKey = typeof req.query?.apiKey === 'string' && req.query.apiKey.trim() ? req.query.apiKey.trim() : null;
     const apiKey = queryKey;
 
-    console.log('[api/ai/openrouter/models] 3. API key extracted', {
-      hasApiKey: !!apiKey,
-      keyLength: apiKey?.length || 0
-    });
-
     if (!apiKey) {
-      console.log('[api/ai/openrouter/models] 4. No API key provided');
       toJsonResponse(res, 400, { error: 'OpenRouter API key is required. Please add your API key in Settings.' });
       return;
     }

@@ -357,7 +357,6 @@ async function geminiHandler(req: any, res: any) {
   }
 
   console.log(`[Gemini Handler] Processing in ${mode} mode, useCrewFirst: ${useCrewFirst}, text length: ${text.length}`);
-  console.log(`[Gemini Handler] Using API key: ${apiKey.substring(0, 10)}...`);
   console.log(`[Gemini Handler] Using model: ${GEMINI_MODEL}`);
 
   try {

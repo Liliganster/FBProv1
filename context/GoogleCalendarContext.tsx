@@ -187,7 +187,6 @@ export const GoogleCalendarProvider: React.FC<{ children: ReactNode }> = ({ chil
         if (cancelled) return;
         setGapiClient(window.gapi.client);
 
-        console.log('[Google Calendar] Initializing token client...');
         const newtokenClient = window.google.accounts.oauth2.initTokenClient({
           client_id: GOOGLE_CALENDAR_CLIENT_ID,
           scope: SCOPES,
@@ -197,9 +196,7 @@ export const GoogleCalendarProvider: React.FC<{ children: ReactNode }> = ({ chil
             
             if (tokenResponse.error) {
               const expectedErrors = ['access_denied', 'user_logged_out', 'consent_required', 'interaction_required', 'login_required'];
-              if (expectedErrors.includes(tokenResponse.error)) {
-                 console.log(`Google silent auth failed as expected: ${tokenResponse.error}`);
-              } else {
+              if (!expectedErrors.includes(tokenResponse.error)) {
                  showToast(t('toast_gcal_auth_error', { error: tokenResponse.error_description || tokenResponse.error }), 'error');
                  console.error('Google Sign-In Error:', tokenResponse);
               }
@@ -208,7 +205,6 @@ export const GoogleCalendarProvider: React.FC<{ children: ReactNode }> = ({ chil
               return;
             }
             if (!tokenResponse.access_token) {
-                console.log('Token response received without an access token.');
                 setIsSignedIn(false);
                 localStorage.setItem(GOOGLE_AUTH_STATE_KEY_INIT, 'signed_out');
                 return;

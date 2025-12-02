@@ -109,7 +109,6 @@ function resolveProvider(
   
   // Caso 'auto': Preferir OpenRouter si el usuario lo ha configurado
   if (c.openRouterApiKey && c.openRouterModel) {
-    console.log('[ExtractorUniversal] Auto-selecting OpenRouter (user has API key configured)');
     return { provider: 'openrouter', creds: c };
   }
   
