@@ -61,14 +61,26 @@ const ReportDetailView: React.FC<ReportDetailViewProps> = ({ report, projects, o
           
           body {
             margin: 0 !important;
-            padding: 20mm 15mm !important;
-            background: white !important;
+            padding: 0 !important;
+            background-color: white !important;
+            font-family: Arial, sans-serif !important;
+            font-size: 11pt !important;
+            color: #000 !important;
           }
           
           .printable-content {
             padding: 0 !important;
             margin: 0 !important;
+            background-color: white !important;
             background: white !important;
+            color: #000 !important;
+            box-shadow: none !important;
+            border: none !important;
+            border-radius: 0 !important;
+            width: 100% !important;
+            max-width: none !important;
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
           }
           
           /* Headers */
