@@ -33,3 +33,6 @@ dist-ssr
 
 # Vercel
 .vercel
+
+temp.txt
+tmp.patch
