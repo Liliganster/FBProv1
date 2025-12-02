@@ -23,6 +23,7 @@ export interface Database {
           profile_picture: string | null
           color: string | null
           rate_per_km: number | null
+          passenger_surcharge_per_km: number | null
           google_maps_api_key: string | null
           open_router_api_key: string | null
           open_router_model: string | null
@@ -55,6 +56,7 @@ export interface Database {
           profile_picture?: string | null
           color?: string | null
           rate_per_km?: number | null
+          passenger_surcharge_per_km?: number | null
           google_maps_api_key?: string | null
           open_router_api_key?: string | null
           open_router_model?: string | null
@@ -87,6 +89,7 @@ export interface Database {
           profile_picture?: string | null
           color?: string | null
           rate_per_km?: number | null
+          passenger_surcharge_per_km?: number | null
           google_maps_api_key?: string | null
           open_router_api_key?: string | null
           open_router_model?: string | null

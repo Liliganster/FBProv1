@@ -3,7 +3,7 @@ import { UserProfile } from '../types';
 import { databaseService } from '../services/databaseService';
 import { useAuth } from '../hooks/useAuth';
 import useToast from '../hooks/useToast';
-import { getRateForCountry } from '../services/taxService';
+import { getRateForCountry, getPassengerSurchargeForCountry } from '../services/taxService';
 
 interface UserProfileContextType {
   userProfile: UserProfile | null;
@@ -33,6 +33,7 @@ export const UserProfileProvider: React.FC<{ children: React.ReactNode }> = ({ c
       name: fallbackName,
       country: 'AT',
       ratePerKm: getRateForCountry('AT'),
+      passengerSurchargePerKm: getPassengerSurchargeForCountry('AT'),
       color: '#374151',
       plan: 'free',
       email: user?.email || null,

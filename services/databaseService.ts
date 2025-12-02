@@ -1152,6 +1152,7 @@ class DatabaseService {
         profile_picture: profileData.profilePicture || null,
         color: profileData.color || null,
         rate_per_km: profileData.ratePerKm ?? null,
+        passenger_surcharge_per_km: profileData.passengerSurchargePerKm ?? null,
         google_maps_api_key: null,
         open_router_api_key: encryptedApiKey,
         open_router_model: profileData.openRouterModel || null,
@@ -1216,6 +1217,7 @@ class DatabaseService {
       if (updates.profilePicture !== undefined) updateData.profile_picture = updates.profilePicture
       if (updates.color !== undefined) updateData.color = updates.color
       if (updates.ratePerKm !== undefined) updateData.rate_per_km = updates.ratePerKm
+      if (updates.passengerSurchargePerKm !== undefined) updateData.passenger_surcharge_per_km = updates.passengerSurchargePerKm
       if (updates.openRouterApiKey !== undefined) updateData.open_router_api_key = await this.encryptApiKeyAsync(updates.openRouterApiKey)
       if (updates.openRouterModel !== undefined) updateData.open_router_model = updates.openRouterModel
       if (updates.lockedUntilDate !== undefined) updateData.locked_until_date = updates.lockedUntilDate
@@ -1281,6 +1283,7 @@ class DatabaseService {
       profilePicture: dbProfile.profile_picture,
       color: dbProfile.color,
       ratePerKm: dbProfile.rate_per_km ?? null,
+      passengerSurchargePerKm: dbProfile.passenger_surcharge_per_km ?? null,
       googleMapsApiKey: null,
       openRouterApiKey: await this.decryptApiKeyAsync(dbProfile.open_router_api_key),
       openRouterModel: dbProfile.open_router_model,

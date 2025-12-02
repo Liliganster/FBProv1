@@ -75,6 +75,7 @@ export interface UserProfile {
   profilePicture?: string | null
   color?: string | null
   ratePerKm?: number | null
+  passengerSurchargePerKm?: number | null
   /** @deprecated Google Maps API key is managed server-side */
   googleMapsApiKey?: string | null
   openRouterApiKey?: string | null

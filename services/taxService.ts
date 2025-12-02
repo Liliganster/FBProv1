@@ -71,9 +71,10 @@ export const calculateTripReimbursement = (trip: Trip, userProfile: UserProfile 
     
     // Precedence: Trip -> Project -> User Profile -> Country Default
     const finalRatePerKm = trip.ratePerKm ?? project?.ratePerKm ?? userProfile.ratePerKm ?? yearRules.ratePerKm;
+    const passengerRatePerKm = userProfile.passengerSurchargePerKm ?? yearRules.passengerSurchargePerKm;
     
     const baseEarning = trip.distance * finalRatePerKm;
-    const passengerEarning = trip.distance * (trip.passengers || 0) * yearRules.passengerSurchargePerKm;
+    const passengerEarning = trip.distance * (trip.passengers || 0) * passengerRatePerKm;
 
     return baseEarning + passengerEarning;
 };

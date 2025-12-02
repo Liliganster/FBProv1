@@ -60,10 +60,16 @@ const SettingsView: React.FC<{
     );
 
     useEffect(() => {
-        setLocalProfile(userProfile);
-        resetInitialData(userProfile);
-        if (userProfile) {
-            setPassengerSurcharge(getPassengerSurchargeForCountry(userProfile.country));
+        const mergedProfile = userProfile
+            ? {
+                ...userProfile,
+                passengerSurchargePerKm: userProfile.passengerSurchargePerKm ?? getPassengerSurchargeForCountry(userProfile.country)
+            }
+            : null;
+        setLocalProfile(mergedProfile);
+        resetInitialData(mergedProfile);
+        if (mergedProfile) {
+            setPassengerSurcharge(mergedProfile.passengerSurchargePerKm ?? 0);
         }
     }, [userProfile, resetInitialData]);
 
@@ -108,8 +114,13 @@ const SettingsView: React.FC<{
             if (!prev) return null;
             const newProfile = { ...prev, [name]: finalValue as any };
             if (name === 'country') {
+                const defaultPassengerRate = getPassengerSurchargeForCountry(value);
                 newProfile.ratePerKm = getRateForCountry(value);
-                setPassengerSurcharge(getPassengerSurchargeForCountry(value));
+                newProfile.passengerSurchargePerKm = defaultPassengerRate;
+                setPassengerSurcharge(defaultPassengerRate);
+            }
+            if (name === 'passengerSurchargePerKm') {
+                setPassengerSurcharge(typeof finalValue === 'number' ? finalValue : 0);
             }
             return newProfile;
         });
@@ -235,7 +246,13 @@ const SettingsView: React.FC<{
                                 <InputField label={t('settings_profile_uid')} name="uid" value={localProfile.uid} onChange={handleProfileChange} />
                                 <InputField label={t('settings_profile_licensePlate')} name="licensePlate" value={localProfile.licensePlate} onChange={handleProfileChange} />
                                 <InputField label={t('rate_per_km')} name="ratePerKm" type="number" value={localProfile.ratePerKm} onChange={handleProfileChange} />
-                                <ReadOnlyField label={t('passenger_surcharge_rate')} value={`€ ${passengerSurcharge.toFixed(2)} / km`} />
+                                <InputField
+                                    label={t('passenger_surcharge_rate')}
+                                    name="passengerSurchargePerKm"
+                                    type="number"
+                                    value={localProfile.passengerSurchargePerKm ?? passengerSurcharge}
+                                    onChange={handleProfileChange}
+                                />
                                 <div className="md:col-span-2">
                                     <InputField label={t('settings_profile_address')} name="address" value={localProfile.address} onChange={handleProfileChange} />
                                 </div>
@@ -825,14 +842,5 @@ const ModelSelect: React.FC<{
         </div>
     );
 };
-
-const ReadOnlyField: React.FC<{ label: string, value: string }> = ({ label, value }) => (
-    <div>
-        <label className="block text-sm font-medium text-on-surface-dark-secondary mb-1">{label}</label>
-        <div className="w-full bg-background-dark border border-gray-600 rounded-md p-2 text-on-surface-dark-secondary">
-            {value}
-        </div>
-    </div>
-);
 
 export default SettingsView;
