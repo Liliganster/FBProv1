@@ -189,22 +189,29 @@ const ReportDetailView: React.FC<ReportDetailViewProps> = ({ report, projects, o
           
           .printable-content table th:nth-child(2),
           .printable-content table td:nth-child(2) {
-            width: 13% !important;
+            width: 15% !important;
           }
           
           .printable-content table th:nth-child(3),
           .printable-content table td:nth-child(3) {
-            width: 13% !important;
+            width: 15% !important;
           }
           
           .printable-content table th:nth-child(4),
           .printable-content table td:nth-child(4) {
-            width: 56% !important;
+            width: 40% !important;
           }
           
           .printable-content table th:nth-child(5),
           .printable-content table td:nth-child(5) {
-            width: 8% !important;
+            width: 10% !important;
+            text-align: center !important;
+            white-space: nowrap !important;
+          }
+          
+          .printable-content table th:nth-child(6),
+          .printable-content table td:nth-child(6) {
+            width: 10% !important;
             white-space: nowrap !important;
             text-align: right !important;
           }
@@ -361,6 +368,7 @@ const ReportDetailView: React.FC<ReportDetailViewProps> = ({ report, projects, o
                 <th className="p-2">{t('report_col_project')}</th>
                 <th className="p-2">{t('report_col_producer')}</th>
                 <th className="p-2">{t('report_col_route')}</th>
+                <th className="p-2 text-center">{t('report_col_passengers') || 'Passengers'}</th>
                 <th className="p-2 text-right">{t('report_col_distance')}</th>
               </tr>
             </thead>
@@ -369,12 +377,14 @@ const ReportDetailView: React.FC<ReportDetailViewProps> = ({ report, projects, o
                 const project = getProjectInfo(trip.projectId);
                 const projectNameDisplay = project ? project.name : t('report_unknownProject');
                 const producerDisplay = project ? project.producer : t('detail_unknown');
+                const passengers = typeof trip.passengers === 'number' ? trip.passengers : 0;
                 return (
                   <tr key={trip.id} className="bg-transparent">
                     <td className="p-2 whitespace-nowrap">{formatDateForDisplay(trip.date)}</td>
                     <td className="p-2">{projectNameDisplay}</td>
                     <td className="p-2">{producerDisplay}</td>
                     <td className="p-2">{trip.locations.join(' -> ')}</td>
+                    <td className="p-2 text-center">{passengers}</td>
                     <td className="p-2 text-right font-bold">{trip.distance.toFixed(1)} km</td>
                   </tr>
                 );
@@ -382,7 +392,7 @@ const ReportDetailView: React.FC<ReportDetailViewProps> = ({ report, projects, o
             </tbody>
             <tfoot className={`${tableFooterClass} font-bold`}>
               <tr>
-                <td className="p-2" colSpan={4}>{t('report_total_kms')}</td>
+                <td className="p-2" colSpan={5}>{t('report_total_kms')}</td>
                 <td className="p-2 text-right text-base">
                   {totalDistance.toFixed(1)} km
                 </td>
