@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useReducer, useCallback } from 'react'
-import type { Project, ProjectsState } from '../types'
+import type { Project, ProjectsState, CallsheetFile } from '../types'
 import { databaseService } from '../services/databaseService'
 import { useAuth } from '../hooks/useAuth'
 import useToast from '../hooks/useToast'
@@ -23,7 +23,7 @@ interface ProjectContextType extends ProjectsState {
   fetchProjects: () => Promise<void>
   setEditingProject: (project: Project | null) => void
   setSelectedProject: (id: string | null) => void
-  addCallsheetsToProject: (projectId: string, files: File[]) => Promise<void>
+  addCallsheetsToProject: (projectId: string, files: File[]) => Promise<CallsheetFile[]>
   deleteCallsheetFromProject: (projectId: string, callsheetId: string) => Promise<void>
   replaceAllProjects: (projects: Project[]) => Promise<void>
   deleteAllProjects: () => Promise<void>
@@ -204,7 +204,7 @@ export function ProjectsProvider({ children }: { children: React.ReactNode }) {
     }
   }, [showToast, user?.id])
 
-  const addCallsheetsToProject = useCallback(async (projectId: string, files: File[]) => {
+  const addCallsheetsToProject = useCallback(async (projectId: string, files: File[]): Promise<CallsheetFile[]> => {
     try {
       const callsheets = await databaseService.addCallsheetsToProject(projectId, files)
       
@@ -219,10 +219,12 @@ export function ProjectsProvider({ children }: { children: React.ReactNode }) {
       }
       
       showToast(`${callsheets.length} callsheet(s) added successfully`, 'success')
+      return callsheets
     } catch (error) {
       console.error('Error adding callsheets:', error)
       const errorMessage = error instanceof Error ? error.message : 'Failed to add callsheets'
       showToast(errorMessage, 'error')
+      throw error
     }
   }, [state.projects, showToast])
 
