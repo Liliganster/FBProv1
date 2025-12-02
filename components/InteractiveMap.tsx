@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, useState } from 'react';
-import useGoogleMapsScript from '../hooks/useGoogleMapsScript';
 import { LoaderIcon } from './Icons';
 
 // FIX: Add global declaration for window.google to fix TypeScript errors when accessing the Google Maps API.
@@ -15,13 +14,28 @@ interface InteractiveMapProps {
 }
 
 const InteractiveMap: React.FC<InteractiveMapProps> = ({ locations, region }) => {
-  const { isLoaded, error } = useGoogleMapsScript();
   const mapRef = useRef<HTMLDivElement>(null);
   const [status, setStatus] = useState<'loading' | 'error' | 'success'>('loading');
   const [errorMessage, setErrorMessage] = useState('');
+  const [isReady, setIsReady] = useState(false);
+
+  // Verificar disponibilidad de Google Maps
+  useEffect(() => {
+    const checkGoogleMaps = () => {
+      if (window.google && window.google.maps && window.google.maps.importLibrary) {
+        setIsReady(true);
+      } else {
+        // Reintentar después de un breve delay
+        setTimeout(checkGoogleMaps, 100);
+      }
+    };
+    
+    checkGoogleMaps();
+  }, []);
 
   useEffect(() => {
-    if (!isLoaded || !mapRef.current) return;
+    if (!isReady || !mapRef.current) return;
+    
     const validLocations = locations.filter(loc => loc.trim() !== '');
     if (validLocations.length < 2) {
       setStatus('error');
@@ -110,11 +124,7 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({ locations, region }) =>
     };
 
     initMap();
-  }, [isLoaded, locations, region]);
-
-  if (error) {
-    return <div className="flex items-center justify-center w-full h-full bg-red-900/50 text-red-300">Error al cargar el script de Google Maps.</div>;
-  }
+  }, [isReady, locations, region]);
 
   return (
     <div className="relative w-full h-full bg-gray-800 rounded-lg">

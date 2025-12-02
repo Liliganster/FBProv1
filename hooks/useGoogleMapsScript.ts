@@ -91,7 +91,10 @@ export function useGoogleMapsScript({
           clearTimeout(timeoutRef.current);
           timeoutRef.current = null;
         }
-        setIsLoaded(true);
+        // Dar un pequeño delay para asegurar que todo esté inicializado
+        setTimeout(() => {
+          setIsLoaded(true);
+        }, 200);
       })
       .catch((err) => {
         if (timeoutRef.current) {
