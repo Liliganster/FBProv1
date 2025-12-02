@@ -202,7 +202,11 @@ const GenerateReportModal: React.FC<GenerateReportModalProps> = ({ trips, projec
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-start justify-center p-4 pt-20 z-50" onClick={onClose}>
-      <div style={modalStyle} className="bg-frost-glass border border-gray-700/60 rounded-lg shadow-2xl w-full max-w-xl max-h-[90vh] flex flex-col overflow-hidden animate-fadeIn" onClick={(e) => e.stopPropagation()}>
+      <div
+        style={modalStyle}
+        className="bg-background-dark/90 border border-gray-700/60 rounded-lg shadow-2xl w-full max-w-xl max-h-[90vh] flex flex-col overflow-hidden animate-fadeIn"
+        onClick={(e) => e.stopPropagation()}
+      >
         <header className="px-6 py-4 border-b border-gray-700/70 flex items-center justify-between gap-4 bg-background-dark/70 backdrop-blur-sm">
           <h2 className="text-lg font-semibold tracking-tight text-white">{t('report_title')}</h2>
           <Button variant="icon" onClick={onClose} className="text-on-surface-dark-secondary hover:text-white">
