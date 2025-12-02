@@ -1193,6 +1193,11 @@ class DatabaseService {
         ownershipValidation.validateUserConsistency(updates.id, userId);
       }
 
+      // Security: block client-side plan escalations. Plans must be changed via backend/billing webhook.
+      if (Object.prototype.hasOwnProperty.call(updates, 'plan')) {
+        throw new Error('Plan updates must be performed via the billing backend');
+      }
+
       const updateData: DbProfileUpdate = {
         updated_at: new Date().toISOString()
       }
@@ -1206,7 +1211,6 @@ class DatabaseService {
       if (updates.address !== undefined) updateData.address = updates.address
       if (updates.city !== undefined) updateData.city = updates.city
       if (updates.country !== undefined) updateData.country = updates.country
-      if (updates.plan !== undefined) updateData.plan = updates.plan
       if (updates.profilePicture !== undefined) updateData.profile_picture = updates.profilePicture
       if (updates.color !== undefined) updateData.color = updates.color
       if (updates.ratePerKm !== undefined) updateData.rate_per_km = updates.ratePerKm
