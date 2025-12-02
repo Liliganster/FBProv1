@@ -72,7 +72,7 @@ const ReportDetailView: React.FC<ReportDetailViewProps> = ({ report, projects, o
       <style>
         @page {
           size: A4;
-          margin: 11mm;
+          margin: 20mm;
         }
 
         /* Force white background and black text everywhere */
