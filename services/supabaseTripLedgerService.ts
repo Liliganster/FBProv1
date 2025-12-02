@@ -133,12 +133,21 @@ export class TripLedgerService {
       switch (entry.operation) {
         case TripLedgerOperation.CREATE:
         case TripLedgerOperation.IMPORT_BATCH:
-          tripMap.set(entry.tripId, { ...entry.tripSnapshot });
+          // El tripSnapshot ya debe tener los campos sourceDocument*, pero por si acaso los agregamos del entry
+          tripMap.set(entry.tripId, { 
+            ...entry.tripSnapshot,
+            sourceDocumentId: entry.tripSnapshot.sourceDocumentId || entry.sourceDocumentId,
+            sourceDocumentName: entry.tripSnapshot.sourceDocumentName || entry.sourceDocumentName,
+          });
           break;
         
         case TripLedgerOperation.AMEND:
           if (tripMap.has(entry.tripId)) {
-            tripMap.set(entry.tripId, { ...entry.tripSnapshot });
+            tripMap.set(entry.tripId, { 
+              ...entry.tripSnapshot,
+              sourceDocumentId: entry.tripSnapshot.sourceDocumentId || entry.sourceDocumentId,
+              sourceDocumentName: entry.tripSnapshot.sourceDocumentName || entry.sourceDocumentName,
+            });
           }
           break;
         
@@ -325,7 +334,10 @@ export class TripLedgerService {
         ...trip,
         id: tripId,
         hash: '',
-        previousHash: null
+        previousHash: null,
+        sourceDocumentId: trip.sourceDocumentId || sourceDocuments?.[0]?.id,
+        sourceDocumentName: trip.sourceDocumentName || sourceDocuments?.[0]?.name,
+        sourceDocumentUrl: trip.sourceDocumentUrl,
       };
 
       completedTrip.hash = await generateTripHash(completedTrip);
@@ -341,8 +353,8 @@ export class TripLedgerService {
         batchId,
         tripId,
         tripSnapshot: completedTrip,
-        sourceDocumentId: sourceDocuments?.[0]?.id,
-        sourceDocumentName: sourceDocuments?.[0]?.name
+        sourceDocumentId: completedTrip.sourceDocumentId,
+        sourceDocumentName: completedTrip.sourceDocumentName
       };
 
       batchEntries.push(entry);
