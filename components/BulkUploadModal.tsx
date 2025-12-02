@@ -112,7 +112,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
   const { showToast } = useToast();
   const { isLoaded: isMapsScriptLoaded, error: mapsScriptError } = useGoogleMapsScript();
   const { showPicker, gapiClient, isSignedIn, signIn } = useGoogleCalendar();
-  const { projects: projectsCtx, fetchProjects } = useProjects();
+  const { projects: projectsCtx, fetchProjects, addCallsheetsToProject } = useProjects();
   const { user } = useAuth();
 
   const findHeaderIndex = (headers: string[], validNames: string[]): number => {
@@ -540,7 +540,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
 
       for (const [projectId, files] of Object.entries(filesByProject)) {
         try {
-          await databaseService.addCallsheetsToProject(projectId, files);
+          await addCallsheetsToProject(projectId, files);
           console.log(`[BulkUpload] Uploaded ${files.length} file(s) to project ${projectId}`);
         } catch (e) {
           console.error(`[BulkUpload] Failed to upload documents for project ${projectId}:`, e);
