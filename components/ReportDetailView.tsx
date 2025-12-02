@@ -132,14 +132,14 @@ const ReportDetailView: React.FC<ReportDetailViewProps> = ({ report, projects, o
           }
           
           .printable-content > div:first-child p {
-            font-size: 10pt !important;
+            font-size: 8pt !important;
             margin: 0 !important;
             color: #000 !important;
           }
           
           /* Info del conductor */
           .printable-content > div:nth-child(2) {
-            font-size: 10pt !important;
+            font-size: 8pt !important;
             margin-bottom: 12px !important;
             line-height: 1.4 !important;
           }
@@ -168,7 +168,7 @@ const ReportDetailView: React.FC<ReportDetailViewProps> = ({ report, projects, o
           }
           
           .printable-content table td {
-            font-size: 10pt !important;
+            font-size: 8pt !important;
             padding: 4px 6px !important;
             vertical-align: top !important;
             word-wrap: break-word !important;
@@ -210,7 +210,7 @@ const ReportDetailView: React.FC<ReportDetailViewProps> = ({ report, projects, o
           }
           
           .printable-content table tfoot td {
-            font-size: 10pt !important;
+            font-size: 8pt !important;
             font-weight: bold !important;
             padding: 6px !important;
             background-color: #ffffff !important;
