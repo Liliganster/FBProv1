@@ -436,7 +436,8 @@ class DatabaseService {
       return (data || []).map((d: any, index: number) => ({ 
         id: d.id, 
         name: d.filename ?? d.name, 
-        type: uploadResults[index].fileType || 'application/octet-stream'
+        type: uploadResults[index].fileType || 'application/octet-stream',
+        url: d.url || ''
       }))
     } catch (error) {
       throw new Error((error as any)?.message || 'Failed to add callsheets')

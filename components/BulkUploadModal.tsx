@@ -530,26 +530,59 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
       console.log('[BulkUpload] Updated drafts after mapping:', updatedDrafts);
 
       // Upload source documents to project (callsheets) when available
-      const filesByProject: Record<string, File[]> = {};
-      updatedDrafts.forEach(trip => {
+      // and associate them with the corresponding trips
+      const filesByProject: Record<string, { file: File, tripIndex: number }[]> = {};
+      updatedDrafts.forEach((trip, index) => {
         if (trip.projectId && trip.sourceFile) {
           if (!filesByProject[trip.projectId]) filesByProject[trip.projectId] = [];
-          filesByProject[trip.projectId].push(trip.sourceFile);
+          filesByProject[trip.projectId].push({ file: trip.sourceFile, tripIndex: index });
         }
       });
 
-      for (const [projectId, files] of Object.entries(filesByProject)) {
+      // Map to store callsheet info by trip index
+      const tripCallsheetMap = new Map<number, { id: string, name: string, url: string }>();
+
+      for (const [projectId, fileData] of Object.entries(filesByProject)) {
         try {
-          await addCallsheetsToProject(projectId, files);
-          console.log(`[BulkUpload] Uploaded ${files.length} file(s) to project ${projectId}`);
+          const files = fileData.map(fd => fd.file);
+          const uploadedCallsheets = await addCallsheetsToProject(projectId, files);
+          console.log(`[BulkUpload] Uploaded ${uploadedCallsheets.length} file(s) to project ${projectId}:`, uploadedCallsheets);
+          
+          // Associate uploaded callsheets with their corresponding trips
+          fileData.forEach((fd, index) => {
+            const callsheet = uploadedCallsheets[index];
+            if (callsheet && callsheet.url) {
+              tripCallsheetMap.set(fd.tripIndex, {
+                id: callsheet.id,
+                name: callsheet.name,
+                url: callsheet.url
+              });
+              console.log(`[BulkUpload] Mapped callsheet to trip ${fd.tripIndex}:`, {
+                id: callsheet.id,
+                name: callsheet.name,
+                url: callsheet.url
+              });
+            }
+          });
         } catch (e) {
           console.error(`[BulkUpload] Failed to upload documents for project ${projectId}:`, e);
           showToast(`No se pudieron adjuntar algunos documentos al proyecto`, 'warning');
         }
       }
 
-      // Remove transient sourceFile before saving trips to ledger
-      const sanitizedDrafts = updatedDrafts.map(({ sourceFile, ...rest }) => rest);
+      // Remove transient sourceFile and add callsheet info to trips
+      const sanitizedDrafts = updatedDrafts.map(({ sourceFile, ...rest }, index) => {
+        const callsheetInfo = tripCallsheetMap.get(index);
+        if (callsheetInfo) {
+          return {
+            ...rest,
+            sourceDocumentId: callsheetInfo.id,
+            sourceDocumentName: callsheetInfo.name,
+            sourceDocumentUrl: callsheetInfo.url
+          };
+        }
+        return rest;
+      });
 
       await onSave(sanitizedDrafts, mode);
     } catch (error) {

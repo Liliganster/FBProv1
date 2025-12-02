@@ -118,6 +118,7 @@ export interface CallsheetFile {
   id: string;
   name: string;
   type: string;
+  url?: string;
 }
 
 export interface Project {
