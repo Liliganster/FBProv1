@@ -84,14 +84,14 @@ const ReportDetailView: React.FC<ReportDetailViewProps> = ({ report, projects, o
           }
           
           .printable-content > div:first-child p {
-            font-size: 9pt !important;
+            font-size: 11pt !important;
             margin: 0 !important;
             color: #000 !important;
           }
           
           /* Info del conductor */
           .printable-content > div:nth-child(2) {
-            font-size: 8pt !important;
+            font-size: 11pt !important;
             margin-bottom: 12px !important;
             line-height: 1.4 !important;
           }
@@ -105,12 +105,12 @@ const ReportDetailView: React.FC<ReportDetailViewProps> = ({ report, projects, o
           .printable-content table {
             width: 100% !important;
             border-collapse: collapse !important;
-            font-size: 8pt !important;
+            font-size: 11pt !important;
             margin: 0 !important;
           }
           
           .printable-content table th {
-            font-size: 8pt !important;
+            font-size: 11pt !important;
             font-weight: bold !important;
             padding: 4px 6px !important;
             background-color: #ffffff !important;
@@ -120,7 +120,7 @@ const ReportDetailView: React.FC<ReportDetailViewProps> = ({ report, projects, o
           }
           
           .printable-content table td {
-            font-size: 8pt !important;
+            font-size: 11pt !important;
             padding: 4px 6px !important;
             vertical-align: top !important;
             word-wrap: break-word !important;
@@ -162,7 +162,7 @@ const ReportDetailView: React.FC<ReportDetailViewProps> = ({ report, projects, o
           }
           
           .printable-content table tfoot td {
-            font-size: 9pt !important;
+            font-size: 11pt !important;
             font-weight: bold !important;
             padding: 6px !important;
             background-color: #ffffff !important;
@@ -175,7 +175,7 @@ const ReportDetailView: React.FC<ReportDetailViewProps> = ({ report, projects, o
             margin-top: 20px !important;
             padding-top: 12px !important;
             border-top: 1px solid #ccc !important;
-            font-size: 7pt !important;
+            font-size: 9pt !important;
             line-height: 1.3 !important;
             color: #666 !important;
             page-break-inside: avoid !important;
