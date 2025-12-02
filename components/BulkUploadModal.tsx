@@ -506,9 +506,6 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
 
       console.log('[BulkUpload] Final nameToId mapping:', Array.from(nameToId.entries()));
 
-      // Ensure projects context is refreshed (best-effort)
-      try { await fetchProjects(); } catch { }
-
       // Map placeholder projectId (name) to real IDs
       const updatedDrafts = draftTrips.map((trip, index) => {
         const mapped = { ...trip };
@@ -585,6 +582,14 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
       });
 
       await onSave(sanitizedDrafts, mode);
+
+      // Refresh projects to show uploaded callsheets in project list
+      try { 
+        await fetchProjects(); 
+        console.log('[BulkUpload] Projects refreshed after saving trips and callsheets');
+      } catch (e) { 
+        console.warn('[BulkUpload] Failed to refresh projects:', e);
+      }
     } catch (error) {
       console.error('[BulkUpload] handleConfirmSave error:', error);
       showToast('Error saving trips', 'error');

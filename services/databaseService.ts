@@ -151,7 +151,8 @@ class DatabaseService {
           id: cs.id,
             // Compatibilidad: si la columna real es filename
           name: (cs as any).filename ?? (cs as any).name,
-          type: 'application/octet-stream' // Default type since column doesn't exist in DB
+          type: 'application/octet-stream', // Default type since column doesn't exist in DB
+          url: (cs as any).url || '' // Include URL from database
         })) || [],
         createdAt: project.created_at,
         updatedAt: project.updated_at
