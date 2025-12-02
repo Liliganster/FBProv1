@@ -97,7 +97,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
   const [stage, setStage] = useState<Stage>('upload');
   const [draftTrips, setDraftTrips] = useState<DraftTrip[]>([]);
   const { userProfile } = useUserProfile();
-  const { trips } = useTrips();
+  const { trips, getAiQuota } = useTrips();
   const [newlyCreatedProjects, setNewlyCreatedProjects] = useState<Map<string, string>>(new Map());
 
   const [csvPastedText, setCsvPastedText] = useState('');
@@ -152,6 +152,19 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
       const itemsToProcess = hasTextOnly ? 1 : aiFiles.length;
 
       console.log(`[BulkUpload] Starting AI extraction for ${itemsToProcess} item(s) in ${aiExtractMode} mode`);
+
+      // VERIFICAR CUOTA ANTES DE PROCESAR
+      const currentQuota = await getAiQuota();
+      
+      // Si el plan tiene límite y ya no tiene días restantes, no procesar
+      if (currentQuota.limit !== null && currentQuota.remaining !== null && currentQuota.remaining === 0) {
+        const errorMsg = `Has alcanzado el límite de tu plan (${currentQuota.used}/${currentQuota.limit} días únicos usados). No se puede procesar con IA. Actualiza tu plan o usa importación CSV.`;
+        showToast(errorMsg, 'error');
+        setIsProcessing(false);
+        return;
+      }
+
+      console.log(`[BulkUpload] Quota check passed: ${currentQuota.remaining} days remaining`);
 
       const attemptProcess = async (params: { file?: File; text?: string }, name: string) => {
         try {

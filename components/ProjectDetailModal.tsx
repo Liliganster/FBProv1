@@ -28,6 +28,7 @@ const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({ projectId, trip
   const { projects, addCallsheetsToProject, deleteCallsheetFromProject } = useProjects();
   const addMultipleTrips = tripsContext.addMultipleTrips || (() => Promise.resolve());
   const addAiTrips = tripsContext.addAiTrips || (() => Promise.resolve());
+  const getAiQuota = tripsContext.getAiQuota || (() => Promise.resolve({ plan: 'free', limit: 15, used: 0, needed: 0, remaining: 15, allowed: true }));
   const { userProfile } = useUserProfile();
   const [isUploading, setIsUploading] = useState(false);
   const [uploadingFiles, setUploadingFiles] = useState<string[]>([]);
@@ -200,6 +201,17 @@ const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({ projectId, trip
     setProcessingFileId(file.id);
     setIsProcessing(true);
     try {
+      // VERIFICAR CUOTA ANTES DE PROCESAR
+      const currentQuota = await getAiQuota();
+      
+      if (currentQuota.limit !== null && currentQuota.remaining !== null && currentQuota.remaining === 0) {
+        const errorMsg = `Has alcanzado el límite de tu plan (${currentQuota.used}/${currentQuota.limit} días únicos usados). No se puede procesar con IA. Actualiza tu plan o usa importación CSV.`;
+        showToast(errorMsg, 'error');
+        setIsProcessing(false);
+        setProcessingFileId(null);
+        return;
+      }
+
       // Get the callsheet record with URL from database
       const { data: callsheetData, error: callsheetError } = await supabase
         .from('callsheets')
