@@ -50,7 +50,7 @@ export const translations = {
     login_password_mismatch: "Las contraseñas no coinciden.",
     login_or_continue_with: "O continuar con",
     login_continue_google: "Continuar con Google",
-    login_signing_in: "Iniciando sesión...", 'Signing in...',
+    login_signing_in: 'Signing in...',
 
     dashboard_title: 'Panel',
     dashboard_totalKm: 'Total Kilometers',
@@ -735,7 +735,7 @@ export const translations = {
     login_password_mismatch: "Las contraseñas no coinciden.",
     login_or_continue_with: "O continuar con",
     login_continue_google: "Continuar con Google",
-    login_signing_in: "Iniciando sesión...", 'Anmeldung lÃ¤uft...',
+    login_signing_in: "Iniciando sesión...",
 
     dashboard_title: 'Panel',
     dashboard_totalKm: 'Gesamtkilometer',
@@ -2083,8 +2083,6 @@ export const translations = {
     toast_gcal_server_only: 'La integraciÃ³n con Google Calendar requiere configuraciÃ³n OAuth adicional.',
   },
 };
-
-
 
 
 
