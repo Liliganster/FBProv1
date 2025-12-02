@@ -113,7 +113,7 @@ const ReportDetailView: React.FC<ReportDetailViewProps> = ({ report, projects, o
             font-size: 8pt !important;
             font-weight: bold !important;
             padding: 4px 6px !important;
-            background-color: #f5f5f5 !important;
+            background-color: #ffffff !important;
             text-align: left !important;
             color: #000 !important;
             border-bottom: 1px solid #000 !important;
@@ -165,7 +165,7 @@ const ReportDetailView: React.FC<ReportDetailViewProps> = ({ report, projects, o
             font-size: 9pt !important;
             font-weight: bold !important;
             padding: 6px !important;
-            background-color: #f5f5f5 !important;
+            background-color: #ffffff !important;
             color: #000 !important;
             border-top: 2px solid #000 !important;
           }
@@ -241,13 +241,20 @@ const ReportDetailView: React.FC<ReportDetailViewProps> = ({ report, projects, o
   
   const licensePlate = driverSnapshot?.licensePlate || t('detail_unknown');
 
+  const transparency = 1 - personalization.uiTransparency;
   const contentStyle = {
-    backgroundImage: 'linear-gradient(135deg, #10231e 0%, #5f8f86 45%, #9fc5bb 100%)',
-    color: '#e8edf0',
-    border: '1px solid rgba(255,255,255,0.12)',
-    boxShadow: '0 18px 60px rgba(0,0,0,0.35)',
+    backgroundColor: theme === 'dark'
+      ? `rgba(17, 24, 39, ${transparency})`
+      : `rgba(255, 255, 255, ${transparency})`,
+    color: theme === 'dark' ? '#e5e7eb' : '#111827',
+    border: theme === 'dark' ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(0,0,0,0.06)',
+    boxShadow: '0 16px 50px rgba(0,0,0,0.3)',
     backdropFilter: `blur(${personalization.uiBlur}px)`,
   };
+
+  const tableHeaderClass = theme === 'dark' ? 'bg-white/10 text-white' : 'bg-gray-100 text-gray-800';
+  const tableDividerClass = theme === 'dark' ? 'divide-white/10' : 'divide-gray-200';
+  const tableFooterClass = theme === 'dark' ? 'bg-white/10' : 'bg-gray-100';
 
   return (
     <div>
@@ -274,7 +281,7 @@ const ReportDetailView: React.FC<ReportDetailViewProps> = ({ report, projects, o
       
       <div
         style={contentStyle}
-        className="printable-content p-8 rounded-xl text-white"
+        className="printable-content p-6 md:p-8 rounded-xl"
       >
         <div className="mb-4 text-center">
           <h3 className="text-2xl font-bold text-white">{t('report_preview_title')}</h3>
@@ -299,9 +306,9 @@ const ReportDetailView: React.FC<ReportDetailViewProps> = ({ report, projects, o
             )}
           </div>
         </div>
-        <div className="overflow-hidden rounded-lg bg-slate-900/30 border border-white/10 shadow-inner">
-        <table className="w-full text-left text-sm text-white">
-          <thead className="bg-slate-800/70">
+        <div className="overflow-hidden rounded-lg border border-gray-500/20 shadow-inner">
+        <table className="w-full text-left text-sm">
+          <thead className={tableHeaderClass}>
             <tr>
               <th className="p-2">{t('report_col_date')}</th>
               <th className="p-2">{t('report_col_project')}</th>
@@ -310,26 +317,26 @@ const ReportDetailView: React.FC<ReportDetailViewProps> = ({ report, projects, o
               <th className="p-2 text-right">{t('report_col_distance')}</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-white/10">
+          <tbody className={`divide-y ${tableDividerClass}`}>
             {reportTrips.map(trip => {
                 const project = getProjectInfo(trip.projectId);
                 const projectNameDisplay = project ? project.name : t('report_unknownProject');
                 const producerDisplay = project ? project.producer : t('detail_unknown');
                 return (
-                  <tr key={trip.id} className="bg-white/5">
+                  <tr key={trip.id} className="bg-transparent">
                     <td className="p-2 whitespace-nowrap">{formatDateForDisplay(trip.date)}</td>
                     <td className="p-2">{projectNameDisplay}</td>
                     <td className="p-2">{producerDisplay}</td>
                     <td className="p-2">{trip.locations.join(' -> ')}</td>
-                    <td className="p-2 text-right font-bold text-brand-primary">{trip.distance.toFixed(1)} km</td>
+                    <td className="p-2 text-right font-bold">{trip.distance.toFixed(1)} km</td>
                   </tr>
                 );
               })}
           </tbody>
-          <tfoot className="bg-slate-800/70 font-bold">
+          <tfoot className={`${tableFooterClass} font-bold`}>
             <tr>
               <td className="p-2" colSpan={4}>{t('report_total_kms')}</td>
-              <td className="p-2 text-right text-brand-primary text-base">
+              <td className="p-2 text-right text-base">
                 {totalDistance.toFixed(1)} km
               </td>
             </tr>
