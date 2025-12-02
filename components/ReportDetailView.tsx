@@ -32,6 +32,20 @@ const ReportDetailView: React.FC<ReportDetailViewProps> = ({ report, projects, o
       return;
     }
 
+    // Clone the node to manipulate it for printing without affecting the UI
+    const clone = reportNode.cloneNode(true) as HTMLElement;
+
+    // Remove inline styles that create the "card" look (shadows, background, borders)
+    clone.style.cssText = '';
+    clone.style.backgroundColor = 'white';
+    clone.style.color = 'black';
+    clone.style.width = '100%';
+    clone.style.margin = '0';
+    clone.style.padding = '0';
+    clone.style.boxShadow = 'none';
+    clone.style.border = 'none';
+    clone.style.borderRadius = '0';
+
     const printWindow = window.open('', '_blank', 'height=800,width=800');
     if (!printWindow) {
       showToast('Could not open print window. Please disable pop-up blockers.', 'warning');
@@ -40,13 +54,13 @@ const ReportDetailView: React.FC<ReportDetailViewProps> = ({ report, projects, o
 
     const styleSheets = Array.from(document.querySelectorAll('link[rel="stylesheet"], style'));
     const headContent = styleSheets.map(style => style.outerHTML).join('');
-    const contentHTML = reportNode.outerHTML;
+    const contentHTML = clone.outerHTML;
 
     const printOverrideStyles = `
       <style>
         @page {
           size: A4;
-          margin: 10;
+          margin: 10mm;
         }
 
         @media print {
