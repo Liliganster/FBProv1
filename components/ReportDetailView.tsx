@@ -72,7 +72,7 @@ const ReportDetailView: React.FC<ReportDetailViewProps> = ({ report, projects, o
       <style>
         @page {
           size: A4;
-          margin: 20mm;
+          margin: 10mm;
         }
 
         /* Force white background and black text everywhere */
@@ -121,7 +121,7 @@ const ReportDetailView: React.FC<ReportDetailViewProps> = ({ report, projects, o
           
           /* Headers */
           .printable-content h3 {
-            font-size: 14pt !important;
+            font-size: 11pt !important;
             margin: 0 0 6px 0 !important;
             color: #000 !important;
           }
@@ -223,7 +223,7 @@ const ReportDetailView: React.FC<ReportDetailViewProps> = ({ report, projects, o
             margin-top: 20px !important;
             padding-top: 12px !important;
             border-top: 1px solid #ccc !important;
-            font-size: 9pt !important;
+            font-size: 11pt !important;
             line-height: 1.3 !important;
             color: #666 !important;
             page-break-inside: avoid !important;
