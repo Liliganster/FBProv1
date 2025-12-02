@@ -9,7 +9,8 @@ const LoginView: React.FC = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [emailLoading, setEmailLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const { login, register, signInWithOAuth } = useAuth();
   const { t } = useLoginTranslation();
 
@@ -19,18 +20,19 @@ const LoginView: React.FC = () => {
     setPassword('');
     setConfirmPassword('');
     setError('');
-    setLoading(false);
+    setEmailLoading(false);
+    setGoogleLoading(false);
     setIsLogin(true);
   }, []);
 
   const handleGoogleSignIn = async () => {
-    setLoading(true);
+    setGoogleLoading(true);
     setError('');
     try {
       await signInWithOAuth('google');
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
-      setLoading(false);
+      setGoogleLoading(false);
     }
   };
 
@@ -38,7 +40,7 @@ const LoginView: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    setLoading(true);
+    setEmailLoading(true);
 
     if (isLogin) {
       try {
@@ -49,7 +51,7 @@ const LoginView: React.FC = () => {
     } else {
       if (password !== confirmPassword) {
         setError(t('login_password_mismatch'));
-        setLoading(false);
+        setEmailLoading(false);
         return;
       }
       try {
@@ -58,7 +60,7 @@ const LoginView: React.FC = () => {
         setError(err instanceof Error ? err.message : String(err));
       }
     }
-    setLoading(false);
+    setEmailLoading(false);
   };
 
   return (
@@ -154,11 +156,11 @@ const LoginView: React.FC = () => {
           <div>
             <button
               type="submit"
-              disabled={loading}
+              disabled={emailLoading || googleLoading}
               aria-label={isLogin ? t('login_btn') : t('register_btn')}
               className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-smooth text-white bg-gradient-brand hover:shadow-brand hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-brand-primary focus:ring-offset-2 focus:ring-offset-surface-dark disabled:opacity-50 disabled:hover:scale-100 transition-all duration-200"
             >
-              {loading && <LoaderIcon className="w-5 h-5 mr-2 animate-spin" aria-hidden="true"/>}
+              {emailLoading && <LoaderIcon className="w-5 h-5 mr-2 animate-spin" aria-hidden="true"/>}
               {isLogin ? t('login_btn') : t('register_btn')}
             </button>
           </div>
@@ -173,7 +175,7 @@ const LoginView: React.FC = () => {
         <button
           type="button"
           onClick={handleGoogleSignIn}
-          disabled={loading}
+          disabled={emailLoading || googleLoading}
           aria-label={t('login_continue_google')}
           className="w-full flex items-center justify-center gap-3 py-3 px-4 border-surface rounded-smooth text-sm font-medium text-white bg-gradient-surface hover:bg-gradient-to-r hover:from-surface-medium hover:to-surface-light hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-brand-primary focus:ring-offset-2 focus:ring-offset-surface-dark disabled:opacity-50 transition-all duration-200"
         >
@@ -183,7 +185,7 @@ const LoginView: React.FC = () => {
             <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
             <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
           </svg>
-          {loading ? (
+          {googleLoading ? (
             <>
               <LoaderIcon className="w-5 h-5 animate-spin" aria-hidden="true" />
               {t('login_signing_in')}
