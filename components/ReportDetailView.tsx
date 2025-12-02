@@ -103,6 +103,7 @@ const ReportDetailView: React.FC<ReportDetailViewProps> = ({ report, projects, o
             font-family: Arial, sans-serif !important;
             font-size: 11pt !important;
             line-height: 1.3 !important;
+            padding: 10mm !important;
           }
           
           .printable-content {
