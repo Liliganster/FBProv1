@@ -73,8 +73,8 @@ class DatabaseService {
       const { apiKeyEncryptionService } = await import('./apiKeyEncryptionService');
       return await apiKeyEncryptionService.encryptApiKey(apiKey);
     } catch (error) {
-      console.error('Encryption failed, storing plaintext:', error);
-      return apiKey; // Fallback to plaintext if encryption fails
+      console.error('Encryption failed, blocking storage for safety:', error);
+      throw new Error('Encryption failed: API key not saved');
     }
   }
 
