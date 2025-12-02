@@ -236,24 +236,24 @@ const TripDetailModal: React.FC<TripDetailModalProps> = ({ trip, project, onClos
         </main>
         {/* View mode toggle buttons (only show if source document exists) */}
         {trip.sourceDocumentUrl && (
-          <div className="absolute bottom-4 right-4 z-10 flex gap-2 bg-background-dark/90 backdrop-blur-md rounded-lg p-1 border border-glass">
+          <div className="absolute bottom-4 right-4 z-10 flex gap-2 bg-gray-900/95 backdrop-blur-md rounded-lg p-1.5 border border-gray-700 shadow-2xl">
             <Button
               variant={viewMode === 'map' ? 'primary' : 'ghost'}
               size="sm"
               onClick={() => setViewMode('map')}
-              className="flex items-center gap-2"
+              className={`flex items-center gap-2 ${viewMode !== 'map' ? 'text-white hover:bg-gray-700' : ''}`}
             >
               <MapPinIcon className="w-4 h-4" />
-              {t('detail_view_map')}
+              <span className="font-medium">{t('detail_view_map')}</span>
             </Button>
             <Button
               variant={viewMode === 'document' ? 'primary' : 'ghost'}
               size="sm"
               onClick={() => setViewMode('document')}
-              className="flex items-center gap-2"
+              className={`flex items-center gap-2 ${viewMode !== 'document' ? 'text-white hover:bg-gray-700' : ''}`}
             >
               <FileTextIcon className="w-4 h-4" />
-              {t('detail_view_document')}
+              <span className="font-medium">{t('detail_view_document')}</span>
             </Button>
           </div>
         )}
