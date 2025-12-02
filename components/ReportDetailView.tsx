@@ -35,16 +35,28 @@ const ReportDetailView: React.FC<ReportDetailViewProps> = ({ report, projects, o
     // Clone the node to manipulate it for printing without affecting the UI
     const clone = reportNode.cloneNode(true) as HTMLElement;
 
-    // Remove inline styles that create the "card" look (shadows, background, borders)
+    // Remove inline styles
     clone.style.cssText = '';
-    clone.style.backgroundColor = 'white';
-    clone.style.color = 'black';
-    clone.style.width = '100%';
-    clone.style.margin = '0';
-    clone.style.padding = '0';
-    clone.style.boxShadow = 'none';
-    clone.style.border = 'none';
-    clone.style.borderRadius = '0';
+
+    // Helper to recursively remove dark mode classes
+    const removeDarkClasses = (element: Element) => {
+      element.classList.remove(
+        'bg-gray-700/50',
+        'text-white',
+        'divide-gray-700/50',
+        'bg-transparent',
+        'text-on-surface-dark-secondary',
+        'bg-background-dark',
+        'backdrop-blur-sm'
+      );
+      // Force text color to black for all elements
+      if (element instanceof HTMLElement) {
+        element.style.color = 'black';
+        element.style.borderColor = '#ccc';
+      }
+      Array.from(element.children).forEach(removeDarkClasses);
+    };
+    removeDarkClasses(clone);
 
     const printWindow = window.open('', '_blank', 'height=800,width=800');
     if (!printWindow) {
@@ -63,10 +75,24 @@ const ReportDetailView: React.FC<ReportDetailViewProps> = ({ report, projects, o
           margin: 10mm;
         }
 
+        /* Force white background and black text everywhere */
+        html, body {
+          background-color: #ffffff !important;
+          background: #ffffff !important;
+          color: #000000 !important;
+          height: auto !important;
+          overflow: visible !important;
+          width: 100% !important;
+          margin: 0 !important;
+          padding: 0 !important;
+        }
+
         @media print {
           * {
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
+            text-shadow: none !important;
+            box-shadow: none !important;
           }
           
           .no-print {
@@ -74,27 +100,22 @@ const ReportDetailView: React.FC<ReportDetailViewProps> = ({ report, projects, o
           }
           
           body {
-            margin: 0 !important;
-            padding: 0 !important;
-            background-color: white !important;
             font-family: Arial, sans-serif !important;
             font-size: 11pt !important;
-            color: #000 !important;
+            line-height: 1.3 !important;
           }
           
           .printable-content {
-            padding: 0 !important;
-            margin: 0 !important;
-            background-color: white !important;
-            background: white !important;
-            color: #000 !important;
-            box-shadow: none !important;
-            border: none !important;
-            border-radius: 0 !important;
             width: 100% !important;
-            max-width: none !important;
-            backdrop-filter: none !important;
-            -webkit-backdrop-filter: none !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            border: none !important;
+          }
+
+          /* Force all text to be black and backgrounds transparent (except headers) */
+          .printable-content * {
+            color: #000 !important;
+            background-color: transparent !important;
           }
           
           /* Headers */
