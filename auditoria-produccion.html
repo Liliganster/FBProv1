@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auditoría de Seguridad - Fahrtenbuch Pro</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .summary {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            margin-bottom: 30px;
+            border-radius: 4px;
+        }
+        
+        .summary h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 3em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            color: #666;
+            font-size: 0.9em;
+        }
+        
+        .critical { color: #dc3545; }
+        .high { color: #fd7e14; }
+        .medium { color: #ffc107; }
+        .low { color: #28a745; }
+        
+        .issue-section {
+            margin: 30px 0;
+        }
+        
+        .issue-section h2 {
+            color: #333;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .issue {
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            border-left: 4px solid;
+            border-radius: 6px;
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: all 0.3s;
+        }
+        
+        .issue:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+        
+        .issue.critical { border-left-color: #dc3545; }
+        .issue.high { border-left-color: #fd7e14; }
+        .issue.medium { border-left-color: #ffc107; }
+        .issue.low { border-left-color: #28a745; }
+        
+        .issue-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .issue-title {
+            font-size: 1.3em;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .severity-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .severity-badge.critical {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .severity-badge.high {
+            background: #fd7e14;
+            color: white;
+        }
+        
+        .severity-badge.medium {
+            background: #ffc107;
+            color: #333;
+        }
+        
+        .severity-badge.low {
+            background: #28a745;
+            color: white;
+        }
+        
+        .issue-description {
+            color: #555;
+            margin-bottom: 15px;
+            line-height: 1.8;
+        }
+        
+        .issue-details {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        
+        .issue-details h4 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        
+        .code-block {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            margin: 10px 0;
+        }
+        
+        .file-ref {
+            color: #667eea;
+            font-weight: 600;
+            font-family: monospace;
+        }
+        
+        .recommendations {
+            background: #e7f3ff;
+            border-left: 4px solid #0066cc;
+            padding: 15px;
+            margin-top: 15px;
+            border-radius: 4px;
+        }
+        
+        .recommendations h4 {
+            color: #0066cc;
+            margin-bottom: 10px;
+        }
+        
+        .recommendations ul {
+            margin-left: 20px;
+        }
+        
+        .recommendations li {
+            margin: 5px 0;
+        }
+        
+        .footer {
+            background: #f8f9fa;
+            padding: 30px;
+            text-align: center;
+            color: #666;
+            border-top: 1px solid #e0e0e0;
+        }
+        
+        .priority-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        ul {
+            margin: 10px 0 10px 20px;
+        }
+        
+        li {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔒 Auditoría de Seguridad y Producción</h1>
+            <p>Fahrtenbuch Pro - Análisis Completo</p>
+            <p style="font-size: 0.9em; margin-top: 10px;">Fecha: 2 de Diciembre, 2025</p>
+        </div>
+        
+        <div class="content">
+            <div class="summary">
+                <h2>📊 Resumen Ejecutivo</h2>
+                <p>Se han identificado múltiples problemas que impiden el despliegue seguro en producción. A continuación se detallan los hallazgos organizados por severidad.</p>
+                
+                <div class="stats">
+                    <div class="stat-card">
+                        <div class="stat-number critical">5</div>
+                        <div class="stat-label">Críticos</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number high">8</div>
+                        <div class="stat-label">Altos</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number medium">6</div>
+                        <div class="stat-label">Medios</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number low">4</div>
+                        <div class="stat-label">Bajos</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- PROBLEMAS CRÍTICOS -->
+            <div class="issue-section">
+                <h2>🔴 Problemas Críticos (Bloqueantes para Producción)</h2>
+                
+                <div class="issue critical">
+                    <div class="issue-header">
+                        <div class="issue-title">1. API Keys Expuestas en el Cliente</div>
+                        <span class="severity-badge critical">Crítico</span>
+                    </div>
+                    <div class="issue-description">
+                        <p><strong>Problema:</strong> Las API keys de Google Maps están expuestas directamente en el código del cliente a través de variables <code>VITE_*</code>.</p>
+                        
+                        <div class="issue-details">
+                            <h4>📍 Ubicaciones:</h4>
+                            <ul>
+                                <li class="file-ref">hooks/useGoogleMapsScript.ts:39</li>
+                                <li class="file-ref">context/GoogleCalendarContext.tsx:38-40</li>
+                                <li class="file-ref">lib/api-handlers/google/maps/directions.ts:45</li>
+                                <li class="file-ref">lib/api-handlers/google/maps/staticmap.ts:40</li>
+                            </ul>
+                            
+                            <div class="code-block">const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+// ❌ Esto expone la API key en el bundle del cliente</div>
+                        </div>
+                        
+                        <div class="recommendations">
+                            <h4>✅ Soluciones Requeridas:</h4>
+                            <ul>
+                                <li>Eliminar completamente <code>VITE_GOOGLE_MAPS_API_KEY</code> del código cliente</li>
+                                <li>Usar SOLO las API keys del servidor (<code>GOOGLE_MAPS_API_KEY</code> sin prefijo VITE)</li>
+                                <li>Todas las llamadas a Google Maps deben pasar por el proxy del servidor</li>
+                                <li>Eliminar la condición de fallback que permite usar la key del cliente</li>
+                                <li>Actualizar <code>vite-env.d.ts</code> para eliminar la definición de <code>VITE_GOOGLE_MAPS_API_KEY</code></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="issue critical">
+                    <div class="issue-header">
+                        <div class="issue-title">2. Encriptación de API Keys Débil (Demo)</div>
+                        <span class="severity-badge critical">Crítico</span>
+                    </div>
+                    <div class="issue-description">
+                        <p><strong>Problema:</strong> El servicio de encriptación usa claves estáticas hardcodeadas que son inseguras para producción.</p>
+                        
+                        <div class="issue-details">
+                            <h4>📍 Ubicación:</h4>
+                            <p class="file-ref">services/apiKeyEncryptionService.ts:20-42</p>
+                            
+                            <div class="code-block">// ❌ INSEGURO: Clave estática hardcodeada
+const keyMaterial = await crypto.subtle.importKey(
+  'raw',
+  new TextEncoder().encode('demo-encryption-key-32chars-min'),
+  'PBKDF2',
+  false,
+  ['deriveKey']
+);
+
+// ❌ Salt estático (no aleatorio)
+salt: new TextEncoder().encode('static-salt-for-demo')</div>
+                        </div>
+                        
+                        <div class="recommendations">
+                            <h4>✅ Soluciones Requeridas:</h4>
+                            <ul>
+                                <li>Implementar gestión de claves adecuada usando variables de entorno del servidor</li>
+                                <li>Usar salt aleatorio único para cada encriptación</li>
+                                <li>Considerar usar Supabase Vault o servicios como AWS KMS / Google Secret Manager</li>
+                                <li>Almacenar las claves encriptadas solo en el servidor, nunca en el cliente</li>
+                                <li>Implementar rotación de claves</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="issue critical">
+                    <div class="issue-header">
+                        <div class="issue-title">3. Exposición de Información Sensible en Logs</div>
+                        <span class="severity-badge critical">Crítico</span>
+                    </div>
+                    <div class="issue-description">
+                        <p><strong>Problema:</strong> Las API keys están siendo registradas en los logs, exponiendo información sensible.</p>
+                        
+                        <div class="issue-details">
+                            <h4>📍 Ubicación:</h4>
+                            <p class="file-ref">lib/api-handlers/ai/gemini.ts:360</p>
+                            
+                            <div class="code-block">// ❌ Expone parcialmente la API key en logs
+console.log(`[Gemini Handler] Using API key: ${apiKey.substring(0, 10)}...`);</div>
+                        </div>
+                        
+                        <div class="recommendations">
+                            <h4>✅ Soluciones Requeridas:</h4>
+                            <ul>
+                                <li>Eliminar TODOS los logs que contengan API keys, incluso parcialmente</li>
+                                <li>Implementar un sistema de logging seguro que redacte información sensible</li>
+                                <li>Usar solo indicadores booleanos: "API key presente: true/false"</li>
+                                <li>Revisar TODOS los console.log en el código de producción</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="issue critical">
+                    <div class="issue-header">
+                        <div class="issue-title">4. Falta de Headers de Seguridad HTTP</div>
+                        <span class="severity-badge critical">Crítico</span>
+                    </div>
+                    <div class="issue-description">
+                        <p><strong>Problema:</strong> No hay configuración de headers de seguridad importantes como CSP, HSTS, X-Frame-Options, etc.</p>
+                        
+                        <div class="issue-details">
+                            <h4>🔍 Headers Faltantes:</h4>
+                            <ul>
+                                <li><code>Content-Security-Policy</code> - Previene XSS</li>
+                                <li><code>Strict-Transport-Security</code> - Fuerza HTTPS</li>
+                                <li><code>X-Frame-Options</code> - Previene clickjacking</li>
+                                <li><code>X-Content-Type-Options</code> - Previene MIME sniffing</li>
+                                <li><code>Referrer-Policy</code> - Controla información de referrer</li>
+                                <li><code>Permissions-Policy</code> - Controla APIs del navegador</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="recommendations">
+                            <h4>✅ Soluciones Requeridas:</h4>
+                            <ul>
+                                <li>Agregar configuración de headers en <code>vercel.json</code></li>
+                                <li>Implementar CSP estricto (puede requerir ajustes en el código)</li>
+                                <li>Configurar HSTS con max-age adecuado</li>
+                                <li>Establecer X-Frame-Options: DENY o SAMEORIGIN</li>
+                                <li>Configurar Permissions-Policy para limitar acceso a APIs sensibles</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="issue critical">
+                    <div class="issue-header">
+                        <div class="issue-title">5. Rate Limiting Basado en Memoria (No Persistente)</div>
+                        <span class="severity-badge critical">Crítico</span>
+                    </div>
+                    <div class="issue-description">
+                        <p><strong>Problema:</strong> El rate limiting usa almacenamiento en memoria que se pierde con cada cold start en Vercel.</p>
+                        
+                        <div class="issue-details">
+                            <h4>📍 Ubicación:</h4>
+                            <p class="file-ref">lib/rate-limiter.ts:19, lib/api-handlers/ai/gemini-proxy.ts:20</p>
+                            
+                            <div class="code-block">// ❌ Se resetea con cada cold start
+const rateLimitStore = new Map<string, { count: number; resetTime: number }>();</div>
+                            
+                            <h4>🔍 Impacto:</h4>
+                            <p>Los atacantes pueden evadir los límites simplemente esperando un cold start o disparando múltiples funciones en paralelo.</p>
+                        </div>
+                        
+                        <div class="recommendations">
+                            <h4>✅ Soluciones Requeridas:</h4>
+                            <ul>
+                                <li>Implementar Vercel KV (Redis) para rate limiting persistente</li>
+                                <li>Configurar <code>KV_REST_API_URL</code> y <code>KV_REST_API_TOKEN</code></li>
+                                <li>El código ya tiene soporte para KV pero no está configurado</li>
+                                <li>Considerar Upstash Redis como alternativa</li>
+                                <li>Implementar rate limiting por IP y por usuario</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- PROBLEMAS ALTOS -->
+            <div class="issue-section">
+                <h2>🟠 Problemas Altos (Deben Resolverse Antes de Producción)</h2>
+                
+                <div class="issue high">
+                    <div class="issue-header">
+                        <div class="issue-title">6. CORS No Configurado en Endpoints API</div>
+                        <span class="severity-badge high">Alto</span>
+                    </div>
+                    <div class="issue-description">
+                        <p><strong>Problema:</strong> Los endpoints de API en Vercel Functions no tienen configuración CORS adecuada.</p>
+                        
+                        <div class="recommendations">
+                            <h4>✅ Soluciones:</h4>
+                            <ul>
+                                <li>Agregar headers CORS restrictivos en todas las funciones API</li>
+                                <li>Limitar origins permitidos a tu dominio de producción</li>
+                                <li>Configurar métodos HTTP permitidos específicamente</li>
+                                <li>No usar <code>Access-Control-Allow-Origin: *</code></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="issue high">
+                    <div class="issue-header">
+                        <div class="issue-title">7. Variables de Entorno No Documentadas</div>
+                        <span class="severity-badge high">Alto</span>
+                    </div>
+                    <div class="issue-description">
+                        <p><strong>Problema:</strong> El archivo <code>.env.example</code> está en .cursorignore y no se pudo verificar si documenta todas las variables necesarias.</p>
+                        
+                        <div class="issue-details">
+                            <h4>Variables encontradas en el código:</h4>
+                            <ul>
+                                <li><code>VITE_SUPABASE_URL</code></li>
+                                <li><code>VITE_SUPABASE_ANON_KEY</code></li>
+                                <li><code>VITE_GOOGLE_CALENDAR_CLIENT_ID</code></li>
+                                <li><code>VITE_GOOGLE_PICKER_API_KEY</code></li>
+                                <li><code>GOOGLE_MAPS_API_KEY</code></li>
+                                <li><code>GOOGLE_CALENDAR_API_KEY</code></li>
+                                <li><code>GEMINI_API_KEY</code></li>
+                                <li><code>GEMINI_MODEL</code></li>
+                                <li><code>OPENROUTER_HTTP_REFERER</code></li>
+                                <li><code>OPENROUTER_TITLE</code></li>
+                                <li><code>KV_REST_API_URL</code></li>
+                                <li><code>KV_REST_API_TOKEN</code></li>
+                            </ul>
+                        </div>
+                        
+                        <div class="recommendations">
+                            <h4>✅ Soluciones:</h4>
+                            <ul>
+                                <li>Crear documentación completa de variables de entorno</li>
+                                <li>Separar claramente variables de cliente (VITE_*) de servidor</li>
+                                <li>Documentar cuáles son obligatorias vs opcionales</li>
+                                <li>Incluir ejemplos de valores (sin exponer secretos reales)</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="issue high">
+                    <div class="issue-header">
+                        <div class="issue-title">8. Falta de Validación de Entrada en Endpoints</div>
+                        <span class="severity-badge high">Alto</span>
+                    </div>
+                    <div class="issue-description">
+                        <p><strong>Problema:</strong> Muchos endpoints no validan exhaustivamente las entradas del usuario, lo que podría llevar a ataques de inyección o comportamiento inesperado.</p>
+                        
+                        <div class="recommendations">
+                            <h4>✅ Soluciones:</h4>
+                            <ul>
+                                <li>Implementar validación de tipos estricta en todos los endpoints</li>
+                                <li>Usar bibliotecas como Zod o Yup para schemas de validación</li>
+                                <li>Sanitizar todas las entradas antes de usarlas</li>
+                                <li>Establecer límites de tamaño para payloads</li>
+                                <li>Validar formatos (emails, URLs, fechas, etc.)</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="issue high">
+                    <div class="issue-header">
+                        <div class="issue-title">9. Supabase Anon Key Expuesta en Cliente</div>
+                        <span class="severity-badge high">Alto</span>
+                    </div>
+                    <div class="issue-description">
+                        <p><strong>Problema:</strong> Aunque es necesario para la autenticación de Supabase, la clave anónima está expuesta en el bundle del cliente.</p>
+                        
+                        <div class="issue-details">
+                            <h4>📍 Ubicación:</h4>
+                            <p class="file-ref">lib/supabase.ts:4</p>
+                            
+                            <h4>⚠️ Nota:</h4>
+                            <p>Esto es el comportamiento esperado de Supabase, pero requiere configuración adicional de seguridad.</p>
+                        </div>
+                        
+                        <div class="recommendations">
+                            <h4>✅ Soluciones:</h4>
+                            <ul>
+                                <li>Configurar Row Level Security (RLS) en TODAS las tablas de Supabase</li>
+                                <li>Verificar que las políticas RLS sean estrictas y correctas</li>
+                                <li>Habilitar autenticación requerida donde sea apropiado</li>
+                                <li>Limitar acceso por roles (usuario, admin, etc.)</li>
+                                <li>Auditar periódicamente las políticas RLS</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="issue high">
+                    <div class="issue-header">
+                        <div class="issue-title">10. Timeout Inadecuado en Funciones Serverless</div>
+                        <span class="severity-badge high">Alto</span>
+                    </div>
+                    <div class="issue-description">
+                        <p><strong>Problema:</strong> Las funciones configuradas con 60s de timeout pueden ser caras y propensas a timeout en planes gratuitos/hobby.</p>
+                        
+                        <div class="issue-details">
+                            <h4>📍 Ubicación:</h4>
+                            <p class="file-ref">vercel.json:7</p>
+                            
+                            <div class="code-block">"functions": {
+  "api/proxy.ts": {
+    "maxDuration": 60,  // ⚠️ Muy alto
+    "memory": 1024
+  }
+}</div>
+                        </div>
+                        
+                        <div class="recommendations">
+                            <h4>✅ Soluciones:</h4>
+                            <ul>
+                                <li>Reducir timeout a 10-15 segundos para operaciones normales</li>
+                                <li>Implementar procesamiento asíncrono para operaciones largas</li>
+                                <li>Usar colas o webhooks para tareas que toman mucho tiempo</li>
+                                <li>Optimizar las llamadas a APIs externas</li>
+                                <li>Implementar caching para reducir procesamiento repetido</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="issue high">
+                    <div class="issue-header">
+                        <div class="issue-title">11. Logs Excesivos en Producción</div>
+                        <span class="severity-badge high">Alto</span>
+                    </div>
+                    <div class="issue-description">
+                        <p><strong>Problema:</strong> Hay muchos console.log en el código que se ejecutarán en producción, afectando el rendimiento y los costos.</p>
+                        
+                        <div class="recommendations">
+                            <h4>✅ Soluciones:</h4>
+                            <ul>
+                                <li>Implementar un sistema de logging condicional basado en NODE_ENV</li>
+                                <li>Usar bibliotecas de logging profesionales (winston, pino)</li>
+                                <li>Eliminar o deshabilitar logs de debugging en producción</li>
+                                <li>Implementar niveles de log (error, warn, info, debug)</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="issue high">
+                    <div class="issue-header">
+                        <div class="issue-title">12. Falta de Monitoring y Alertas</div>
+                        <span class="severity-badge high">Alto</span>
+                    </div>
+                    <div class="issue-description">
+                        <p><strong>Problema:</strong> No hay evidencia de integración con sistemas de monitoring de errores (Sentry, Datadog, etc.)</p>
+                        
+                        <div class="issue-details">
+                            <h4>🔍 Encontrado:</h4>
+                            <p>Hay código comentado para Sentry en <code>index.tsx:59</code> pero no está implementado.</p>
+                        </div>
+                        
+                        <div class="recommendations">
+                            <h4>✅ Soluciones:</h4>
+                            <ul>
+                                <li>Integrar Sentry o similar para tracking de errores</li>
+                                <li>Configurar alertas para errores críticos</li>
+                                <li>Implementar APM (Application Performance Monitoring)</li>
+                                <li>Configurar alertas de disponibilidad y latencia</li>
+                                <li>Tracking de métricas de negocio importantes</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="issue high">
+                    <div class="issue-header">
+                        <div class="issue-title">13. Gestión de Dependencias y Seguridad</div>
+                        <span class="severity-badge high">Alto</span>
+                    </div>
+                    <div class="issue-description">
+                        <p><strong>Problema:</strong> No se verificó si todas las dependencias están actualizadas y sin vulnerabilidades conocidas.</p>
+                        
+                        <div class="recommendations">
+                            <h4>✅ Soluciones:</h4>
+                            <ul>
+                                <li>Ejecutar <code>npm audit</code> y resolver vulnerabilidades</li>
+                                <li>Configurar Dependabot o Renovate para actualizaciones automáticas</li>
+                                <li>Implementar CI/CD con checks de seguridad</li>
+                                <li>Revisar y actualizar dependencias regularmente</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- PROBLEMAS MEDIOS -->
+            <div class="issue-section">
+                <h2>🟡 Problemas Medios (Recomendable Resolver)</h2>
+                
+                <div class="issue medium">
+                    <div class="issue-header">
+                        <div class="issue-title">14. Uso de localStorage para Datos Sensibles</div>
+                        <span class="severity-badge medium">Medio</span>
+                    </div>
+                    <div class="issue-description">
+                        <p><strong>Problema:</strong> Se usa localStorage en 94 ubicaciones, potencialmente almacenando datos sensibles sin encriptación adecuada.</p>
+                        
+                        <div class="recommendations">
+                            <h4>✅ Soluciones:</h4>
+                            <ul>
+                                <li>Auditar TODO el uso de localStorage</li>
+                                <li>No almacenar tokens o API keys en localStorage</li>
+                                <li>Encriptar datos sensibles antes de almacenar</li>
+                                <li>Considerar usar cookies HttpOnly para tokens</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="issue medium">
+                    <div class="issue-header">
+                        <div class="issue-title">15. Falta de Optimización de Bundle</div>
+                        <span class="severity-badge medium">Medio</span>
+                    </div>
+                    <div class="issue-description">
+                        <p><strong>Problema:</strong> El bundle puede ser grande sin optimizaciones adicionales para carga inicial.</p>
+                        
+                        <div class="recommendations">
+                            <h4>✅ Soluciones:</h4>
+                            <ul>
+                                <li>Implementar code splitting más agresivo</li>
+                                <li>Lazy loading de componentes no críticos</li>
+                                <li>Analizar bundle con herramientas como webpack-bundle-analyzer</li>
+                                <li>Considerar preload/prefetch estratégico</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="issue medium">
+                    <div class="issue-header">
+                        <div class="issue-title">16. Sourcemaps Deshabilitados</div>
+                        <span class="severity-badge medium">Medio</span>
+                    </div>
+                    <div class="issue-description">
+                        <p><strong>Problema:</strong> Los sourcemaps están deshabilitados completamente, dificultando el debugging en producción.</p>
+                        
+                        <div class="issue-details">
+                            <h4>📍 Ubicación:</h4>
+                            <p class="file-ref">vite.config.ts:14</p>
+                            <div class="code-block">sourcemap: false,  // ⚠️ Dificulta debugging</div>
+                        </div>
+                        
+                        <div class="recommendations">
+                            <h4>✅ Soluciones:</h4>
+                            <ul>
+                                <li>Habilitar sourcemaps ocultos: <code>sourcemap: 'hidden'</code></li>
+                                <li>Cargar sourcemaps solo en sistemas de error tracking (no público)</li>
+                                <li>Configurar Sentry para usar sourcemaps privados</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="issue medium">
+                    <div class="issue-header">
+                        <div class="issue-title">17. Importmap con CDNs Externos</div>
+                        <span class="severity-badge medium">Medio</span>
+                    </div>
+                    <div class="issue-description">
+                        <p><strong>Problema:</strong> El HTML usa importmaps con CDNs externos que podrían fallar o ser comprometidos.</p>
+                        
+                        <div class="issue-details">
+                            <h4>📍 Ubicación:</h4>
+                            <p class="file-ref">index.html:65-78</p>
+                        </div>
+                        
+                        <div class="recommendations">
+                            <h4>✅ Soluciones:</h4>
+                            <ul>
+                                <li>Usar bundling tradicional en lugar de importmaps para producción</li>
+                                <li>Si se usan CDNs, implementar SRI (Subresource Integrity)</li>
+                                <li>Considerar self-hosting de dependencias críticas</li>
+                                <li>Implementar fallbacks para CDNs</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="issue medium">
+                    <div class="issue-header">
+                        <div class="issue-title">18. Falta de Tests Automatizados</div>
+                        <span class="severity-badge medium">Medio</span>
+                    </div>
+                    <div class="issue-description">
+                        <p><strong>Problema:</strong> Solo se encontró un archivo de test (<code>rate-limiter.test.ts</code>), indicando cobertura de tests insuficiente.</p>
+                        
+                        <div class="recommendations">
+                            <h4>✅ Soluciones:</h4>
+                            <ul>
+                                <li>Implementar tests unitarios para funciones críticas</li>
+                                <li>Tests de integración para API endpoints</li>
+                                <li>Tests E2E para flujos críticos de usuario</li>
+                                <li>Configurar CI/CD con ejecución automática de tests</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="issue medium">
+                    <div class="issue-header">
+                        <div class="issue-title">19. Configuración de Cache Muy Restrictiva</div>
+                        <span class="severity-badge medium">Medio</span>
+                    </div>
+                    <div class="issue-description">
+                        <p><strong>Problema:</strong> Todos los recursos tienen <code>no-cache</code>, lo que puede afectar el rendimiento.</p>
+                        
+                        <div class="issue-details">
+                            <h4>📍 Ubicación:</h4>
+                            <p class="file-ref">vercel.json:21-58</p>
+                        </div>
+                        
+                        <div class="recommendations">
+                            <h4>✅ Soluciones:</h4>
+                            <ul>
+                                <li>Implementar cache agresivo para assets estáticos (JS, CSS, imágenes)</li>
+                                <li>Usar cache busting con hashes en filenames</li>
+                                <li>Cache moderado para API responses cuando sea apropiado</li>
+                                <li>Solo <code>no-cache</code> para HTML y recursos críticos</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- PROBLEMAS BAJOS -->
+            <div class="issue-section">
+                <h2>🟢 Problemas Bajos (Mejoras Opcionales)</h2>
+                
+                <div class="issue low">
+                    <div class="issue-header">
+                        <div class="issue-title">20. Documentación Técnica Limitada</div>
+                        <span class="severity-badge low">Bajo</span>
+                    </div>
+                    <div class="issue-description">
+                        <p><strong>Sugerencia:</strong> Mejorar documentación de arquitectura, API, y procesos de deployment.</p>
+                    </div>
+                </div>
+                
+                <div class="issue low">
+                    <div class="issue-header">
+                        <div class="issue-title">21. Falta de Typed Responses</div>
+                        <span class="severity-badge low">Bajo</span>
+                    </div>
+                    <div class="issue-description">
+                        <p><strong>Sugerencia:</strong> Muchos endpoints usan <code>any</code> en lugar de tipos específicos para las respuestas.</p>
+                    </div>
+                </div>
+                
+                <div class="issue low">
+                    <div class="issue-header">
+                        <div class="issue-title">22. Archivos Temporales en Repositorio</div>
+                        <span class="severity-badge low">Bajo</span>
+                    </div>
+                    <div class="issue-description">
+                        <p><strong>Problema:</strong> Archivos como <code>temp.txt</code>, <code>tmp.patch</code>, <code>build.log</code> están en el repositorio.</p>
+                        
+                        <div class="recommendations">
+                            <h4>✅ Soluciones:</h4>
+                            <ul>
+                                <li>Agregar estos patrones al .gitignore</li>
+                                <li>Limpiar el repositorio de archivos temporales</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="issue low">
+                    <div class="issue-header">
+                        <div class="issue-title">23. TypeScript Strict Mode Deshabilitado</div>
+                        <span class="severity-badge low">Bajo</span>
+                    </div>
+                    <div class="issue-description">
+                        <p><strong>Sugerencia:</strong> Habilitar modo estricto de TypeScript para mejor type safety.</p>
+                        
+                        <div class="recommendations">
+                            <h4>✅ Soluciones:</h4>
+                            <ul>
+                                <li>Habilitar <code>"strict": true</code> en tsconfig.json</li>
+                                <li>Resolver errores de tipo gradualmente</li>
+                                <li>Usar <code>noImplicitAny</code> y <code>strictNullChecks</code></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- CHECKLIST FINAL -->
+            <div class="summary" style="margin-top: 40px; border-left-color: #28a745;">
+                <h2>✅ Checklist para Producción</h2>
+                <p>Antes de desplegar a producción, asegúrate de completar:</p>
+                
+                <h3 style="margin-top: 20px; color: #dc3545;">🔴 Crítico (Obligatorio)</h3>
+                <ul>
+                    <li>☐ Eliminar VITE_GOOGLE_MAPS_API_KEY de todo el código cliente</li>
+                    <li>☐ Implementar encriptación de API keys con claves seguras</li>
+                    <li>☐ Eliminar todos los logs que contengan información sensible</li>
+                    <li>☐ Configurar headers de seguridad HTTP completos</li>
+                    <li>☐ Implementar rate limiting persistente con Vercel KV</li>
+                </ul>
+                
+                <h3 style="margin-top: 20px; color: #fd7e14;">🟠 Alto (Muy Recomendado)</h3>
+                <ul>
+                    <li>☐ Configurar CORS restrictivo</li>
+                    <li>☐ Documentar todas las variables de entorno</li>
+                    <li>☐ Implementar validación exhaustiva de entradas</li>
+                    <li>☐ Verificar Row Level Security en Supabase</li>
+                    <li>☐ Optimizar timeouts de funciones serverless</li>
+                    <li>☐ Reducir logging en producción</li>
+                    <li>☐ Integrar sistema de monitoring (Sentry)</li>
+                    <li>☐ Ejecutar npm audit y resolver vulnerabilidades</li>
+                </ul>
+                
+                <h3 style="margin-top: 20px; color: #ffc107;">🟡 Medio (Recomendado)</h3>
+                <ul>
+                    <li>☐ Auditar uso de localStorage</li>
+                    <li>☐ Optimizar bundle size</li>
+                    <li>☐ Habilitar sourcemaps ocultos</li>
+                    <li>☐ Revisar importmaps y CDNs externos</li>
+                    <li>☐ Implementar tests automatizados</li>
+                    <li>☐ Optimizar estrategia de cache</li>
+                </ul>
+            </div>
+            
+            <div style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 20px; margin: 30px 0; border-radius: 4px;">
+                <h3 style="color: #856404; margin-bottom: 15px;">⚠️ Advertencia Final</h3>
+                <p style="color: #856404; line-height: 1.8;">
+                    <strong>NO DESPLEGAR A PRODUCCIÓN</strong> hasta que se resuelvan TODOS los problemas críticos. 
+                    Los problemas actuales exponen API keys, permiten bypass de rate limiting, y dejan la aplicación 
+                    vulnerable a múltiples vectores de ataque. Una vez resueltos los problemas críticos, los de 
+                    prioridad alta deben ser abordados antes del despliegue para asegurar una operación segura y confiable.
+                </p>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p><strong>Auditoría realizada:</strong> 2 de Diciembre, 2025</p>
+            <p style="margin-top: 10px;">Fahrtenbuch Pro - Análisis de Seguridad y Preparación para Producción</p>
+        </div>
+    </div>
+</body>
+</html>
+
