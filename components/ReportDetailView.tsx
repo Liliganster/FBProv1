@@ -242,9 +242,10 @@ const ReportDetailView: React.FC<ReportDetailViewProps> = ({ report, projects, o
   const licensePlate = driverSnapshot?.licensePlate || t('detail_unknown');
 
   const contentStyle = {
-    backgroundColor: theme === 'dark'
-        ? `rgba(30, 30, 30, ${1 - personalization.uiTransparency})`
-        : `rgba(243, 244, 246, ${1 - personalization.uiTransparency})`,
+    backgroundImage: 'linear-gradient(135deg, #10231e 0%, #5f8f86 45%, #9fc5bb 100%)',
+    color: '#e8edf0',
+    border: '1px solid rgba(255,255,255,0.12)',
+    boxShadow: '0 18px 60px rgba(0,0,0,0.35)',
     backdropFilter: `blur(${personalization.uiBlur}px)`,
   };
 
@@ -271,7 +272,10 @@ const ReportDetailView: React.FC<ReportDetailViewProps> = ({ report, projects, o
         </div>
       </div>
       
-      <div style={contentStyle} className="bg-frost-glass printable-content p-6 rounded-lg">
+      <div
+        style={contentStyle}
+        className="printable-content p-8 rounded-xl text-white"
+      >
         <div className="mb-4 text-center">
           <h3 className="text-2xl font-bold text-white">{t('report_preview_title')}</h3>
           <p className="text-on-surface-dark-secondary">
@@ -295,8 +299,9 @@ const ReportDetailView: React.FC<ReportDetailViewProps> = ({ report, projects, o
             )}
           </div>
         </div>
-        <table className="w-full text-left text-sm">
-          <thead className="bg-gray-700/50">
+        <div className="overflow-hidden rounded-lg bg-slate-900/30 border border-white/10 shadow-inner">
+        <table className="w-full text-left text-sm text-white">
+          <thead className="bg-slate-800/70">
             <tr>
               <th className="p-2">{t('report_col_date')}</th>
               <th className="p-2">{t('report_col_project')}</th>
@@ -305,23 +310,23 @@ const ReportDetailView: React.FC<ReportDetailViewProps> = ({ report, projects, o
               <th className="p-2 text-right">{t('report_col_distance')}</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-700/50">
+          <tbody className="divide-y divide-white/10">
             {reportTrips.map(trip => {
                 const project = getProjectInfo(trip.projectId);
                 const projectNameDisplay = project ? project.name : t('report_unknownProject');
                 const producerDisplay = project ? project.producer : t('detail_unknown');
                 return (
-                  <tr key={trip.id}>
+                  <tr key={trip.id} className="bg-white/5">
                     <td className="p-2 whitespace-nowrap">{formatDateForDisplay(trip.date)}</td>
                     <td className="p-2">{projectNameDisplay}</td>
                     <td className="p-2">{producerDisplay}</td>
-                    <td className="p-2">{trip.locations.join(' → ')}</td>
+                    <td className="p-2">{trip.locations.join(' -> ')}</td>
                     <td className="p-2 text-right font-bold text-brand-primary">{trip.distance.toFixed(1)} km</td>
                   </tr>
                 );
               })}
           </tbody>
-          <tfoot className="bg-gray-700/50 font-bold">
+          <tfoot className="bg-slate-800/70 font-bold">
             <tr>
               <td className="p-2" colSpan={4}>{t('report_total_kms')}</td>
               <td className="p-2 text-right text-brand-primary text-base">
@@ -330,6 +335,7 @@ const ReportDetailView: React.FC<ReportDetailViewProps> = ({ report, projects, o
             </tr>
           </tfoot>
         </table>
+        </div>
 
         {report.signature && (
             <div className="audit-footer mt-6 pt-4 border-t border-gray-600 text-xs text-on-surface-dark-secondary font-mono">
