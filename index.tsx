@@ -7,6 +7,22 @@ import { AuthProvider } from './context/AuthContext';
 import { AppErrorBoundary } from './components/GranularErrorBoundary';
 import { useUnhandledPromiseRejection } from './hooks/useAsyncErrorHandler';
 import './src/index.css';
+import * as Sentry from '@sentry/react';
+
+const SENTRY_DSN = import.meta.env.VITE_SENTRY_DSN;
+const SENTRY_ENVIRONMENT = import.meta.env.VITE_SENTRY_ENV || import.meta.env.MODE;
+const SENTRY_RELEASE = typeof __COMMIT_HASH__ !== 'undefined' && __COMMIT_HASH__ ? __COMMIT_HASH__ : undefined;
+
+if (SENTRY_DSN) {
+  Sentry.init({
+    dsn: SENTRY_DSN,
+    environment: SENTRY_ENVIRONMENT,
+    release: SENTRY_RELEASE,
+    tracesSampleRate: 0,
+    replaysSessionSampleRate: 0,
+    replaysOnErrorSampleRate: 1.0, // capture session only when an error happens
+  });
+}
 
 // Component to initialize global error handling inside providers
 const ErrorHandlerInitializer: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -55,8 +71,12 @@ root.render(
 
       // Report critical errors to monitoring service
       if (errorDetails.severity === 'critical') {
-        // Here you would integrate with your error monitoring service
-        // Example: Sentry.captureException(error, { extra: errorDetails });
+        if (SENTRY_DSN) {
+          Sentry.captureException(error, {
+            tags: { component: errorDetails.component || 'unknown' },
+            extra: { ...errorDetails, componentStack: errorInfo.componentStack },
+          });
+        }
         console.error('Critical error reported to monitoring service');
       }
 
