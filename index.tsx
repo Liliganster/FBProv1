@@ -6,6 +6,7 @@ import { ToastProvider } from './context/ToastContext';
 import { AuthProvider } from './context/AuthContext';
 import { AppErrorBoundary } from './components/GranularErrorBoundary';
 import { useUnhandledPromiseRejection } from './hooks/useAsyncErrorHandler';
+import './lib/logger'; // ensure logging filters apply globally before app renders
 import './src/index.css';
 import * as Sentry from '@sentry/react';
 
