@@ -36,6 +36,10 @@ export const translations = {
     nav_advanced: 'Advanced',
     logout_btn: 'Log Out',
 
+    plan_name_free: 'Free',
+    plan_name_pro: 'Pro',
+    plan_name_enterprise: 'Enterprise',
+
     
 
     login_title: 'Sign in to your account',
@@ -721,6 +725,10 @@ export const translations = {
     nav_advanced: 'Erweitert',
     logout_btn: 'Abmelden',
 
+    plan_name_free: 'Gratis',
+    plan_name_pro: 'Pro',
+    plan_name_enterprise: 'Enterprise',
+
     
 
     login_title: 'Melden Sie sich bei Ihrem Konto an',
@@ -1405,6 +1413,10 @@ export const translations = {
     nav_calendar: 'Calendario',
     nav_advanced: 'Avanzado',
     logout_btn: 'Cerrar sesión',
+
+    plan_name_free: 'Gratis',
+    plan_name_pro: 'Pro',
+    plan_name_enterprise: 'Enterprise',
 
     
 

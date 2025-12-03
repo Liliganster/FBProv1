@@ -141,12 +141,19 @@ const Dashboard: React.FC<DashboardProps> = ({ setCurrentView, personalization, 
         return t('dashboard_unknownProject');
     };
 
+    const translatePlanName = (plan: string) => {
+        const key = `plan_name_${plan}`;
+        const translated = t(key);
+        return translated === key ? plan : translated;
+    };
+
     const renderPlanValue = () => {
         if (!aiQuota) return aiQuotaLoading ? 'Cargando…' : 'Plan no asignado';
+        const planDisplay = translatePlanName(aiQuota.plan).toUpperCase();
         if (aiQuota.limit === null) {
-            return `${aiQuota.plan.toUpperCase()} · IA ∞`;
+            return `${planDisplay} · IA ∞`;
         }
-        return `${aiQuota.plan.toUpperCase()} · ${aiQuota.used}/${aiQuota.limit} solicitudes`;
+        return `${planDisplay} · ${aiQuota.used}/${aiQuota.limit} solicitudes`;
     };
 
     const renderPlanHint = () => {
