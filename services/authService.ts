@@ -17,69 +17,65 @@ class AuthService {
   /**
    * Sign up new user with email and password
    */
-  async signUp(email: string, password: string, metadata: { 
+  async signUp(email: string, password: string, metadata: {
     full_name?: string
-    country?: string 
+    country?: string
   } = {}): Promise<AuthResponse> {
-    return authQueueService.executeAuthOperation(async () => {
-      try {
-        const { data, error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            data: metadata
-          }
-        })
-
-        if (error) throw error
-
-        // Try to create profile entry (optional - may fail if DB not configured)
-        if (data.user) {
-          try {
-            await this.createUserProfile(data.user, metadata)
-          } catch (profileError) {
-            console.warn('Could not create user profile, continuing without:', profileError);
-            // Continue without profile - signup should still succeed
-          }
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: metadata
         }
+      })
 
-        return {
-          user: data.user,
-          error: null
-        }
-      } catch (error) {
-        return {
-          user: null,
-          error: error as AuthError
+      if (error) throw error
+
+      // Try to create profile entry (optional - may fail if DB not configured)
+      if (data.user) {
+        try {
+          await this.createUserProfile(data.user, metadata)
+        } catch (profileError) {
+          console.warn('Could not create user profile, continuing without:', profileError);
+          // Continue without profile - signup should still succeed
         }
       }
-    }, `signUp_${email}`);
+
+      return {
+        user: data.user,
+        error: null
+      }
+    } catch (error) {
+      return {
+        user: null,
+        error: error as AuthError
+      }
+    }
   }
 
   /**
    * Sign in with email and password
    */
   async signIn(email: string, password: string): Promise<AuthResponse> {
-    return authQueueService.executeAuthOperation(async () => {
-      try {
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email,
-          password
-        })
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      })
 
-        if (error) throw error
+      if (error) throw error
 
-        return {
-          user: data.user,
-          error: null
-        }
-      } catch (error) {
-        return {
-          user: null,
-          error: error as AuthError
-        }
+      return {
+        user: data.user,
+        error: null
       }
-    }, `signIn_${email}`);
+    } catch (error) {
+      return {
+        user: null,
+        error: error as AuthError
+      }
+    }
   }
 
   /**
@@ -109,7 +105,7 @@ class AuthService {
     return authQueueService.executeAuthOperation(async () => {
       try {
         const { error } = await supabase.auth.signOut()
-        
+
         // Clear only Supabase-specific storage, not all sessionStorage
         // to avoid breaking other app functionality (like loop prevention)
         if (typeof window !== 'undefined') {
@@ -122,7 +118,7 @@ class AuthService {
             }
           }
           keysToRemove.forEach(key => localStorage.removeItem(key));
-          
+
           // Clear only Supabase-related sessionStorage items
           const sessionKeysToRemove = [];
           for (let i = 0; i < sessionStorage.length; i++) {
@@ -133,7 +129,7 @@ class AuthService {
           }
           sessionKeysToRemove.forEach(key => sessionStorage.removeItem(key));
         }
-        
+
         return { error }
       } catch (error) {
         // Even if signOut fails, try to clear storage
@@ -182,7 +178,7 @@ class AuthService {
   async getSession(): Promise<AuthSession> {
     try {
       const { data, error } = await supabase.auth.getSession()
-      
+
       if (error) {
         console.warn('Session error, may need to re-login:', error);
         // Don't throw for session errors, just return null
@@ -211,7 +207,7 @@ class AuthService {
   async getCurrentUser(): Promise<User | null> {
     try {
       const { data, error } = await supabase.auth.getUser()
-      
+
       if (error) throw error
       return data.user
     } catch (error) {
@@ -260,9 +256,9 @@ class AuthService {
   /**
    * Create user profile in database
    */
-  private async createUserProfile(user: User, metadata: { 
+  private async createUserProfile(user: User, metadata: {
     full_name?: string
-    avatar_url?: string 
+    avatar_url?: string
   } = {}): Promise<DbProfile | null> {
     try {
       const profileData: DbProfileInsert = {
