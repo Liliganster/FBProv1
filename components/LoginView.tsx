@@ -50,7 +50,13 @@ const LoginView: React.FC = () => {
       try {
         await login(email, password);
       } catch (err) {
-        setError(err instanceof Error ? err.message : String(err));
+        const msg = err instanceof Error ? err.message : String(err);
+        if (/email.*confirm|email.*verified|not confirmed/i.test(msg)) {
+          setInfo(t('login_email_not_confirmed') || msg);
+          setError('');
+        } else {
+          setError(msg);
+        }
       }
     } else {
       if (password !== confirmPassword) {
