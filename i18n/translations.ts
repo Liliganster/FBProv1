@@ -55,6 +55,9 @@ export const translations = {
     login_or_continue_with: 'Or continue with',
     login_continue_google: 'Continue with Google',
     login_signing_in: 'Signing in...',
+    login_verify_notice_title: 'Verify your email',
+    login_verify_notice_body: 'We sent a verification email. It can take a few minutes—please check your inbox and spam folder. You need to verify before signing in.',
+    login_verify_timeout_hint: 'The request is taking longer than usual. Please wait for the verification email (check spam) or try again in a moment.',
 
     dashboard_title: 'Dashboard',
     dashboard_totalKm: 'Total Kilometers',
@@ -744,6 +747,9 @@ export const translations = {
     login_or_continue_with: 'Oder weiter mit',
     login_continue_google: 'Mit Google fortfahren',
     login_signing_in: 'Anmeldung läuft...',
+    login_verify_notice_title: 'E-Mail bestätigen',
+    login_verify_notice_body: 'Wir haben eine Bestätigungs-E-Mail geschickt. Das kann ein paar Minuten dauern – bitte prüfe auch den Spam-Ordner. Du musst bestätigen, bevor du dich anmelden kannst.',
+    login_verify_timeout_hint: 'Die Anfrage dauert länger als üblich. Bitte warte auf die Bestätigungs-E-Mail (Spam prüfen) oder versuche es gleich noch einmal.',
 
     dashboard_title: 'Dashboard',
     dashboard_totalKm: 'Gesamtkilometer',
@@ -1433,6 +1439,9 @@ export const translations = {
     login_or_continue_with: 'O continuar con',
     login_continue_google: 'Continuar con Google',
     login_signing_in: 'Iniciando sesión...',
+    login_verify_notice_title: 'Verifica tu correo',
+    login_verify_notice_body: 'Te enviamos un correo de verificación. Puede tardar unos minutos; revisa también spam. Debes verificar antes de iniciar sesión.',
+    login_verify_timeout_hint: 'Está tardando más de lo habitual. Espera el correo de verificación (revisa spam) o inténtalo de nuevo en un momento.',
     
     dashboard_title: 'Dashboard',
     dashboard_totalKm: 'Kilómetros totales',
