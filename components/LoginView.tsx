@@ -51,7 +51,10 @@ const LoginView: React.FC = () => {
         await login(email, password);
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);
-        if (/email.*confirm|email.*verified|not confirmed/i.test(msg)) {
+        if (msg === 'auth_timeout') {
+          setInfo(t('login_verify_timeout_hint') || msg);
+          setError('');
+        } else if (/email.*confirm|email.*verified|not confirmed/i.test(msg)) {
           setInfo(t('login_email_not_confirmed') || msg);
           setError('');
         } else {
@@ -70,7 +73,7 @@ const LoginView: React.FC = () => {
         setIsLogin(true);
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);
-        const isTimeout = /timeout/i.test(msg) || /Task timed out/i.test(msg);
+        const isTimeout = msg === 'auth_timeout' || /timeout/i.test(msg) || /Task timed out/i.test(msg);
         if (isTimeout) {
           setInfo(t('login_verify_timeout_hint') || `${t('login_verify_notice_title')}: ${t('login_verify_notice_body')}`);
           setError('');

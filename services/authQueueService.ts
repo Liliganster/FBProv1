@@ -1,4 +1,4 @@
-import PQueue from 'p-queue';
+import PQueue, { TimeoutError } from 'p-queue';
 import { logger } from '../lib/logger';
 
 /**
@@ -23,7 +23,8 @@ class AuthQueueService {
       concurrency: 1, // Only one auth operation at a time
       interval: 100, // 100ms interval between operations
       intervalCap: 1, // Only one operation per interval
-      // No timeout to avoid failing slow Supabase auth responses (omit timeout)
+      // Bounded timeout with graceful handling (see catch below)
+      timeout: 15000, // 15s
     });
 
     // State update queue - serialize state changes
@@ -31,7 +32,7 @@ class AuthQueueService {
       concurrency: 1, // Only one state update at a time
       interval: 50, // 50ms interval for faster state updates
       intervalCap: 1,
-      // No timeout (omit to allow state updates to complete)
+      timeout: 15000,
     });
 
     this.setupQueueEventHandlers();
@@ -98,6 +99,11 @@ class AuthQueueService {
 
       return result;
     } catch (error) {
+      if (error instanceof TimeoutError) {
+        logger.warn(`Auth operation ${name} timed out; clearing queue to avoid lock`);
+        this.authQueue.clear();
+        throw new Error('auth_timeout');
+      }
       logger.error(`Auth operation ${name} queue execution failed:`, error);
       throw error;
     }
@@ -133,6 +139,11 @@ class AuthQueueService {
 
       return result;
     } catch (error) {
+      if (error instanceof TimeoutError) {
+        logger.warn(`State update ${name} timed out; clearing queue to avoid lock`);
+        this.stateQueue.clear();
+        throw new Error('auth_state_timeout');
+      }
       logger.error(`State update ${name} queue execution failed:`, error);
       throw error;
     }
