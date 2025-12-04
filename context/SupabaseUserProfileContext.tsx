@@ -17,12 +17,11 @@ interface UserProfileContextType {
 export const UserProfileContext = createContext<UserProfileContextType | undefined>(undefined);
 
 export const UserProfileProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const { showToast } = useToast();
   const [userProfile, setUserProfileState] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const isProd = (typeof import.meta !== 'undefined' && (import.meta as any)?.env?.PROD) || process.env.NODE_ENV === 'production';
 
   const fallbackName = user && user.email ? user.email.split('@')[0] : 'user';
   const storageKey = user ? `fahrtenbuch_user_profile_${user.id}` : null;
@@ -77,18 +76,20 @@ export const UserProfileProvider: React.FC<{ children: React.ReactNode }> = ({ c
     try {
       let profile = await databaseService.getUserProfile(user.id);
 
-      // If no profile exists, create a default one
+      // If no profile exists, create a default one (needed to enter the app)
       if (!profile) {
-        if (isProd) {
-          console.error('Profile not found in Supabase; skipping default creation in production');
-          showToast('No se encontró tu perfil en la nube. Verifica la configuración de Supabase.', 'error');
-          setError('Profile not found in Supabase');
+        console.warn('Profile not found, creating default profile');
+        try {
+          const defaultProfile = createDefaultProfile(user.id);
+          profile = await databaseService.createUserProfile(user.id, defaultProfile);
+        } catch (createErr) {
+          console.error('Failed to create missing profile:', createErr);
+          showToast('No se pudo crear tu perfil. Intenta iniciar sesión de nuevo.', 'error');
+          setError('Profile creation failed');
           setUserProfileState(null);
+          await logout();
           return;
         }
-        console.log('No profile found, creating default profile (non-prod)');
-        const defaultProfile = createDefaultProfile(user.id);
-        profile = await databaseService.createUserProfile(user.id, defaultProfile);
       }
 
       setUserProfileState(profile);
@@ -97,28 +98,9 @@ export const UserProfileProvider: React.FC<{ children: React.ReactNode }> = ({ c
       const errorMessage = err instanceof Error ? err.message : 'Failed to load profile';
       setError(errorMessage);
 
-      if (!isProd) {
-        // Fallback to localStorage in non-production
-        try {
-          if (storageKey) {
-            const localData = localStorage.getItem(storageKey);
-            if (localData) {
-              const parsed = JSON.parse(localData);
-              setUserProfileState(parsed);
-              console.warn('Using localStorage fallback for user profile');
-            } else {
-              // Create default profile locally
-              const defaultProfile = createDefaultProfile(user.id);
-              setUserProfileState(defaultProfile);
-            }
-          }
-        } catch (localError) {
-          console.error('Failed to load from localStorage:', localError);
-          setUserProfileState(createDefaultProfile(user.id));
-        }
-      } else {
-        showToast('No se pudo cargar tu perfil desde Supabase.', 'error');
-      }
+      showToast('No se pudo cargar tu perfil desde Supabase.', 'error');
+      setUserProfileState(null);
+      await logout();
     } finally {
       setLoading(false);
     }
@@ -127,7 +109,7 @@ export const UserProfileProvider: React.FC<{ children: React.ReactNode }> = ({ c
   // Auto-migrate from localStorage on first load
   useEffect(() => {
     const migrateFromLocalStorage = async () => {
-      if (!user?.id || !storageKey || isProd) return;
+      if (!user?.id || !storageKey) return;
 
       try {
         // Check for regular profile in localStorage
