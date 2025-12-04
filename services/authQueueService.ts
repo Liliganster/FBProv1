@@ -23,8 +23,9 @@ class AuthQueueService {
       concurrency: 1, // Only one auth operation at a time
       interval: 100, // 100ms interval between operations
       intervalCap: 1, // Only one operation per interval
-      // Allow slower auth operations (Supabase signup + email) without failing the queue
-      timeout: 30000, // 30 second timeout for auth operations
+      // Disable timeout to avoid failing slow Supabase auth responses
+      timeout: 0,
+      throwOnTimeout: false,
     });
 
     // State update queue - serialize state changes
@@ -32,7 +33,8 @@ class AuthQueueService {
       concurrency: 1, // Only one state update at a time
       interval: 50, // 50ms interval for faster state updates
       intervalCap: 1,
-      timeout: 20000, // allow state updates to settle before timing out
+      timeout: 0,
+      throwOnTimeout: false,
     });
 
     this.setupQueueEventHandlers();

@@ -64,9 +64,11 @@ const LoginView: React.FC = () => {
         setIsLogin(true);
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);
-        const isTimeout = /timeout/i.test(msg);
+        const isTimeout = /timeout/i.test(msg) || /Task timed out/i.test(msg);
         if (isTimeout) {
           setInfo(t('login_verify_timeout_hint') || `${t('login_verify_notice_title')}: ${t('login_verify_notice_body')}`);
+          setError('');
+          setIsLogin(true);
         } else {
           setError(msg);
         }
