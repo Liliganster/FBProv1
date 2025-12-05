@@ -55,8 +55,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         // Vercel sometimes parses the body automatically. 
         // We need the raw body for Stripe signature verification.
-        if ((req as any).rawBody) {
-            // Best case: Vercel provided the raw body
+        if ((req as any).rawBody && Buffer.isBuffer((req as any).rawBody)) {
+            // Best case: Vercel provided the raw body as Buffer
             buf = (req as any).rawBody;
         } else if (req.body && Buffer.isBuffer(req.body)) {
             // req.body is already a buffer
@@ -65,29 +65,34 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             // req.body is a string
             buf = Buffer.from(req.body, 'utf8');
         } else {
-            // Fallback: Try to read from stream if not consumed, or fail gracefully
+            // Fallback: Try to read from stream if not consumed
             try {
                 buf = await buffer(req);
             } catch (e) {
-                console.error('Could not get raw body from request');
-                res.status(400).json({
-                    error: 'Webhook Error: Could not get raw body',
-                    details: 'Vercel parsed the body and rawBody is missing.'
-                });
-                return;
+                console.error('Error reading request stream:', e);
             }
+        }
 
-            if (buf.length === 0 && req.body) {
-                console.error('Stream empty but req.body exists. Missing rawBody.');
-                // Last resort: JSON.stringify (might fail signature but better than crashing)
-                // buf = Buffer.from(JSON.stringify(req.body));
-
-                res.status(400).json({
-                    error: 'Webhook Error: No raw body available',
-                    details: 'Server configuration issue: bodyParser enabled but rawBody missing.'
-                });
-                return;
+        // If we still don't have a buffer (or it's empty) and we have a parsed body object
+        if ((!buf || buf.length === 0) && req.body) {
+            console.warn('Raw body not available, attempting to reconstruct from parsed body (JSON.stringify).');
+            try {
+                if (typeof req.body === 'object') {
+                    buf = Buffer.from(JSON.stringify(req.body));
+                } else {
+                    buf = Buffer.from(String(req.body));
+                }
+            } catch (e) {
+                console.error('Failed to stringify body:', e);
             }
+        }
+
+        if (!buf || buf.length === 0) {
+            res.status(400).json({
+                error: 'Webhook Error: No body available',
+                details: 'Could not retrieve raw or parsed body.'
+            });
+            return;
         }
 
         const sig = req.headers['stripe-signature'];
