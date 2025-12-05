@@ -54,6 +54,43 @@ export default async function proxy(req: VercelRequest, res: VercelResponse) {
     return;
   }
 
+  // Abuse Prevention Check for AI endpoints
+  if (path.startsWith('ai/')) {
+    try {
+      const { createClient } = await import('@supabase/supabase-js');
+      const { checkAbuse } = await import('../lib/abuse-prevention.js');
+
+      const supabaseUrl = process.env.VITE_SUPABASE_URL;
+      const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+      if (supabaseUrl && serviceRoleKey) {
+        const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey, {
+          auth: { persistSession: false }
+        });
+
+        const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+        const fingerprint = req.headers['x-device-fingerprint']; // Frontend must send this
+
+        const isBanned = await checkAbuse(supabaseAdmin, {
+          ip: Array.isArray(ip) ? ip[0] : ip,
+          fingerprint: Array.isArray(fingerprint) ? fingerprint[0] : fingerprint
+        });
+
+        if (isBanned) {
+          console.warn(`[AbusePrevention] Blocked request from IP: ${ip}, Fingerprint: ${fingerprint}`);
+          toJsonResponse(res, 403, {
+            error: 'Access Denied',
+            message: 'Your device or network has been flagged for abuse of the free tier.'
+          });
+          return;
+        }
+      }
+    } catch (error) {
+      console.error('[AbusePrevention] Error checking abuse status:', error);
+      // Fail open to avoid blocking legitimate users on error
+    }
+  }
+
   const handler = await getHandler(path);
   if (!handler) {
     toJsonResponse(res, 404, { error: 'Not Found', path });

@@ -218,12 +218,17 @@ const SettingsView: React.FC<{
             // Also delete from auth.users via API
             const { data: { session } } = await supabase.auth.getSession();
             if (session?.access_token) {
+                // Get device fingerprint for abuse prevention
+                const { getDeviceFingerprint } = await import('../lib/fingerprint');
+                const fingerprint = await getDeviceFingerprint();
+
                 await fetch('/api/proxy?path=auth/delete-account', {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${session.access_token}`,
                         'Content-Type': 'application/json'
-                    }
+                    },
+                    body: JSON.stringify({ fingerprint })
                 });
             }
 
