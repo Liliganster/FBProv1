@@ -54,7 +54,7 @@ const plans = [
 ];
 
 const PlansView: React.FC<PlansViewProps> = ({ setCurrentView }) => {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
 
   return (
     <div className="max-w-6xl mx-auto">
@@ -94,7 +94,10 @@ const PlansView: React.FC<PlansViewProps> = ({ setCurrentView }) => {
             <div className="mt-6">
               <Button
                 variant={plan.highlight ? 'primary' : 'secondary'}
+                disabled={profile?.plan === plan.id}
                 onClick={() => {
+                  if (profile?.plan === plan.id) return;
+
                   if (plan.id === 'pro' && proCheckoutUrl) {
                     const checkoutUrl = new URL(proCheckoutUrl);
                     if (user?.id) {
@@ -114,7 +117,7 @@ const PlansView: React.FC<PlansViewProps> = ({ setCurrentView }) => {
                 }}
                 className="w-full"
               >
-                {plan.cta}
+                {profile?.plan === plan.id ? 'Plan Actual' : plan.cta}
               </Button>
               <p className="text-xs text-on-surface-secondary mt-2 flex items-center gap-1">
                 <UploadCloudIcon className="w-4 h-4" />
