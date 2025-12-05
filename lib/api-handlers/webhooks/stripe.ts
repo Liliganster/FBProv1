@@ -1,8 +1,38 @@
 import { createClient } from '@supabase/supabase-js';
+import { Buffer } from 'buffer';
 import Stripe from 'stripe';
 
 function toJsonResponse(res: any, status: number, payload: unknown) {
     res.status(status).setHeader('Content-Type', 'application/json').send(JSON.stringify(payload));
+}
+
+async function getRawBody(req: any): Promise<Buffer | null> {
+    // Prefer any raw buffer already provided by the platform
+    if (req.rawBody && Buffer.isBuffer(req.rawBody)) return req.rawBody;
+    if (req.body && Buffer.isBuffer(req.body)) return req.body;
+    if (typeof req.body === 'string') return Buffer.from(req.body, 'utf8');
+
+    if (req.body && typeof req.body === 'object') {
+        // Body was parsed; re-stringify so Stripe gets a string/Buffer instead of an object
+        try {
+            return Buffer.from(JSON.stringify(req.body));
+        } catch (e) {
+            console.warn('[stripe webhook] Failed to stringify parsed body:', e);
+        }
+    }
+
+    // Fallback: try to read the stream if still available
+    try {
+        const chunks: Buffer[] = [];
+        for await (const chunk of req) {
+            chunks.push(typeof chunk === 'string' ? Buffer.from(chunk) : chunk);
+        }
+        if (chunks.length) return Buffer.concat(chunks);
+    } catch (err) {
+        console.error('[stripe webhook] Error reading request stream:', err);
+    }
+
+    return null;
 }
 
 export default async function handler(req: any, res: any) {
@@ -27,35 +57,18 @@ export default async function handler(req: any, res: any) {
     let event: Stripe.Event;
 
     try {
-        // Vercel serverless functions usually provide the body as a buffer or object.
-        // Stripe needs the raw body for signature verification.
-        // If req.body is already parsed, we might have trouble verifying the signature 
-        // unless we can access the raw body.
-        // For now, assuming standard Vercel behavior where we might need to handle this carefully.
-        // Ideally, we should disable body parsing for this route in vercel.json, 
-        // but since we are using a proxy, it might be tricky.
-
-        // However, if we trust the environment (e.g. just checking the secret in the header isn't enough),
-        // we MUST verify the signature.
-
-        // In this specific setup with a custom proxy, getting the raw body might be hard if 'express' or 'body-parser' 
-        // is already running globally.
-        // Let's assume for now we can get the raw body or that the user will configure Vercel to not parse it.
-
-        // If req.body is an object, we can't verify signature easily.
-        // We will try to use the body as is if it's a buffer/string.
-
         const sig = req.headers['stripe-signature'];
         if (!sig) {
             return toJsonResponse(res, 400, { error: 'Missing Stripe signature' });
         }
 
-        // NOTE: In a real Vercel deployment, you often need to consume the stream or use a helper 
-        // to get the raw body buffer.
-        // Here we assume req.body is the raw buffer (requires config) or we skip verification for dev if needed (NOT RECOMMENDED).
+        const rawBody = await getRawBody(req);
+        if (!rawBody || rawBody.length === 0) {
+            console.error('[stripe webhook] Empty or unavailable raw body');
+            return toJsonResponse(res, 400, { error: 'Webhook Error: No request body available for signature verification' });
+        }
 
-        // For safety, let's try to construct the event.
-        event = stripe.webhooks.constructEvent(req.body, sig, webhookSecret);
+        event = stripe.webhooks.constructEvent(rawBody, sig, webhookSecret);
 
     } catch (err: any) {
         console.error(`Webhook Error: ${err.message}`);
