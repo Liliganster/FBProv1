@@ -31,6 +31,9 @@ async function getHandler(path: string): Promise<Handler | null> {
       // Auth endpoints
       case 'auth/delete-account':
         return (await import('../lib/api-handlers/auth/delete-account.js')).default as unknown as Handler;
+      // Webhooks
+      case 'webhooks/stripe':
+        return (await import('../lib/api-handlers/webhooks/stripe.js')).default as unknown as Handler;
       default:
         return null;
     }

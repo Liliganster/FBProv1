@@ -2,6 +2,7 @@ import React from 'react';
 import { SparklesIcon, CheckIcon, UploadCloudIcon } from './Icons';
 import { PersonalizationSettings, View } from '../types';
 import { Button } from './Button';
+import { useAuth } from '../hooks/useAuth';
 
 interface PlansViewProps {
   setCurrentView: (view: View) => void;
@@ -53,6 +54,8 @@ const plans = [
 ];
 
 const PlansView: React.FC<PlansViewProps> = ({ setCurrentView }) => {
+  const { user } = useAuth();
+
   return (
     <div className="max-w-6xl mx-auto">
       <div className="flex items-center justify-between mb-8">
@@ -93,7 +96,14 @@ const PlansView: React.FC<PlansViewProps> = ({ setCurrentView }) => {
                 variant={plan.highlight ? 'primary' : 'secondary'}
                 onClick={() => {
                   if (plan.id === 'pro' && proCheckoutUrl) {
-                    window.open(proCheckoutUrl, '_blank');
+                    const checkoutUrl = new URL(proCheckoutUrl);
+                    if (user?.id) {
+                      checkoutUrl.searchParams.set('client_reference_id', user.id);
+                      if (user.email) {
+                        checkoutUrl.searchParams.set('prefilled_email', user.email);
+                      }
+                    }
+                    window.open(checkoutUrl.toString(), '_blank');
                     return;
                   }
                   if (plan.id === 'enterprise' && enterpriseCheckoutUrl) {
