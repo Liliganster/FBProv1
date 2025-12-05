@@ -2,6 +2,8 @@ import { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
 import Stripe from 'stripe';
 
+import { Buffer } from 'buffer';
+
 // Disable body parsing to verify Stripe signature
 export const config = {
     api: {
@@ -30,7 +32,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     if (!stripeSecretKey || !webhookSecret || !supabaseUrl || !serviceRoleKey) {
         console.error('Missing Stripe or Supabase configuration');
-        res.status(500).json({ error: 'Server Configuration Error' });
+        res.status(500).json({
+            error: 'Server Configuration Error',
+            details: {
+                hasStripeKey: !!stripeSecretKey,
+                hasWebhookSecret: !!webhookSecret,
+                hasSupabaseUrl: !!supabaseUrl,
+                hasServiceKey: !!serviceRoleKey
+            }
+        });
         return;
     }
 
@@ -41,10 +51,49 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     let event: Stripe.Event;
 
     try {
-        const buf = await buffer(req);
+        let buf: Buffer;
+
+        // Vercel sometimes parses the body automatically. 
+        // We need the raw body for Stripe signature verification.
+        if ((req as any).rawBody) {
+            // Best case: Vercel provided the raw body
+            buf = (req as any).rawBody;
+        } else if (req.body && Buffer.isBuffer(req.body)) {
+            // req.body is already a buffer
+            buf = req.body;
+        } else if (req.body && typeof req.body === 'string') {
+            // req.body is a string
+            buf = Buffer.from(req.body, 'utf8');
+        } else {
+            // Fallback: Try to read from stream if not consumed, or fail gracefully
+            try {
+                buf = await buffer(req);
+            } catch (e) {
+                console.error('Could not get raw body from request');
+                res.status(400).json({
+                    error: 'Webhook Error: Could not get raw body',
+                    details: 'Vercel parsed the body and rawBody is missing.'
+                });
+                return;
+            }
+
+            if (buf.length === 0 && req.body) {
+                console.error('Stream empty but req.body exists. Missing rawBody.');
+                // Last resort: JSON.stringify (might fail signature but better than crashing)
+                // buf = Buffer.from(JSON.stringify(req.body));
+
+                res.status(400).json({
+                    error: 'Webhook Error: No raw body available',
+                    details: 'Server configuration issue: bodyParser enabled but rawBody missing.'
+                });
+                return;
+            }
+        }
+
         const sig = req.headers['stripe-signature'];
 
         if (!sig) {
+            console.error('Missing Stripe signature header');
             res.status(400).json({ error: 'Missing Stripe signature' });
             return;
         }
@@ -52,7 +101,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         event = stripe.webhooks.constructEvent(buf, sig as string, webhookSecret);
     } catch (err: any) {
         console.error(`Webhook Error: ${err.message}`);
-        res.status(400).json({ error: `Webhook Error: ${err.message}` });
+        res.status(400).json({
+            error: `Webhook Error: ${err.message}`,
+            details: 'Check your STRIPE_WEBHOOK_SECRET or raw body parsing'
+        });
         return;
     }
 
