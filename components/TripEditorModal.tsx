@@ -113,7 +113,7 @@ const TripEditorModal: React.FC<TripEditorModalProps> = ({ trip, projects, trips
     const selectedProject = projects.find(p => p.id === formData.projectId);
 
     if (userProfile) {
-      const defaultRate = selectedProject?.ratePerKm ?? userProfile.ratePerKm ?? getRateForCountry(userProfile.country);
+      const defaultRate = selectedProject?.ratePerKm ?? userProfile.ratePerKm;
       if (formData.ratePerKm !== defaultRate) {
         setFormData(prev => ({ ...prev, ratePerKm: defaultRate }));
       }

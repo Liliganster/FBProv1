@@ -37,7 +37,6 @@ const SettingsView: React.FC<{
     const [localProfile, setLocalProfile] = useState<UserProfile | null>(userProfile);
     const { t } = useTranslation();
     const { showToast } = useToast();
-    const [passengerSurcharge, setPassengerSurcharge] = useState<number>(0);
     const [openRouterModels, setOpenRouterModels] = useState<AiModelInfo[]>([]);
     const [isFetchingOrModels, setIsFetchingOrModels] = useState(false);
     const [fetchOrModelsError, setFetchOrModelsError] = useState<string | null>(null);
@@ -61,11 +60,9 @@ const SettingsView: React.FC<{
     );
 
     useEffect(() => {
+        console.log('DEBUG: Settings loaded profile:', userProfile);
         setLocalProfile(userProfile);
         resetInitialData(userProfile);
-        if (userProfile) {
-            setPassengerSurcharge(userProfile.passengerSurchargePerKm ?? 0);
-        }
     }, [userProfile, resetInitialData]);
 
     useEffect(() => {
@@ -111,9 +108,6 @@ const SettingsView: React.FC<{
             if (name === 'country') {
                 // Do not auto-set rates when country changes
             }
-            if (name === 'passengerSurchargePerKm') {
-                setPassengerSurcharge(typeof finalValue === 'number' ? finalValue : 0);
-            }
             return newProfile;
         });
     };
@@ -135,6 +129,7 @@ const SettingsView: React.FC<{
 
     const handleSaveAllSettings = () => {
         if (localProfile && user) {
+            console.log('DEBUG: Saving profile updates:', localProfile);
             setUserProfile(localProfile);
             markAsSaved(); // Mark as saved after successful save
             showToast(t('settings_alert_saveSuccess'), 'success');
@@ -260,7 +255,7 @@ const SettingsView: React.FC<{
                                     label={t('passenger_surcharge_rate')}
                                     name="passengerSurchargePerKm"
                                     type="number"
-                                    value={localProfile.passengerSurchargePerKm ?? passengerSurcharge}
+                                    value={localProfile.passengerSurchargePerKm}
                                     onChange={handleProfileChange}
                                 />
                                 <div className="md:col-span-2">
