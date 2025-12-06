@@ -584,9 +584,18 @@ const SettingsView: React.FC<{
                                     checked={localProfile.isTutorialEnabled !== false}
                                     onChange={async (e) => {
                                         const newValue = e.target.checked;
-                                        setLocalProfile(prev => prev ? ({ ...prev, isTutorialEnabled: newValue }) : null);
+                                        setLocalProfile(prev => prev ? ({
+                                            ...prev,
+                                            isTutorialEnabled: newValue,
+                                            // Al reactivar, forzamos reaparición
+                                            hasSeenTutorial: newValue ? false : prev.hasSeenTutorial
+                                        }) : null);
                                         try {
-                                            await updateUserProfile({ isTutorialEnabled: newValue });
+                                            await updateUserProfile({
+                                                isTutorialEnabled: newValue,
+                                                // Resetear flag para que vuelva a mostrarse al activar
+                                                hasSeenTutorial: newValue ? false : undefined,
+                                            });
                                         } catch (error) {
                                             console.error('Failed to update tutorial setting:', error);
                                             showToast('Error updating tutorial setting', 'error');
