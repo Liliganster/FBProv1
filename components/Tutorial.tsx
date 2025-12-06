@@ -18,6 +18,16 @@ export const Tutorial: React.FC<TutorialProps> = ({ userProfile, updateUserProfi
     useEffect(() => {
         if (!userProfile) return;
 
+        // If tutorial is explicitly disabled or already seen, ensure it's destroyed and return
+        if (userProfile.isTutorialEnabled === false || userProfile.hasSeenTutorial) {
+            if (driverObj.current) {
+                driverObj.current.destroy();
+                driverObj.current = null;
+            }
+            hasStartedRef.current = false;
+            return;
+        }
+
         // Initialize driver
         driverObj.current = driver({
             showProgress: true,
@@ -82,8 +92,8 @@ export const Tutorial: React.FC<TutorialProps> = ({ userProfile, updateUserProfi
             }
         });
 
-        // Start tutorial if enabled and not seen, and NOT already started
-        if (userProfile.isTutorialEnabled !== false && !userProfile.hasSeenTutorial && !hasStartedRef.current) {
+        // Start tutorial if not already started
+        if (!hasStartedRef.current) {
             hasStartedRef.current = true;
             // Small delay to ensure UI is rendered
             setTimeout(() => {
