@@ -25,7 +25,7 @@ interface ProjectDetailModalProps {
 
 const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({ projectId, trips, onClose, personalization, theme }) => {
   const tripsContext = useTrips();
-  const { projects, addCallsheetsToProject, deleteCallsheetFromProject } = useProjects();
+  const { projects, addCallsheetsToProject, deleteCallsheetFromProject, updateProject } = useProjects();
   const addMultipleTrips = tripsContext.addMultipleTrips || (() => Promise.resolve());
   const addAiTrips = tripsContext.addAiTrips || (() => Promise.resolve());
   const getAiQuota = tripsContext.getAiQuota || (() => Promise.resolve({ plan: 'free', limit: 15, used: 0, needed: 0, remaining: 15, allowed: true }));
@@ -203,7 +203,7 @@ const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({ projectId, trip
     try {
       // VERIFICAR CUOTA ANTES DE PROCESAR
       const currentQuota = await getAiQuota();
-      
+
       if (currentQuota.limit !== null && currentQuota.remaining !== null && currentQuota.remaining === 0) {
         const errorMsg = `Has alcanzado el límite de tu plan (${currentQuota.used}/${currentQuota.limit} días únicos usados). No se puede procesar con IA. Actualiza tu plan o usa importación CSV.`;
         showToast(errorMsg, 'error');
@@ -241,7 +241,17 @@ const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({ projectId, trip
 
       // Convert Blob to File object
       const downloadedFile = new File([fileData], callsheetData.filename, { type: fileData.type });
-      const { tripData } = await processFileForTrip(downloadedFile, userProfile, DocumentType.CALLSHEET);
+      const { tripData, productionCompany } = await processFileForTrip(downloadedFile, userProfile, DocumentType.CALLSHEET);
+
+      // Auto-update project producer if missing
+      if ((!project.producer || project.producer.trim() === '') && productionCompany) {
+        try {
+          await updateProject(project.id, { producer: productionCompany });
+          showToast(`Updated production company: ${productionCompany}`, 'success');
+        } catch (err) {
+          console.warn('Failed to auto-update producer:', err);
+        }
+      }
 
       await addAiTrips([{
         ...tripData,

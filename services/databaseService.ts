@@ -103,9 +103,9 @@ class DatabaseService {
   }
 
 
-  
+
   // ===== PROJECT OPERATIONS =====
-  
+
   /**
    * Get all projects for a user
    */
@@ -149,7 +149,7 @@ class DatabaseService {
         ownerDriverId: project.owner_driver_id ?? null,
         callsheets: project.callsheets?.map((cs: DbCallsheet) => ({
           id: cs.id,
-            // Compatibilidad: si la columna real es filename
+          // Compatibilidad: si la columna real es filename
           name: (cs as any).filename ?? (cs as any).name,
           type: 'application/octet-stream', // Default type since column doesn't exist in DB
           url: (cs as any).url || '' // Include URL from database
@@ -229,7 +229,11 @@ class DatabaseService {
         updated_at: new Date().toISOString()
       }
 
-  if (updates.name !== undefined) updateData.name = updates.name
+      if (updates.name !== undefined) updateData.name = updates.name
+      if (updates.description !== undefined) updateData.description = updates.description
+      if (updates.producer !== undefined) updateData.producer = updates.producer
+      if (updates.ratePerKm !== undefined) updateData.rate_per_km = updates.ratePerKm
+      if (updates.ownerDriverId !== undefined) updateData.owner_driver_id = updates.ownerDriverId
 
       const { data, error } = await supabase
         .from('projects')
@@ -418,7 +422,7 @@ class DatabaseService {
 
       // Insert records into database (only columns that exist)
       const callsheetsToInsert = uploadResults.map(r => r.dbRecord)
-      
+
       const { data, error } = await supabase
         .from('callsheets')
         .insert(callsheetsToInsert)
@@ -427,16 +431,16 @@ class DatabaseService {
       if (error) {
         // If database insert fails, clean up uploaded files
         await Promise.all(
-          uploadResults.map(r => 
+          uploadResults.map(r =>
             supabase.storage.from('callsheets').remove([r.filePath])
           )
         )
         throw new Error(`Failed to add callsheets: ${error.message}`)
       }
 
-      return (data || []).map((d: any, index: number) => ({ 
-        id: d.id, 
-        name: d.filename ?? d.name, 
+      return (data || []).map((d: any, index: number) => ({
+        id: d.id,
+        name: d.filename ?? d.name,
         type: uploadResults[index].fileType || 'application/octet-stream',
         url: d.url || ''
       }))
@@ -475,7 +479,7 @@ class DatabaseService {
           const urlParts = callsheet.url.split('/callsheets/')
           if (urlParts.length > 1) {
             const filePath = decodeURIComponent(urlParts[1])
-            
+
             const { error: storageError } = await supabase.storage
               .from('callsheets')
               .remove([filePath])
@@ -807,7 +811,7 @@ class DatabaseService {
 
       // Insert new projects
       for (const project of projects) {
-  await this.createProject(userId, { name: project.name })
+        await this.createProject(userId, { name: project.name })
       }
     } catch (error) {
       console.error('Error replacing all projects:', error)
@@ -1033,7 +1037,7 @@ class DatabaseService {
     try {
       // Delete all existing ledger entries and batches
       await supabase.from('trip_ledger').delete().eq('user_id', userId)
-  await supabase.from('trip_batches').delete().eq('user_id', userId)
+      await supabase.from('trip_batches').delete().eq('user_id', userId)
 
       // Insert new entries if any
       if (entries.length > 0) {
@@ -1052,7 +1056,7 @@ class DatabaseService {
     try {
       // Delete ledger entries first (due to foreign key constraints)
       await supabase.from('trip_ledger').delete().eq('user_id', userId)
-  await supabase.from('trip_batches').delete().eq('user_id', userId)
+      await supabase.from('trip_batches').delete().eq('user_id', userId)
     } catch (error) {
       console.error('Error deleting all user ledger entries:', error)
       throw new Error('Failed to delete all ledger entries')
