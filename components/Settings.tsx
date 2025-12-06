@@ -61,16 +61,10 @@ const SettingsView: React.FC<{
     );
 
     useEffect(() => {
-        const mergedProfile = userProfile
-            ? {
-                ...userProfile,
-                passengerSurchargePerKm: userProfile.passengerSurchargePerKm ?? getPassengerSurchargeForCountry(userProfile.country)
-            }
-            : null;
-        setLocalProfile(mergedProfile);
-        resetInitialData(mergedProfile);
-        if (mergedProfile) {
-            setPassengerSurcharge(mergedProfile.passengerSurchargePerKm ?? 0);
+        setLocalProfile(userProfile);
+        resetInitialData(userProfile);
+        if (userProfile) {
+            setPassengerSurcharge(userProfile.passengerSurchargePerKm ?? 0);
         }
     }, [userProfile, resetInitialData]);
 
@@ -115,10 +109,7 @@ const SettingsView: React.FC<{
             if (!prev) return null;
             const newProfile = { ...prev, [name]: finalValue as any };
             if (name === 'country') {
-                const defaultPassengerRate = getPassengerSurchargeForCountry(value);
-                newProfile.ratePerKm = getRateForCountry(value);
-                newProfile.passengerSurchargePerKm = defaultPassengerRate;
-                setPassengerSurcharge(defaultPassengerRate);
+                // Do not auto-set rates when country changes
             }
             if (name === 'passengerSurchargePerKm') {
                 setPassengerSurcharge(typeof finalValue === 'number' ? finalValue : 0);
