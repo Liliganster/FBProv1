@@ -13,6 +13,8 @@ export const Tutorial: React.FC<TutorialProps> = ({ userProfile, updateUserProfi
     const { t } = useTranslation();
     const driverObj = useRef<any>(null);
 
+    const hasStartedRef = useRef(false);
+
     useEffect(() => {
         if (!userProfile) return;
 
@@ -76,16 +78,26 @@ export const Tutorial: React.FC<TutorialProps> = ({ userProfile, updateUserProfi
                 if (!userProfile.hasSeenTutorial) {
                     updateUserProfile({ hasSeenTutorial: true });
                 }
+                hasStartedRef.current = false;
             }
         });
 
-        // Start tutorial if enabled and not seen
-        if (userProfile.isTutorialEnabled !== false && !userProfile.hasSeenTutorial) {
+        // Start tutorial if enabled and not seen, and NOT already started
+        if (userProfile.isTutorialEnabled !== false && !userProfile.hasSeenTutorial && !hasStartedRef.current) {
+            hasStartedRef.current = true;
             // Small delay to ensure UI is rendered
             setTimeout(() => {
-                driverObj.current.drive();
+                if (driverObj.current) {
+                    driverObj.current.drive();
+                }
             }, 1500);
         }
+
+        return () => {
+            if (driverObj.current) {
+                driverObj.current.destroy();
+            }
+        };
 
     }, [userProfile?.hasSeenTutorial, userProfile?.isTutorialEnabled, t, updateUserProfile]);
 
