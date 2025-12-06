@@ -243,6 +243,9 @@ const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({ projectId, trip
       const downloadedFile = new File([fileData], callsheetData.filename, { type: fileData.type });
       const { tripData, productionCompany } = await processFileForTrip(downloadedFile, userProfile, DocumentType.CALLSHEET);
 
+      console.log('DEBUG: Extracted production company:', productionCompany);
+      console.log('DEBUG: Current project producer:', project.producer);
+
       // Auto-update project producer if missing
       if ((!project.producer || project.producer.trim() === '') && productionCompany) {
         try {

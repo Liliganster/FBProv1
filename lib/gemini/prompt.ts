@@ -47,6 +47,7 @@ CRÍTICO: Diferencia correctamente estos campos del encabezado:
    - Ejemplos: "Netflix", "Warner Bros", "UFA Fiction", "Gaumont"
    - Busca: "Produktion:", "Production Company:", "Productora:", "Studio:"
    - Es diferente del título del proyecto
+   - NOTA: Incluye broadcasters/plataformas (Netflix, ARD, etc.) SI son la entidad de producción listada.
 
 3. motiv (OPCIONAL):
    - Es la UBICACIÓN NARRATIVA o descripción de la escena
@@ -99,6 +100,7 @@ export function buildDirectPrompt(text: string) {
    - NO es el título del proyecto - es la EMPRESA productora
    - Busca: "Produktion:", "Production:", "Productora:", "Studio:", logos de empresas
    - Ejemplos: "Warner Bros", "Netflix", "UFA Fiction", "Bavaria Film", "El Deseo"
+   - NOTA: Incluye broadcasters/plataformas (Netflix, ARD, etc.) SI son la entidad de producción listada.
    - Si no encuentras, usa "Unknown"
 
 3. **PROJECT NAME**: Título creativo del show/película/serie

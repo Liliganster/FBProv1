@@ -51,24 +51,24 @@ const NON_PRODUCTION_COMPANIES = [
   // German broadcasters
   'ard', 'zdf', 'rtl', 'sat.1', 'pro7', 'prosieben', 'vox', 'kabel eins', 'rtl2',
   'ard degeto', 'zdf enterprises', 'mdr', 'ndr', 'wdr', 'br', 'swr', 'hr', 'rbb',
-  
+
   // Austrian/Swiss
   'orf', 'orf1', 'orf2', 'orf3', 'srf', 'srf1', 'srf2',
-  
+
   // Spanish/Latin American
   'rtve', 'tve', 'tve1', 'tve2', 'antena 3', 'telecinco', 'la sexta', 'cuatro',
   'television espanola', 'televisi\u00f3n espa\u00f1ola',
-  
+
   // International broadcasters
   'bbc', 'itv', 'channel 4', 'sky', 'rai', 'france televisions', 'arte', 'arte france',
-  
+
   // Streaming platforms (unless explicitly producing)
   'netflix', 'amazon prime', 'hbo', 'hbo max', 'disney+', 'apple tv+', 'paramount+',
-  
+
   // Film funds and government agencies
   'bkm', 'ffa', 'dfff', 'icaa', 'eurimages', 'media programme', 'creative europe',
   'filmforderung', 'film fund', 'medienboard',
-  
+
   // Service/rental companies
   'arri', 'panavision', 'arri rental', 'camera rental', 'grip', 'lighting',
 ];
@@ -92,10 +92,16 @@ function looksLikeCompanyName(s: string): boolean {
 
 function isNonProductionCompany(company: string): boolean {
   const normalized = company.toLowerCase().trim();
+  // We now ALLOW broadcasters/streamers because often they are the only "production" entity listed
+  // or the user considers them the client.
+  /*
   for (const nonProd of NON_PRODUCTION_COMPANIES) {
     if (normalized === nonProd || normalized.includes(nonProd)) return true;
   }
-  if (normalized.includes('rental') || normalized.includes('hire') || normalized.includes('equipment') || normalized.includes('services')) {
+  */
+
+  // Still filter out obvious service/rental companies
+  if (normalized.includes('rental') || normalized.includes('hire') || normalized.includes('equipment') || normalized.includes('services') || normalized.includes('catering') || normalized.includes('security')) {
     return true;
   }
   return false;

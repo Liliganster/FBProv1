@@ -1,5 +1,5 @@
 export function buildDirectPrompt(text: string) {
-  return `Eres un experto analista de documentos de producción cinematográfica y televisiva. Tu tarea es LEER y ENTENDER el documento como lo haría un coordinador de producción humano, y extraer la información clave de forma inteligente.
+   return `Eres un experto analista de documentos de producción cinematográfica y televisiva. Tu tarea es LEER y ENTENDER el documento como lo haría un coordinador de producción humano, y extraer la información clave de forma inteligente.
 
 **TU MISIÓN**: Devolver UN ÚNICO objeto JSON válido con la información extraída. NO incluyas markdown, explicaciones ni texto adicional fuera del JSON.
 
@@ -83,8 +83,9 @@ Si encuentras un candidato, verifica que NO sea:
 **❌ Nombre de productora**:
 - Contiene: "GmbH", "LLC", "Ltd", "Inc", "Film", "Pictures", "Entertainment", "Productions", "Studios", "Media", "Production Company"
 
-**❌ Broadcaster o plataforma**:
+**⚠️ Broadcaster o plataforma**:
 - Netflix, HBO, Amazon, BBC, ARD, ZDF, RTL, ORF, etc.
+- **EXCEPCIÓN**: SI son la única entidad listada como "Produktion" o "Production", ENTONCES SÍ inclúyelos.
 
 **❌ Nombre de locación**:
 - "Estudio 5", "Set A", "Location B", "Studio Complex"
@@ -268,7 +269,7 @@ ${text}`;
 }
 
 export function buildCrewFirstDirectPrompt(text: string) {
-  return `Extrae datos de esta hoja de rodaje en JSON. Devuelve SOLO JSON válido, sin markdown ni explicaciones.
+   return `Extrae datos de esta hoja de rodaje en JSON. Devuelve SOLO JSON válido, sin markdown ni explicaciones.
 
 CAMPOS CLAVE (diferéncialos correctamente):
 • projectName (REQUERIDO): Título del proyecto. Ej: "Dark", "El Reino", "Succession". NO es la productora.
@@ -311,10 +312,10 @@ ${text}`;
 }
 
 export function sanitizeModelText(text: string) {
-  // Lightweight cleanup to reduce noise before sending to the model
-  return text
-    .replace(/[\u00A0\t]+/g, ' ')
-    .replace(/\r/g, '')
-    .replace(/\n{3,}/g, '\n\n')
-    .trim();
+   // Lightweight cleanup to reduce noise before sending to the model
+   return text
+      .replace(/[\u00A0\t]+/g, ' ')
+      .replace(/\r/g, '')
+      .replace(/\n{3,}/g, '\n\n')
+      .trim();
 }
