@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { driver, DriveStep } from 'driver.js';
+import { driver } from 'driver.js';
 import 'driver.js/dist/driver.css';
 import { UserProfile } from '../types';
 import useTranslation from '../hooks/useTranslation';
@@ -23,7 +23,7 @@ export const Tutorial: React.FC<TutorialProps> = ({ userProfile, currentView }) 
             return;
         }
 
-        const steps: DriveStep[] = [
+        const steps: Array<{ element: string; popover: any }> = [
             {
                 element: '#dashboard-overview',
                 popover: {
@@ -78,11 +78,10 @@ export const Tutorial: React.FC<TutorialProps> = ({ userProfile, currentView }) 
             }
         };
 
-        const showStep = (step: DriveStep) => {
+        const showStep = (step: { element: string; popover: any }) => {
             const target = document.querySelector(step.element);
             if (!target) return;
 
-            const normalizedStep: DriveStep = { ...step, element: target as HTMLElement };
             destroyDriver();
             driverObj.current = driver({
                 showProgress: false,
