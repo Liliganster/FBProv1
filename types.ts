@@ -1,17 +1,17 @@
 export interface PersonalizationSettings {
-    backgroundImage: string;
-    uiTransparency: number;
-    uiBlur: number;
-    backgroundBlur: number;
-    theme: 'light' | 'dark';
+  backgroundImage: string;
+  uiTransparency: number;
+  uiBlur: number;
+  backgroundBlur: number;
+  theme: 'light' | 'dark';
 }
 
 export const DEFAULT_PERSONALIZATION_SETTINGS: PersonalizationSettings = {
-    backgroundImage: '',
-    uiTransparency: 0.2,
-    uiBlur: 16,
-    backgroundBlur: 0,
-    theme: 'light'
+  backgroundImage: '',
+  uiTransparency: 0.2,
+  uiBlur: 16,
+  backgroundBlur: 0,
+  theme: 'light'
 };
 
 
@@ -94,6 +94,8 @@ export interface UserProfile {
   avatarUrl?: string | null
   createdAt?: string
   updatedAt?: string
+  hasSeenTutorial?: boolean
+  isTutorialEnabled?: boolean
 }
 
 export interface Trip {
@@ -153,7 +155,7 @@ export interface Report {
   signature?: string;
   firstTripHash?: string;
   lastTripHash?: string;
-  
+
   // Ledger integrity verification
   ledgerVerification?: TripLedgerVerification;
   generationTimestamp?: string;
@@ -183,17 +185,17 @@ export interface TripLedgerEntry {
   source: TripLedgerSource;
   userId: string; // Who performed the operation
   batchId?: string; // Group ID for batch operations
-  
+
   // Trip data
   tripId: string;
   tripSnapshot: Trip; // Complete trip state after operation
-  
+
   // Amendment/Void specific data
   correctionReason?: string; // Required for AMEND operations
   changedFields?: string[]; // Fields that were modified
   sourceDocumentId?: string; // ID of callsheet, email, or document that motivated the change
   sourceDocumentName?: string; // Human-readable name of source document
-  
+
   // Void specific data
   voidReason?: string; // Required for VOID operations
   previousSnapshot?: Trip; // Trip state before voiding (for audit)
