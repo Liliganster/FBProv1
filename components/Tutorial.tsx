@@ -25,47 +25,65 @@ export const Tutorial: React.FC<TutorialProps> = ({ userProfile, currentView }) 
 
         const steps: Array<{ element: string; popover: any }> = [
             {
-                element: '#dashboard-overview',
+                element: '#dashboard-title',
                 popover: {
                     title: t('tutorial_welcome_title') || 'Bienvenido a Fahrtenbuch Pro',
-                    description: t('tutorial_welcome_desc') || 'Esta guía rápida te mostrará cómo gestionar tus viajes y proyectos de forma eficiente.',
+                    description: t('tutorial_welcome_desc') || 'Esta guía rápida te mostrará cómo gestionar tus viajes, proyectos y reportes en este panel.',
                     side: 'bottom',
                     align: 'start'
                 }
             },
             {
-                element: '#dashboard-trips-cta',
+                element: '#dashboard-card-total-km',
                 popover: {
-                    title: t('tutorial_add_trip_title') || 'Añadir Viaje',
-                    description: t('tutorial_add_trip_desc') || 'Haz clic aquí para registrar un nuevo viaje manualmente.',
+                    title: t('tutorial_dashboard_totalKm_title') || 'Resumen de kilómetros',
+                    description: t('tutorial_dashboard_totalKm_desc') || 'Aquí ves los kilómetros totales registrados. Haz clic en “ver todos” para ir al listado de viajes.',
                     side: 'bottom',
                     align: 'start'
                 }
             },
             {
-                element: '#nav-projects',
+                element: '#dashboard-card-projects',
                 popover: {
-                    title: t('tutorial_projects_title') || 'Proyectos',
-                    description: t('tutorial_projects_desc') || 'Gestiona tus proyectos y asigna viajes a ellos.',
+                    title: t('tutorial_dashboard_projects_title') || 'Proyectos activos',
+                    description: t('tutorial_dashboard_projects_desc') || 'Cuenta de proyectos con actividad. Desde aquí puedes saltar a gestionarlos.',
                     side: 'right',
                     align: 'start'
                 }
             },
             {
-                element: '#nav-reports',
+                element: '#dashboard-card-co2',
                 popover: {
-                    title: t('tutorial_reports_title') || 'Informes',
-                    description: t('tutorial_reports_desc') || 'Genera informes PDF detallados para tus declaraciones de impuestos.',
-                    side: 'right',
+                    title: t('tutorial_dashboard_co2_title') || 'Impacto y ajustes',
+                    description: t('tutorial_dashboard_co2_desc') || 'Muestra CO₂ si configuraste tu vehículo. Si no, configura consumo para ver estos datos.',
+                    side: 'left',
                     align: 'start'
                 }
             },
             {
-                element: '#nav-settings',
+                element: '#dashboard-alerts',
                 popover: {
-                    title: t('tutorial_settings_title') || 'Configuración',
-                    description: t('tutorial_settings_desc') || 'Personaliza tu perfil, tarifas y preferencias de la aplicación.',
-                    side: 'right',
+                    title: t('tutorial_dashboard_alerts_title') || 'Alertas proactivas',
+                    description: t('tutorial_dashboard_alerts_desc') || 'Aquí verás avisos de datos incompletos o anómalos. Úsalos para corregir rápido.',
+                    side: 'left',
+                    align: 'start'
+                }
+            },
+            {
+                element: '#dashboard-chart',
+                popover: {
+                    title: t('tutorial_dashboard_chart_title') || 'Análisis visual',
+                    description: t('tutorial_dashboard_chart_desc') || 'Gráfico de kilómetros por proyecto. Usa los filtros para ver tendencias.',
+                    side: 'top',
+                    align: 'start'
+                }
+            },
+            {
+                element: '#dashboard-recent-trips',
+                popover: {
+                    title: t('tutorial_dashboard_recent_title') || 'Viajes recientes',
+                    description: t('tutorial_dashboard_recent_desc') || 'Lista rápida de tus últimos viajes para abrir y revisar detalles al instante.',
+                    side: 'left',
                     align: 'start'
                 }
             }
@@ -78,48 +96,27 @@ export const Tutorial: React.FC<TutorialProps> = ({ userProfile, currentView }) 
             }
         };
 
-        const showStep = (step: { element: string; popover: any }) => {
-            const target = document.querySelector(step.element);
-            if (!target) return;
-
-            destroyDriver();
-            driverObj.current = driver({
-                showProgress: false,
-                animate: true,
-                allowClose: true,
-                allowKeyboardControl: false,
-                doneBtnText: t('tutorial_done') || 'Hecho',
-                nextBtnText: t('tutorial_next') || 'Siguiente',
-                prevBtnText: t('tutorial_prev') || 'Anterior',
-                steps: [step],
-                onDestroyed: () => {
-                    driverObj.current = null;
-                }
-            });
-            requestAnimationFrame(() => {
-                setTimeout(() => {
-                    driverObj.current?.drive();
-                }, 200);
-            });
-        };
-
-        // Primer popup explicando la vista
-        const introStep = steps[0];
-        const introTimer = setTimeout(() => showStep(introStep), 300);
-
-        // Popups por hover en las cajas
-        const listeners: Array<{ el: Element; handler: () => void }> = [];
-        steps.forEach(step => {
-            const el = document.querySelector(step.element);
-            if (!el) return;
-            const handler = () => showStep(step);
-            el.addEventListener('mouseenter', handler);
-            listeners.push({ el, handler });
+        destroyDriver();
+        driverObj.current = driver({
+            showProgress: true,
+            animate: true,
+            allowClose: true,
+            allowKeyboardControl: false,
+            doneBtnText: t('tutorial_done') || 'Hecho',
+            nextBtnText: t('tutorial_next') || 'Siguiente',
+            prevBtnText: t('tutorial_prev') || 'Anterior',
+            steps,
+            onDestroyed: () => {
+                driverObj.current = null;
+            }
         });
 
+        const startTimer = setTimeout(() => {
+            driverObj.current?.drive();
+        }, 400);
+
         return () => {
-            clearTimeout(introTimer);
-            listeners.forEach(({ el, handler }) => el.removeEventListener('mouseenter', handler));
+            clearTimeout(startTimer);
             destroyDriver();
         };
     }, [currentView, t, userProfile?.isTutorialEnabled, userProfile?.id]);
