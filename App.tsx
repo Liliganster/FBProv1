@@ -513,7 +513,7 @@ const App: React.FC = () => {
           </Suspense>
         </div>
       </main>
-      <Tutorial userProfile={userProfile} updateUserProfile={updateUserProfile} />
+      <Tutorial userProfile={userProfile} currentView={currentView as any} />
     </div>
   );
 };

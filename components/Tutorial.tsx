@@ -3,13 +3,14 @@ import { driver } from 'driver.js';
 import 'driver.js/dist/driver.css';
 import { UserProfile } from '../types';
 import useTranslation from '../hooks/useTranslation';
+import { View } from '../types';
 
 interface TutorialProps {
     userProfile: UserProfile | null;
-    updateUserProfile: (updates: Partial<UserProfile>) => Promise<void>;
+    currentView: View | 'auth-callback';
 }
 
-export const Tutorial: React.FC<TutorialProps> = ({ userProfile, updateUserProfile }) => {
+export const Tutorial: React.FC<TutorialProps> = ({ userProfile, currentView }) => {
     const { t } = useTranslation();
     const driverObj = useRef<any>(null);
 
@@ -19,10 +20,16 @@ export const Tutorial: React.FC<TutorialProps> = ({ userProfile, updateUserProfi
         if (!userProfile) return;
 
         const tutorialEnabled = userProfile.isTutorialEnabled !== false;
-        const tutorialSeen = userProfile.hasSeenTutorial === true;
-        const startTutorial = () => {
-            if (!tutorialEnabled || tutorialSeen) return;
+        if (!tutorialEnabled) {
+            if (driverObj.current) {
+                driverObj.current.destroy();
+                driverObj.current = null;
+            }
+            hasStartedRef.current = false;
+            return;
+        }
 
+        const startTutorial = () => {
             if (driverObj.current) {
                 driverObj.current.destroy();
                 driverObj.current = null;
@@ -83,9 +90,6 @@ export const Tutorial: React.FC<TutorialProps> = ({ userProfile, updateUserProfi
                     }
                 ],
                 onDestroyed: () => {
-                    if (!tutorialSeen) {
-                        void updateUserProfile({ hasSeenTutorial: true });
-                    }
                     hasStartedRef.current = false;
                     driverObj.current = null;
                 }
@@ -102,21 +106,7 @@ export const Tutorial: React.FC<TutorialProps> = ({ userProfile, updateUserProfi
             });
         };
 
-        // If tutorial is explicitly disabled or already seen, ensure it's destroyed and return
-        if (!tutorialEnabled || tutorialSeen) {
-            if (driverObj.current) {
-                driverObj.current.destroy();
-                driverObj.current = null;
-            }
-            hasStartedRef.current = false;
-            return;
-        }
-
-        if (!hasStartedRef.current) {
-            startTutorial();
-        } else if (driverObj.current == null) {
-            startTutorial();
-        }
+        startTutorial();
 
         return () => {
             if (driverObj.current) {
@@ -125,7 +115,8 @@ export const Tutorial: React.FC<TutorialProps> = ({ userProfile, updateUserProfi
             }
         };
 
-    }, [userProfile?.hasSeenTutorial, userProfile?.isTutorialEnabled, t, updateUserProfile]);
+    // Re-lanza el tutorial al cambiar de vista mientras esté habilitado
+    }, [currentView, userProfile?.isTutorialEnabled, t]);
 
     // Expose a way to restart manually if needed (could be via context or prop, but for now auto-trigger is key)
     return null; // This component doesn't render anything visible itself
