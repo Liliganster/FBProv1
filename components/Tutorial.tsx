@@ -28,7 +28,7 @@ export const Tutorial: React.FC<TutorialProps> = ({ userProfile, currentView }) 
             return value === key || !value ? fallback : value;
         };
 
-        const steps: Array<{ element: string; popover: any }> = [
+        const dashboardSteps: Array<{ element: string; popover: any }> = [
             {
                 element: '#dashboard-title',
                 popover: {
@@ -94,6 +94,123 @@ export const Tutorial: React.FC<TutorialProps> = ({ userProfile, currentView }) 
             }
         ];
 
+        const tripsSteps: Array<{ element: string; popover: any }> = [
+            {
+                element: '#trips-title',
+                popover: {
+                    title: tr('tutorial_trips_intro_title', 'Vista de viajes'),
+                    description: tr('tutorial_trips_intro_desc', 'Aquí gestionas y revisas todos tus viajes: filtra, edita, exporta o elimina.'),
+                    side: 'bottom',
+                    align: 'start'
+                }
+            },
+            {
+                element: '#trips-col-date',
+                popover: {
+                    title: tr('tutorial_trips_date_title', 'Fecha'),
+                    description: tr('tutorial_trips_date_desc', 'Ordena por fecha para revisar viajes recientes o históricos.'),
+                    side: 'bottom',
+                    align: 'start'
+                }
+            },
+            {
+                element: '#trips-col-route',
+                popover: {
+                    title: tr('tutorial_trips_route_title', 'Ruta'),
+                    description: tr('tutorial_trips_route_desc', 'Origen y destino del viaje; haz clic para ver detalles y alertas.'),
+                    side: 'bottom',
+                    align: 'start'
+                }
+            },
+            {
+                element: '#trips-col-project',
+                popover: {
+                    title: tr('tutorial_trips_project_title', 'Proyecto'),
+                    description: tr('tutorial_trips_project_desc', 'Proyecto asociado; úsalo para agrupar viajes por cliente o producción.'),
+                    side: 'bottom',
+                    align: 'start'
+                }
+            },
+            {
+                element: '#trips-col-invoices',
+                popover: {
+                    title: tr('tutorial_trips_invoices_title', 'Documentos'),
+                    description: tr('tutorial_trips_invoices_desc', 'Número de documentos/costos vinculados al viaje. Pasa el cursor para ver el detalle.'),
+                    side: 'bottom',
+                    align: 'start'
+                }
+            },
+            {
+                element: '#trips-col-distance',
+                popover: {
+                    title: tr('tutorial_trips_distance_title', 'Distancia'),
+                    description: tr('tutorial_trips_distance_desc', 'Kilómetros recorridos. Útil para validar tarifas y reembolsos.'),
+                    side: 'bottom',
+                    align: 'start'
+                }
+            },
+            {
+                element: '#trips-col-emissions',
+                popover: {
+                    title: tr('tutorial_trips_emissions_title', 'Emisiones'),
+                    description: tr('tutorial_trips_emissions_desc', 'CO₂ estimado según tu configuración de vehículo y consumo.'),
+                    side: 'bottom',
+                    align: 'start'
+                }
+            },
+            {
+                element: '#trips-col-earnings',
+                popover: {
+                    title: tr('tutorial_trips_earnings_title', 'Importe'),
+                    description: tr('tutorial_trips_earnings_desc', 'Importe calculado con tu tarifa y recargos.'),
+                    side: 'bottom',
+                    align: 'start'
+                }
+            },
+            {
+                element: '#trips-col-actions',
+                popover: {
+                    title: tr('tutorial_trips_actions_title', 'Acciones'),
+                    description: tr('tutorial_trips_actions_desc', 'Ver, añadir al calendario, editar o eliminar el viaje seleccionado.'),
+                    side: 'left',
+                    align: 'start'
+                }
+            },
+            {
+                element: '#trips-filter',
+                popover: {
+                    title: tr('tutorial_trips_filter_title', 'Filtrar proyectos'),
+                    description: tr('tutorial_trips_filter_desc', 'Filtra la tabla por proyecto para enfocarte en un cliente o producción.'),
+                    side: 'bottom',
+                    align: 'start'
+                }
+            },
+            {
+                element: '#trips-bulk-upload-btn',
+                popover: {
+                    title: tr('tutorial_trips_bulk_title', 'Cargar en lote'),
+                    description: tr('tutorial_trips_bulk_desc', 'Importa múltiples viajes desde CSV o IA para acelerar la captura.'),
+                    side: 'bottom',
+                    align: 'start'
+                }
+            },
+            {
+                element: '#trips-add-btn',
+                popover: {
+                    title: tr('tutorial_trips_add_title', 'Añadir viaje'),
+                    description: tr('tutorial_trips_add_desc', 'Crea un nuevo viaje manualmente desde cero.'),
+                    side: 'bottom',
+                    align: 'start'
+                }
+            }
+        ];
+
+        const selectedSteps = currentView === 'trips' ? tripsSteps : dashboardSteps;
+        const resolvedSteps = selectedSteps.filter(step => document.querySelector(step.element));
+        if (resolvedSteps.length === 0) {
+            return;
+        }
+
         const destroyDriver = () => {
             if (driverObj.current) {
                 driverObj.current.destroy();
@@ -110,7 +227,7 @@ export const Tutorial: React.FC<TutorialProps> = ({ userProfile, currentView }) 
             doneBtnText: t('tutorial_done') || 'Hecho',
             nextBtnText: t('tutorial_next') || 'Siguiente',
             prevBtnText: t('tutorial_prev') || 'Anterior',
-            steps,
+            steps: resolvedSteps,
             onDestroyed: () => {
                 driverObj.current = null;
             }

@@ -318,12 +318,12 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
           </div>
         ) : (
           <>
-            <div>
+            <div id="trips-title">
               <h1 className="text-3xl font-bold bg-gradient-title bg-clip-text text-transparent">{t('trips_title')}</h1>
               {userProfile && <h2 className="text-lg font-semibold text-brand-primary">{userProfile.name}</h2>}
             </div>
             <div className="flex items-center gap-4">
-              <div>
+              <div id="trips-filter">
                 <label htmlFor="project-filter" className="sr-only">{t('trips_filter_by_project')}</label>
                 <select
                   id="project-filter"
@@ -337,11 +337,11 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
                   ))}
                 </select>
               </div>
-              <Button variant="success" onClick={() => setIsBulkModalOpen(true)}>
+              <Button id="trips-bulk-upload-btn" variant="success" onClick={() => setIsBulkModalOpen(true)}>
                 <UploadCloudIcon className="w-5 h-5 mr-2" />
                 {t('trips_bulkUpload')}
               </Button>
-              <Button variant="primary" onClick={handleAddTrip}>
+              <Button id="trips-add-btn" variant="primary" onClick={handleAddTrip}>
                 <PlusIcon className="w-5 h-5 mr-2" />
                 {t('trips_addTrip')}
               </Button>
@@ -683,10 +683,10 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
       ) : (
         // Vista desktop con tabla
         <div style={contentStyle} className="bg-frost-glass border-glass rounded-fluid shadow-glass overflow-hidden backdrop-blur-glass">
-          <table className="w-full text-left text-sm">
+          <table id="trips-table" className="w-full text-left text-sm">
             <thead className="bg-gray-700/50 border-b border-glass">
               <tr>
-                <th className="p-3 w-12">
+                <th id="trips-col-select" className="p-3 w-12">
                   <input
                     type="checkbox"
                     checked={isAllSelected}
@@ -695,7 +695,7 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
                     className="bg-gradient-surface border-surface rounded text-brand-primary focus:ring-brand-primary focus:ring-2 h-5 w-5 transition-all duration-200"
                   />
                 </th>
-                <th className="p-3 text-[11px] font-semibold text-on-surface-secondary uppercase tracking-wider">
+                <th id="trips-col-date" className="p-3 text-[11px] font-semibold text-on-surface-secondary uppercase tracking-wider">
                   <div onClick={handleSortByDate} className="uppercase flex items-center gap-1 hover:text-white transition-colors duration-200 cursor-pointer select-none">
                     {t('trips_col_date')}
                     <div className="flex flex-col -space-y-2">
@@ -704,13 +704,13 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
                     </div>
                   </div>
                 </th>
-                <th className="p-3 text-[11px] font-semibold text-on-surface-dark-secondary uppercase tracking-wider">{t('trips_col_route')}</th>
-                <th className="p-3 text-[11px] font-semibold text-on-surface-dark-secondary uppercase tracking-wider">{t('trips_col_project')}</th>
-                <th className="p-3 text-[11px] font-semibold text-on-surface-dark-secondary uppercase tracking-wider">{t('trips_col_invoices')}</th>
-                <th className="p-3 text-[11px] font-semibold text-on-surface-dark-secondary uppercase tracking-wider">{t('trips_col_distance')}</th>
-                <th className="p-3 text-[11px] font-semibold text-on-surface-dark-secondary uppercase tracking-wider">{t('trips_col_emissions')}</th>
-                <th className="p-3 text-[11px] font-semibold text-on-surface-dark-secondary uppercase tracking-wider">{t('trips_col_earnings')}</th>
-                <th className="p-3 text-[11px] font-semibold text-on-surface-dark-secondary uppercase tracking-wider text-right">{t('trips_col_actions')}</th>
+                <th id="trips-col-route" className="p-3 text-[11px] font-semibold text-on-surface-dark-secondary uppercase tracking-wider">{t('trips_col_route')}</th>
+                <th id="trips-col-project" className="p-3 text-[11px] font-semibold text-on-surface-dark-secondary uppercase tracking-wider">{t('trips_col_project')}</th>
+                <th id="trips-col-invoices" className="p-3 text-[11px] font-semibold text-on-surface-dark-secondary uppercase tracking-wider">{t('trips_col_invoices')}</th>
+                <th id="trips-col-distance" className="p-3 text-[11px] font-semibold text-on-surface-dark-secondary uppercase tracking-wider">{t('trips_col_distance')}</th>
+                <th id="trips-col-emissions" className="p-3 text-[11px] font-semibold text-on-surface-dark-secondary uppercase tracking-wider">{t('trips_col_emissions')}</th>
+                <th id="trips-col-earnings" className="p-3 text-[11px] font-semibold text-on-surface-dark-secondary uppercase tracking-wider">{t('trips_col_earnings')}</th>
+                <th id="trips-col-actions" className="p-3 text-[11px] font-semibold text-on-surface-dark-secondary uppercase tracking-wider text-right">{t('trips_col_actions')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-700/50">
