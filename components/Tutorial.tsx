@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { driver } from 'driver.js';
+import { driver, DriveStep } from 'driver.js';
 import 'driver.js/dist/driver.css';
 import { UserProfile } from '../types';
 import useTranslation from '../hooks/useTranslation';
@@ -14,110 +14,116 @@ export const Tutorial: React.FC<TutorialProps> = ({ userProfile, currentView }) 
     const { t } = useTranslation();
     const driverObj = useRef<any>(null);
 
-    const hasStartedRef = useRef(false);
-
     useEffect(() => {
-        if (!userProfile) return;
-
-        const tutorialEnabled = userProfile.isTutorialEnabled !== false;
-        if (!tutorialEnabled) {
+        if (!userProfile || userProfile.isTutorialEnabled === false) {
             if (driverObj.current) {
                 driverObj.current.destroy();
                 driverObj.current = null;
             }
-            hasStartedRef.current = false;
             return;
         }
 
-        const startTutorial = () => {
+        const steps: DriveStep[] = [
+            {
+                element: '#dashboard-overview',
+                popover: {
+                    title: t('tutorial_welcome_title') || 'Bienvenido a Fahrtenbuch Pro',
+                    description: t('tutorial_welcome_desc') || 'Esta guía rápida te mostrará cómo gestionar tus viajes y proyectos de forma eficiente.',
+                    side: 'bottom',
+                    align: 'start'
+                }
+            },
+            {
+                element: '#dashboard-trips-cta',
+                popover: {
+                    title: t('tutorial_add_trip_title') || 'Añadir Viaje',
+                    description: t('tutorial_add_trip_desc') || 'Haz clic aquí para registrar un nuevo viaje manualmente.',
+                    side: 'bottom',
+                    align: 'start'
+                }
+            },
+            {
+                element: '#nav-projects',
+                popover: {
+                    title: t('tutorial_projects_title') || 'Proyectos',
+                    description: t('tutorial_projects_desc') || 'Gestiona tus proyectos y asigna viajes a ellos.',
+                    side: 'right',
+                    align: 'start'
+                }
+            },
+            {
+                element: '#nav-reports',
+                popover: {
+                    title: t('tutorial_reports_title') || 'Informes',
+                    description: t('tutorial_reports_desc') || 'Genera informes PDF detallados para tus declaraciones de impuestos.',
+                    side: 'right',
+                    align: 'start'
+                }
+            },
+            {
+                element: '#nav-settings',
+                popover: {
+                    title: t('tutorial_settings_title') || 'Configuración',
+                    description: t('tutorial_settings_desc') || 'Personaliza tu perfil, tarifas y preferencias de la aplicación.',
+                    side: 'right',
+                    align: 'start'
+                }
+            }
+        ];
+
+        const destroyDriver = () => {
             if (driverObj.current) {
                 driverObj.current.destroy();
                 driverObj.current = null;
             }
+        };
 
+        const showStep = (step: DriveStep) => {
+            const target = document.querySelector(step.element);
+            if (!target) return;
+
+            const normalizedStep: DriveStep = { ...step, element: target as HTMLElement };
+            destroyDriver();
             driverObj.current = driver({
-                showProgress: true,
+                showProgress: false,
                 animate: true,
                 allowClose: true,
+                allowKeyboardControl: false,
                 doneBtnText: t('tutorial_done') || 'Hecho',
                 nextBtnText: t('tutorial_next') || 'Siguiente',
                 prevBtnText: t('tutorial_prev') || 'Anterior',
-                steps: [
-                    {
-                        element: '#dashboard-overview',
-                        popover: {
-                            title: t('tutorial_dashboard_title') || 'Panel de Control',
-                            description: t('tutorial_dashboard_desc') || 'Aquí puedes ver un resumen de tus viajes, distancia total y estadísticas clave.',
-                            side: "bottom",
-                            align: 'start'
-                        }
-                    },
-                    {
-                        element: '#dashboard-trips-cta',
-                        popover: {
-                            title: t('tutorial_add_trip_title') || 'Añadir Viaje',
-                            description: t('tutorial_add_trip_desc') || 'Haz clic aquí para registrar un nuevo viaje manualmente.',
-                            side: "bottom",
-                            align: 'start'
-                        }
-                    },
-                    {
-                        element: '#nav-projects',
-                        popover: {
-                            title: t('tutorial_projects_title') || 'Proyectos',
-                            description: t('tutorial_projects_desc') || 'Gestiona tus proyectos y asigna viajes a ellos.',
-                            side: "right",
-                            align: 'start'
-                        }
-                    },
-                    {
-                        element: '#nav-reports',
-                        popover: {
-                            title: t('tutorial_reports_title') || 'Informes',
-                            description: t('tutorial_reports_desc') || 'Genera informes PDF detallados para tus declaraciones de impuestos.',
-                            side: "right",
-                            align: 'start'
-                        }
-                    },
-                    {
-                        element: '#nav-settings',
-                        popover: {
-                            title: t('tutorial_settings_title') || 'Configuración',
-                            description: t('tutorial_settings_desc') || 'Personaliza tu perfil, tarifas y preferencias de la aplicación.',
-                            side: "right",
-                            align: 'start'
-                        }
-                    }
-                ],
+                steps: [step],
                 onDestroyed: () => {
-                    hasStartedRef.current = false;
                     driverObj.current = null;
                 }
             });
-
-            // Ejecuta con un pequeño retraso y dentro de rAF para asegurar que el DOM ya está listo
-            hasStartedRef.current = true;
             requestAnimationFrame(() => {
                 setTimeout(() => {
-                    if (driverObj.current) {
-                        driverObj.current.drive();
-                    }
-                }, 400);
+                    driverObj.current?.drive();
+                }, 200);
             });
         };
 
-        startTutorial();
+        // Primer popup explicando la vista
+        const introStep = steps[0];
+        const introTimer = setTimeout(() => showStep(introStep), 300);
+
+        // Popups por hover en las cajas
+        const listeners: Array<{ el: Element; handler: () => void }> = [];
+        steps.forEach(step => {
+            const el = document.querySelector(step.element);
+            if (!el) return;
+            const handler = () => showStep(step);
+            el.addEventListener('mouseenter', handler);
+            listeners.push({ el, handler });
+        });
 
         return () => {
-            if (driverObj.current) {
-                driverObj.current.destroy();
-                driverObj.current = null;
-            }
+            clearTimeout(introTimer);
+            listeners.forEach(({ el, handler }) => el.removeEventListener('mouseenter', handler));
+            destroyDriver();
         };
+    }, [currentView, t, userProfile?.isTutorialEnabled, userProfile?.id]);
 
-    // Re-lanza el tutorial al cambiar de vista mientras esté habilitado
-    }, [currentView, userProfile?.isTutorialEnabled, t]);
-
-    // Expose a way to restart manually if needed (could be via context or prop, but for now auto-trigger is key)
-    return null; // This component doesn't render anything visible itself
+    return null; // No renderiza nada visible
 };
