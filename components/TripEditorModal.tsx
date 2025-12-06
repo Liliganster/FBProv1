@@ -628,17 +628,18 @@ const TripEditorModal: React.FC<TripEditorModalProps> = ({ trip, projects, trips
   } : {};
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center px-4 py-16 overflow-y-auto bg-black/60 backdrop-blur-sm" onClick={handleClose}>
+    <div id="trip-editor-modal" className="fixed inset-0 z-50 flex items-start justify-center px-4 py-16 overflow-y-auto bg-black/60 backdrop-blur-sm" onClick={handleClose}>
       <div style={modalStyle} className="relative w-full max-w-2xl bg-frost-glass border border-gray-700/60 rounded-lg shadow-2xl flex flex-col max-h-[88vh] overflow-hidden" onClick={(e) => e.stopPropagation()}>
         <header className="flex items-start justify-between px-6 py-4 border-b border-gray-700/60">
           <div className="flex items-center gap-3 pr-6">
-            <h2 className="text-lg font-semibold tracking-tight text-white">{trip ? t('tripEditor_title_edit') : t('tripEditor_title_add')}</h2>
+            <h2 id="trip-editor-title" className="text-lg font-semibold tracking-tight text-white">{trip ? t('tripEditor_title_edit') : t('tripEditor_title_add')}</h2>
           </div>
           <Button
             variant="icon"
             onClick={handleClose}
             aria-label={t('common_close')}
             title={t('common_close')}
+            id="trip-editor-close"
           >
             <XIcon className="w-5 h-5" />
           </Button>
@@ -661,9 +662,9 @@ const TripEditorModal: React.FC<TripEditorModalProps> = ({ trip, projects, trips
               )}
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <InputField label={t('tripEditor_form_date')} type="date" name="date" value={formData.date} onChange={handleChange} />
+              <InputField id="trip-editor-date" label={t('tripEditor_form_date')} type="date" name="date" value={formData.date} onChange={handleChange} />
 
-              <div>
+              <div id="trip-editor-project">
                 <label className="block text-[11px] font-semibold uppercase tracking-wide text-gray-300/90 mb-1">{t('tripEditor_form_project')}</label>
                 <select name="projectId" value={formData.projectId || ''} onChange={handleChange} className="w-full bg-background-dark/70 border border-gray-600/70 rounded-md px-3 py-2 text-sm text-on-surface-dark focus:outline-none focus:ring-2 focus:ring-brand-primary/50">
                   <option value="" disabled>{t('tripEditor_form_project_placeholder')}</option>
@@ -671,7 +672,7 @@ const TripEditorModal: React.FC<TripEditorModalProps> = ({ trip, projects, trips
                 </select>
               </div>
 
-              <div className="md:col-span-2 space-y-2">
+              <div className="md:col-span-2 space-y-2" id="trip-editor-locations">
                 <label className="block text-[11px] font-semibold uppercase tracking-wide text-gray-300/90 mb-1">{t('tripEditor_form_locations')}</label>
                 {formData.locations?.map((location, index) => {
                   const isOrigin = index === 0;
@@ -728,6 +729,7 @@ const TripEditorModal: React.FC<TripEditorModalProps> = ({ trip, projects, trips
                         )}
                         <div className="relative w-full">
                           <input
+                            id={index === 0 ? 'trip-editor-origin' : index === formData.locations!.length - 1 ? 'trip-editor-destination' : undefined}
                             type="text"
                             placeholder={placeholder}
                             value={location}
@@ -767,16 +769,16 @@ const TripEditorModal: React.FC<TripEditorModalProps> = ({ trip, projects, trips
                   );
                 })}
               </div>
-              <div className="md:col-span-2">
-                <InputField label={t('tripEditor_form_reason')} name="reason" value={formData.reason} onChange={handleChange} />
+              <div className="md:col-span-2" id="trip-editor-reason">
+                <InputField id="trip-editor-reason-input" label={t('tripEditor_form_reason')} name="reason" value={formData.reason} onChange={handleChange} />
               </div>
-              <div>
+              <div id="trip-editor-special-origin">
                 <label className="block text-[11px] font-semibold uppercase tracking-wide text-gray-300/90 mb-1">{t('tripEditor_form_specialOrigin')}</label>
                 <select name="specialOrigin" value={formData.specialOrigin} onChange={handleSpecialOriginChange} className="w-full bg-background-dark/70 border border-gray-600/70 rounded-md px-3 py-2 text-sm text-on-surface-dark focus:outline-none focus:ring-2 focus:ring-brand-primary/50">
                   {specialOriginOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
                 </select>
               </div>
-              <InputField label={t('tripEditor_form_passengers')} type="number" name="passengers" value={formData.passengers} onChange={handleChange} min={0} />
+              <InputField id="trip-editor-passengers" label={t('tripEditor_form_passengers')} type="number" name="passengers" value={formData.passengers} onChange={handleChange} min={0} />
               {trip?.id && (
                 <div className="md:col-span-2">
                   <label className="block text-[11px] font-semibold uppercase tracking-wide text-gray-300/90 mb-1">{t('tripEditor_form_editJustification')}</label>
@@ -794,7 +796,7 @@ const TripEditorModal: React.FC<TripEditorModalProps> = ({ trip, projects, trips
                   </p>
                 </div>
               )}
-              <div>
+              <div id="trip-editor-distance">
                 <label className="block text-[11px] font-semibold uppercase tracking-wide text-gray-300/90 mb-1">{t('tripEditor_form_distance')}</label>
                 <div className="flex items-center">
                   <input type="number" min="0.01" step="0.1" name="distance" value={formData.distance || ''} onChange={handleChange} className="w-full bg-background-dark/70 border border-gray-600/70 rounded-md px-3 py-2 text-sm text-on-surface-dark placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-primary/50" />
@@ -805,11 +807,11 @@ const TripEditorModal: React.FC<TripEditorModalProps> = ({ trip, projects, trips
                 {distanceWarning && <p className="text-yellow-400 text-[11px] mt-1">{distanceWarning}</p>}
                 {mapsScriptError && <p className="text-red-400 text-[11px] mt-1">Error loading Google Maps script.</p>}
               </div>
-              <div>
-                <InputField label={t('rate_per_km_trip')} name="ratePerKm" type="number" value={formData.ratePerKm} onChange={handleRateChange} placeholder={t('rate_per_km_trip_placeholder')} />
+              <div id="trip-editor-rate">
+                <InputField id="trip-editor-rate-input" label={t('rate_per_km_trip')} name="ratePerKm" type="number" value={formData.ratePerKm} onChange={handleRateChange} placeholder={t('rate_per_km_trip_placeholder')} />
               </div>
               {isSignedIn && (
-                <div className="md:col-span-2 flex items-center gap-2 pt-2">
+                <div className="md:col-span-2 flex items-center gap-2 pt-2" id="trip-editor-calendar">
                   <input
                     type="checkbox"
                     id="addToCalendar"
@@ -830,7 +832,7 @@ const TripEditorModal: React.FC<TripEditorModalProps> = ({ trip, projects, trips
             </div>
           </>
         </main>
-        <footer className="flex justify-between items-center px-6 py-4 border-t border-gray-700/60 bg-background-dark/40">
+        <footer className="flex justify-between items-center px-6 py-4 border-t border-gray-700/60 bg-background-dark/40" id="trip-editor-actions">
           <div className="flex items-center gap-2">
             {shouldWarnAboutUnsavedChanges && (
               <>
@@ -846,6 +848,7 @@ const TripEditorModal: React.FC<TripEditorModalProps> = ({ trip, projects, trips
               variant="secondary"
               size="sm"
               onClick={handleClose}
+              id="trip-editor-cancel"
             >
               {t('common_cancel')}
             </Button>
@@ -854,6 +857,7 @@ const TripEditorModal: React.FC<TripEditorModalProps> = ({ trip, projects, trips
               size="sm"
               onClick={handleSave}
               disabled={isSaving}
+              id="trip-editor-save"
             >
               {isSaving && <LoaderIcon className="w-4 h-4 animate-spin mr-2" />}
               {t('tripEditor_saveBtn')}
@@ -865,11 +869,14 @@ const TripEditorModal: React.FC<TripEditorModalProps> = ({ trip, projects, trips
   );
 };
 
-const InputField: React.FC<{ label: string, name: string, value?: string | number, onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void, type?: string, disabled?: boolean, min?: number, placeholder?: string }> = ({ label, name, value, onChange, type = 'text', disabled = false, min, placeholder }) => (
+const InputField: React.FC<{ id?: string, label: string, name: string, value?: string | number, onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void, type?: string, disabled?: boolean, min?: number, placeholder?: string }> = ({ id, label, name, value, onChange, type = 'text', disabled = false, min, placeholder }) => {
+  const inputId = id || name;
+  return (
   <div className="space-y-1.5">
-    <label className="block text-[11px] font-semibold uppercase tracking-wide text-gray-300/90">{label}</label>
+    <label htmlFor={inputId} className="block text-[11px] font-semibold uppercase tracking-wide text-gray-300/90">{label}</label>
     <input
       type={type}
+      id={inputId}
       name={name}
       value={value ?? ''}
       onChange={onChange}
@@ -880,6 +887,7 @@ const InputField: React.FC<{ label: string, name: string, value?: string | numbe
       className="w-full bg-background-dark/70 border border-gray-600/70 rounded-md px-3 py-2 text-sm text-on-surface-dark placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-primary/50 disabled:bg-gray-800 disabled:text-gray-500 disabled:cursor-not-allowed"
     />
   </div>
-);
+  );
+};
 
 export default React.memo(TripEditorModal);

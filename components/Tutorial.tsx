@@ -94,6 +94,99 @@ export const Tutorial: React.FC<TutorialProps> = ({ userProfile, currentView }) 
             }
         ];
 
+        const tripEditorSteps: Array<{ element: string; popover: any }> = [
+            {
+                element: '#trip-editor-title',
+                popover: {
+                    title: tr('tutorial_trip_editor_intro_title', 'Crear o editar viaje'),
+                    description: tr('tutorial_trip_editor_intro_desc', 'Completa los datos clave del viaje, guarda y opcionalmente añade al calendario.'),
+                    side: 'bottom',
+                    align: 'start'
+                }
+            },
+            {
+                element: '#trip-editor-date',
+                popover: {
+                    title: tr('tutorial_trip_editor_date_title', 'Fecha del viaje'),
+                    description: tr('tutorial_trip_editor_date_desc', 'Selecciona la fecha exacta para mantener el orden y reportes correctos.'),
+                    side: 'bottom',
+                    align: 'start'
+                }
+            },
+            {
+                element: '#trip-editor-project',
+                popover: {
+                    title: tr('tutorial_trip_editor_project_title', 'Proyecto'),
+                    description: tr('tutorial_trip_editor_project_desc', 'Asigna el viaje al proyecto/cliente correcto para agrupar y facturar.'),
+                    side: 'bottom',
+                    align: 'start'
+                }
+            },
+            {
+                element: '#trip-editor-locations',
+                popover: {
+                    title: tr('tutorial_trip_editor_locations_title', 'Origen y destino'),
+                    description: tr('tutorial_trip_editor_locations_desc', 'Indica origen/destino (y paradas). Puedes arrastrar las intermedias para reordenar.'),
+                    side: 'bottom',
+                    align: 'start'
+                }
+            },
+            {
+                element: '#trip-editor-distance',
+                popover: {
+                    title: tr('tutorial_trip_editor_distance_title', 'Distancia'),
+                    description: tr('tutorial_trip_editor_distance_desc', 'Introduce la distancia o calcula automáticamente con el botón de ruta.'),
+                    side: 'bottom',
+                    align: 'start'
+                }
+            },
+            {
+                element: '#trip-editor-reason',
+                popover: {
+                    title: tr('tutorial_trip_editor_reason_title', 'Motivo del viaje'),
+                    description: tr('tutorial_trip_editor_reason_desc', 'Describe por qué se realizó el viaje; se usa para auditoría y reportes.'),
+                    side: 'bottom',
+                    align: 'start'
+                }
+            },
+            {
+                element: '#trip-editor-passengers',
+                popover: {
+                    title: tr('tutorial_trip_editor_passengers_title', 'Pasajeros'),
+                    description: tr('tutorial_trip_editor_passengers_desc', 'Añade pasajeros para calcular recargos si aplica.'),
+                    side: 'bottom',
+                    align: 'start'
+                }
+            },
+            {
+                element: '#trip-editor-rate',
+                popover: {
+                    title: tr('tutorial_trip_editor_rate_title', 'Tarifa'),
+                    description: tr('tutorial_trip_editor_rate_desc', 'Usa la tarifa por km por defecto o ajusta para este viaje.'),
+                    side: 'bottom',
+                    align: 'start'
+                }
+            },
+            {
+                element: '#trip-editor-calendar',
+                popover: {
+                    title: tr('tutorial_trip_editor_calendar_title', 'Añadir a calendario'),
+                    description: tr('tutorial_trip_editor_calendar_desc', 'Marca esta opción para crear el evento en tu Google Calendar.'),
+                    side: 'bottom',
+                    align: 'start'
+                }
+            },
+            {
+                element: '#trip-editor-actions',
+                popover: {
+                    title: tr('tutorial_trip_editor_actions_title', 'Guardar o cancelar'),
+                    description: tr('tutorial_trip_editor_actions_desc', 'Guarda los cambios o cancela; se mostrará aviso si hay cambios sin guardar.'),
+                    side: 'top',
+                    align: 'end'
+                }
+            }
+        ];
+
         const tripsSteps: Array<{ element: string; popover: any }> = [
             {
                 element: '#trips-title',
@@ -205,7 +298,8 @@ export const Tutorial: React.FC<TutorialProps> = ({ userProfile, currentView }) 
             }
         ];
 
-        const selectedSteps = currentView === 'trips' ? tripsSteps : dashboardSteps;
+        const isTripEditorOpen = Boolean(document.querySelector('#trip-editor-modal'));
+        const selectedSteps = isTripEditorOpen ? tripEditorSteps : currentView === 'trips' ? tripsSteps : dashboardSteps;
         const resolvedSteps = selectedSteps.filter(step => document.querySelector(step.element));
         if (resolvedSteps.length === 0) {
             return;
