@@ -262,8 +262,10 @@ const Dashboard: React.FC<DashboardProps> = ({ setCurrentView, personalization, 
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-                <StatCard title={t('dashboard_totalKm')} value={`${totalKm.toFixed(1)} km`} cta={t('dashboard_viewAllTrips')} onClick={() => setCurrentView('trips')} />
+            <div id="dashboard-overview" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                <StatCard title={t('dashboard_totalKm')} value={`${totalKm.toFixed(1)} km`} cta={t('dashboard_viewAllTrips')} onClick={() => setCurrentView('trips')}>
+                    <div id="dashboard-trips-cta" />
+                </StatCard>
                 <StatCard title={t('dashboard_activeProjects')} value={activeProjectsCount.toString()} cta={t('dashboard_manageProjects')} onClick={() => setCurrentView('projects')} />
                 {hasCO2Settings ? (
                     <StatCard title={t('dashboard_total_co2')} value={`${totalCo2.toFixed(1)} kg`} />

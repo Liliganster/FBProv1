@@ -96,15 +96,22 @@ const SettingsView: React.FC<{
         fetchModels();
     }, [localProfile?.openRouterApiKey, t]);
 
-    const handleProfileChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement> | { target: { name: string; value: string; type?: string } }) => {
+    const handleProfileChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement> | { target: { name: string; value: string; type?: string; checked?: boolean } }) => {
         if (!localProfile) return;
-        const { name, value } = e.target;
-        const type = 'type' in e.target ? e.target.type : 'text';
-        const finalValue = type === 'number' ? (value === '' ? undefined : parseFloat(value)) : value;
+        const target = e.target;
+        const name = target.name;
+        const type = 'type' in target ? target.type : 'text';
+
+        let finalValue: any = target.value;
+        if (type === 'number') {
+            finalValue = target.value === '' ? undefined : parseFloat(target.value);
+        } else if (type === 'checkbox') {
+            finalValue = (target as HTMLInputElement).checked;
+        }
 
         setLocalProfile(prev => {
             if (!prev) return null;
-            const newProfile = { ...prev, [name]: finalValue as any };
+            const newProfile = { ...prev, [name]: finalValue };
             if (name === 'country') {
                 // Do not auto-set rates when country changes
             }
@@ -560,8 +567,42 @@ const SettingsView: React.FC<{
                 );
             case 'help':
                 return (
-                    <div className="space-y-4">
+                    <div className="space-y-6">
                         <h2 className="text-xl font-semibold text-white">{t('settings_help_title')}</h2>
+
+                        <div className="p-4 bg-background-dark/50 border border-gray-700/50 rounded-lg space-y-4">
+                            <h3 className="text-lg font-medium text-on-surface-dark">Tutorial Interactivo</h3>
+                            <p className="text-sm text-on-surface-dark-secondary">
+                                Activa o desactiva la guía interactiva que te ayuda a conocer las funciones de la aplicación.
+                            </p>
+
+                            <div className="flex items-center gap-3">
+                                <input
+                                    type="checkbox"
+                                    id="isTutorialEnabled"
+                                    name="isTutorialEnabled"
+                                    checked={localProfile.isTutorialEnabled !== false}
+                                    onChange={handleProfileChange}
+                                    className="w-5 h-5 rounded border-gray-600 bg-background-dark text-brand-primary focus:ring-brand-primary"
+                                />
+                                <label htmlFor="isTutorialEnabled" className="text-on-surface-dark cursor-pointer select-none">
+                                    Activar Tutorial
+                                </label>
+                            </div>
+
+                            <div className="pt-2">
+                                <Button
+                                    variant="secondary"
+                                    onClick={() => setLocalProfile(prev => prev ? ({ ...prev, hasSeenTutorial: false }) : null)}
+                                >
+                                    Reiniciar Tutorial
+                                </Button>
+                                <p className="text-xs text-on-surface-dark-secondary mt-2">
+                                    Guarda los cambios para que el tutorial se reinicie.
+                                </p>
+                            </div>
+                        </div>
+
                         <p className="text-on-surface-dark-secondary">{t('settings_help_empty')}</p>
                     </div>
                 );

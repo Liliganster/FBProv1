@@ -58,6 +58,8 @@ export const UserProfileProvider: React.FC<{ children: React.ReactNode }> = ({ c
       tollsCostPerKm: null,
       finesCostPerKm: null,
       miscCostPerKm: null,
+      hasSeenTutorial: false,
+      isTutorialEnabled: true,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };

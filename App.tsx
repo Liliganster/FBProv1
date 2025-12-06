@@ -30,6 +30,7 @@ import { View, PersonalizationSettings, DEFAULT_PERSONALIZATION_SETTINGS } from 
 type ExtendedView = View | 'auth-callback';
 import useUserProfile from './hooks/useUserProfile';
 import Avatar from './components/Avatar';
+import { Tutorial } from './components/Tutorial';
 const AuthCallback = lazy(() => import('./components/AuthCallback'));
 // FIX: Changed to a named import for useAuth, as it's not a default export.
 import { useAuth } from './hooks/useAuth';
@@ -69,7 +70,7 @@ const App: React.FC = () => {
   const updateUrlForView = (view: ExtendedView) => {
     // No actualizar la URL si estamos en la ruta de callback
     if (view === 'auth-callback') return;
-    
+
     const path = view === 'dashboard' ? '/' : `/${view}`;
     if (window.location.pathname !== path) {
       window.history.pushState({ view }, '', path);
@@ -79,10 +80,10 @@ const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<ExtendedView>(() => {
     // First try to get view from URL
     const urlView = getViewFromUrl();
-    
+
     // Special case: auth callback
     if (urlView === 'auth-callback') return urlView;
-    
+
     // If there's a specific view in the URL (not dashboard/root), use it
     if (urlView !== 'dashboard' && window.location.pathname !== '/' && window.location.pathname !== '') {
       const validViews: View[] = ['dashboard', 'trips', 'projects', 'reports', 'calendar', 'advanced', 'settings', 'plans'];
@@ -90,7 +91,7 @@ const App: React.FC = () => {
         return urlView as View;
       }
     }
-    
+
     // For root path or invalid paths, always start with dashboard
     // Don't restore from localStorage on initial load to avoid 404s
     return 'dashboard';
@@ -102,7 +103,7 @@ const App: React.FC = () => {
   });
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
-  
+
   // Hook para detectar si es dispositivo móvil
   const isMobile = useMobile();
 
@@ -119,10 +120,10 @@ const App: React.FC = () => {
   }, [mobileMenuOpen]);
 
   const { t } = useTranslation();
-  const { userProfile } = useUserProfile();
-  
+  const { userProfile, updateUserProfile } = useUserProfile();
+
   const [personalization, setPersonalization] = useState<PersonalizationSettings>(() => ({
-      ...DEFAULT_PERSONALIZATION_SETTINGS,
+    ...DEFAULT_PERSONALIZATION_SETTINGS,
   }));
 
   // Default stays on the original look; dark mode is user-selectable.
@@ -132,39 +133,39 @@ const App: React.FC = () => {
   // Load personalization settings on mount/user change
   useEffect(() => {
     if (user) {
-        const savedSettings = localStorage.getItem(`fahrtenbuch_personalization_${user.id}`);
-        if (savedSettings) {
-            try {
-                const parsed = JSON.parse(savedSettings);
-                // Basic validation
-                if (typeof parsed.backgroundImage === 'string' && typeof parsed.uiTransparency === 'number' && typeof parsed.uiBlur === 'number') {
-                    const backgroundBlur = typeof parsed.backgroundBlur === 'number' ? parsed.backgroundBlur : DEFAULT_PERSONALIZATION_SETTINGS.backgroundBlur;
-                    const theme = parsed.theme === 'dark' ? 'dark' : 'light';
-                    setPersonalization({
-                        ...DEFAULT_PERSONALIZATION_SETTINGS,
-                        ...parsed,
-                        backgroundBlur,
-                        theme,
-                    });
-                } else {
-                    throw new Error("Invalid settings format");
-                }
-            } catch (e) {
-                console.error("Failed to parse personalization settings, resetting to default.", e);
-                setPersonalization({ ...DEFAULT_PERSONALIZATION_SETTINGS });
-            }
-        } else {
-            // Reset to default if nothing is saved for this user
-            setPersonalization({ ...DEFAULT_PERSONALIZATION_SETTINGS });
+      const savedSettings = localStorage.getItem(`fahrtenbuch_personalization_${user.id}`);
+      if (savedSettings) {
+        try {
+          const parsed = JSON.parse(savedSettings);
+          // Basic validation
+          if (typeof parsed.backgroundImage === 'string' && typeof parsed.uiTransparency === 'number' && typeof parsed.uiBlur === 'number') {
+            const backgroundBlur = typeof parsed.backgroundBlur === 'number' ? parsed.backgroundBlur : DEFAULT_PERSONALIZATION_SETTINGS.backgroundBlur;
+            const theme = parsed.theme === 'dark' ? 'dark' : 'light';
+            setPersonalization({
+              ...DEFAULT_PERSONALIZATION_SETTINGS,
+              ...parsed,
+              backgroundBlur,
+              theme,
+            });
+          } else {
+            throw new Error("Invalid settings format");
+          }
+        } catch (e) {
+          console.error("Failed to parse personalization settings, resetting to default.", e);
+          setPersonalization({ ...DEFAULT_PERSONALIZATION_SETTINGS });
         }
+      } else {
+        // Reset to default if nothing is saved for this user
+        setPersonalization({ ...DEFAULT_PERSONALIZATION_SETTINGS });
+      }
     }
   }, [user]);
 
   // Save settings when personalization state changes
   useEffect(() => {
-      if (user) {
-          localStorage.setItem(`fahrtenbuch_personalization_${user.id}`, JSON.stringify(personalization));
-      }
+    if (user) {
+      localStorage.setItem(`fahrtenbuch_personalization_${user.id}`, JSON.stringify(personalization));
+    }
   }, [personalization, user]);
 
   // Clean up malformed URLs on mount and sync view/URL
@@ -186,7 +187,7 @@ const App: React.FC = () => {
     // Guardar en localStorage solo cuando el usuario navega activamente, no en carga inicial
     if (currentView !== 'auth-callback') {
       updateUrlForView(currentView);
-      
+
       // Solo guardar en localStorage después de la carga inicial
       if (user && currentPath !== '/') {
         localStorage.setItem(`fahrtenbuch_currentView_${user.id}`, currentView);
@@ -219,7 +220,7 @@ const App: React.FC = () => {
       if (view === 'auth-callback') {
         return 'Autenticación - Fahrtenbuch Pro';
       }
-      
+
       const titles = {
         dashboard: t('nav_dashboard'),
         trips: t('nav_trips'),
@@ -235,7 +236,7 @@ const App: React.FC = () => {
 
     document.title = getPageTitle(currentView);
   }, [currentView, t]);
-  
+
   useEffect(() => {
     if (user) {
       localStorage.setItem(`fahrtenbuch_sidebarCollapsed_${user.id}`, String(sidebarCollapsed));
@@ -287,7 +288,7 @@ const App: React.FC = () => {
     if (currentView === 'auth-callback') {
       return <AuthCallback />;
     }
-    
+
     const commonProps = { personalization, theme };
 
     const withErrorBoundary = (component: React.ReactNode, viewName: string) => (
@@ -308,11 +309,11 @@ const App: React.FC = () => {
       case 'calendar':
         return withErrorBoundary(<CalendarView setCurrentView={setCurrentView} {...commonProps} />, 'Calendar');
       case 'settings':
-        return withErrorBoundary(<SettingsView 
-            setCurrentView={setCurrentView} 
-            personalization={personalization}
-            setPersonalization={setPersonalization}
-            theme={theme}
+        return withErrorBoundary(<SettingsView
+          setCurrentView={setCurrentView}
+          personalization={personalization}
+          setPersonalization={setPersonalization}
+          theme={theme}
         />, 'Settings');
       case 'plans':
         return withErrorBoundary(<PlansView setCurrentView={setCurrentView} {...commonProps} />, 'Plans');
@@ -324,15 +325,15 @@ const App: React.FC = () => {
   };
 
   const navItems = [
-    { view: 'dashboard', label: t('nav_dashboard'), icon: <LayoutDashboard size={20} /> },
-    { view: 'trips', label: t('nav_trips'), icon: <Route size={20} /> },
-    { view: 'projects', label: t('nav_projects'), icon: <FolderOpen size={20} /> },
-    { view: 'reports', label: t('nav_reports'), icon: <FileText size={20} /> },
-    { view: 'calendar', label: t('nav_calendar'), icon: <CalendarDays size={20} /> },
-    { view: 'advanced', label: t('nav_advanced'), icon: <Rocket size={20} /> },
-    { view: 'plans', label: 'Planes', icon: <Star size={20} /> },
+    { view: 'dashboard', label: t('nav_dashboard'), icon: <LayoutDashboard size={20} />, id: 'nav-dashboard' },
+    { view: 'trips', label: t('nav_trips'), icon: <Route size={20} />, id: 'nav-trips' },
+    { view: 'projects', label: t('nav_projects'), icon: <FolderOpen size={20} />, id: 'nav-projects' },
+    { view: 'reports', label: t('nav_reports'), icon: <FileText size={20} />, id: 'nav-reports' },
+    { view: 'calendar', label: t('nav_calendar'), icon: <CalendarDays size={20} />, id: 'nav-calendar' },
+    { view: 'advanced', label: t('nav_advanced'), icon: <Rocket size={20} />, id: 'nav-advanced' },
+    { view: 'plans', label: 'Planes', icon: <Star size={20} />, id: 'nav-plans' },
   ];
-  
+
   const baseBackground = isDarkMode
     ? 'linear-gradient(135deg, #060912 0%, #0b1224 100%)'
     : 'linear-gradient(135deg, #111827 0%, #8fbf99 100%)';
@@ -368,42 +369,41 @@ const App: React.FC = () => {
         {navItems.map((item) => (
           <button
             key={item.view}
+            id={item.id}
             onClick={() => {
               setCurrentView(item.view as View);
               setMobileMenuOpen(false);
             }}
             title={sidebarCollapsed ? item.label : undefined}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-smooth transition-all duration-300 transform ${sidebarCollapsed ? 'justify-center' : ''} ${
-              currentView === item.view
-                ? `${activeNavTextClass} scale-[1.02] shadow-lg`
-                : inactiveNavClasses
-            }`}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-smooth transition-all duration-300 transform ${sidebarCollapsed ? 'justify-center' : ''} ${currentView === item.view
+              ? `${activeNavTextClass} scale-[1.02] shadow-lg`
+              : inactiveNavClasses
+              }`}
             style={currentView === item.view ? { backgroundColor: activeNavBackground } : undefined}
           >
             {item.icon}
             {!sidebarCollapsed && <span className="font-medium">{item.label}</span>}
           </button>
         ))}
-        </div>
+      </div>
 
-        <div className="p-4 space-y-2 border-t border-glass">
+      <div className="p-4 space-y-2 border-t border-glass">
 
-          <button
-            onClick={() => {
-              setCurrentView('settings');
-              setMobileMenuOpen(false);
-            }}
-            title={sidebarCollapsed ? t('nav_settings') : undefined}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-smooth transition-all duration-300 transform ${sidebarCollapsed ? 'justify-center' : ''} ${
-              currentView === 'settings'
-                ? `${activeNavTextClass} scale-[1.02] shadow-lg`
-                : inactiveNavClasses
+        <button
+          onClick={() => {
+            setCurrentView('settings');
+            setMobileMenuOpen(false);
+          }}
+          title={sidebarCollapsed ? t('nav_settings') : undefined}
+          className={`w-full flex items-center gap-3 px-4 py-3 rounded-smooth transition-all duration-300 transform ${sidebarCollapsed ? 'justify-center' : ''} ${currentView === 'settings'
+            ? `${activeNavTextClass} scale-[1.02] shadow-lg`
+            : inactiveNavClasses
             }`}
-            style={currentView === 'settings' ? { backgroundColor: activeNavBackground } : undefined}
-          >
-            <Settings size={20} />
-            {!sidebarCollapsed && <span className="font-medium">{t('nav_settings')}</span>}
-          </button>
+          style={currentView === 'settings' ? { backgroundColor: activeNavBackground } : undefined}
+        >
+          <Settings size={20} />
+          {!sidebarCollapsed && <span className="font-medium">{t('nav_settings')}</span>}
+        </button>
 
         <button
           onClick={logout}
@@ -440,8 +440,8 @@ const App: React.FC = () => {
       style={{
         background: personalization.backgroundImage
           ? (personalization.backgroundBlur > 0
-              ? baseBackground
-              : `${imageOverlay}, url(${personalization.backgroundImage})`)
+            ? baseBackground
+            : `${imageOverlay}, url(${personalization.backgroundImage})`)
           : baseBackground,
         backgroundSize: personalization.backgroundImage && personalization.backgroundBlur === 0 ? 'cover, cover' : 'cover',
         backgroundPosition: personalization.backgroundImage && personalization.backgroundBlur === 0 ? 'center, center' : 'center',
@@ -466,17 +466,17 @@ const App: React.FC = () => {
 
       {/* Mobile Header with Hamburger Menu */}
       {isMobile && (
-      <div className="fixed top-0 left-0 right-0 z-30 bg-gradient-to-br from-white/5 via-blue-400/8 to-blue-500/5 backdrop-blur-xl backdrop-saturate-150 border-b border-white/10 shadow-glass">
-        <div className="flex items-center justify-between p-4">
-          <h1 className="text-lg font-bold text-white">FahrtenBuch Pro</h1>
-          <button
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="p-2 rounded-smooth transition-all duration-300 transform hover:scale-105 hover:bg-gradient-surface hover:shadow-brand/20 hover:shadow-md text-white"
-          >
-            <Menu size={24} />
-          </button>
+        <div className="fixed top-0 left-0 right-0 z-30 bg-gradient-to-br from-white/5 via-blue-400/8 to-blue-500/5 backdrop-blur-xl backdrop-saturate-150 border-b border-white/10 shadow-glass">
+          <div className="flex items-center justify-between p-4">
+            <h1 className="text-lg font-bold text-white">FahrtenBuch Pro</h1>
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="p-2 rounded-smooth transition-all duration-300 transform hover:scale-105 hover:bg-gradient-surface hover:shadow-brand/20 hover:shadow-md text-white"
+            >
+              <Menu size={24} />
+            </button>
+          </div>
         </div>
-      </div>
       )}
 
       {/* Mobile Menu Overlay */}
@@ -494,8 +494,8 @@ const App: React.FC = () => {
 
       {/* Desktop Sidebar */}
       {!isMobile && (
-      <nav
-        className={`relative z-10 flex
+        <nav
+          className={`relative z-10 flex
         ${sidebarCollapsed ? 'w-20' : 'w-72'}
         text-on-surface-dark border-r
         transition-all duration-300 flex-col shadow-glass
@@ -503,8 +503,8 @@ const App: React.FC = () => {
         backdrop-blur-xl backdrop-saturate-150
         border-white/10
       `}>
-        {renderSidebarContent()}
-      </nav>
+          {renderSidebarContent()}
+        </nav>
       )}
       <main className={`relative z-10 flex-1 overflow-y-auto overflow-x-hidden bg-transparent w-full h-full ${isMobile ? 'pt-20 px-4 pb-4' : 'p-8'}`}>
         <div className="w-full h-full">
@@ -513,6 +513,7 @@ const App: React.FC = () => {
           </Suspense>
         </div>
       </main>
+      <Tutorial userProfile={userProfile} updateUserProfile={updateUserProfile} />
     </div>
   );
 };
