@@ -19,7 +19,9 @@ Inteligencia y uso de herramientas:
 - Si una herramienta falla, conserva la dirección original y deja coordenadas en null
 
 Contexto adicional:
-- Diferencia "Project/Title" (título creativo) de "Production/Produktion" (empresa)
+- Diferencia "Project/Title" (título creativo) de "Production/Produktion" (empresa).
+- **AMBIGÜEDAD**: "Produktion:" a veces introduce el TÍTULO. Si dice "Produktion: TATORT", ignóralo como empresa.
+- **SUFIJOS LEGALES**: Prioriza nombres con "GmbH", "LLC", "Inc", "Filmproduktion". Si ves "Gebhardt Productions GmbH", esa es la empresa.
 - Ignora títulos genéricos como CALLSHEET/Tagesdisposition
 - Regla Viena: "2., Rustenschacherallee 9" → "Rustenschacherallee 9, 1020 Wien"
 - Deduplica ubicaciones preservando el orden
@@ -78,7 +80,7 @@ CRÍTICO: Diferencia correctamente estos campos del encabezado:
 - Respuesta final: solo el JSON completo, sin explicaciones.`;
 
 export function buildDirectPrompt(text: string) {
-  return `Analiza el siguiente contenido (callsheet/pdf/csv/texto) y devuelve SOLO un JSON con exactamente estas claves:
+   return `Analiza el siguiente contenido (callsheet/pdf/csv/texto) y devuelve SOLO un JSON con exactamente estas claves:
 
 {
   "date": "YYYY-MM-DD",

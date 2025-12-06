@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Project, PersonalizationSettings } from '../types';
-import { XIcon } from './Icons';
+import { XIcon, LoaderIcon } from './Icons';
 import useTranslation from '../hooks/useTranslation';
 import useToast from '../hooks/useToast';
 import useTrips from '../hooks/useTrips';
@@ -18,6 +18,7 @@ interface ProjectEditorModalProps {
 const ProjectEditorModal: React.FC<ProjectEditorModalProps> = ({ project, onClose, personalization, theme }) => {
   const { addProject, updateProject } = useTrips();
   const [formState, setFormState] = useState({ name: '', producer: '', ratePerKm: '' as string | number });
+  const [isSaving, setIsSaving] = useState(false);
   const [initialFormState, setInitialFormState] = useState(formState);
   const { t } = useTranslation();
   const { showToast } = useToast();
@@ -33,10 +34,10 @@ const ProjectEditorModal: React.FC<ProjectEditorModalProps> = ({ project, onClos
   );
 
   useEffect(() => {
-    const newFormState = project 
+    const newFormState = project
       ? { name: project.name, producer: project.producer, ratePerKm: (project as any).ratePerKm ?? '' }
       : { name: '', producer: '', ratePerKm: '' };
-    
+
     setFormState(newFormState);
     setInitialFormState(newFormState);
     resetInitialData(newFormState);
@@ -47,23 +48,33 @@ const ProjectEditorModal: React.FC<ProjectEditorModalProps> = ({ project, onClos
     setFormState(prev => ({ ...prev, [name]: type === 'number' ? (value === '' ? '' : parseFloat(value)) : value }));
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
+    if (isSaving) return;
+
     if (!formState.name || !formState.producer) {
       showToast(t('projects_alert_fillFields'), 'error');
       return;
     }
 
-    const rateToSave = formState.ratePerKm === '' || isNaN(Number(formState.ratePerKm)) ? undefined : Number(formState.ratePerKm);
+    setIsSaving(true);
+    try {
+      const rateToSave = formState.ratePerKm === '' || isNaN(Number(formState.ratePerKm)) ? undefined : Number(formState.ratePerKm);
 
-    if (project) {
-      updateProject({ ...(project as any), name: formState.name, producer: formState.producer, ratePerKm: rateToSave } as any);
-    } else {
-      addProject({ name: formState.name, producer: formState.producer, ratePerKm: rateToSave } as any);
+      if (project) {
+        await updateProject({ ...(project as any), name: formState.name, producer: formState.producer, ratePerKm: rateToSave } as any);
+      } else {
+        await addProject({ name: formState.name, producer: formState.producer, ratePerKm: rateToSave } as any);
+      }
+
+      // Mark as saved after successful save
+      markAsSaved();
+      onClose();
+    } catch (error) {
+      console.error('Failed to save project:', error);
+      showToast(t('common_error_unknown'), 'error');
+    } finally {
+      setIsSaving(false);
     }
-    
-    // Mark as saved after successful save
-    markAsSaved();
-    onClose();
   };
 
   const handleClose = async () => {
@@ -138,7 +149,9 @@ const ProjectEditorModal: React.FC<ProjectEditorModalProps> = ({ project, onClos
               variant="primary"
               size="sm"
               onClick={handleSave}
+              disabled={isSaving}
             >
+              {isSaving && <LoaderIcon className="w-4 h-4 animate-spin mr-2" />}
               {isEditing ? t('projects_form_saveBtn') : t('projects_form_addBtn')}
             </Button>
           </div>
