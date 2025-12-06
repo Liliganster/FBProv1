@@ -40,7 +40,7 @@ export const translations = {
     plan_name_pro: 'Pro',
     plan_name_enterprise: 'Enterprise',
 
-    
+
 
     login_title: 'Sign in to your account',
     register_title: 'Create a new account',
@@ -116,7 +116,7 @@ export const translations = {
     specialOrigin_end_of_continuation: 'Return to my base address (from last destination)',
     specialOrigin_continuation_tag: 'Continuation',
     specialOrigin_return_tag: 'Return to Base',
-    
+
     projects_title: 'Projects',
     projects_addNew: 'Add New Project',
     projects_col_name: 'Project Name',
@@ -259,7 +259,7 @@ export const translations = {
     settings_changelog_empty: 'No new updates to show right now.',
     settings_help_title: 'Help & Documentation',
     settings_help_empty: 'Documentation is coming soon.',
-    
+
     tripEditor_title_edit: 'Edit Trip',
     tripEditor_title_add: 'Add New Trip',
     tripEditor_mode_form: 'Form',
@@ -294,7 +294,7 @@ export const translations = {
     tripEditor_validation_editJustification: 'Justification for editing is required when modifying saved trips',
     tripEditor_trip_created_success: 'Trip created successfully',
     tripEditor_trip_updated_success: 'Trip updated successfully',
-    
+
     // Ledger Integrity
     ledger_integrity_title: 'Ledger Integrity',
     ledger_verifying: 'Verifying...',
@@ -306,7 +306,7 @@ export const translations = {
     ledger_verification_time: 'Last Verified',
     ledger_root_hash: 'Root Hash',
     ledger_broken_at: 'Chain broken at',
-    
+
     batch_edit_title: 'Edit {{count}} trips',
     batch_edit_change_project: 'Change Project',
     batch_edit_change_reason: 'Change Reason',
@@ -361,7 +361,7 @@ export const translations = {
     bulk_alert_requires_ocr: 'This file requires OCR. Please use Agent (OCR) mode.',
     tripEditor_warning_duplicate: 'Warning: A trip with the same date and locations already exists.',
     tripEditor_duplicate_confirmation: 'Do you want to save this trip anyway?',
-    
+
     reports_title: 'Reports',
     reports_generateNew: 'Generate New Report',
     reports_noReports: 'No reports have been generated yet.',
@@ -378,7 +378,7 @@ export const translations = {
     reports_deleteBtn: 'Delete',
     reports_generated_on: 'Generated on',
     reports_period: 'Period',
-    
+
     report_title: 'Generate Fiscal Report',
     report_alert_missingData: 'Please complete your user profile before generating a report.',
     report_unknownProject: 'Unknown',
@@ -414,9 +414,9 @@ export const translations = {
     report_audit_signature: 'Report Signature (SHA-256)',
     report_audit_chain_start: 'First Trip Hash',
     report_audit_chain_end: 'Last Trip Hash',
-    
+
     files_deleteConfirm: 'Are you sure you want to delete this file?',
-    
+
     detail_title: 'Trip Details',
     detail_date: 'Date',
     detail_project: 'Project',
@@ -439,7 +439,7 @@ export const translations = {
     calendar_connect_btn: 'Connect Google Calendar',
     calendar_event_allday: 'All-day',
     calendar_event_create_trip: 'Create Trip from Event',
-    
+
     advanced_title: 'Advanced',
     advanced_data_management_title: 'Data Management',
     advanced_export_data_btn: 'Export All Data',
@@ -511,7 +511,7 @@ export const translations = {
     co2_settings_unsaved_changes: 'You have unsaved changes. Are you sure you want to close?',
     co2_settings_unsaved_indicator: 'Unsaved changes',
     co2_settings_save: 'Save Settings',
-    
+
     // CO2 Welcome and States
     co2_welcome_title: 'Welcome to CO₂ Analysis',
     co2_welcome_desc: 'Get insights into the environmental impact of your trips. Configure your analysis preferences to start tracking your carbon footprint and discover opportunities for more sustainable travel.',
@@ -521,7 +521,7 @@ export const translations = {
     co2_no_data_desc: 'No trips match your current filter criteria. Try adjusting your settings or add some trips to see your CO₂ analysis.',
     co2_adjust_settings: 'Adjust Settings',
     co2_add_trips: 'Add Trips',
-    
+
     // CO2 Metrics
     co2_metric_total_emissions: 'Total CO₂ Emissions',
     co2_metric_avg_efficiency: 'Avg. Efficiency',
@@ -530,22 +530,22 @@ export const translations = {
     co2_metric_efficiency: 'Efficiency',
     co2_metric_distance: 'Distance',
     co2_metric_trips: 'Trips',
-    
+
     // CO2 Efficiency Ratings
     efficiency_excellent: 'Excellent',
     efficiency_good: 'Good',
     efficiency_poor: 'Poor',
     efficiency_very_poor: 'Very Poor',
-    
+
     // CO2 Trends
     trend_improving: 'Improving',
     trend_worsening: 'Worsening',
-    
+
     // CO2 Recommendations
     co2_recommendations_title: 'Recommendations',
     co2_recommendation_combine: 'Combine multiple trips to one destination for efficiency',
     co2_recommendation_transport: 'Use public transport for shorter distances where possible',
-    
+
     // Route Templates View
     route_templates_title: 'Route Templates',
     route_templates_subtitle: 'Save frequent routes as reusable templates.',
@@ -669,7 +669,7 @@ export const translations = {
     common_unsaved_changes_warning: 'You have unsaved changes. Are you sure you want to close?',
     common_unsaved_indicator: 'Unsaved changes',
     common_unsaved_changes_details: 'Changes will be lost if you continue without saving.',
-    
+
     undo_action_delete_trip: 'Deleted trip',
     undo_action_delete_project: 'Deleted project',
     undo_action_delete_template: 'Deleted template',
@@ -678,7 +678,7 @@ export const translations = {
     undo_action_bulk_delete: 'Deleted {{count}} items',
     undo_toast_message: '{{action}}. ',
     undo_toast_button: 'Undo',
-    
+
     settings_not_loaded: 'App settings could not be loaded. Please try again.',
 
     rate_per_km: 'Rate (€/km)',
@@ -718,6 +718,21 @@ export const translations = {
     toast_gcal_popup_failed: 'Could not open Google sign-in popup. Please check for popup blockers.',
     toast_gcal_auth_error: 'An unexpected Google authentication error occurred: {{error}}',
     toast_gcal_server_only: 'Google Calendar integration requires additional OAuth setup.',
+
+    // Tutorial
+    tutorial_welcome_title: 'Welcome to Fahrtenbuch Pro',
+    tutorial_welcome_desc: 'This quick guide will show you how to manage your trips and projects efficiently.',
+    tutorial_add_trip_title: 'Add Trip',
+    tutorial_add_trip_desc: 'Use this button to manually log a new trip. You can also bulk import trips.',
+    tutorial_projects_title: 'Project Management',
+    tutorial_projects_desc: 'Organize your trips by projects for better tracking and invoicing.',
+    tutorial_reports_title: 'Reports & Export',
+    tutorial_reports_desc: 'Generate detailed PDF reports for your tax returns or invoicing.',
+    tutorial_settings_title: 'Settings',
+    tutorial_settings_desc: 'Customize your profile, vehicle, and app preferences here.',
+    tutorial_prev: 'Previous',
+    tutorial_next: 'Next',
+    tutorial_done: 'Finish',
   },
   de: {
     nav_dashboard: 'Dashboard',
@@ -733,7 +748,7 @@ export const translations = {
     plan_name_pro: 'Pro',
     plan_name_enterprise: 'Enterprise',
 
-    
+
 
     login_title: 'Melden Sie sich bei Ihrem Konto an',
     register_title: 'Neues Konto erstellen',
@@ -803,13 +818,13 @@ export const translations = {
     trips_warning_improbable_distance: 'Warnung: Unwahrscheinliche Distanz (> 1000km).',
     trips_warning_zero_distance: 'Warnung: Distanz ist 0 km. Bitte überprüfen.',
     trips_locked_tooltip: 'Diese Fahrt befindet sich in einem gesperrten Zeitraum und kann nicht bearbeitet oder gelöscht werden.',
-    
+
     specialOrigin_home: 'Abfahrt von meiner Basisadresse',
     specialOrigin_continuation: 'Vom letzten Ziel fortsetzen',
     specialOrigin_end_of_continuation: 'Zurück zu meiner Basisadresse (vom letzten Ziel)',
     specialOrigin_continuation_tag: 'Fortsetzung',
     specialOrigin_return_tag: 'Rückkehr zur Basis',
-    
+
     projects_title: 'Projekte',
     projects_addNew: 'Neues Projekt hinzufügen',
     projects_col_name: 'Projektname',
@@ -987,7 +1002,7 @@ export const translations = {
     tripEditor_validation_editJustification: 'Eine Begründung für die Bearbeitung ist erforderlich, wenn gespeicherte Fahrten geändert werden',
     tripEditor_trip_created_success: 'Fahrt erfolgreich erstellt',
     tripEditor_trip_updated_success: 'Fahrt erfolgreich aktualisiert',
-    
+
     // Ledger Integrity
     ledger_integrity_title: 'Ledger-Integrität',
     ledger_verifying: 'Verifizierung...',
@@ -999,7 +1014,7 @@ export const translations = {
     ledger_verification_time: 'Zuletzt verifiziert',
     ledger_root_hash: 'Stamm-Hash',
     ledger_broken_at: 'Kette unterbrochen bei',
-    
+
     batch_edit_title: '{{count}} Fahrten bearbeiten',
     batch_edit_change_project: 'Projekt ändern',
     batch_edit_change_reason: 'Grund ändern',
@@ -1054,7 +1069,7 @@ export const translations = {
     bulk_alert_requires_ocr: 'Diese Datei benötigt OCR. Bitte verwenden Sie den Agent (OCR) Modus.',
     tripEditor_warning_duplicate: 'Warnung: Eine Fahrt mit demselben Datum und Orten existiert bereits.',
     tripEditor_duplicate_confirmation: 'Möchten Sie diese Fahrt trotzdem speichern?',
-    
+
     reports_title: 'Berichte',
     reports_generateNew: 'Neuen Bericht erstellen',
     reports_noReports: 'Es wurden noch keine Berichte erstellt.',
@@ -1071,7 +1086,7 @@ export const translations = {
     reports_deleteBtn: 'Löschen',
     reports_generated_on: 'Erstellt am',
     reports_period: 'Zeitraum',
-    
+
     report_title: 'Steuerbericht erstellen',
     report_alert_missingData: 'Bitte vervollständigen Sie Ihr Benutzerprofil, bevor Sie einen Bericht erstellen.',
     report_unknownProject: 'Unbekannt',
@@ -1107,9 +1122,9 @@ export const translations = {
     report_audit_signature: 'Berichtssignatur (SHA-256)',
     report_audit_chain_start: 'Hash der ersten Fahrt',
     report_audit_chain_end: 'Hash der letzten Fahrt',
-    
+
     files_deleteConfirm: 'Sind Sie sicher, dass Sie diese Datei löschen möchten?',
-    
+
     detail_title: 'Fahrtdetails',
     detail_date: 'Datum',
     detail_project: 'Projekt',
@@ -1132,7 +1147,7 @@ export const translations = {
     calendar_connect_btn: 'Google Kalender verbinden',
     calendar_event_allday: 'Ganztägig',
     calendar_event_create_trip: 'Fahrt aus Termin erstellen',
-    
+
     advanced_title: 'Erweitert',
     advanced_data_management_title: 'Datenverwaltung',
     advanced_export_data_btn: 'Alle Daten exportieren',
@@ -1204,7 +1219,7 @@ export const translations = {
     co2_settings_unsaved_changes: 'Sie haben nicht gespeicherte Änderungen. Sind Sie sicher, dass Sie schließen möchten?',
     co2_settings_unsaved_indicator: 'Nicht gespeicherte Änderungen',
     co2_settings_save: 'Einstellungen speichern',
-    
+
     // CO2 Welcome and States
     co2_welcome_title: 'Willkommen zur CO₂-Analyse',
     co2_welcome_desc: 'Erhalten Sie Einblicke in die Umweltauswirkungen Ihrer Fahrten. Konfigurieren Sie Ihre Analyse-Präferenzen, um Ihren CO₂-Fußabdruck zu verfolgen und Möglichkeiten für nachhaltigeres Reisen zu entdecken.',
@@ -1214,7 +1229,7 @@ export const translations = {
     co2_no_data_desc: 'Keine Fahrten entsprechen Ihren aktuellen Filterkriterien. Versuchen Sie, Ihre Einstellungen anzupassen oder fügen Sie Fahrten hinzu, um Ihre CO₂-Analyse zu sehen.',
     co2_adjust_settings: 'Einstellungen anpassen',
     co2_add_trips: 'Fahrten hinzufügen',
-    
+
     // CO2 Metrics
     co2_metric_total_emissions: 'Gesamt-CO₂-Emissionen',
     co2_metric_avg_efficiency: 'Durchschn. Effizienz',
@@ -1223,17 +1238,17 @@ export const translations = {
     co2_metric_efficiency: 'Effizienz',
     co2_metric_distance: 'Distanz',
     co2_metric_trips: 'Fahrten',
-    
+
     // CO2 Efficiency Ratings
     efficiency_excellent: 'Ausgezeichnet',
     efficiency_good: 'Gut',
     efficiency_poor: 'Schlecht',
     efficiency_very_poor: 'Sehr schlecht',
-    
+
     // CO2 Trends
     trend_improving: 'Verbessernd',
     trend_worsening: 'Verschlechternd',
-    
+
     // CO2 Recommendations
     co2_recommendations_title: 'Empfehlungen',
     co2_recommendation_combine: 'Kombinieren Sie mehrere Fahrten zu einem Ziel für mehr Effizienz',
@@ -1362,7 +1377,7 @@ export const translations = {
     common_unsaved_changes_warning: 'Sie haben nicht gespeicherte Änderungen. Sind Sie sicher, dass Sie schließen möchten?',
     common_unsaved_indicator: 'Nicht gespeicherte Änderungen',
     common_unsaved_changes_details: 'Änderungen gehen verloren, wenn Sie fortfahren, ohne zu speichern.',
-    
+
     undo_action_delete_trip: 'Fahrt gelöscht',
     undo_action_delete_project: 'Projekt gelöscht',
     undo_action_delete_template: 'Vorlage gelöscht',
@@ -1371,7 +1386,7 @@ export const translations = {
     undo_action_bulk_delete: '{{count}} Elemente gelöscht',
     undo_toast_message: '{{action}}. ',
     undo_toast_button: 'Rückgängig machen',
-    
+
     settings_not_loaded: 'App-Einstellungen konnten nicht geladen werden. Bitte versuchen Sie es erneut.',
 
     rate_per_km: 'Satz (€/km)',
@@ -1411,6 +1426,21 @@ export const translations = {
     toast_gcal_popup_failed: 'Google-Anmeldefenster konnte nicht geöffnet werden. Bitte prüfen Sie auf Popup-Blocker.',
     toast_gcal_auth_error: 'Ein unerwarteter Google-Authentifizierungsfehler ist aufgetreten: {{error}}',
     toast_gcal_server_only: 'Die Google Calendar-Integration erfordert eine zusätzliche OAuth-Einrichtung.',
+
+    // Tutorial
+    tutorial_welcome_title: 'Willkommen bei Fahrtenbuch Pro',
+    tutorial_welcome_desc: 'Diese Kurzanleitung zeigt Ihnen, wie Sie Ihre Fahrten und Projekte effizient verwalten.',
+    tutorial_add_trip_title: 'Fahrt hinzufügen',
+    tutorial_add_trip_desc: 'Nutzen Sie diesen Button, um eine neue Fahrt manuell zu erfassen. Sie können Fahrten auch massenhaft importieren.',
+    tutorial_projects_title: 'Projektmanagement',
+    tutorial_projects_desc: 'Organisieren Sie Ihre Fahrten nach Projekten für eine bessere Übersicht und Abrechnung.',
+    tutorial_reports_title: 'Berichte & Export',
+    tutorial_reports_desc: 'Erstellen Sie detaillierte PDF-Berichte für Ihre Steuererklärung oder Rechnungsstellung.',
+    tutorial_settings_title: 'Einstellungen',
+    tutorial_settings_desc: 'Passen Sie hier Ihr Profil, Fahrzeug und App-Einstellungen an.',
+    tutorial_prev: 'Zurück',
+    tutorial_next: 'Weiter',
+    tutorial_done: 'Fertig',
   },
   es: {
     nav_dashboard: 'Panel',
@@ -1426,7 +1456,7 @@ export const translations = {
     plan_name_pro: 'Pro',
     plan_name_enterprise: 'Enterprise',
 
-    
+
 
     login_title: 'Inicia sesión en tu cuenta',
     register_title: 'Crear una cuenta nueva',
@@ -1445,7 +1475,7 @@ export const translations = {
     login_verify_notice_body: 'Te enviamos un correo de verificación. Puede tardar unos minutos; revisa también spam. Debes verificar antes de iniciar sesión.',
     login_verify_timeout_hint: 'Está tardando más de lo habitual. Espera el correo de verificación (revisa spam) o inténtalo de nuevo en un momento.',
     login_email_not_confirmed: 'Debes verificar tu correo antes de iniciar sesión. Revisa tu bandeja y spam, luego inténtalo de nuevo.',
-    
+
     dashboard_title: 'Dashboard',
     dashboard_totalKm: 'Kilómetros totales',
     dashboard_viewAllTrips: 'Ver viajes',
@@ -1502,7 +1532,7 @@ export const translations = {
     specialOrigin_end_of_continuation: 'Regresar a mi dirección base (desde el último destino)',
     specialOrigin_continuation_tag: 'Continuación',
     specialOrigin_return_tag: 'Regreso a base',
-    
+
     projects_title: 'Proyectos',
     projects_addNew: 'Añadir nuevo proyecto',
     projects_col_name: 'Nombre del proyecto',
@@ -1680,7 +1710,7 @@ export const translations = {
     tripEditor_validation_editJustification: 'Se requiere una justificación para editar cuando se modifican viajes guardados',
     tripEditor_trip_created_success: 'Viaje creado exitosamente',
     tripEditor_trip_updated_success: 'Viaje actualizado exitosamente',
-    
+
     // Ledger Integrity
     ledger_integrity_title: 'Integridad del ledger',
     ledger_verifying: 'Verificando...',
@@ -1692,7 +1722,7 @@ export const translations = {
     ledger_verification_time: 'Última verificación',
     ledger_root_hash: 'Hash raíz',
     ledger_broken_at: 'Cadena rota en',
-    
+
     batch_edit_title: 'Editar {{count}} viajes',
     batch_edit_change_project: 'Cambiar proyecto',
     batch_edit_change_reason: 'Cambiar motivo',
@@ -1747,7 +1777,7 @@ export const translations = {
     bulk_alert_requires_ocr: 'Este archivo requiere OCR. Por favor usa el modo agente (OCR).',
     tripEditor_warning_duplicate: 'Aviso: Ya existe un viaje con la misma fecha y ubicaciones.',
     tripEditor_duplicate_confirmation: '¿Deseas guardar este viaje de todos modos?',
-    
+
     reports_title: 'Informes',
     reports_generateNew: 'Generar nuevo informe',
     reports_noReports: 'Aún no se han generado informes.',
@@ -1764,7 +1794,7 @@ export const translations = {
     reports_deleteBtn: 'Eliminar',
     reports_generated_on: 'Generado el',
     reports_period: 'Período',
-    
+
     report_title: 'Generar informe fiscal',
     report_alert_missingData: 'Por favor, completa tu perfil de usuario antes de generar un informe.',
     report_unknownProject: 'Desconocido',
@@ -1800,9 +1830,9 @@ export const translations = {
     report_audit_signature: 'Firma del informe (SHA-256)',
     report_audit_chain_start: 'Hash del primer viaje',
     report_audit_chain_end: 'Hash del último viaje',
-    
+
     files_deleteConfirm: '¿Estás seguro de que quieres eliminar este archivo?',
-    
+
     detail_title: 'Detalles del viaje',
     detail_date: 'Fecha',
     detail_project: 'Proyecto',
@@ -1897,7 +1927,7 @@ export const translations = {
     co2_settings_unsaved_changes: 'Tienes cambios sin guardar. ¿¸Estás seguro de que quieres cerrar?',
     co2_settings_unsaved_indicator: 'Cambios sin guardar',
     co2_settings_save: 'Guardar configuración',
-    
+
     co2_welcome_title: 'Bienvenido al análisis de CO₂',
     co2_welcome_desc: 'Obtén información sobre el impacto ambiental de tus viajes. Configura tus preferencias de análisis para comenzar a rastrear tu huella de carbono y descubrir oportunidades para viajes más sostenibles.',
     co2_welcome_setup: 'Configurar análisis CO₂',
@@ -1906,7 +1936,7 @@ export const translations = {
     co2_no_data_desc: 'Ningún viaje coincide con tus criterios de filtro actuales. Intenta ajustar tu configuración o agregar algunos viajes para ver tu análisis de CO₂.',
     co2_adjust_settings: 'Ajustar configuración',
     co2_add_trips: 'Agregar viajes',
-    
+
     // CO2 Metrics
     co2_metric_total_emissions: 'Emisiones totales de CO₂',
     co2_metric_avg_efficiency: 'Eficiencia promedio',
@@ -1915,23 +1945,23 @@ export const translations = {
     co2_metric_efficiency: 'Eficiencia',
     co2_metric_distance: 'Distancia',
     co2_metric_trips: 'Viajes',
-    
+
     // CO2 Efficiency Ratings
     efficiency_excellent: 'Excelente',
     efficiency_good: 'Buena',
     efficiency_poor: 'Pobre',
     efficiency_very_poor: 'Muy pobre',
-    
+
     // CO2 Trends
     trend_improving: 'Mejorando',
     trend_worsening: 'Empeorando',
-    
+
     // CO2 Recommendations
     co2_recommendations_title: 'Recomendaciones',
     co2_recommendation_combine: 'Combina múltiples viajes a un destino para mayor eficiencia',
     co2_recommendation_transport: 'Usa transporte público para distancias cortas cuando sea posible',
     co2_export_data: 'Exportar datos',
-    
+
     // Route Templates View
     route_templates_title: 'Plantillas de rutas',
     route_templates_subtitle: 'Guarda rutas frecuentes como plantillas reutilizables.',
@@ -2055,7 +2085,7 @@ export const translations = {
     common_unsaved_changes_warning: 'Tienes cambios sin guardar. ¿Estás seguro de que quieres cerrar?',
     common_unsaved_indicator: 'Cambios sin guardar',
     common_unsaved_changes_details: 'Los cambios se perderán si continúas sin guardar.',
-    
+
     undo_action_delete_trip: 'Viaje eliminado',
     undo_action_delete_project: 'Proyecto eliminado',
     undo_action_delete_template: 'Plantilla eliminada',
@@ -2064,7 +2094,7 @@ export const translations = {
     undo_action_bulk_delete: '{{count}} elementos eliminados',
     undo_toast_message: '{{action}}. ',
     undo_toast_button: 'Deshacer',
-    
+
     settings_not_loaded: 'No se pudieron cargar los ajustes de la aplicación. Por favor, inténtalo de nuevo.',
 
     rate_per_km: 'Tarifa (€/km)',
@@ -2105,5 +2135,20 @@ export const translations = {
     toast_gcal_popup_failed: 'No se pudo abrir la ventana emergente de inicio de sesión de Google. Comprueba si hay bloqueadores de ventanas emergentes.',
     toast_gcal_auth_error: 'Ocurrió un error inesperado de autenticación de Google: {{error}}',
     toast_gcal_server_only: 'La integración con Google Calendar requiere configuración OAuth adicional.',
+
+    // Tutorial
+    tutorial_welcome_title: 'Bienvenido a Fahrtenbuch Pro',
+    tutorial_welcome_desc: 'Esta guía rápida te mostrará cómo gestionar tus viajes y proyectos de forma eficiente.',
+    tutorial_add_trip_title: 'Añadir Viaje',
+    tutorial_add_trip_desc: 'Usa este botón para registrar un nuevo viaje manualmente. También puedes importar viajes masivamente.',
+    tutorial_projects_title: 'Gestión de Proyectos',
+    tutorial_projects_desc: 'Organiza tus viajes por proyectos para un mejor seguimiento y facturación.',
+    tutorial_reports_title: 'Informes y Exportación',
+    tutorial_reports_desc: 'Genera informes detallados en PDF para tus declaraciones de impuestos o facturación.',
+    tutorial_settings_title: 'Configuración',
+    tutorial_settings_desc: 'Personaliza tu perfil, vehículo y preferencias de la aplicación aquí.',
+    tutorial_prev: 'Anterior',
+    tutorial_next: 'Siguiente',
+    tutorial_done: 'Finalizar',
   },
 };

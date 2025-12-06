@@ -32,7 +32,7 @@ const SettingsView: React.FC<{
     setPersonalization: React.Dispatch<React.SetStateAction<PersonalizationSettings>>;
     theme: 'light' | 'dark';
 }> = ({ setCurrentView, personalization, setPersonalization, theme }) => {
-    const { userProfile, setUserProfile } = useUserProfile();
+    const { userProfile, setUserProfile, updateUserProfile } = useUserProfile();
     const { user, logout } = useAuth();
     const [localProfile, setLocalProfile] = useState<UserProfile | null>(userProfile);
     const { t } = useTranslation();
@@ -582,30 +582,47 @@ const SettingsView: React.FC<{
                                     id="isTutorialEnabled"
                                     name="isTutorialEnabled"
                                     checked={localProfile.isTutorialEnabled !== false}
-                                    onChange={handleProfileChange}
+                                    onChange={async (e) => {
+                                        const newValue = e.target.checked;
+                                        setLocalProfile(prev => prev ? ({ ...prev, isTutorialEnabled: newValue }) : null);
+                                        try {
+                                            await updateUserProfile({ isTutorialEnabled: newValue });
+                                        } catch (error) {
+                                            console.error('Failed to update tutorial setting:', error);
+                                            showToast('Error updating tutorial setting', 'error');
+                                        }
+                                    }}
                                     className="w-5 h-5 rounded border-gray-600 bg-background-dark text-brand-primary focus:ring-brand-primary"
                                 />
                                 <label htmlFor="isTutorialEnabled" className="text-on-surface-dark cursor-pointer select-none">
-                                    Activar Tutorial
+                                    {t('settings_tutorial_enable') || 'Activar Tutorial'}
                                 </label>
                             </div>
 
                             <div className="pt-2">
                                 <Button
                                     variant="secondary"
-                                    onClick={() => setLocalProfile(prev => prev ? ({ ...prev, hasSeenTutorial: false }) : null)}
+                                    onClick={async () => {
+                                        setLocalProfile(prev => prev ? ({ ...prev, hasSeenTutorial: false }) : null);
+                                        try {
+                                            await updateUserProfile({ hasSeenTutorial: false });
+                                            showToast(t('settings_tutorial_restarted') || 'Tutorial reiniciado', 'success');
+                                        } catch (error) {
+                                            console.error('Failed to restart tutorial:', error);
+                                            showToast('Error restarting tutorial', 'error');
+                                        }
+                                    }}
                                 >
-                                    Reiniciar Tutorial
+                                    {t('settings_tutorial_restart') || 'Reiniciar Tutorial'}
                                 </Button>
                                 <p className="text-xs text-on-surface-dark-secondary mt-2">
-                                    Guarda los cambios para que el tutorial se reinicie.
+                                    {t('settings_tutorial_restart_desc') || 'El tutorial volverá a aparecer en la próxima visita al panel.'}
                                 </p>
                             </div>
                         </div>
-
-                        <p className="text-on-surface-dark-secondary">{t('settings_help_empty')}</p>
                     </div>
                 );
+
             default:
                 return null;
         }
