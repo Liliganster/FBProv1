@@ -18,14 +18,22 @@ export const Tutorial: React.FC<TutorialProps> = ({ userProfile, updateUserProfi
     useEffect(() => {
         if (!userProfile) return;
 
+        const tutorialEnabled = userProfile.isTutorialEnabled !== false;
+        const tutorialSeen = userProfile.hasSeenTutorial === true;
+
         // If tutorial is explicitly disabled or already seen, ensure it's destroyed and return
-        if (userProfile.isTutorialEnabled === false || userProfile.hasSeenTutorial) {
+        if (!tutorialEnabled || tutorialSeen) {
             if (driverObj.current) {
                 driverObj.current.destroy();
                 driverObj.current = null;
             }
             hasStartedRef.current = false;
             return;
+        }
+
+        if (driverObj.current) {
+            driverObj.current.destroy();
+            driverObj.current = null;
         }
 
         // Initialize driver
@@ -85,18 +93,20 @@ export const Tutorial: React.FC<TutorialProps> = ({ userProfile, updateUserProfi
             ],
             onDestroyed: () => {
                 // Mark tutorial as seen when closed or finished
-                if (!userProfile.hasSeenTutorial) {
-                    updateUserProfile({ hasSeenTutorial: true });
+                if (!tutorialSeen) {
+                    void updateUserProfile({ hasSeenTutorial: true });
                 }
                 hasStartedRef.current = false;
+                driverObj.current = null;
             }
         });
 
         // Start tutorial if not already started
+        let startTimer: ReturnType<typeof setTimeout> | undefined;
         if (!hasStartedRef.current) {
             hasStartedRef.current = true;
             // Small delay to ensure UI is rendered
-            setTimeout(() => {
+            startTimer = setTimeout(() => {
                 if (driverObj.current) {
                     driverObj.current.drive();
                 }
@@ -104,8 +114,12 @@ export const Tutorial: React.FC<TutorialProps> = ({ userProfile, updateUserProfi
         }
 
         return () => {
+            if (startTimer) {
+                clearTimeout(startTimer);
+            }
             if (driverObj.current) {
                 driverObj.current.destroy();
+                driverObj.current = null;
             }
         };
 

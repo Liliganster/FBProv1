@@ -23,11 +23,66 @@ export const UserProfileProvider: React.FC<{ children: React.ReactNode }> = ({ c
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const tutorialDefaults = { hasSeenTutorial: false, isTutorialEnabled: true };
   const fallbackName = user && user.email ? user.email.split('@')[0] : 'user';
   const storageKey = user ? `fahrtenbuch_user_profile_${user.id}` : null;
 
+  const getTutorialPrefsKey = useCallback((userIdValue?: string | null) => {
+    return userIdValue ? `fahrtenbuch_tutorial_${userIdValue}` : null;
+  }, []);
+
+  const readTutorialPrefs = useCallback((userIdOverride?: string | null) => {
+    const key = getTutorialPrefsKey(userIdOverride ?? user?.id);
+    if (!key || typeof window === 'undefined') return tutorialDefaults;
+
+    try {
+      const raw = localStorage.getItem(key);
+      if (!raw) return tutorialDefaults;
+      const parsed = JSON.parse(raw);
+      return {
+        hasSeenTutorial: typeof parsed.hasSeenTutorial === 'boolean' ? parsed.hasSeenTutorial : tutorialDefaults.hasSeenTutorial,
+        isTutorialEnabled: typeof parsed.isTutorialEnabled === 'boolean' ? parsed.isTutorialEnabled : tutorialDefaults.isTutorialEnabled,
+      };
+    } catch (storageError) {
+      console.warn('Failed to read tutorial prefs, resetting to defaults', storageError);
+      return tutorialDefaults;
+    }
+  }, [getTutorialPrefsKey, user?.id]);
+
+  const persistTutorialPrefs = useCallback((prefs: Partial<Pick<UserProfile, 'hasSeenTutorial' | 'isTutorialEnabled'>>, userIdOverride?: string | null) => {
+    const key = getTutorialPrefsKey(userIdOverride ?? user?.id);
+    if (!key || typeof window === 'undefined') return tutorialDefaults;
+    const current = readTutorialPrefs(userIdOverride);
+    const next = {
+      hasSeenTutorial: typeof prefs.hasSeenTutorial === 'boolean' ? prefs.hasSeenTutorial : current.hasSeenTutorial,
+      isTutorialEnabled: typeof prefs.isTutorialEnabled === 'boolean' ? prefs.isTutorialEnabled : current.isTutorialEnabled,
+    };
+    localStorage.setItem(key, JSON.stringify(next));
+    return next;
+  }, [getTutorialPrefsKey, readTutorialPrefs, user?.id]);
+
+  const applyTutorialPrefs = useCallback((profile: UserProfile, overrides?: Partial<Pick<UserProfile, 'hasSeenTutorial' | 'isTutorialEnabled'>>): UserProfile => {
+    const stored = readTutorialPrefs(profile.id);
+    const mergedTutorial = {
+      hasSeenTutorial: typeof overrides?.hasSeenTutorial === 'boolean'
+        ? overrides.hasSeenTutorial
+        : typeof profile.hasSeenTutorial === 'boolean'
+          ? profile.hasSeenTutorial
+          : stored.hasSeenTutorial,
+      isTutorialEnabled: typeof overrides?.isTutorialEnabled === 'boolean'
+        ? overrides.isTutorialEnabled
+        : typeof profile.isTutorialEnabled === 'boolean'
+          ? profile.isTutorialEnabled
+          : stored.isTutorialEnabled,
+    };
+
+    persistTutorialPrefs(mergedTutorial, profile.id);
+    return { ...profile, ...mergedTutorial };
+  }, [persistTutorialPrefs, readTutorialPrefs]);
+
   // Create default profile
   const createDefaultProfile = useCallback((userId: string): UserProfile => {
+    const tutorialPrefs = readTutorialPrefs(userId);
     return {
       id: `profile-${userId}`,
       name: fallbackName,
@@ -58,12 +113,12 @@ export const UserProfileProvider: React.FC<{ children: React.ReactNode }> = ({ c
       tollsCostPerKm: null,
       finesCostPerKm: null,
       miscCostPerKm: null,
-      hasSeenTutorial: false,
-      isTutorialEnabled: true,
+      hasSeenTutorial: tutorialPrefs.hasSeenTutorial,
+      isTutorialEnabled: tutorialPrefs.isTutorialEnabled,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
-  }, [fallbackName, user?.email]);
+  }, [fallbackName, readTutorialPrefs, user?.email]);
 
   // Load profile from Supabase
   const refreshProfile = useCallback(async () => {
@@ -94,7 +149,11 @@ export const UserProfileProvider: React.FC<{ children: React.ReactNode }> = ({ c
         }
       }
 
-      setUserProfileState(profile);
+      const profileWithPrefs = applyTutorialPrefs(profile);
+      setUserProfileState(profileWithPrefs);
+      if (storageKey) {
+        localStorage.setItem(storageKey, JSON.stringify(profileWithPrefs));
+      }
     } catch (err) {
       console.error('Error loading user profile:', err);
       const errorMessage = err instanceof Error ? err.message : 'Failed to load profile';
@@ -106,7 +165,7 @@ export const UserProfileProvider: React.FC<{ children: React.ReactNode }> = ({ c
     } finally {
       setLoading(false);
     }
-  }, [user?.id, user?.email, storageKey, createDefaultProfile]);
+  }, [applyTutorialPrefs, createDefaultProfile, logout, showToast, storageKey, user?.email, user?.id]);
 
   // Auto-migrate from localStorage on first load
   useEffect(() => {
@@ -156,10 +215,33 @@ export const UserProfileProvider: React.FC<{ children: React.ReactNode }> = ({ c
       throw new Error('User not authenticated');
     }
 
+    const { hasSeenTutorial, isTutorialEnabled, ...otherUpdates } = updates;
+    const hasTutorialUpdates = typeof hasSeenTutorial === 'boolean' || typeof isTutorialEnabled === 'boolean';
+    const hasOtherUpdates = Object.keys(otherUpdates).length > 0;
+
+    const mergeAndPersist = (profile: UserProfile) => {
+      const mergedProfile = applyTutorialPrefs(profile, { hasSeenTutorial, isTutorialEnabled });
+      setUserProfileState(mergedProfile);
+      if (storageKey) {
+        localStorage.setItem(storageKey, JSON.stringify(mergedProfile));
+      }
+      return mergedProfile;
+    };
+
+    // Tutorial-only updates are handled locally to avoid schema mismatches
+    if (!hasOtherUpdates) {
+      const baseProfile = userProfile ?? createDefaultProfile(user.id);
+      mergeAndPersist(baseProfile);
+      if (!hasTutorialUpdates) {
+        showToast('Profile updated successfully', 'success');
+      }
+      return;
+    }
+
     setLoading(true);
     try {
-      const updatedProfile = await databaseService.updateUserProfile(user.id, updates);
-      setUserProfileState(updatedProfile);
+      const updatedProfile = await databaseService.updateUserProfile(user.id, otherUpdates);
+      mergeAndPersist(updatedProfile);
       showToast('Profile updated successfully', 'success');
     } catch (err) {
       console.error('Error updating user profile:', err);
@@ -168,17 +250,13 @@ export const UserProfileProvider: React.FC<{ children: React.ReactNode }> = ({ c
 
       // Fallback to local update
       if (userProfile) {
-        const localUpdate = { ...userProfile, ...updates };
-        setUserProfileState(localUpdate);
-        if (storageKey) {
-          localStorage.setItem(storageKey, JSON.stringify(localUpdate));
-        }
+        mergeAndPersist({ ...userProfile, ...otherUpdates });
       }
       throw err;
     } finally {
       setLoading(false);
     }
-  }, [user?.id, userProfile, storageKey, showToast]);
+  }, [applyTutorialPrefs, createDefaultProfile, showToast, storageKey, user?.id, userProfile]);
 
   // Set profile (for compatibility with old API)
   const setUserProfile = useCallback(async (profile: UserProfile | null) => {
@@ -187,18 +265,22 @@ export const UserProfileProvider: React.FC<{ children: React.ReactNode }> = ({ c
       return;
     }
 
+    const profileWithPrefs = applyTutorialPrefs(profile);
     try {
-      await databaseService.updateUserProfile(user.id, profile);
-      setUserProfileState(profile);
+      await databaseService.updateUserProfile(user.id, profileWithPrefs);
+      setUserProfileState(profileWithPrefs);
+      if (storageKey) {
+        localStorage.setItem(storageKey, JSON.stringify(profileWithPrefs));
+      }
     } catch (err) {
       console.error('Error setting user profile:', err);
       // Still update locally
-      setUserProfileState(profile);
-      if (storageKey && profile) {
-        localStorage.setItem(storageKey, JSON.stringify(profile));
+      setUserProfileState(profileWithPrefs);
+      if (storageKey && profileWithPrefs) {
+        localStorage.setItem(storageKey, JSON.stringify(profileWithPrefs));
       }
     }
-  }, [user?.id, storageKey]);
+  }, [applyTutorialPrefs, storageKey, user?.id]);
 
   const contextValue: UserProfileContextType = {
     userProfile,
