@@ -490,13 +490,6 @@ export const Tutorial: React.FC<TutorialProps> = ({ userProfile, currentView }) 
             }
         };
 
-        const destroyDriver = () => {
-            if (driverObj.current) {
-                driverObj.current.destroy();
-                driverObj.current = null;
-            }
-        };
-
         const getContextKey = () => {
             const isBulkOpen = Boolean(document.querySelector('#bulk-modal'));
             if (isBulkOpen) {
