@@ -299,6 +299,15 @@ export const Tutorial: React.FC<TutorialProps> = ({ userProfile, currentView }) 
                 }
             },
             {
+                element: '#bulk-ai-textarea',
+                popover: {
+                    title: tr('tutorial_bulk_ai_text_title', 'Área de texto'),
+                    description: tr('tutorial_bulk_ai_text_desc', 'Añade texto extra o corrige antes de procesar. Útil si la IA debe combinar con instrucciones.'),
+                    side: 'bottom',
+                    align: 'start'
+                }
+            },
+            {
                 element: '#bulk-ai-drop',
                 popover: {
                     title: tr('tutorial_bulk_ai_drop_title', 'Arrastra y suelta'),

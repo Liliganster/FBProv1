@@ -778,6 +778,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
                   <div id="bulk-ai-paste">
                     <label className="block text-xs font-medium uppercase tracking-wide text-on-surface-dark-secondary mb-2">{t('bulk_ai_paste_label')}</label>
                     <textarea
+                      id="bulk-ai-textarea"
                       rows={8}
                       className="w-full bg-background-dark border border-gray-600/70 rounded-md p-3 font-mono text-xs focus:outline-none focus:ring-2 focus:ring-brand-primary resize-y min-h-[140px]"
                       placeholder={t('bulk_ai_paste_placeholder')}
