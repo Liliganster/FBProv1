@@ -13,6 +13,8 @@ interface TutorialProps {
 export const Tutorial: React.FC<TutorialProps> = ({ userProfile, currentView }) => {
     const { t } = useTranslation();
     const driverObj = useRef<any>(null);
+    const stopByContextRef = useRef<Record<string, boolean>>({});
+    const activeContextRef = useRef<string | null>(null);
 
     useEffect(() => {
         if (!userProfile || userProfile.isTutorialEnabled === false) {
@@ -322,10 +324,14 @@ export const Tutorial: React.FC<TutorialProps> = ({ userProfile, currentView }) 
 
         const tryStart = () => {
             if (driverObj.current) return;
+            const isTripEditorOpen = Boolean(document.querySelector('#trip-editor-modal'));
+            const contextKey = isTripEditorOpen ? 'trip-editor' : currentView;
+            if (stopByContextRef.current[contextKey]) return;
             const resolvedSteps = resolveSteps();
             if (resolvedSteps.length === 0) return;
 
             destroyDriver();
+            activeContextRef.current = contextKey;
             driverObj.current = driver({
                 showProgress: true,
                 animate: true,
@@ -336,6 +342,9 @@ export const Tutorial: React.FC<TutorialProps> = ({ userProfile, currentView }) 
                 prevBtnText: t('tutorial_prev') || 'Anterior',
                 steps: resolvedSteps,
                 onDestroyed: () => {
+                    if (activeContextRef.current) {
+                        stopByContextRef.current[activeContextRef.current] = true;
+                    }
                     driverObj.current = null;
                 }
             });
