@@ -668,6 +668,8 @@ export const Tutorial: React.FC<TutorialProps> = ({ userProfile, currentView }) 
             }
             const isTripEditorOpen = Boolean(document.querySelector('#trip-editor-modal'));
             if (isTripEditorOpen) return 'trip-editor';
+            const isProjectEditorOpen = Boolean(document.querySelector('#project-editor-modal'));
+            if (isProjectEditorOpen) return 'project-editor';
             return currentView;
         };
 
