@@ -1089,36 +1089,42 @@ const AdvancedView: React.FC<AdvancedViewProps> = ({ personalization, theme }) =
     );
 
     const renderMainView = () => (
-        <div>
-            <h1 className="text-3xl font-bold mb-8 bg-gradient-title bg-clip-text text-transparent">{t('advanced_title')}</h1>
+        <div id="advanced-view">
+            <h1 id="advanced-title" className="text-3xl font-bold mb-8 bg-gradient-title bg-clip-text text-transparent">{t('advanced_title')}</h1>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <ActionCard
-                    title={t('advanced_route_templates_title')}
-                    description={t('advanced_route_templates_desc')}
-                    icon={<Route size={24} className="text-brand-secondary" />}
-                    onClick={() => setViewMode('routeTemplates')}
-                    theme={theme}
-                    personalization={personalization}
-                />
-
-                <ActionCard
-                    title={t('cost_analysis_title')}
-                    description={t('cost_analysis_description_personal')}
-                    icon={<DollarSign size={24} className="text-brand-secondary" />}
-                    onClick={() => setViewMode('costAnalysis')}
-                    theme={theme}
-                    personalization={personalization}
-                />
-
-                {hasCO2Settings && (
+                <div id="advanced-card-routes">
                     <ActionCard
-                        title={t('co2_ranking_title')}
-                        description={t('co2_ranking_card_description')}
-                        icon={<TreePine size={24} className="text-brand-secondary" />}
-                        onClick={() => setViewMode('co2Ranking')}
+                        title={t('advanced_route_templates_title')}
+                        description={t('advanced_route_templates_desc')}
+                        icon={<Route size={24} className="text-brand-secondary" />}
+                        onClick={() => setViewMode('routeTemplates')}
                         theme={theme}
                         personalization={personalization}
                     />
+                </div>
+
+                <div id="advanced-card-cost-analysis">
+                    <ActionCard
+                        title={t('cost_analysis_title')}
+                        description={t('cost_analysis_description_personal')}
+                        icon={<DollarSign size={24} className="text-brand-secondary" />}
+                        onClick={() => setViewMode('costAnalysis')}
+                        theme={theme}
+                        personalization={personalization}
+                    />
+                </div>
+
+                {hasCO2Settings && (
+                    <div id="advanced-card-co2">
+                        <ActionCard
+                            title={t('co2_ranking_title')}
+                            description={t('co2_ranking_card_description')}
+                            icon={<TreePine size={24} className="text-brand-secondary" />}
+                            onClick={() => setViewMode('co2Ranking')}
+                            theme={theme}
+                            personalization={personalization}
+                        />
+                    </div>
                 )}
             </div>
         </div>
@@ -1254,6 +1260,5 @@ const VehicleInputField: React.FC<{
 );
 
 export default AdvancedView;
-
 
 

@@ -717,6 +717,45 @@ export const Tutorial: React.FC<TutorialProps> = ({ userProfile, currentView }) 
             }
         ];
 
+        const advancedSteps: Array<{ element: string; popover: any }> = [
+            {
+                element: '#advanced-title',
+                popover: {
+                    title: tr('tutorial_advanced_intro_title', 'Vista avanzada'),
+                    description: tr('tutorial_advanced_intro_desc', 'Accede a plantillas de ruta, análisis de costos y ranking de CO₂.'),
+                    side: 'bottom',
+                    align: 'start'
+                }
+            },
+            {
+                element: '#advanced-card-routes',
+                popover: {
+                    title: tr('tutorial_advanced_routes_title', 'Plantillas de ruta'),
+                    description: tr('tutorial_advanced_routes_desc', 'Define rutas frecuentes para cargarlas rápido en tus viajes.'),
+                    side: 'bottom',
+                    align: 'start'
+                }
+            },
+            {
+                element: '#advanced-card-cost-analysis',
+                popover: {
+                    title: tr('tutorial_advanced_cost_title', 'Análisis de costos'),
+                    description: tr('tutorial_advanced_cost_desc', 'Consulta costos estimados y facturas reales por periodo o proyecto.'),
+                    side: 'bottom',
+                    align: 'start'
+                }
+            },
+            {
+                element: '#advanced-card-co2',
+                popover: {
+                    title: tr('tutorial_advanced_co2_title', 'Ranking CO₂'),
+                    description: tr('tutorial_advanced_co2_desc', 'Compara emisiones entre proyectos/trips y ajusta tu configuración.'),
+                    side: 'bottom',
+                    align: 'start'
+                }
+            }
+        ];
+
         const projectEditorSteps: Array<{ element: string; popover: any }> = [
             {
                 element: '#project-editor-title',
@@ -861,19 +900,21 @@ export const Tutorial: React.FC<TutorialProps> = ({ userProfile, currentView }) 
                     ? bulkSteps
                     : contextKey === 'trip-editor'
                         ? tripEditorSteps
-                        : contextKey === 'project-editor'
-                            ? projectEditorSteps
+                    : contextKey === 'project-editor'
+                        ? projectEditorSteps
                         : contextKey === 'report-modal'
                             ? reportModalSteps
                         : contextKey === 'trips'
                             ? tripsSteps
-                            : contextKey === 'projects'
-                                ? projectsSteps
-                                : contextKey === 'reports'
-                                    ? reportsSteps
-                                    : contextKey === 'calendar'
-                                        ? calendarSteps
-                                        : dashboardSteps;
+                        : contextKey === 'projects'
+                            ? projectsSteps
+                        : contextKey === 'reports'
+                            ? reportsSteps
+                            : contextKey === 'calendar'
+                                ? calendarSteps
+                                : contextKey === 'advanced'
+                                    ? advancedSteps
+                                    : dashboardSteps;
             return selectedSteps.filter(step => document.querySelector(step.element));
         };
 
