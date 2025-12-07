@@ -80,6 +80,17 @@ export const UserProfileProvider: React.FC<{ children: React.ReactNode }> = ({ c
     return { ...profile, ...mergedTutorial };
   }, [persistTutorialPrefs, readTutorialPrefs]);
 
+  const readLocalProfile = useCallback((): UserProfile | null => {
+    if (!storageKey || typeof window === 'undefined') return null;
+    try {
+      const raw = localStorage.getItem(storageKey);
+      return raw ? (JSON.parse(raw) as UserProfile) : null;
+    } catch (error) {
+      console.warn('Failed to read local user profile cache', error);
+      return null;
+    }
+  }, [storageKey]);
+
   // Create default profile
   const createDefaultProfile = useCallback((userId: string): UserProfile => {
     const tutorialPrefs = readTutorialPrefs(userId);
@@ -130,12 +141,26 @@ export const UserProfileProvider: React.FC<{ children: React.ReactNode }> = ({ c
     setLoading(true);
     setError(null);
 
+    const localCachedProfile = readLocalProfile();
+
     try {
       let profile = await databaseService.getUserProfile(user.id);
 
       // If no profile exists, create a default one (needed to enter the app)
       if (!profile) {
-        console.warn('Profile not found, creating default profile');
+        console.warn('Profile not found in Supabase, attempting recovery from local cache');
+        if (localCachedProfile) {
+          try {
+            profile = await databaseService.createUserProfile(user.id, localCachedProfile);
+            console.info('Recovered profile from local cache into Supabase');
+          } catch (createErr) {
+            console.error('Failed to create profile from local cache, falling back to default', createErr);
+          }
+        }
+      }
+
+      if (!profile) {
+        console.warn('Profile still missing, creating default profile');
         try {
           const defaultProfile = createDefaultProfile(user.id);
           profile = await databaseService.createUserProfile(user.id, defaultProfile);
@@ -159,13 +184,23 @@ export const UserProfileProvider: React.FC<{ children: React.ReactNode }> = ({ c
       const errorMessage = err instanceof Error ? err.message : 'Failed to load profile';
       setError(errorMessage);
 
+      const fallbackProfile = localCachedProfile ?? (user ? createDefaultProfile(user.id) : null);
+      if (fallbackProfile) {
+        const merged = applyTutorialPrefs(fallbackProfile);
+        setUserProfileState(merged);
+        if (storageKey) {
+          localStorage.setItem(storageKey, JSON.stringify(merged));
+        }
+        showToast('Usando perfil en caché local (no se pudo contactar con servidor).', 'warning');
+        return;
+      }
       showToast('No se pudo cargar tu perfil desde Supabase.', 'error');
       setUserProfileState(null);
       await logout();
     } finally {
       setLoading(false);
     }
-  }, [applyTutorialPrefs, createDefaultProfile, logout, showToast, storageKey, user?.email, user?.id]);
+  }, [applyTutorialPrefs, createDefaultProfile, logout, showToast, storageKey, user?.email, user?.id, readLocalProfile]);
 
   // Auto-migrate from localStorage on first load
   useEffect(() => {
