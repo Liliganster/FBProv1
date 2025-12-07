@@ -128,7 +128,7 @@ const GenerateReportModal: React.FC<GenerateReportModalProps> = ({ trips, projec
   const renderSetup = () => (
     <>
       <main className="px-6 py-6 space-y-6 overflow-y-auto">
-        <div>
+        <div id="report-modal-project">
           <label className="block text-sm font-medium text-on-surface-dark-secondary mb-2">{t('report_filter_project')}</label>
           <select
             value={projectId}
@@ -140,21 +140,21 @@ const GenerateReportModal: React.FC<GenerateReportModalProps> = ({ trips, projec
           </select>
         </div>
         <div className="grid grid-cols-2 gap-4">
-          <div>
+          <div id="report-modal-from">
             <label className="block text-sm font-medium text-on-surface-dark-secondary mb-2">{t('report_filter_from')}</label>
             <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="w-full bg-background-dark border border-gray-600/70 rounded-md px-3 py-2.5 text-sm focus:ring-2 focus:ring-brand-primary focus:outline-none" />
           </div>
-          <div>
+          <div id="report-modal-to">
             <label className="block text-sm font-medium text-on-surface-dark-secondary mb-2">{t('report_filter_to')}</label>
             <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="w-full bg-background-dark border border-gray-600/70 rounded-md px-3 py-2.5 text-sm focus:ring-2 focus:ring-brand-primary focus:outline-none" />
           </div>
         </div>
       </main>
-      <footer className="px-6 py-4 border-t border-gray-700/70 bg-background-dark/70 backdrop-blur-sm flex justify-end gap-3">
-        <Button variant="secondary" size="sm" onClick={onClose}>
+      <footer id="report-modal-actions" className="px-6 py-4 border-t border-gray-700/70 bg-background-dark/70 backdrop-blur-sm flex justify-end gap-3">
+        <Button id="report-modal-cancel" variant="secondary" size="sm" onClick={onClose}>
           {t('common_cancel')}
         </Button>
-        <Button variant="primary" size="sm" onClick={runAudit} disabled={!userProfile}>
+        <Button id="report-modal-audit" variant="primary" size="sm" onClick={runAudit} disabled={!userProfile}>
           {t('report_audit_run_btn')}
         </Button>
       </footer>
@@ -164,10 +164,10 @@ const GenerateReportModal: React.FC<GenerateReportModalProps> = ({ trips, projec
   const renderAudit = () => (
     <>
       <main className="px-6 py-6 space-y-4 overflow-y-auto">
-        <h3 className="text-lg font-semibold tracking-tight text-white">{t('report_audit_title')}</h3>
+        <h3 id="report-audit-title" className="text-lg font-semibold tracking-tight text-white">{t('report_audit_title')}</h3>
         <p className="text-sm text-on-surface-dark-secondary">{t('report_audit_subtitle')}</p>
         {auditWarnings.length > 0 ? (
-          <div className="bg-yellow-900/40 border border-yellow-700/60 text-yellow-200 p-4 rounded-lg space-y-2 text-sm">
+          <div id="report-audit-warnings" className="bg-yellow-900/40 border border-yellow-700/60 text-yellow-200 p-4 rounded-lg space-y-2 text-sm">
             {auditWarnings.map((warning, index) => (
               <div key={index} className="flex items-center gap-2">
                 <WarningIcon className="w-5 h-5 flex-shrink-0" />
@@ -176,17 +176,17 @@ const GenerateReportModal: React.FC<GenerateReportModalProps> = ({ trips, projec
             ))}
           </div>
         ) : (
-          <div className="bg-green-900/40 border border-green-700/60 text-green-200 p-4 rounded-lg flex items-center gap-2 text-sm">
+          <div id="report-audit-ok" className="bg-green-900/40 border border-green-700/60 text-green-200 p-4 rounded-lg flex items-center gap-2 text-sm">
             <CheckIcon className="w-5 h-5" />
             <span>{t('report_audit_no_issues')}</span>
           </div>
         )}
       </main>
-      <footer className="px-6 py-4 border-t border-gray-700/70 bg-background-dark/70 backdrop-blur-sm flex justify-between items-center gap-3">
-        <Button variant="secondary" size="sm" onClick={() => setStage('setup')}>
+      <footer id="report-audit-actions" className="px-6 py-4 border-t border-gray-700/70 bg-background-dark/70 backdrop-blur-sm flex justify-between items-center gap-3">
+        <Button id="report-audit-back" variant="secondary" size="sm" onClick={() => setStage('setup')}>
           {t('common_back')}
         </Button>
-        <Button variant="primary" size="sm" onClick={handleGenerateAndSave}>
+        <Button id="report-generate" variant="primary" size="sm" onClick={handleGenerateAndSave}>
           {auditWarnings.length > 0 ? t('report_generateBtn_anyway') : t('report_generateBtn')}
         </Button>
       </footer>
@@ -201,15 +201,15 @@ const GenerateReportModal: React.FC<GenerateReportModalProps> = ({ trips, projec
   } : {};
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-start justify-center p-4 pt-20 z-50" onClick={onClose}>
+    <div id="report-modal" className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-start justify-center p-4 pt-20 z-50" onClick={onClose}>
       <div
         style={modalStyle}
         className="bg-background-dark/90 border border-gray-700/60 rounded-lg shadow-2xl w-full max-w-xl max-h-[90vh] flex flex-col overflow-hidden animate-fadeIn"
         onClick={(e) => e.stopPropagation()}
       >
         <header className="px-6 py-4 border-b border-gray-700/70 flex items-center justify-between gap-4 bg-background-dark/70 backdrop-blur-sm">
-          <h2 className="text-lg font-semibold tracking-tight text-white">{t('report_title')}</h2>
-          <Button variant="icon" onClick={onClose} className="text-on-surface-dark-secondary hover:text-white">
+          <h2 id="report-modal-title" className="text-lg font-semibold tracking-tight text-white">{t('report_title')}</h2>
+          <Button id="report-modal-close" variant="icon" onClick={onClose} className="text-on-surface-dark-secondary hover:text-white">
             <XIcon className="w-5 h-5" />
           </Button>
         </header>

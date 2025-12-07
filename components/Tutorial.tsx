@@ -603,6 +603,72 @@ export const Tutorial: React.FC<TutorialProps> = ({ userProfile, currentView }) 
             }
         ];
 
+        const reportModalSteps: Array<{ element: string; popover: any }> = [
+            {
+                element: '#report-modal-title',
+                popover: {
+                    title: tr('tutorial_report_modal_intro_title', 'Generar informe'),
+                    description: tr('tutorial_report_modal_intro_desc', 'Selecciona proyecto y rango de fechas. Luego audita antes de generar.'),
+                    side: 'bottom',
+                    align: 'start'
+                }
+            },
+            {
+                element: '#report-modal-project',
+                popover: {
+                    title: tr('tutorial_report_modal_project_title', 'Proyecto'),
+                    description: tr('tutorial_report_modal_project_desc', 'Elige un proyecto o “Todos” para incluir todos los viajes disponibles.'),
+                    side: 'bottom',
+                    align: 'start'
+                }
+            },
+            {
+                element: '#report-modal-from',
+                popover: {
+                    title: tr('tutorial_report_modal_from_title', 'Fecha inicio'),
+                    description: tr('tutorial_report_modal_from_desc', 'Define el inicio del periodo que quieres incluir en el informe.'),
+                    side: 'bottom',
+                    align: 'start'
+                }
+            },
+            {
+                element: '#report-modal-to',
+                popover: {
+                    title: tr('tutorial_report_modal_to_title', 'Fecha fin'),
+                    description: tr('tutorial_report_modal_to_desc', 'Define el fin del periodo para delimitar el informe.'),
+                    side: 'bottom',
+                    align: 'start'
+                }
+            },
+            {
+                element: '#report-modal-audit',
+                popover: {
+                    title: tr('tutorial_report_modal_audit_title', 'Auditar datos'),
+                    description: tr('tutorial_report_modal_audit_desc', 'Revisa los viajes que entran en el informe y posibles alertas antes de generar.'),
+                    side: 'top',
+                    align: 'end'
+                }
+            },
+            {
+                element: '#report-audit-title',
+                popover: {
+                    title: tr('tutorial_report_audit_title', 'Resultados de auditoría'),
+                    description: tr('tutorial_report_audit_desc', 'Aquí ves alertas como motivos faltantes o distancias cero. Corrige antes de generar si es necesario.'),
+                    side: 'bottom',
+                    align: 'start'
+                }
+            },
+            {
+                element: '#report-generate',
+                popover: {
+                    title: tr('tutorial_report_generate_title', 'Generar informe'),
+                    description: tr('tutorial_report_generate_desc', 'Genera y guarda el informe con los datos auditados y la firma de integridad.'),
+                    side: 'top',
+                    align: 'end'
+                }
+            }
+        ];
+
         const projectEditorSteps: Array<{ element: string; popover: any }> = [
             {
                 element: '#project-editor-title',
@@ -736,6 +802,8 @@ export const Tutorial: React.FC<TutorialProps> = ({ userProfile, currentView }) 
             if (isTripEditorOpen) return 'trip-editor';
             const isProjectEditorOpen = Boolean(document.querySelector('#project-editor-modal'));
             if (isProjectEditorOpen) return 'project-editor';
+            const isReportModalOpen = Boolean(document.querySelector('#report-modal'));
+            if (isReportModalOpen) return 'report-modal';
             return currentView;
         };
 
@@ -747,11 +815,13 @@ export const Tutorial: React.FC<TutorialProps> = ({ userProfile, currentView }) 
                         ? tripEditorSteps
                     : contextKey === 'project-editor'
                         ? projectEditorSteps
-                    : contextKey === 'trips'
-                        ? tripsSteps
-                        : contextKey === 'projects'
-                            ? projectsSteps
-                            : contextKey === 'reports'
+                        : contextKey === 'report-modal'
+                            ? reportModalSteps
+                        : contextKey === 'trips'
+                            ? tripsSteps
+                            : contextKey === 'projects'
+                                ? projectsSteps
+                                : contextKey === 'reports'
                                 ? reportsSteps
                                 : dashboardSteps;
             return selectedSteps.filter(step => document.querySelector(step.element));
