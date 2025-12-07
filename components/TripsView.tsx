@@ -482,6 +482,10 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
                               <p className="text-brand-primary font-semibold">{trip.distance.toFixed(1)} km</p>
                             </div>
                             <div>
+                              <span className="text-on-surface-dark-secondary text-xs uppercase tracking-wider">{t('trips_col_passengers')}</span>
+                              <p className="text-white">{trip.passengers || '-'}</p>
+                            </div>
+                            <div>
                               <span className="text-on-surface-dark-secondary text-xs uppercase tracking-wider">{t('trips_col_emissions')}</span>
                               <p className="text-white">
                                 <span className="font-semibold">{emissions.toFixed(1)}</span>
@@ -618,6 +622,10 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
                             <p className="text-brand-primary font-semibold">{trip.distance.toFixed(1)} km</p>
                           </div>
                           <div>
+                            <span className="text-on-surface-dark-secondary text-xs uppercase tracking-wider">{t('trips_col_passengers')}</span>
+                            <p className="text-white">{trip.passengers || '-'}</p>
+                          </div>
+                          <div>
                             <span className="text-on-surface-dark-secondary text-xs uppercase tracking-wider">{t('trips_col_emissions')}</span>
                             <p className="text-white">
                               <span className="font-semibold">{emissions.toFixed(1)}</span>
@@ -706,6 +714,7 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
                 </th>
                 <th id="trips-col-route" className="p-3 text-[11px] font-semibold text-on-surface-dark-secondary uppercase tracking-wider">{t('trips_col_route')}</th>
                 <th id="trips-col-project" className="p-3 text-[11px] font-semibold text-on-surface-dark-secondary uppercase tracking-wider">{t('trips_col_project')}</th>
+                <th id="trips-col-passengers" className="p-3 text-[11px] font-semibold text-on-surface-dark-secondary uppercase tracking-wider">{t('trips_col_passengers')}</th>
                 <th id="trips-col-invoices" className="p-3 text-[11px] font-semibold text-on-surface-dark-secondary uppercase tracking-wider">{t('trips_col_invoices')}</th>
                 <th id="trips-col-distance" className="p-3 text-[11px] font-semibold text-on-surface-dark-secondary uppercase tracking-wider">{t('trips_col_distance')}</th>
                 <th id="trips-col-emissions" className="p-3 text-[11px] font-semibold text-on-surface-dark-secondary uppercase tracking-wider">{t('trips_col_emissions')}</th>
@@ -771,6 +780,7 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
                       </div>
                     </td>
                     <td className="p-3 whitespace-nowrap cursor-pointer text-sm" onClick={() => handleViewTrip(trip)}>{getProjectName(trip.projectId)}</td>
+                    <td className="p-3 whitespace-nowrap cursor-pointer text-sm" onClick={() => handleViewTrip(trip)}>{trip.passengers || '-'}</td>
                     <td className="p-3 whitespace-nowrap cursor-pointer" onClick={() => handleViewTrip(trip)}>
                       {invoiceCount > 0 ? (
                         <span
