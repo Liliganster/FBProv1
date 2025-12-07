@@ -392,26 +392,27 @@ const CostAnalysisDashboard: React.FC<{
     };
 
     return (
-        <div className="p-8 rounded-fluid -m-8">
-            <header className="flex justify-between items-start mb-6">
+        <div id="cost-analysis-view" className="p-8 rounded-fluid -m-8">
+            <header id="cost-analysis-header" className="flex justify-between items-start mb-6">
                 <div className="flex items-center gap-4">
-                    <button onClick={() => setViewMode('main')} className="flex items-center bg-gray-700 hover:bg-gray-600 text-white font-bold p-3 rounded-smooth">
+                    <button id="cost-analysis-back" onClick={() => setViewMode('main')} className="flex items-center bg-gray-700 hover:bg-gray-600 text-white font-bold p-3 rounded-smooth">
                         <ArrowLeftIcon className="w-5 h-5" />
                     </button>
                     <div>
-                        <h1 className="text-2xl font-bold bg-gradient-title bg-clip-text text-transparent">{t('cost_analysis_title')}</h1>
+                        <h1 id="cost-analysis-title" className="text-2xl font-bold bg-gradient-title bg-clip-text text-transparent">{t('cost_analysis_title')}</h1>
                         <p className="text-sm text-on-surface-dark-secondary">{t('cost_analysis_description_personal')}</p>
                     </div>
                 </div>
                 <div className="flex items-center gap-3">
                     <button
+                        id="cost-analysis-upload"
                         onClick={() => setIsExpenseModalOpen(true)}
                         className="flex items-center gap-2 bg-brand-primary hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-smooth transition-colors"
                     >
                         <UploadIcon className="w-5 h-5" />
                         {t('expense_upload_title') || 'Upload Invoice'}
                     </button>
-                    <select value={timeRange} onChange={(e) => setTimeRange(e.target.value as any)} className="bg-surface-dark border border-gray-600 rounded-smooth py-2 px-4 focus:ring-2 focus:ring-brand-primary focus:outline-none text-on-surface-dark text-sm font-medium h-[38px]">
+                    <select id="cost-analysis-range" value={timeRange} onChange={(e) => setTimeRange(e.target.value as any)} className="bg-surface-dark border border-gray-600 rounded-smooth py-2 px-4 focus:ring-2 focus:ring-brand-primary focus:outline-none text-on-surface-dark text-sm font-medium h-[38px]">
                         <option value="3m">{t('cost_analysis_time_range_3m')}</option>
                         <option value="6m">{t('cost_analysis_time_range_6m')}</option>
                         <option value="1y">{t('cost_analysis_time_range_1y')}</option>
@@ -422,13 +423,14 @@ const CostAnalysisDashboard: React.FC<{
 
             <main>
                 {/* Tabs de navegación */}
-                <div className="flex items-center gap-2 mb-6">
+                <div id="cost-analysis-tabs" className="flex items-center gap-2 mb-6">
                     <button
                         onClick={() => setCostView('summary')}
                         className={`px-6 py-2 rounded-smooth font-semibold transition-colors ${costView === 'summary'
                             ? 'bg-brand-primary text-white'
                             : 'bg-surface-dark text-on-surface-dark-secondary hover:bg-gray-700/50'
                             }`}
+                        id="cost-analysis-tab-summary"
                     >
                         {t('cost_analysis_summary_tab')}
                     </button>
@@ -438,6 +440,7 @@ const CostAnalysisDashboard: React.FC<{
                             ? 'bg-brand-primary text-white'
                             : 'bg-surface-dark text-on-surface-dark-secondary hover:bg-gray-700/50'
                             }`}
+                        id="cost-analysis-tab-monthly"
                     >
                         {t('cost_view_monthly')}
                     </button>
@@ -1260,5 +1263,3 @@ const VehicleInputField: React.FC<{
 );
 
 export default AdvancedView;
-
-

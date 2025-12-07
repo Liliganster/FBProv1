@@ -756,6 +756,45 @@ export const Tutorial: React.FC<TutorialProps> = ({ userProfile, currentView }) 
             }
         ];
 
+        const costAnalysisSteps: Array<{ element: string; popover: any }> = [
+            {
+                element: '#cost-analysis-title',
+                popover: {
+                    title: tr('tutorial_cost_intro_title', 'Análisis de costos'),
+                    description: tr('tutorial_cost_intro_desc', 'Revisa costos estimados y facturas reales de tus viajes en distintos periodos.'),
+                    side: 'bottom',
+                    align: 'start'
+                }
+            },
+            {
+                element: '#cost-analysis-upload',
+                popover: {
+                    title: tr('tutorial_cost_upload_title', 'Subir facturas'),
+                    description: tr('tutorial_cost_upload_desc', 'Carga facturas para usar costos reales en lugar de estimaciones.'),
+                    side: 'bottom',
+                    align: 'start'
+                }
+            },
+            {
+                element: '#cost-analysis-range',
+                popover: {
+                    title: tr('tutorial_cost_range_title', 'Rango de tiempo'),
+                    description: tr('tutorial_cost_range_desc', 'Elige el rango (3m, 6m, 1y, todo) para recalcular métricas y gráficos.'),
+                    side: 'bottom',
+                    align: 'start'
+                }
+            },
+            {
+                element: '#cost-analysis-tabs',
+                popover: {
+                    title: tr('tutorial_cost_tabs_title', 'Vistas de costos'),
+                    description: tr('tutorial_cost_tabs_desc', 'Usa Resumen para ver desglose general o Mensual para tendencias por mes.'),
+                    side: 'bottom',
+                    align: 'start'
+                }
+            }
+        ];
+
         const projectEditorSteps: Array<{ element: string; popover: any }> = [
             {
                 element: '#project-editor-title',
@@ -891,6 +930,8 @@ export const Tutorial: React.FC<TutorialProps> = ({ userProfile, currentView }) 
             if (isProjectEditorOpen) return 'project-editor';
             const isReportModalOpen = Boolean(document.querySelector('#report-modal'));
             if (isReportModalOpen) return 'report-modal';
+            const isCostAnalysis = Boolean(document.querySelector('#cost-analysis-view'));
+            if (isCostAnalysis) return 'cost-analysis';
             return currentView;
         };
 
@@ -902,19 +943,21 @@ export const Tutorial: React.FC<TutorialProps> = ({ userProfile, currentView }) 
                         ? tripEditorSteps
                     : contextKey === 'project-editor'
                         ? projectEditorSteps
-                        : contextKey === 'report-modal'
-                            ? reportModalSteps
-                        : contextKey === 'trips'
-                            ? tripsSteps
-                        : contextKey === 'projects'
-                            ? projectsSteps
-                        : contextKey === 'reports'
-                            ? reportsSteps
-                            : contextKey === 'calendar'
-                                ? calendarSteps
-                                : contextKey === 'advanced'
-                                    ? advancedSteps
-                                    : dashboardSteps;
+                    : contextKey === 'report-modal'
+                        ? reportModalSteps
+                    : contextKey === 'trips'
+                        ? tripsSteps
+                    : contextKey === 'projects'
+                        ? projectsSteps
+                    : contextKey === 'reports'
+                        ? reportsSteps
+                    : contextKey === 'calendar'
+                        ? calendarSteps
+                    : contextKey === 'advanced'
+                        ? advancedSteps
+                        : contextKey === 'cost-analysis'
+                            ? costAnalysisSteps
+                            : dashboardSteps;
             return selectedSteps.filter(step => document.querySelector(step.element));
         };
 
