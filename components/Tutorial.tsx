@@ -126,7 +126,16 @@ export const Tutorial: React.FC<TutorialProps> = ({ userProfile, currentView }) 
                 element: '#trip-editor-locations',
                 popover: {
                     title: tr('tutorial_trip_editor_locations_title', 'Origen y destino'),
-                    description: tr('tutorial_trip_editor_locations_desc', 'Indica origen/destino (y paradas). Puedes arrastrar las intermedias para reordenar.'),
+                    description: tr('tutorial_trip_editor_locations_desc', 'Indica origen/destino (y paradas). Si no los defines, usaremos la dirección guardada en tu perfil como predeterminada. Puedes arrastrar las paradas intermedias para reordenar.'),
+                    side: 'bottom',
+                    align: 'start'
+                }
+            },
+            {
+                element: '#trip-editor-special-origin',
+                popover: {
+                    title: tr('tutorial_trip_editor_special_title', 'Origen especial'),
+                    description: tr('tutorial_trip_editor_special_desc', 'Marca si el viaje continúa o finaliza una serie (continuación/fin de continuación). Esto bloquea/ajusta origen y destino según corresponda.'),
                     side: 'bottom',
                     align: 'start'
                 }
