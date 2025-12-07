@@ -250,7 +250,7 @@ const SettingsView: React.FC<{
         switch (activeTab) {
             case 'profile':
                 return (
-                    <div className="space-y-6">
+                    <div id="settings-profile" className="space-y-6">
                         <section>
                             <h2 className="text-xl font-semibold bg-gradient-to-r from-white to-brand-primary bg-clip-text text-transparent">{t('settings_profile_title')}</h2>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
@@ -292,7 +292,7 @@ const SettingsView: React.FC<{
                 );
             case 'compliance':
                 return (
-                    <div className="space-y-4">
+                    <div id="settings-compliance" className="space-y-4">
                         <h2 className="text-xl font-semibold flex items-center gap-2 bg-gradient-to-r from-white to-brand-primary bg-clip-text text-transparent">
                             {t('settings_tab_compliance')}
                         </h2>
@@ -315,11 +315,11 @@ const SettingsView: React.FC<{
                 );
             case 'api':
                 return (
-                    <div className="space-y-4">
+                    <div id="settings-api" className="space-y-4">
                         <h2 className="text-xl font-semibold text-white">{t('settings_api_title')}</h2>
                         <div className="space-y-6">
                             {/* AI Configuration Section */}
-                            <div className="space-y-4 p-4 border border-gray-700 rounded-lg bg-gray-800/50">
+                            <div id="settings-api-ai" className="space-y-4 p-4 border border-gray-700 rounded-lg bg-gray-800/50">
                                 <h3 className="text-lg font-medium mb-2 text-white">🤖 {t('settings_api_ai_title')}</h3>
 
                                 {/* Info Banner */}
@@ -352,7 +352,7 @@ const SettingsView: React.FC<{
                                 </div>
 
                                 {/* OpenRouter Configuration (User) */}
-                                <div className={`space-y-3 p-3 border rounded ${localProfile.openRouterApiKey && localProfile.openRouterModel
+                                <div id="settings-api-openrouter" className={`space-y-3 p-3 border rounded ${localProfile.openRouterApiKey && localProfile.openRouterModel
                                     ? 'bg-green-900/20 border-green-700/50'
                                     : 'border-gray-600'
                                     }`}>
@@ -434,10 +434,10 @@ const SettingsView: React.FC<{
                 const isLightSelected = currentTheme === 'light';
                 const isDarkSelected = currentTheme === 'dark';
                 return (
-                    <div className="space-y-6">
+                    <div id="settings-personalization" className="space-y-6">
                         <h2 className="text-xl font-semibold bg-gradient-to-r from-white to-brand-primary bg-clip-text text-transparent">{t('settings_personalization_title')}</h2>
 
-                        <div className="space-y-3">
+                        <div id="settings-personalization-theme" className="space-y-3">
                             <h3 className="text-sm font-medium text-on-surface-dark-secondary">{t('settings_personalization_theme_label') || 'Tema de la interfaz'}</h3>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <button
@@ -470,7 +470,7 @@ const SettingsView: React.FC<{
                             <p className="text-xs text-on-surface-dark-secondary">{t('settings_personalization_theme_hint') || 'Cámbialo cuando quieras; no modifica el resto de estilos.'}</p>
                         </div>
 
-                        <div>
+                        <div id="settings-personalization-background">
                             <label className="block text-sm font-medium text-on-surface-dark-secondary mb-2">{t('settings_personalization_bg_image_label')}</label>
                             {personalization.backgroundImage && (
                                 <div className="mb-4">
@@ -499,7 +499,7 @@ const SettingsView: React.FC<{
                             </div>
                         </div>
 
-                        <div>
+                        <div id="settings-personalization-presets">
                             <h3 className="text-sm font-medium text-on-surface-dark-secondary mb-2">{t('settings_personalization_presets_title')}</h3>
                             <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
                                 {PRESET_BACKGROUNDS.map(bg => {
@@ -521,30 +521,32 @@ const SettingsView: React.FC<{
 
                         <hr className="border-gray-700/50" />
 
-                        <SliderField
-                            label={t('settings_personalization_transparency_label')}
-                            name="uiTransparency"
-                            value={personalization.uiTransparency}
-                            onChange={handlePersonalizationChange}
-                            min={0} max={0.9} step={0.05}
-                            displayValue={`${Math.round(personalization.uiTransparency * 100)}%`}
-                        />
-                        <SliderField
-                            label={t('settings_personalization_blur_label')}
-                            name="uiBlur"
-                            value={personalization.uiBlur}
-                            onChange={handlePersonalizationChange}
-                            min={0} max={32} step={1}
-                            displayValue={`${personalization.uiBlur}px`}
-                        />
-                        <SliderField
-                            label={t('settings_personalization_bg_blur_label')}
-                            name="backgroundBlur"
-                            value={personalization.backgroundBlur}
-                            onChange={handlePersonalizationChange}
-                            min={0} max={20} step={1}
-                            displayValue={`${personalization.backgroundBlur}px`}
-                        />
+                        <div id="settings-personalization-sliders" className="space-y-4">
+                            <SliderField
+                                label={t('settings_personalization_transparency_label')}
+                                name="uiTransparency"
+                                value={personalization.uiTransparency}
+                                onChange={handlePersonalizationChange}
+                                min={0} max={0.9} step={0.05}
+                                displayValue={`${Math.round(personalization.uiTransparency * 100)}%`}
+                            />
+                            <SliderField
+                                label={t('settings_personalization_blur_label')}
+                                name="uiBlur"
+                                value={personalization.uiBlur}
+                                onChange={handlePersonalizationChange}
+                                min={0} max={32} step={1}
+                                displayValue={`${personalization.uiBlur}px`}
+                            />
+                            <SliderField
+                                label={t('settings_personalization_bg_blur_label')}
+                                name="backgroundBlur"
+                                value={personalization.backgroundBlur}
+                                onChange={handlePersonalizationChange}
+                                min={0} max={20} step={1}
+                                displayValue={`${personalization.backgroundBlur}px`}
+                            />
+                        </div>
                         <Button onClick={resetPersonalization} variant="ghost" className="text-green-500 hover:text-green-400 mt-2 p-0 h-auto font-normal hover:bg-transparent hover:underline justify-start">
                             {t('settings_personalization_reset_btn')}
                         </Button>
@@ -553,21 +555,21 @@ const SettingsView: React.FC<{
             }
             case 'language':
                 return (
-                    <div className="space-y-4">
+                    <div id="settings-language" className="space-y-4">
                         <h2 className="text-xl font-semibold bg-gradient-to-r from-white to-brand-primary bg-clip-text text-transparent">{t('settings_language_title')}</h2>
                         <LanguageSwitcher />
                     </div>
                 );
             case 'changelog':
                 return (
-                    <div className="space-y-4">
+                    <div id="settings-changelog" className="space-y-4">
                         <h2 className="text-xl font-semibold text-white">{t('settings_changelog_title')}</h2>
                         <p className="text-on-surface-dark-secondary">{t('settings_changelog_empty')}</p>
                     </div>
                 );
             case 'help':
                 return (
-                    <div className="space-y-6">
+                    <div id="settings-help" className="space-y-6">
                         <h2 className="text-xl font-semibold text-white">{t('settings_help_title')}</h2>
 
                         <div className="p-4 bg-background-dark/50 border border-gray-700/50 rounded-lg space-y-4">
@@ -576,7 +578,7 @@ const SettingsView: React.FC<{
                                 Activa o desactiva la guía interactiva que te ayuda a conocer las funciones de la aplicación.
                             </p>
 
-                            <div className="flex items-center gap-3">
+                            <div id="settings-help-tutorial-toggle" className="flex items-center gap-3">
                                 <input
                                     type="checkbox"
                                     id="isTutorialEnabled"
@@ -608,7 +610,7 @@ const SettingsView: React.FC<{
                                 </label>
                             </div>
 
-                            <div className="pt-2">
+                            <div id="settings-help-restart" className="pt-2">
                                 <Button
                                     variant="secondary"
                                     onClick={async () => {
@@ -645,7 +647,7 @@ const SettingsView: React.FC<{
     };
 
     return (
-        <div className="fixed inset-0 bg-gradient-overlay backdrop-blur-glass flex items-center justify-center p-4 z-50" onClick={handleClose}>
+        <div id="settings-view" className="fixed inset-0 bg-gradient-overlay backdrop-blur-glass flex items-center justify-center p-4 z-50" onClick={handleClose}>
             <div
                 className="glass-surface no-border rounded-organic shadow-glass-lg w-full max-w-4xl max-h-[90vh] flex flex-col backdrop-blur-glass relative text-on-surface-dark"
                 style={{
@@ -656,16 +658,17 @@ const SettingsView: React.FC<{
                 }}
                 onClick={e => e.stopPropagation()}
             >
-                <header className="flex items-center justify-between p-4 flex-shrink-0">
-                    <h2 className="text-xl font-bold bg-gradient-title bg-clip-text text-transparent">{t('settings_title')}</h2>
+                <header id="settings-header" className="flex items-center justify-between p-4 flex-shrink-0">
+                    <h2 id="settings-title" className="text-xl font-bold bg-gradient-title bg-clip-text text-transparent">{t('settings_title')}</h2>
                     <Button variant="icon" onClick={handleClose} title={t('common_close')}>
                         <XIcon className="w-6 h-6" />
                     </Button>
                 </header>
 
                 <div className="flex-grow flex min-h-0">
-                    <nav className="w-1/4 p-4 border-r border-glass flex-shrink-0 space-y-1">
+                    <nav id="settings-tabs" className="w-1/4 p-4 border-r border-glass flex-shrink-0 space-y-1">
                         <TabButton
+                            id="settings-tab-profile"
                             label={t('settings_tab_profile')}
                             isActive={activeTab === 'profile'}
                             onClick={() => setActiveTab('profile')}
@@ -673,6 +676,7 @@ const SettingsView: React.FC<{
                             theme={theme}
                         />
                         <TabButton
+                            id="settings-tab-compliance"
                             label={t('settings_tab_compliance')}
                             isActive={activeTab === 'compliance'}
                             onClick={() => setActiveTab('compliance')}
@@ -680,6 +684,7 @@ const SettingsView: React.FC<{
                             theme={theme}
                         />
                         <TabButton
+                            id="settings-tab-api"
                             label={t('settings_tab_api')}
                             isActive={activeTab === 'api'}
                             onClick={() => setActiveTab('api')}
@@ -688,6 +693,7 @@ const SettingsView: React.FC<{
                         />
                         <div className="pt-2 mt-2 border-t border-gray-700/50" />
                         <TabButton
+                            id="settings-tab-personalization"
                             label={t('settings_tab_personalization')}
                             isActive={activeTab === 'personalization'}
                             onClick={() => setActiveTab('personalization')}
@@ -695,6 +701,7 @@ const SettingsView: React.FC<{
                             theme={theme}
                         />
                         <TabButton
+                            id="settings-tab-language"
                             label={t('settings_tab_language')}
                             isActive={activeTab === 'language'}
                             onClick={() => setActiveTab('language')}
@@ -703,6 +710,7 @@ const SettingsView: React.FC<{
                         />
                         <div className="pt-2 mt-2 border-t border-gray-700/50" />
                         <TabButton
+                            id="settings-tab-changelog"
                             label={t('settings_tab_changelog')}
                             isActive={activeTab === 'changelog'}
                             onClick={() => setActiveTab('changelog')}
@@ -710,6 +718,7 @@ const SettingsView: React.FC<{
                             theme={theme}
                         />
                         <TabButton
+                            id="settings-tab-help"
                             label={t('settings_tab_help')}
                             isActive={activeTab === 'help'}
                             onClick={() => setActiveTab('help')}
@@ -807,10 +816,11 @@ const SettingsView: React.FC<{
     );
 };
 
-const TabButton: React.FC<{ label: string; isActive: boolean; onClick: () => void; icon: React.ReactNode; theme: 'light' | 'dark'; }> = ({ label, isActive, onClick, icon }) => (
+const TabButton: React.FC<{ id?: string; label: string; isActive: boolean; onClick: () => void; icon: React.ReactNode; theme: 'light' | 'dark'; }> = ({ id, label, isActive, onClick, icon }) => (
     <Button
         variant="ghost"
         onClick={onClick}
+        id={id}
         className={`w-full justify-start px-3 py-2.5 text-sm font-medium ${isActive
             ? 'bg-surface-medium text-white shadow-sm border border-white/5'
             : 'text-on-surface-dark-secondary hover:bg-surface-light/50'

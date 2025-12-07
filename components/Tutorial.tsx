@@ -897,6 +897,81 @@ export const Tutorial: React.FC<TutorialProps> = ({ userProfile, currentView }) 
             }
         ];
 
+        const settingsSteps: Array<{ element: string; popover: any }> = [
+            {
+                element: '#settings-title',
+                popover: {
+                    title: tr('tutorial_settings_intro_title', 'Ajustes generales'),
+                    description: tr('tutorial_settings_intro_desc', 'Administra tus datos, cumplimiento, IA, personalización y ayuda desde este panel.'),
+                    side: 'bottom',
+                    align: 'start'
+                }
+            },
+            {
+                element: '#settings-tab-profile',
+                popover: {
+                    title: tr('tutorial_settings_profile_title', 'Perfil y tarifas'),
+                    description: tr('tutorial_settings_profile_desc', 'Actualiza tu nombre, matrícula, dirección y tarifas por km o pasajeros.'),
+                    side: 'right',
+                    align: 'start'
+                }
+            },
+            {
+                element: '#settings-tab-compliance',
+                popover: {
+                    title: tr('tutorial_settings_compliance_title', 'Bloqueos y auditoría'),
+                    description: tr('tutorial_settings_compliance_desc', 'Define fechas de bloqueo para cerrar periodos y proteger los datos.'),
+                    side: 'right',
+                    align: 'start'
+                }
+            },
+            {
+                element: '#settings-tab-api',
+                popover: {
+                    title: tr('tutorial_settings_api_title', 'API e IA'),
+                    description: tr('tutorial_settings_api_desc', 'Gestiona claves y modelos de IA para extracción y asistentes dentro de la app.'),
+                    side: 'right',
+                    align: 'start'
+                }
+            },
+            {
+                element: '#settings-tab-personalization',
+                popover: {
+                    title: tr('tutorial_settings_personalization_title', 'Personalización de UI'),
+                    description: tr('tutorial_settings_personalization_desc', 'Cambia tema, fondos, transparencia y desenfoque para adaptar la interfaz.'),
+                    side: 'right',
+                    align: 'start'
+                }
+            },
+            {
+                element: '#settings-tab-language',
+                popover: {
+                    title: tr('tutorial_settings_language_title', 'Idioma'),
+                    description: tr('tutorial_settings_language_desc', 'Elige el idioma de la interfaz. Se aplica al instante.'),
+                    side: 'right',
+                    align: 'start'
+                }
+            },
+            {
+                element: '#settings-tab-changelog',
+                popover: {
+                    title: tr('tutorial_settings_changelog_title', 'Novedades'),
+                    description: tr('tutorial_settings_changelog_desc', 'Consulta cambios recientes y mejoras de la aplicación.'),
+                    side: 'right',
+                    align: 'start'
+                }
+            },
+            {
+                element: '#settings-tab-help',
+                popover: {
+                    title: tr('tutorial_settings_help_title', 'Ayuda y tutorial'),
+                    description: tr('tutorial_settings_help_desc', 'Activa o reinicia el tutorial interactivo y encuentra soporte.'),
+                    side: 'right',
+                    align: 'start'
+                }
+            }
+        ];
+
         const projectEditorSteps: Array<{ element: string; popover: any }> = [
             {
                 element: '#project-editor-title',
@@ -1032,6 +1107,8 @@ export const Tutorial: React.FC<TutorialProps> = ({ userProfile, currentView }) 
             if (isProjectEditorOpen) return 'project-editor';
             const isReportModalOpen = Boolean(document.querySelector('#report-modal'));
             if (isReportModalOpen) return 'report-modal';
+            const isSettings = Boolean(document.querySelector('#settings-view'));
+            if (isSettings) return 'settings';
             const isRouteTemplates = Boolean(document.querySelector('#route-templates-view'));
             if (isRouteTemplates) return 'route-templates';
             const isCostAnalysis = Boolean(document.querySelector('#cost-analysis-view'));
@@ -1063,7 +1140,9 @@ export const Tutorial: React.FC<TutorialProps> = ({ userProfile, currentView }) 
                             ? costAnalysisSteps
                             : contextKey === 'route-templates'
                                 ? routeTemplatesSteps
-                                : dashboardSteps;
+                                : contextKey === 'settings'
+                                    ? settingsSteps
+                                    : dashboardSteps;
             return selectedSteps.filter(step => document.querySelector(step.element));
         };
 
