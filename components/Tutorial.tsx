@@ -603,6 +603,54 @@ export const Tutorial: React.FC<TutorialProps> = ({ userProfile, currentView }) 
             }
         ];
 
+        const projectEditorSteps: Array<{ element: string; popover: any }> = [
+            {
+                element: '#project-editor-title',
+                popover: {
+                    title: tr('tutorial_project_editor_intro_title', 'Añadir/editar proyecto'),
+                    description: tr('tutorial_project_editor_intro_desc', 'Completa nombre y productor; opcionalmente define tarifa por km para este proyecto.'),
+                    side: 'bottom',
+                    align: 'start'
+                }
+            },
+            {
+                element: '#project-editor-name',
+                popover: {
+                    title: tr('tutorial_project_editor_name_title', 'Nombre del proyecto'),
+                    description: tr('tutorial_project_editor_name_desc', 'Nombre único para identificar al cliente o producción.'),
+                    side: 'bottom',
+                    align: 'start'
+                }
+            },
+            {
+                element: '#project-editor-producer',
+                popover: {
+                    title: tr('tutorial_project_editor_producer_title', 'Productor/cliente'),
+                    description: tr('tutorial_project_editor_producer_desc', 'Indica quién encarga el proyecto o la compañía responsable.'),
+                    side: 'bottom',
+                    align: 'start'
+                }
+            },
+            {
+                element: '#project-editor-rate',
+                popover: {
+                    title: tr('tutorial_project_editor_rate_title', 'Tarifa por km'),
+                    description: tr('tutorial_project_editor_rate_desc', 'Tarifa específica para este proyecto. Si la dejas vacía, se usará la tarifa por defecto del perfil.'),
+                    side: 'bottom',
+                    align: 'start'
+                }
+            },
+            {
+                element: '#project-editor-actions',
+                popover: {
+                    title: tr('tutorial_project_editor_actions_title', 'Guardar o cancelar'),
+                    description: tr('tutorial_project_editor_actions_desc', 'Guarda el proyecto o cancela. Si hay cambios sin guardar, se te avisará al cerrar.'),
+                    side: 'top',
+                    align: 'end'
+                }
+            }
+        ];
+
         const destroyDriver = () => {
             if (driverObj.current) {
                 driverObj.current.destroy();
@@ -629,11 +677,13 @@ export const Tutorial: React.FC<TutorialProps> = ({ userProfile, currentView }) 
                     ? bulkSteps
                     : contextKey === 'trip-editor'
                         ? tripEditorSteps
-                        : contextKey === 'trips'
-                            ? tripsSteps
-                            : contextKey === 'projects'
-                                ? projectsSteps
-                                : dashboardSteps;
+                        : contextKey === 'project-editor'
+                            ? projectEditorSteps
+                            : contextKey === 'trips'
+                                ? tripsSteps
+                                : contextKey === 'projects'
+                                    ? projectsSteps
+                                    : dashboardSteps;
             return selectedSteps.filter(step => document.querySelector(step.element));
         };
 

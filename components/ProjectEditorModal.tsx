@@ -94,13 +94,14 @@ const ProjectEditorModal: React.FC<ProjectEditorModalProps> = ({ project, onClos
   } : {};
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center px-4 py-16 overflow-y-auto bg-black/60 backdrop-blur-sm" onClick={handleClose}>
+    <div id="project-editor-modal" className="fixed inset-0 z-50 flex items-start justify-center px-4 py-16 overflow-y-auto bg-black/60 backdrop-blur-sm" onClick={handleClose}>
       <div style={modalStyle} className="relative w-full max-w-lg bg-frost-glass border border-gray-700/60 rounded-lg shadow-2xl flex flex-col max-h-[80vh] overflow-hidden" onClick={(e) => e.stopPropagation()}>
         <header className="flex items-start justify-between px-6 py-4 border-b border-gray-700/60">
-          <h2 className="text-lg font-semibold tracking-tight text-white">
+          <h2 id="project-editor-title" className="text-lg font-semibold tracking-tight text-white">
             {isEditing ? t('projectEditor_title_edit') : t('projectEditor_title_add')}
           </h2>
           <Button
+            id="project-editor-close"
             variant="icon"
             onClick={handleClose}
             aria-label={t('common_close')}
@@ -111,9 +112,10 @@ const ProjectEditorModal: React.FC<ProjectEditorModalProps> = ({ project, onClos
         </header>
         <main className="flex-1 overflow-y-auto px-6 py-6">
           <div className="space-y-5">
-            <InputField label={t('projects_form_projectName')} name="name" value={formState.name} onChange={handleInputChange} />
-            <InputField label={t('projects_form_producer')} name="producer" value={formState.producer} onChange={handleInputChange} />
+            <InputField id="project-editor-name" label={t('projects_form_projectName')} name="name" value={formState.name} onChange={handleInputChange} />
+            <InputField id="project-editor-producer" label={t('projects_form_producer')} name="producer" value={formState.producer} onChange={handleInputChange} />
             <InputField
+              id="project-editor-rate"
               label={t('rate_per_km_project')}
               name="ratePerKm"
               value={String(formState.ratePerKm)}
@@ -126,7 +128,7 @@ const ProjectEditorModal: React.FC<ProjectEditorModalProps> = ({ project, onClos
             </p>
           </div>
         </main>
-        <footer className="flex justify-between items-center px-6 py-4 border-t border-gray-700/60 bg-background-dark/40">
+        <footer className="flex justify-between items-center px-6 py-4 border-t border-gray-700/60 bg-background-dark/40" id="project-editor-actions">
           <div className="flex items-center gap-2">
             {hasUnsavedChanges && (
               <>
@@ -139,6 +141,7 @@ const ProjectEditorModal: React.FC<ProjectEditorModalProps> = ({ project, onClos
           </div>
           <div className="flex gap-3">
             <Button
+              id="project-editor-cancel"
               variant="secondary"
               size="sm"
               onClick={handleClose}
@@ -146,6 +149,7 @@ const ProjectEditorModal: React.FC<ProjectEditorModalProps> = ({ project, onClos
               {t('common_cancel')}
             </Button>
             <Button
+              id="project-editor-save"
               variant="primary"
               size="sm"
               onClick={handleSave}
@@ -162,25 +166,29 @@ const ProjectEditorModal: React.FC<ProjectEditorModalProps> = ({ project, onClos
 };
 
 const InputField: React.FC<{
+  id?: string,
   label: string,
   name: string,
   value: string,
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void,
   type?: string,
   placeholder?: string
-}> = ({ label, name, value, onChange, type = 'text', placeholder }) => (
-  <div>
-    <label htmlFor={name} className="block text-sm font-medium text-on-surface-dark-secondary mb-1">{label}</label>
-    <input
-      type={type}
-      id={name}
-      name={name}
-      value={value}
-      onChange={onChange}
-      placeholder={placeholder}
-      className="w-full bg-background-dark border border-gray-600 rounded-md p-2 text-on-surface-dark placeholder-gray-500 focus:ring-2 focus:ring-brand-primary focus:outline-none"
-    />
-  </div>
-);
+}> = ({ id, label, name, value, onChange, type = 'text', placeholder }) => {
+  const inputId = id || name;
+  return (
+    <div>
+      <label htmlFor={inputId} className="block text-sm font-medium text-on-surface-dark-secondary mb-1">{label}</label>
+      <input
+        type={type}
+        id={inputId}
+        name={name}
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        className="w-full bg-background-dark border border-gray-600 rounded-md p-2 text-on-surface-dark placeholder-gray-500 focus:ring-2 focus:ring-brand-primary focus:outline-none"
+      />
+    </div>
+  );
+};
 
 export default ProjectEditorModal;
