@@ -6,6 +6,7 @@ import useUndoRedo from '../hooks/useUndoRedo';
 import useToast from '../hooks/useToast';
 import UndoToast from './UndoToast';
 import { RouteTemplate } from '../types';
+import { Button } from './Button';
 
 interface RouteTemplatesViewProps {
   onBack: () => void;
@@ -123,9 +124,9 @@ const RouteTemplatesView: React.FC<RouteTemplatesViewProps> = ({ onBack, theme, 
             <p id="route-templates-subtitle" className="text-sm text-on-surface-dark-secondary">{t('route_templates_subtitle')}</p>
           </div>
         </div>
-        <button id="route-templates-add" onClick={openCreate} className="flex items-center gap-2 bg-brand-primary hover:bg-blue-600 text-white font-semibold px-4 py-2 rounded-lg transition-colors shadow-md">
+        <Button id="route-templates-add" onClick={openCreate} variant="primary" className="gap-2 h-[38px]">
           <Plus size={18} /> {t('route_templates_create_button')}
-        </button>
+        </Button>
       </div>
 
       {/* Métricas */}

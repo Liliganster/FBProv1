@@ -26,6 +26,7 @@ import { Trip, PersonalizationSettings, UserProfile } from '../types';
 import { formatDateForDisplay } from '../i18n/translations';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Legend, ResponsiveContainer, BarChart, Bar, Tooltip } from 'recharts';
 import ExpenseUploadModal from './ExpenseUploadModal';
+import { Button } from './Button';
 
 type AuditResult = {
     ok: boolean;
@@ -404,14 +405,15 @@ const CostAnalysisDashboard: React.FC<{
                     </div>
                 </div>
                 <div className="flex items-center gap-3">
-                    <button
+                    <Button
                         id="cost-analysis-upload"
                         onClick={() => setIsExpenseModalOpen(true)}
-                        className="flex items-center gap-2 bg-brand-primary hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-smooth transition-colors"
+                        variant="primary"
+                        className="h-[38px] gap-2"
                     >
                         <UploadIcon className="w-5 h-5" />
                         {t('expense_upload_title') || 'Upload Invoice'}
-                    </button>
+                    </Button>
                     <select id="cost-analysis-range" value={timeRange} onChange={(e) => setTimeRange(e.target.value as any)} className="bg-surface-dark border border-gray-600 rounded-smooth py-2 px-4 focus:ring-2 focus:ring-brand-primary focus:outline-none text-on-surface-dark text-sm font-medium h-[38px]">
                         <option value="3m">{t('cost_analysis_time_range_3m')}</option>
                         <option value="6m">{t('cost_analysis_time_range_6m')}</option>
