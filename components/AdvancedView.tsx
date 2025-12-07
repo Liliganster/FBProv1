@@ -400,7 +400,7 @@ const CostAnalysisDashboard: React.FC<{
                         <ArrowLeftIcon className="w-5 h-5" />
                     </button>
                     <div>
-                        <h1 id="cost-analysis-title" className="text-2xl font-bold bg-gradient-title bg-clip-text text-transparent">{t('cost_analysis_title')}</h1>
+                        <h1 id="cost-analysis-title" className="text-2xl font-bold text-white">{t('cost_analysis_title')}</h1>
                         <p className="text-sm text-on-surface-dark-secondary">{t('cost_analysis_description_personal')}</p>
                     </div>
                 </div>
@@ -1103,7 +1103,7 @@ const AdvancedView: React.FC<AdvancedViewProps> = ({ personalization, theme }) =
 
     const renderMainView = () => (
         <div id="advanced-view">
-            <h1 id="advanced-title" className="text-3xl font-bold mb-8 bg-gradient-title bg-clip-text text-transparent">{t('advanced_title')}</h1>
+            <h1 id="advanced-title" className="text-3xl font-bold mb-8 text-white">{t('advanced_title')}</h1>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch">
                 <div id="advanced-card-routes">
                     <ActionCard

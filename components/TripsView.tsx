@@ -319,7 +319,7 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
         ) : (
           <>
             <div id="trips-title">
-              <h1 className="text-3xl font-bold bg-gradient-title bg-clip-text text-transparent">{t('trips_title')}</h1>
+              <h1 className="text-3xl font-bold text-white">{t('trips_title')}</h1>
               {userProfile && <h2 className="text-lg font-semibold text-brand-primary">{userProfile.name}</h2>}
             </div>
             <div className="flex items-center gap-4">

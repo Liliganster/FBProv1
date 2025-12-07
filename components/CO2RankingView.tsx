@@ -357,7 +357,7 @@ const CO2RankingView: React.FC<CO2RankingViewProps> = ({
             <ArrowLeftIcon className="w-5 h-5" />
           </button>
           <div>
-            <h1 className="text-2xl font-bold bg-gradient-title bg-clip-text text-transparent">{t('co2_ranking_title')}</h1>
+            <h1 className="text-2xl font-bold text-white">{t('co2_ranking_title')}</h1>
             <p className="text-sm text-on-surface-dark-secondary">{t('co2_ranking_card_description')}</p>
           </div>
         </div>

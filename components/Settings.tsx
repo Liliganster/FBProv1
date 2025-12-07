@@ -659,7 +659,7 @@ const SettingsView: React.FC<{
                 onClick={e => e.stopPropagation()}
             >
                 <header id="settings-header" className="flex items-center justify-between p-4 flex-shrink-0">
-                    <h2 id="settings-title" className="text-xl font-bold bg-gradient-title bg-clip-text text-transparent">{t('settings_title')}</h2>
+                    <h2 id="settings-title" className="text-xl font-bold text-white">{t('settings_title')}</h2>
                     <Button variant="icon" onClick={handleClose} title={t('common_close')}>
                         <XIcon className="w-6 h-6" />
                     </Button>

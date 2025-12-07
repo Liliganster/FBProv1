@@ -204,7 +204,7 @@ const Dashboard: React.FC<DashboardProps> = ({ setCurrentView, personalization, 
         <div className="text-on-surface-dark animate-fade-in">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4" id="dashboard-header">
                 <div>
-                    <h1 id="dashboard-title" className="text-3xl font-bold bg-gradient-title bg-clip-text text-transparent tracking-tight">{t('dashboard_title')}</h1>
+                    <h1 id="dashboard-title" className="text-3xl font-bold text-white tracking-tight">{t('dashboard_title')}</h1>
                     {userProfile && <h2 className="text-lg font-medium text-brand-primary/90">{userProfile.name}</h2>}
                 </div>
                 <div className="flex items-center gap-3 w-full md:w-auto justify-end">
