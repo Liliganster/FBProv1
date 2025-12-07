@@ -11,7 +11,6 @@ interface PlansViewProps {
 }
 
 const proCheckoutUrl = import.meta.env.VITE_STRIPE_CHECKOUT_PRO;
-const enterpriseCheckoutUrl = import.meta.env.VITE_STRIPE_CHECKOUT_ENTERPRISE;
 
 const plans = [
   {
@@ -39,18 +38,6 @@ const plans = [
     ],
     cta: 'Elegir Pro',
   },
-  {
-    id: 'enterprise',
-    name: 'Enterprise',
-    price: 'Custom',
-    badge: 'Solicitudes ilimitadas',
-    features: [
-      'Días IA ilimitados',
-      'CSV/Excel ilimitado (sin IA)',
-      'SLA y onboarding a medida',
-    ],
-    cta: 'Hablar con ventas',
-  },
 ];
 
 const PlansView: React.FC<PlansViewProps> = ({ setCurrentView }) => {
@@ -66,7 +53,7 @@ const PlansView: React.FC<PlansViewProps> = ({ setCurrentView }) => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {plans.map(plan => (
           <div
             key={plan.id}
@@ -107,10 +94,6 @@ const PlansView: React.FC<PlansViewProps> = ({ setCurrentView }) => {
                       }
                     }
                     window.open(checkoutUrl.toString(), '_blank');
-                    return;
-                  }
-                  if (plan.id === 'enterprise' && enterpriseCheckoutUrl) {
-                    window.open(enterpriseCheckoutUrl, '_blank');
                     return;
                   }
                   setCurrentView('settings');
