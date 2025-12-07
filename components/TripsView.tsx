@@ -337,11 +337,11 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
                   ))}
                 </select>
               </div>
-              <Button id="trips-bulk-upload-btn" variant="success" onClick={() => setIsBulkModalOpen(true)}>
+              <Button id="trips-bulk-upload-btn" variant="success" onClick={() => setIsBulkModalOpen(true)} className="h-[38px]">
                 <UploadCloudIcon className="w-5 h-5 mr-2" />
                 {t('trips_bulkUpload')}
               </Button>
-              <Button id="trips-add-btn" variant="primary" onClick={handleAddTrip}>
+              <Button id="trips-add-btn" variant="primary" onClick={handleAddTrip} className="h-[38px]">
                 <PlusIcon className="w-5 h-5 mr-2" />
                 {t('trips_addTrip')}
               </Button>
