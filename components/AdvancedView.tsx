@@ -1102,7 +1102,7 @@ const AdvancedView: React.FC<AdvancedViewProps> = ({ personalization, theme }) =
     const renderMainView = () => (
         <div id="advanced-view">
             <h1 id="advanced-title" className="text-3xl font-bold mb-8 bg-gradient-title bg-clip-text text-transparent">{t('advanced_title')}</h1>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch">
                 <div id="advanced-card-routes">
                     <ActionCard
                         title={t('advanced_route_templates_title')}
@@ -1209,7 +1209,7 @@ const ActionCard: React.FC<{
 
     return (
         <div
-            className="bg-frost-glass p-6 rounded-lg shadow-lg flex items-center gap-6 cursor-pointer hover:ring-2 hover:ring-brand-primary transition-all duration-200"
+            className="bg-frost-glass p-6 rounded-lg shadow-lg flex items-center gap-6 cursor-pointer hover:ring-2 hover:ring-brand-primary transition-all duration-200 h-full"
             onClick={onClick}
             style={cardStyle}
         >

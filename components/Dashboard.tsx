@@ -170,7 +170,7 @@ const Dashboard: React.FC<DashboardProps> = ({ setCurrentView, personalization, 
     };
 
     const StatCard = ({ title, value, cta, onClick, children }: { title: string, value: string, cta?: string, onClick?: () => void, children?: React.ReactNode }) => (
-        <div style={glassStyle} className="bg-frost-glass border border-white/10 rounded-fluid p-6 flex flex-col justify-between min-h-[140px] transition-all duration-300 hover:-translate-y-[2px] hover:shadow-glass shadow-sm">
+        <div style={glassStyle} className="bg-frost-glass border border-white/10 rounded-fluid p-6 flex flex-col justify-between min-h-[160px] h-full transition-all duration-300 hover:-translate-y-[2px] hover:shadow-glass shadow-sm">
             <div>
                 <div className="flex items-start justify-between">
                     <h3 className="text-sm font-medium text-on-surface-secondary uppercase tracking-wider">{title}</h3>
@@ -262,7 +262,7 @@ const Dashboard: React.FC<DashboardProps> = ({ setCurrentView, personalization, 
                 </div>
             </div>
 
-            <div id="dashboard-overview" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            <div id="dashboard-overview" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8 items-stretch">
                 <div id="dashboard-card-total-km">
                     <StatCard title={t('dashboard_totalKm')} value={`${totalKm.toFixed(1)} km`} cta={t('dashboard_viewAllTrips')} onClick={() => setCurrentView('trips')}>
                         <div id="dashboard-trips-cta" />
@@ -271,11 +271,11 @@ const Dashboard: React.FC<DashboardProps> = ({ setCurrentView, personalization, 
                 <div id="dashboard-card-projects">
                     <StatCard title={t('dashboard_activeProjects')} value={activeProjectsCount.toString()} cta={t('dashboard_manageProjects')} onClick={() => setCurrentView('projects')} />
                 </div>
-                <div id="dashboard-card-co2">
+                <div id="dashboard-card-co2" className="h-full">
                     {hasCO2Settings ? (
                         <StatCard title={t('dashboard_total_co2')} value={`${totalCo2.toFixed(1)} kg`} />
                     ) : (
-                        <div style={glassStyle} className="bg-frost-glass border border-white/10 rounded-fluid p-6 backdrop-blur-glass flex flex-col justify-center items-center text-center hover:shadow-glass transition-all duration-300">
+                        <div style={glassStyle} className="bg-frost-glass border border-white/10 rounded-fluid p-6 backdrop-blur-glass flex flex-col justify-center items-center text-center hover:shadow-glass transition-all duration-300 h-full">
                             <Co2EmissionIcon className="w-10 h-10 text-on-surface-secondary mb-3 opacity-50" />
                             <h4 className="text-sm font-medium text-on-surface-secondary mb-2">{t('dashboard_total_co2')}</h4>
                             <p className="text-xs text-on-surface-secondary mb-4 max-w-[200px]">{t('co2_settings_required_notice')}</p>
