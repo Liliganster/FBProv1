@@ -490,20 +490,47 @@ export const Tutorial: React.FC<TutorialProps> = ({ userProfile, currentView }) 
             }
         };
 
-        const resolveSteps = () => {
-            const isTripEditorOpen = Boolean(document.querySelector('#trip-editor-modal'));
+        const destroyDriver = () => {
+            if (driverObj.current) {
+                driverObj.current.destroy();
+                driverObj.current = null;
+            }
+        };
+
+        const getContextKey = () => {
             const isBulkOpen = Boolean(document.querySelector('#bulk-modal'));
-            const selectedSteps = isBulkOpen ? bulkSteps : isTripEditorOpen ? tripEditorSteps : currentView === 'trips' ? tripsSteps : dashboardSteps;
+            if (isBulkOpen) {
+                const isReview = Boolean(document.querySelector('#bulk-review-stage'));
+                if (isReview) return 'bulk-review';
+                const isAi = Boolean(document.querySelector('#bulk-ai-section'));
+                return isAi ? 'bulk-ai' : 'bulk-csv';
+            }
+            const isTripEditorOpen = Boolean(document.querySelector('#trip-editor-modal'));
+            if (isTripEditorOpen) return 'trip-editor';
+            return currentView;
+        };
+
+        const resolveSteps = (contextKey: string) => {
+            const selectedSteps =
+                contextKey === 'bulk-ai' || contextKey === 'bulk-csv' || contextKey === 'bulk-review'
+                    ? bulkSteps
+                    : contextKey === 'trip-editor'
+                        ? tripEditorSteps
+                        : contextKey === 'trips'
+                            ? tripsSteps
+                            : dashboardSteps;
             return selectedSteps.filter(step => document.querySelector(step.element));
         };
 
         const tryStart = () => {
+            const contextKey = getContextKey();
+            if (activeContextRef.current && activeContextRef.current !== contextKey && driverObj.current) {
+                destroyDriver();
+                activeContextRef.current = null;
+            }
             if (driverObj.current) return;
-            const isTripEditorOpen = Boolean(document.querySelector('#trip-editor-modal'));
-            const isBulkOpen = Boolean(document.querySelector('#bulk-modal'));
-            const contextKey = isBulkOpen ? 'bulk-upload' : isTripEditorOpen ? 'trip-editor' : currentView;
             if (stopByContextRef.current[contextKey]) return;
-            const resolvedSteps = resolveSteps();
+            const resolvedSteps = resolveSteps(contextKey);
             if (resolvedSteps.length === 0) return;
 
             destroyDriver();
