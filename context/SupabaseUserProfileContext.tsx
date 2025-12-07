@@ -260,6 +260,27 @@ export const UserProfileProvider: React.FC<{ children: React.ReactNode }> = ({ c
     delete (sanitizedUpdates as any).updatedAt;
     const hasOtherUpdates = Object.keys(sanitizedUpdates).length > 0;
 
+    // Sanitize enum values to prevent 400 errors
+    if (sanitizedUpdates.vehicleType && !['combustion', 'electric'].includes(sanitizedUpdates.vehicleType)) {
+      console.warn('Sanitizing invalid vehicleType:', sanitizedUpdates.vehicleType);
+      // If it's an empty string or invalid value, set to null or remove it
+      // Supabase expects null, 'combustion', or 'electric'
+      sanitizedUpdates.vehicleType = null;
+    }
+
+    // Ensure empty strings for numeric fields are converted to null
+    const numericFields = [
+      'ratePerKm', 'passengerSurchargePerKm', 'fuelConsumption', 'fuelPrice',
+      'energyConsumption', 'energyPrice', 'maintenanceCostPerKm',
+      'parkingCostPerKm', 'tollsCostPerKm', 'finesCostPerKm', 'miscCostPerKm'
+    ];
+
+    numericFields.forEach(field => {
+      if ((sanitizedUpdates as any)[field] === '') {
+        (sanitizedUpdates as any)[field] = null;
+      }
+    });
+
     const mergeAndPersist = (profile: UserProfile) => {
       const mergedProfile = applyTutorialPrefs(profile, { hasSeenTutorial, isTutorialEnabled });
       setUserProfileState(mergedProfile);
