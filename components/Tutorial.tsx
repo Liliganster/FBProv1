@@ -35,7 +35,7 @@ export const Tutorial: React.FC<TutorialProps> = ({ userProfile, currentView }) 
                 element: '#dashboard-title',
                 popover: {
                     title: tr('tutorial_welcome_title', 'Bienvenido a Fahrtenbuch Pro'),
-                    description: tr('tutorial_welcome_desc', 'Esta guía rápida te mostrará cómo gestionar tus viajes, proyectos y reportes en este panel.'),
+                    description: tr('tutorial_welcome_desc', 'Esta guía rápida te mostrará cómo gestionar tus viajes y proyectos de forma eficiente. Para desactivar este tutorial, ve a Configuración > Ayuda.'),
                     side: 'bottom',
                     align: 'start'
                 }
@@ -1122,27 +1122,27 @@ export const Tutorial: React.FC<TutorialProps> = ({ userProfile, currentView }) 
                     ? bulkSteps
                     : contextKey === 'trip-editor'
                         ? tripEditorSteps
-                    : contextKey === 'project-editor'
-                        ? projectEditorSteps
-                    : contextKey === 'report-modal'
-                        ? reportModalSteps
-                    : contextKey === 'trips'
-                        ? tripsSteps
-                    : contextKey === 'projects'
-                        ? projectsSteps
-                    : contextKey === 'reports'
-                        ? reportsSteps
-                    : contextKey === 'calendar'
-                        ? calendarSteps
-                    : contextKey === 'advanced'
-                        ? advancedSteps
-                        : contextKey === 'cost-analysis'
-                            ? costAnalysisSteps
-                            : contextKey === 'route-templates'
-                                ? routeTemplatesSteps
-                                : contextKey === 'settings'
-                                    ? settingsSteps
-                                    : dashboardSteps;
+                        : contextKey === 'project-editor'
+                            ? projectEditorSteps
+                            : contextKey === 'report-modal'
+                                ? reportModalSteps
+                                : contextKey === 'trips'
+                                    ? tripsSteps
+                                    : contextKey === 'projects'
+                                        ? projectsSteps
+                                        : contextKey === 'reports'
+                                            ? reportsSteps
+                                            : contextKey === 'calendar'
+                                                ? calendarSteps
+                                                : contextKey === 'advanced'
+                                                    ? advancedSteps
+                                                    : contextKey === 'cost-analysis'
+                                                        ? costAnalysisSteps
+                                                        : contextKey === 'route-templates'
+                                                            ? routeTemplatesSteps
+                                                            : contextKey === 'settings'
+                                                                ? settingsSteps
+                                                                : dashboardSteps;
             return selectedSteps.filter(step => document.querySelector(step.element));
         };
 

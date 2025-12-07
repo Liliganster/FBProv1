@@ -721,7 +721,7 @@ export const translations = {
 
     // Tutorial
     tutorial_welcome_title: 'Welcome to Fahrtenbuch Pro',
-    tutorial_welcome_desc: 'This quick guide will show you how to manage your trips and projects efficiently.',
+    tutorial_welcome_desc: 'This quick guide will show you how to manage your trips and projects efficiently. To disable this tutorial, go to Settings > Help.',
     tutorial_add_trip_title: 'Add Trip',
     tutorial_add_trip_desc: 'Use this button to manually log a new trip. You can also bulk import trips.',
     tutorial_projects_title: 'Project Management',
@@ -1653,7 +1653,7 @@ export const translations = {
 
     // Tutorial
     tutorial_welcome_title: 'Willkommen bei Fahrtenbuch Pro',
-    tutorial_welcome_desc: 'Diese Kurzanleitung zeigt Ihnen, wie Sie Ihre Fahrten und Projekte effizient verwalten.',
+    tutorial_welcome_desc: 'Diese Kurzanleitung zeigt Ihnen, wie Sie Ihre Fahrten und Projekte effizient verwalten. Um dieses Tutorial zu deaktivieren, gehen Sie zu Einstellungen > Hilfe.',
     tutorial_add_trip_title: 'Fahrt hinzufügen',
     tutorial_add_trip_desc: 'Nutzen Sie diesen Button, um eine neue Fahrt manuell zu erfassen. Sie können Fahrten auch massenhaft importieren.',
     tutorial_projects_title: 'Projektmanagement',
@@ -2586,7 +2586,7 @@ export const translations = {
 
     // Tutorial
     tutorial_welcome_title: 'Bienvenido a Fahrtenbuch Pro',
-    tutorial_welcome_desc: 'Esta guía rápida te mostrará cómo gestionar tus viajes y proyectos de forma eficiente.',
+    tutorial_welcome_desc: 'Esta guía rápida te mostrará cómo gestionar tus viajes y proyectos de forma eficiente. Para desactivar este tutorial, ve a Configuración > Ayuda.',
     tutorial_add_trip_title: 'Añadir Viaje',
     tutorial_add_trip_desc: 'Usa este botón para registrar un nuevo viaje manualmente. También puedes importar viajes masivamente.',
     tutorial_projects_title: 'Gestión de Proyectos',
