@@ -250,9 +250,15 @@ export const UserProfileProvider: React.FC<{ children: React.ReactNode }> = ({ c
       throw new Error('User not authenticated');
     }
 
-    const { hasSeenTutorial, isTutorialEnabled, ...otherUpdates } = updates;
+    const { hasSeenTutorial, isTutorialEnabled, id, plan, createdAt, updatedAt, ...otherUpdates } = updates;
     const hasTutorialUpdates = typeof hasSeenTutorial === 'boolean' || typeof isTutorialEnabled === 'boolean';
-    const hasOtherUpdates = Object.keys(otherUpdates).length > 0;
+    const sanitizedUpdates = { ...otherUpdates };
+    // Explicitly strip non-updatable fields to avoid rejecting updates
+    delete (sanitizedUpdates as any).plan;
+    delete (sanitizedUpdates as any).id;
+    delete (sanitizedUpdates as any).createdAt;
+    delete (sanitizedUpdates as any).updatedAt;
+    const hasOtherUpdates = Object.keys(sanitizedUpdates).length > 0;
 
     const mergeAndPersist = (profile: UserProfile) => {
       const mergedProfile = applyTutorialPrefs(profile, { hasSeenTutorial, isTutorialEnabled });
@@ -275,7 +281,7 @@ export const UserProfileProvider: React.FC<{ children: React.ReactNode }> = ({ c
 
     setLoading(true);
     try {
-      const updatedProfile = await databaseService.updateUserProfile(user.id, otherUpdates);
+      const updatedProfile = await databaseService.updateUserProfile(user.id, sanitizedUpdates);
       mergeAndPersist(updatedProfile);
       showToast('Profile updated successfully', 'success');
     } catch (err) {

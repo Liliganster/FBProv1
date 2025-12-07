@@ -134,13 +134,18 @@ const SettingsView: React.FC<{
         }));
     };
 
-    const handleSaveAllSettings = () => {
-        if (localProfile && user) {
+    const handleSaveAllSettings = async () => {
+        if (!localProfile || !user) return;
+        try {
             console.log('DEBUG: Saving profile updates:', localProfile);
-            setUserProfile(localProfile);
+            const { id, plan, createdAt, updatedAt, hasSeenTutorial, isTutorialEnabled, ...allowedUpdates } = localProfile;
+            await updateUserProfile(allowedUpdates);
             markAsSaved(); // Mark as saved after successful save
             showToast(t('settings_alert_saveSuccess'), 'success');
             onClose();
+        } catch (error) {
+            console.error('Failed to save profile:', error);
+            showToast(t('settings_alert_saveError') || 'No se pudo guardar tu perfil. Intenta de nuevo.', 'error');
         }
     };
 
