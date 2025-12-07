@@ -281,6 +281,15 @@ export const Tutorial: React.FC<TutorialProps> = ({ userProfile, currentView }) 
                 }
             },
             {
+                element: '#bulk-ai-drive-secondary',
+                popover: {
+                    title: tr('tutorial_bulk_ai_drive_title', 'Importar desde Drive'),
+                    description: tr('tutorial_bulk_ai_drive_desc', 'Abre Google Drive para elegir archivos ya almacenados. Ideal para callsheets o PDFs que ya tienes subidos.'),
+                    side: 'bottom',
+                    align: 'start'
+                }
+            },
+            {
                 element: '#bulk-ai-paste',
                 popover: {
                     title: tr('tutorial_bulk_ai_paste_title', 'Pega texto'),
@@ -296,6 +305,15 @@ export const Tutorial: React.FC<TutorialProps> = ({ userProfile, currentView }) 
                     description: tr('tutorial_bulk_ai_drop_desc', 'También puedes arrastrar archivos aquí para cargarlos rápidamente.'),
                     side: 'bottom',
                     align: 'start'
+                }
+            },
+            {
+                element: '#bulk-ai-process',
+                popover: {
+                    title: tr('tutorial_bulk_ai_process_title', 'Procesar con IA'),
+                    description: tr('tutorial_bulk_ai_process_desc', 'Lanza la extracción con IA. Usa modo directo para datos tabulares o agente para documentos complejos.'),
+                    side: 'top',
+                    align: 'end'
                 }
             },
             {
