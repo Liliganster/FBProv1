@@ -1,5 +1,6 @@
 import React from 'react';
 import useTranslation from '../hooks/useTranslation';
+import { CheckIcon } from './Icons';
 
 type Language = 'en' | 'de' | 'es';
 
@@ -18,14 +19,14 @@ const LanguageSwitcher: React.FC = () => {
         <button
           key={lang.code}
           onClick={() => setLanguage(lang.code)}
-          className={`w-full text-left px-4 py-3 rounded-lg transition-colors font-medium ${
-            language === lang.code
+          className={`w-full text-left px-4 py-3 rounded-lg transition-colors font-medium flex items-center justify-between ${language === lang.code
               ? 'bg-brand-primary text-white'
               : 'bg-background-dark hover:bg-gray-800/60'
-          }`}
+            }`}
           aria-label={`Switch to ${t(lang.nameKey)}`}
         >
-          {t(lang.nameKey)}
+          <span>{t(lang.nameKey)}</span>
+          {language === lang.code && <CheckIcon className="w-5 h-5" />}
         </button>
       ))}
     </div>
