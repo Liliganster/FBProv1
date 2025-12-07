@@ -298,13 +298,6 @@ export const Tutorial: React.FC<TutorialProps> = ({ userProfile, currentView }) 
             }
         ];
 
-        const isTripEditorOpen = Boolean(document.querySelector('#trip-editor-modal'));
-        const selectedSteps = isTripEditorOpen ? tripEditorSteps : currentView === 'trips' ? tripsSteps : dashboardSteps;
-        const resolvedSteps = selectedSteps.filter(step => document.querySelector(step.element));
-        if (resolvedSteps.length === 0) {
-            return;
-        }
-
         const destroyDriver = () => {
             if (driverObj.current) {
                 driverObj.current.destroy();
@@ -312,27 +305,48 @@ export const Tutorial: React.FC<TutorialProps> = ({ userProfile, currentView }) 
             }
         };
 
-        destroyDriver();
-        driverObj.current = driver({
-            showProgress: true,
-            animate: true,
-            allowClose: true,
-            allowKeyboardControl: false,
-            doneBtnText: t('tutorial_done') || 'Hecho',
-            nextBtnText: t('tutorial_next') || 'Siguiente',
-            prevBtnText: t('tutorial_prev') || 'Anterior',
-            steps: resolvedSteps,
-            onDestroyed: () => {
-                driverObj.current = null;
-            }
-        });
+        const resolveSteps = () => {
+            const isTripEditorOpen = Boolean(document.querySelector('#trip-editor-modal'));
+            const selectedSteps = isTripEditorOpen ? tripEditorSteps : currentView === 'trips' ? tripsSteps : dashboardSteps;
+            return selectedSteps.filter(step => document.querySelector(step.element));
+        };
 
-        const startTimer = setTimeout(() => {
-            driverObj.current?.drive();
-        }, 400);
+        const tryStart = () => {
+            if (driverObj.current) return;
+            const resolvedSteps = resolveSteps();
+            if (resolvedSteps.length === 0) return;
+
+            destroyDriver();
+            driverObj.current = driver({
+                showProgress: true,
+                animate: true,
+                allowClose: true,
+                allowKeyboardControl: false,
+                doneBtnText: t('tutorial_done') || 'Hecho',
+                nextBtnText: t('tutorial_next') || 'Siguiente',
+                prevBtnText: t('tutorial_prev') || 'Anterior',
+                steps: resolvedSteps,
+                onDestroyed: () => {
+                    driverObj.current = null;
+                }
+            });
+
+            setTimeout(() => {
+                driverObj.current?.drive();
+            }, 400);
+        };
+
+        // Intento inicial
+        tryStart();
+        // Reintento periódico para detectar apertura del modal
+        const intervalId = setInterval(() => {
+            if (!driverObj.current) {
+                tryStart();
+            }
+        }, 700);
 
         return () => {
-            clearTimeout(startTimer);
+            clearInterval(intervalId);
             destroyDriver();
         };
     }, [currentView, t, userProfile?.isTutorialEnabled, userProfile?.id]);
