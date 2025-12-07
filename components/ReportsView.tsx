@@ -5,6 +5,7 @@ import { Report, PersonalizationSettings } from '../types';
 import ReportDetailView from './ReportDetailView';
 import GenerateReportModal from './GenerateReportModal';
 import { PlusIcon, TrashIcon, FileTextIcon } from './Icons';
+import { Button } from './Button';
 import useTranslation from '../hooks/useTranslation';
 import { useMobile } from '../hooks/useMediaQuery';
 import { formatDateForDisplay } from '../i18n/translations';
@@ -96,14 +97,15 @@ const ReportsView: React.FC<ReportsViewProps> = ({ personalization, theme }) => 
                 <h1 id="reports-title" className="text-[28px] font-bold bg-gradient-title bg-clip-text text-transparent">{t('reports_title')}</h1>
                 {userProfile && <h2 className="text-base font-semibold text-brand-primary">{userProfile.name}</h2>}
             </div>
-            <button 
+            <Button 
               id="reports-generate-btn"
+              variant="primary"
               onClick={() => setIsGeneratorOpen(true)} 
-              className="flex items-center bg-brand-primary hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition-colors"
+              className="h-[38px]"
             >
               <PlusIcon className="w-5 h-5 mr-2" />
               {t('reports_generateNew')}
-            </button>
+            </Button>
           </>
         )}
       </div>
