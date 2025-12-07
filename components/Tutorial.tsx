@@ -137,7 +137,7 @@ export const Tutorial: React.FC<TutorialProps> = ({ userProfile, currentView }) 
                 element: '#trip-editor-special-origin',
                 popover: {
                     title: tr('tutorial_trip_editor_special_title', 'Origen especial'),
-                    description: tr('tutorial_trip_editor_special_desc', 'Marca si el viaje continúa o finaliza una serie (continuación/fin de continuación). Esto bloquea/ajusta origen y destino según corresponda.'),
+                    description: tr('tutorial_trip_editor_special_desc', 'Usa “Continuación” si este viaje sigue al anterior sin volver a base; usa “Fin de continuación” para cerrar la serie y fijar el destino como retorno. Esto bloquea/ajusta origen y destino según corresponda.'),
                     side: 'bottom',
                     align: 'start'
                 }
