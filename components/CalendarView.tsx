@@ -5,6 +5,7 @@ import useGoogleCalendar from '../hooks/useGoogleCalendar';
 import useTranslation from '../hooks/useTranslation';
 import useUserProfile from '../hooks/useUserProfile';
 import { LoaderIcon, UsersIcon, SettingsIcon, ChevronLeftIcon, ChevronRightIcon, RefreshIcon } from './Icons';
+import { Button } from './Button';
 import EventActionModal from './EventActionModal';
 import { PersonalizationSettings } from '../types';
 
@@ -199,9 +200,15 @@ const CalendarView: React.FC<CalendarViewProps> = ({ setCurrentView, personaliza
               </button>
             )}
             {!isSignedIn && (
-              <button id="calendar-connect" onClick={signIn} disabled={!isInitialized} className="bg-brand-primary hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg disabled:opacity-50">
-                  {t('calendar_connect_btn')}
-              </button>
+              <Button
+                id="calendar-connect"
+                onClick={signIn}
+                disabled={!isInitialized}
+                variant="primary"
+                className="h-[38px]"
+              >
+                {t('calendar_connect_btn')}
+              </Button>
             )}
           </div>
         </div>
