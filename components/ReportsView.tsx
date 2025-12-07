@@ -77,8 +77,8 @@ const ReportsView: React.FC<ReportsViewProps> = ({ personalization, theme }) => 
   }
   
   return (
-    <div className="text-on-surface-dark">
-      <div className="flex justify-between items-center mb-8">
+    <div className="text-on-surface-dark" id="reports-view">
+      <div className="flex justify-between items-center mb-8" id="reports-header">
         {selectedReportIds.length > 0 ? (
           <div className="flex items-center gap-4 w-full">
             <h2 className="text-base font-semibold text-white">{t('reports_selected_count', { count: selectedReportIds.length })}</h2>
@@ -93,10 +93,11 @@ const ReportsView: React.FC<ReportsViewProps> = ({ personalization, theme }) => 
         ) : (
           <>
             <div>
-                <h1 className="text-[28px] font-bold bg-gradient-title bg-clip-text text-transparent">{t('reports_title')}</h1>
+                <h1 id="reports-title" className="text-[28px] font-bold bg-gradient-title bg-clip-text text-transparent">{t('reports_title')}</h1>
                 {userProfile && <h2 className="text-base font-semibold text-brand-primary">{userProfile.name}</h2>}
             </div>
             <button 
+              id="reports-generate-btn"
               onClick={() => setIsGeneratorOpen(true)} 
               className="flex items-center bg-brand-primary hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition-colors"
             >
@@ -193,11 +194,11 @@ const ReportsView: React.FC<ReportsViewProps> = ({ personalization, theme }) => 
         </div>
       ) : (
         // Vista desktop con tabla
-        <div style={contentStyle} className="bg-frost-glass rounded-lg shadow-lg overflow-hidden">
-          <table className="w-full text-left">
+        <div style={contentStyle} className="bg-frost-glass rounded-lg shadow-lg overflow-hidden" id="reports-table-wrapper">
+          <table id="reports-table" className="w-full text-left">
             <thead className="bg-gray-700/50">
               <tr>
-                <th className="p-4 w-12">
+                <th id="reports-col-select" className="p-4 w-12">
                   <input
                     type="checkbox"
                     checked={isAllSelected}
@@ -206,10 +207,10 @@ const ReportsView: React.FC<ReportsViewProps> = ({ personalization, theme }) => 
                     className="bg-background-dark border-gray-600 rounded text-brand-primary focus:ring-brand-primary focus:ring-2 h-5 w-5"
                   />
                 </th>
-                <th className="p-4 text-[11px] font-semibold text-on-surface-dark-secondary uppercase tracking-wider">{t('reports_col_generated')}</th>
-                <th className="p-4 text-[11px] font-semibold text-on-surface-dark-secondary uppercase tracking-wider">{t('reports_col_period')}</th>
-                <th className="p-4 text-[11px] font-semibold text-on-surface-dark-secondary uppercase tracking-wider">{t('reports_col_project')}</th>
-                <th className="p-4 text-[11px] font-semibold text-on-surface-dark-secondary uppercase tracking-wider text-right">{t('reports_col_actions')}</th>
+                <th id="reports-col-generated" className="p-4 text-[11px] font-semibold text-on-surface-dark-secondary uppercase tracking-wider">{t('reports_col_generated')}</th>
+                <th id="reports-col-period" className="p-4 text-[11px] font-semibold text-on-surface-dark-secondary uppercase tracking-wider">{t('reports_col_period')}</th>
+                <th id="reports-col-project" className="p-4 text-[11px] font-semibold text-on-surface-dark-secondary uppercase tracking-wider">{t('reports_col_project')}</th>
+                <th id="reports-col-actions" className="p-4 text-[11px] font-semibold text-on-surface-dark-secondary uppercase tracking-wider text-right">{t('reports_col_actions')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-700/50">

@@ -651,6 +651,72 @@ export const Tutorial: React.FC<TutorialProps> = ({ userProfile, currentView }) 
             }
         ];
 
+        const reportsSteps: Array<{ element: string; popover: any }> = [
+            {
+                element: '#reports-title',
+                popover: {
+                    title: tr('tutorial_reports_intro_title', 'Vista de informes'),
+                    description: tr('tutorial_reports_intro_desc', 'Genera y revisa informes de viajes por proyecto y periodo.'),
+                    side: 'bottom',
+                    align: 'start'
+                }
+            },
+            {
+                element: '#reports-generate-btn',
+                popover: {
+                    title: tr('tutorial_reports_generate_title', 'Crear informe'),
+                    description: tr('tutorial_reports_generate_desc', 'Abre el generador para seleccionar rango de fechas y proyecto a exportar.'),
+                    side: 'bottom',
+                    align: 'start'
+                }
+            },
+            {
+                element: '#reports-table',
+                popover: {
+                    title: tr('tutorial_reports_table_title', 'Tabla de informes'),
+                    description: tr('tutorial_reports_table_desc', 'Listado de informes generados con fecha, periodo y proyecto. Selecciona filas para eliminar en lote.'),
+                    side: 'top',
+                    align: 'start'
+                }
+            },
+            {
+                element: '#reports-col-generated',
+                popover: {
+                    title: tr('tutorial_reports_generated_title', 'Fecha de generación'),
+                    description: tr('tutorial_reports_generated_desc', 'Cuándo se generó el informe. Útil para auditoría.'),
+                    side: 'bottom',
+                    align: 'start'
+                }
+            },
+            {
+                element: '#reports-col-period',
+                popover: {
+                    title: tr('tutorial_reports_period_title', 'Periodo'),
+                    description: tr('tutorial_reports_period_desc', 'Rango de fechas incluido en el informe.'),
+                    side: 'bottom',
+                    align: 'start'
+                }
+            },
+            {
+                element: '#reports-col-project',
+                popover: {
+                    title: tr('tutorial_reports_project_title', 'Proyecto'),
+                    description: tr('tutorial_reports_project_desc', 'Proyecto al que pertenece el informe.'),
+                    side: 'bottom',
+                    align: 'start'
+                }
+            },
+            {
+                element: '#reports-col-actions',
+                popover: {
+                    title: tr('tutorial_reports_actions_title', 'Acciones'),
+                    description: tr('tutorial_reports_actions_desc', 'Ver detalles del informe o eliminarlo si ya no lo necesitas.'),
+                    side: 'left',
+                    align: 'start'
+                }
+            }
+        ];
+
         const destroyDriver = () => {
             if (driverObj.current) {
                 driverObj.current.destroy();
@@ -679,13 +745,15 @@ export const Tutorial: React.FC<TutorialProps> = ({ userProfile, currentView }) 
                     ? bulkSteps
                     : contextKey === 'trip-editor'
                         ? tripEditorSteps
-                        : contextKey === 'project-editor'
-                            ? projectEditorSteps
-                            : contextKey === 'trips'
-                                ? tripsSteps
-                                : contextKey === 'projects'
-                                    ? projectsSteps
-                                    : dashboardSteps;
+                    : contextKey === 'project-editor'
+                        ? projectEditorSteps
+                    : contextKey === 'trips'
+                        ? tripsSteps
+                        : contextKey === 'projects'
+                            ? projectsSteps
+                            : contextKey === 'reports'
+                                ? reportsSteps
+                                : dashboardSteps;
             return selectedSteps.filter(step => document.querySelector(step.element));
         };
 
