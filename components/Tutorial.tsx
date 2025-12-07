@@ -669,6 +669,54 @@ export const Tutorial: React.FC<TutorialProps> = ({ userProfile, currentView }) 
             }
         ];
 
+        const calendarSteps: Array<{ element: string; popover: any }> = [
+            {
+                element: '#calendar-title',
+                popover: {
+                    title: tr('tutorial_calendar_intro_title', 'Calendario de eventos'),
+                    description: tr('tutorial_calendar_intro_desc', 'Conecta Google Calendar y visualiza tus eventos del mes.'),
+                    side: 'bottom',
+                    align: 'start'
+                }
+            },
+            {
+                element: '#calendar-connect',
+                popover: {
+                    title: tr('tutorial_calendar_connect_title', 'Conectar calendario'),
+                    description: tr('tutorial_calendar_connect_desc', 'Inicia sesión para sincronizar tus calendarios y ver eventos.'),
+                    side: 'bottom',
+                    align: 'start'
+                }
+            },
+            {
+                element: '#calendar-refresh',
+                popover: {
+                    title: tr('tutorial_calendar_refresh_title', 'Refrescar calendarios'),
+                    description: tr('tutorial_calendar_refresh_desc', 'Actualiza la lista de calendarios y eventos desde Google.'),
+                    side: 'bottom',
+                    align: 'start'
+                }
+            },
+            {
+                element: '#calendar-current-month',
+                popover: {
+                    title: tr('tutorial_calendar_month_title', 'Mes actual'),
+                    description: tr('tutorial_calendar_month_desc', 'Navega entre meses con las flechas para revisar eventos pasados o futuros.'),
+                    side: 'bottom',
+                    align: 'start'
+                }
+            },
+            {
+                element: '#calendar-grid',
+                popover: {
+                    title: tr('tutorial_calendar_grid_title', 'Vista mensual'),
+                    description: tr('tutorial_calendar_grid_desc', 'Cada celda muestra los eventos del día. Haz clic para ver detalles en el modal.'),
+                    side: 'top',
+                    align: 'start'
+                }
+            }
+        ];
+
         const projectEditorSteps: Array<{ element: string; popover: any }> = [
             {
                 element: '#project-editor-title',
@@ -813,8 +861,8 @@ export const Tutorial: React.FC<TutorialProps> = ({ userProfile, currentView }) 
                     ? bulkSteps
                     : contextKey === 'trip-editor'
                         ? tripEditorSteps
-                    : contextKey === 'project-editor'
-                        ? projectEditorSteps
+                        : contextKey === 'project-editor'
+                            ? projectEditorSteps
                         : contextKey === 'report-modal'
                             ? reportModalSteps
                         : contextKey === 'trips'
@@ -822,8 +870,10 @@ export const Tutorial: React.FC<TutorialProps> = ({ userProfile, currentView }) 
                             : contextKey === 'projects'
                                 ? projectsSteps
                                 : contextKey === 'reports'
-                                ? reportsSteps
-                                : dashboardSteps;
+                                    ? reportsSteps
+                                    : contextKey === 'calendar'
+                                        ? calendarSteps
+                                        : dashboardSteps;
             return selectedSteps.filter(step => document.querySelector(step.element));
         };
 

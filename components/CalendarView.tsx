@@ -156,9 +156,9 @@ const CalendarView: React.FC<CalendarViewProps> = ({ setCurrentView, personaliza
     );
   }
   return (
-    <div className="flex h-full -m-8 text-on-surface-dark">
-      <div style={contentStyle} className="w-64 p-4 border-r border-gray-700/50 flex flex-col">
-        <h2 className="text-xl font-semibold mb-4">{t('calendar_calendars_title')}</h2>
+    <div className="flex h-full -m-8 text-on-surface-dark" id="calendar-view">
+      <div style={contentStyle} className="w-64 p-4 border-r border-gray-700/50 flex flex-col" id="calendar-sidebar">
+        <h2 id="calendar-title" className="text-xl font-semibold mb-4">{t('calendar_calendars_title')}</h2>
         <ul className="space-y-2 overflow-y-auto">
           {calendars.map(cal => (
             <li key={cal.id}>
@@ -173,18 +173,19 @@ const CalendarView: React.FC<CalendarViewProps> = ({ setCurrentView, personaliza
             {isSignedIn && <button onClick={signOut} className="w-full text-center bg-red-600/20 text-red-300 hover:bg-red-600/40 font-semibold py-2 px-4 rounded-lg">{t('calendar_sign_out_btn')}</button>}
         </div>
       </div>
-      <div className="flex-1 p-6 flex flex-col">
-        <div className="flex justify-between items-center mb-4">
+      <div className="flex-1 p-6 flex flex-col" id="calendar-main">
+        <div className="flex justify-between items-center mb-4" id="calendar-header">
           <div className="flex items-center gap-2">
-            <button onClick={() => changeMonth(-1)} className="p-2 rounded-full hover:bg-surface-dark"><ChevronLeftIcon className="w-6 h-6"/></button>
-            <button onClick={() => changeMonth(1)} className="p-2 rounded-full hover:bg-surface-dark"><ChevronRightIcon className="w-6 h-6"/></button>
-            <h1 className="text-2xl font-bold ml-2 bg-gradient-title bg-clip-text text-transparent">
+            <button id="calendar-prev" onClick={() => changeMonth(-1)} className="p-2 rounded-full hover:bg-surface-dark"><ChevronLeftIcon className="w-6 h-6"/></button>
+            <button id="calendar-next" onClick={() => changeMonth(1)} className="p-2 rounded-full hover:bg-surface-dark"><ChevronRightIcon className="w-6 h-6"/></button>
+            <h1 id="calendar-current-month" className="text-2xl font-bold ml-2 bg-gradient-title bg-clip-text text-transparent">
               {currentDate.toLocaleDateString(language, { month: 'long', year: 'numeric' })}
             </h1>
           </div>
           <div className="flex items-center gap-2">
             {isSignedIn && (
               <button
+                id="calendar-refresh"
                 onClick={async () => {
                   setIsRefreshing(true);
                   await refreshCalendars();
@@ -198,7 +199,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ setCurrentView, personaliza
               </button>
             )}
             {!isSignedIn && (
-              <button onClick={signIn} disabled={!isInitialized} className="bg-brand-primary hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg disabled:opacity-50">
+              <button id="calendar-connect" onClick={signIn} disabled={!isInitialized} className="bg-brand-primary hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg disabled:opacity-50">
                   {t('calendar_connect_btn')}
               </button>
             )}
@@ -209,7 +210,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ setCurrentView, personaliza
         ) : loadingEvents ? (
             <div className="flex-1 flex items-center justify-center"><LoaderIcon className="w-8 h-8 animate-spin"/></div>
         ) : (
-          <div className="grid grid-cols-7 grid-rows-6 gap-1 flex-1">
+          <div className="grid grid-cols-7 grid-rows-6 gap-1 flex-1" id="calendar-grid">
             {weekdays.map(day => <div key={day} className="text-center font-bold text-on-surface-dark-secondary text-sm">{day}</div>)}
             {Array.from({ length: firstDayOfMonth }).map((_, i) => <div key={`empty-${i}`} className="border border-transparent"></div>)}
             {daysInMonth.map(day => {
