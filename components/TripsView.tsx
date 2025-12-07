@@ -337,7 +337,7 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
                   ))}
                 </select>
               </div>
-              <Button id="trips-bulk-upload-btn" variant="success" onClick={() => setIsBulkModalOpen(true)} className="h-[38px]">
+              <Button id="trips-bulk-upload-btn" variant="success" onClick={() => setIsBulkModalOpen(true)} className="h-[38px] border border-white/10">
                 <UploadCloudIcon className="w-5 h-5 mr-2" />
                 {t('trips_bulkUpload')}
               </Button>
