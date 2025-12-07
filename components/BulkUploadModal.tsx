@@ -657,15 +657,15 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
   } : {};
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center p-4 pt-16 bg-black/60 backdrop-blur-sm" onClick={onClose}>
+    <div id="bulk-modal" className="fixed inset-0 z-50 flex items-start justify-center p-4 pt-16 bg-black/60 backdrop-blur-sm" onClick={onClose}>
       <div style={modalStyle} className="bg-frost-glass border border-gray-700/60 rounded-lg shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden animate-fadeIn" onClick={(e) => e.stopPropagation()}>
         <header className="px-6 py-4 border-b border-gray-700/70 flex items-center justify-between gap-4 bg-background-dark/70 backdrop-blur-sm">
-          <h2 className="text-lg font-semibold tracking-tight text-white">{t('bulk_title')}</h2>
-          <div className="flex items-center gap-2 bg-background-dark/60 p-1 rounded-md border border-gray-700/60">
+          <h2 id="bulk-modal-title" className="text-lg font-semibold tracking-tight text-white">{t('bulk_title')}</h2>
+          <div id="bulk-mode-toggle" className="flex items-center gap-2 bg-background-dark/60 p-1 rounded-md border border-gray-700/60">
             <ModeButton type="csv" label={t('bulk_mode_csv')} icon={<FileCsvIcon className="w-4 h-4" />} />
             <ModeButton type="ai" label="AI Extraction" icon={<SparklesIcon className="w-4 h-4" />} />
           </div>
-          <Button variant="icon" onClick={onClose} className="text-on-surface-dark-secondary hover:text-white">
+          <Button id="bulk-modal-close" variant="icon" onClick={onClose} className="text-on-surface-dark-secondary hover:text-white">
             <XIcon className="w-5 h-5" />
           </Button>
         </header>
@@ -673,9 +673,9 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
         {stage === 'upload' ? (
           <main className="px-6 py-6 overflow-y-auto space-y-6">
             {mode === 'csv' && (
-              <div className="space-y-6">
+              <div className="space-y-6" id="bulk-csv-section">
                 <div className="bg-background-dark/60 p-4 rounded-md border border-gray-700/60">
-                  <h3 className="font-semibold text-sm uppercase tracking-wide mb-3 text-white/90">{t('bulk_csv_instructions_title')}</h3>
+                  <h3 id="bulk-csv-instructions" className="font-semibold text-sm uppercase tracking-wide mb-3 text-white/90">{t('bulk_csv_instructions_title')}</h3>
                   <ul className="space-y-2 list-disc list-inside text-xs text-on-surface-dark-secondary leading-relaxed">
                     <li>{t('bulk_csv_instructions_p1')}</li>
                     <li>{t('bulk_csv_instructions_p2')}</li>
@@ -683,11 +683,11 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
                   </ul>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <label htmlFor="csv-upload" className="bg-brand-primary hover:brightness-110 text-white font-medium text-sm py-2.5 px-4 rounded-md cursor-pointer inline-flex items-center justify-center gap-2 transition-colors shadow-sm">
+                  <label id="bulk-csv-file" htmlFor="csv-upload" className="bg-brand-primary hover:brightness-110 text-white font-medium text-sm py-2.5 px-4 rounded-md cursor-pointer inline-flex items-center justify-center gap-2 transition-colors shadow-sm">
                     <UploadCloudIcon className="w-5 h-5" /> {t('bulk_csv_upload_selectBtn')}
                     <input type="file" accept=".csv,text/csv" onChange={handleCsvFileSelected} id="csv-upload" className="hidden" />
                   </label>
-                  <Button onClick={handleDriveImport} disabled={isProcessing} variant="secondary" className="inline-flex items-center justify-center gap-2">
+                  <Button id="bulk-drive-btn" onClick={handleDriveImport} disabled={isProcessing} variant="secondary" className="inline-flex items-center justify-center gap-2">
                     {isProcessing ? <LoaderIcon className="w-5 h-5 animate-spin" /> : <DriveIcon className="w-5 h-5 text-[#0F9D58]" />} {t('bulk_drive_upload_selectBtn')}
                   </Button>
                 </div>
@@ -696,18 +696,18 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
                   <span className="mx-4 text-on-surface-dark-secondary">{t('bulk_upload_or')}</span>
                   <hr className="flex-grow border-gray-600" />
                 </div>
-                <div>
+                <div id="bulk-csv-paste">
                   <label htmlFor="csv-paste-area" className="block text-xs font-medium uppercase tracking-wide text-on-surface-dark-secondary mb-2">{t('bulk_csv_paste_label')}</label>
                   <textarea id="csv-paste-area" rows={8} className="w-full bg-background-dark border border-gray-600/70 rounded-md p-3 font-mono text-xs focus:outline-none focus:ring-2 focus:ring-brand-primary resize-y min-h-[140px]" placeholder={t('bulk_csv_paste_placeholder')} value={csvPastedText} onChange={(e) => setCsvPastedText(e.target.value)} />
-                  <Button onClick={handleProcessPastedCsv} disabled={!csvPastedText.trim()} variant="secondary" className="mt-2 w-full">
+                  <Button id="bulk-csv-process" onClick={handleProcessPastedCsv} disabled={!csvPastedText.trim()} variant="secondary" className="mt-2 w-full">
                     {t('bulk_csv_processPastedBtn')}
                   </Button>
                 </div>
               </div>
             )}
             {mode === 'ai' && (
-              <div className="space-y-4">
-                <div>
+              <div className="space-y-4" id="bulk-ai-section">
+                <div id="bulk-ai-doc-type">
                   <label className="block text-xs font-medium uppercase tracking-wide text-on-surface-dark-secondary mb-2">{t('bulk_document_type_label')}</label>
                   <div className="flex gap-1 rounded-md bg-background-dark/60 p-1 border border-gray-700/60">
                     <Button
@@ -734,7 +734,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
                     </Button>
                   </div>
                 </div>
-                <div>
+                <div id="bulk-ai-mode">
                   <label className="block text-xs font-medium uppercase tracking-wide text-on-surface-dark-secondary mb-2">{t('bulk_extraction_mode_label')}</label>
                   <div className="flex gap-2">
                     <Button
@@ -775,7 +775,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
                   <p className="mt-1 text-[10px] text-on-surface-dark-secondary">{t('bulk_extraction_mode_selected', { mode: aiExtractMode === 'direct' ? t('bulk_extraction_mode_direct') : t('bulk_extraction_mode_agent') })}</p>
                 </div>
                 {documentType === DocumentType.EMAIL && (
-                  <div>
+                  <div id="bulk-ai-paste">
                     <label className="block text-xs font-medium uppercase tracking-wide text-on-surface-dark-secondary mb-2">{t('bulk_ai_paste_label')}</label>
                     <textarea
                       rows={8}
@@ -786,13 +786,13 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
                     />
                   </div>
                 )}
-                <div onDragOver={handleDragOver} onDrop={handleDrop} className="border-2 border-dashed border-gray-600 rounded-lg p-8 text-center cursor-pointer hover:border-brand-primary transition-colors" onClick={() => document.getElementById('ai-upload')?.click()}>
+                <div id="bulk-ai-drop" onDragOver={handleDragOver} onDrop={handleDrop} className="border-2 border-dashed border-gray-600 rounded-lg p-8 text-center cursor-pointer hover:border-brand-primary transition-colors" onClick={() => document.getElementById('ai-upload')?.click()}>
                   <UploadCloudIcon className="w-12 h-12 mx-auto text-gray-500 mb-2" />
                   <h3 className="font-semibold text-lg text-white">{t('bulk_ai_drag_drop_title')}</h3>
                   <p className="text-on-surface-dark-secondary text-sm">{t('bulk_ai_drag_drop_subtitle')}</p>
                   <input type="file" multiple accept="image/*,application/pdf,.txt,.eml,message/rfc822" onChange={handleAiFileSelected} id="ai-upload" className="hidden" />
                 </div>
-                <Button onClick={handleDriveImport} disabled={isProcessing} variant="secondary" className="w-full inline-flex items-center justify-center gap-2">
+                <Button id="bulk-ai-drive-secondary" onClick={handleDriveImport} disabled={isProcessing} variant="secondary" className="w-full inline-flex items-center justify-center gap-2">
                   {isProcessing ? <LoaderIcon className="w-5 h-5 animate-spin" /> : <DriveIcon className="w-5 h-5 text-[#0F9D58]" />} {t('bulk_drive_upload_selectBtn')}
                 </Button>
                 {aiFiles.length > 0 && (
@@ -812,11 +812,11 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
             )}
           </main>
         ) : ( // Review Stage
-          <main className="px-6 py-6 overflow-y-auto">
-            <h3 className="font-semibold text-lg mb-4">{t('bulk_review_title', { count: draftTrips.length })}</h3>
+          <main id="bulk-review-stage" className="px-6 py-6 overflow-y-auto">
+            <h3 id="bulk-review-title" className="font-semibold text-lg mb-4">{t('bulk_review_title', { count: draftTrips.length })}</h3>
             <div className="space-y-4">
               {draftTrips.map((draft, index) => (
-                <div key={index} className="bg-background-dark p-4 rounded-lg grid grid-cols-1 sm:grid-cols-2 md:grid-cols-12 gap-4 relative items-center">
+                <div key={index} id={index === 0 ? 'bulk-review-row' : undefined} className="bg-background-dark p-4 rounded-lg grid grid-cols-1 sm:grid-cols-2 md:grid-cols-12 gap-4 relative items-center">
                   {draft.warnings && draft.warnings.length > 0 && (
                     <div className="absolute -left-3 top-1/2 -translate-y-1/2" title={draft.warnings.join('\n')}>
                       <WarningIcon className="w-6 h-6 text-yellow-400" />
@@ -827,23 +827,23 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
                   <div className="bg-surface-dark p-2 rounded md:col-span-5 truncate" title={draft.locations.join(' → ')}>
                     {draft.locations.join(' → ')}
                   </div>
-                  <select value={draft.projectId} onChange={e => handleUpdateDraft(index, { ...draft, projectId: e.target.value })} className="bg-surface-dark p-2 rounded md:col-span-3">
+                  <select id={index === 0 ? 'bulk-review-project' : undefined} value={draft.projectId} onChange={e => handleUpdateDraft(index, { ...draft, projectId: e.target.value })} className="bg-surface-dark p-2 rounded md:col-span-3">
                     <option value="" disabled>{t('bulk_review_projectPlaceholder')}</option>
                     {allProjectOptions.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                   </select>
-                  <input type="number" min="0.01" step="0.1" value={draft.distance} placeholder={t('bulk_review_distancePlaceholder')} onChange={e => handleUpdateDraft(index, { ...draft, distance: parseFloat(e.target.value) || 0 })} className="bg-surface-dark p-2 rounded md:col-span-2" />
+                  <input id={index === 0 ? 'bulk-review-distance' : undefined} type="number" min="0.01" step="0.1" value={draft.distance} placeholder={t('bulk_review_distancePlaceholder')} onChange={e => handleUpdateDraft(index, { ...draft, distance: parseFloat(e.target.value) || 0 })} className="bg-surface-dark p-2 rounded md:col-span-2" />
                 </div>
               ))}
             </div>
           </main>
         )}
 
-        <footer className="px-6 py-4 border-t border-gray-700/70 bg-background-dark/70 backdrop-blur-sm flex justify-end gap-3">
+        <footer id="bulk-footer" className="px-6 py-4 border-t border-gray-700/70 bg-background-dark/70 backdrop-blur-sm flex justify-end gap-3">
           {stage === 'upload' ? (
             <>
-              <Button onClick={onClose} variant="secondary" className="mr-3">{t('common_cancel')}</Button>
+              <Button id="bulk-cancel" onClick={onClose} variant="secondary" className="mr-3">{t('common_cancel')}</Button>
               {mode === 'ai' && (
-                <Button onClick={handleProcessAi} disabled={isProcessing || (aiFiles.length === 0 && aiText.trim().length === 0)} variant="primary" className="flex items-center justify-center w-auto min-w-60">
+                <Button id="bulk-ai-process" onClick={handleProcessAi} disabled={isProcessing || (aiFiles.length === 0 && aiText.trim().length === 0)} variant="primary" className="flex items-center justify-center w-auto min-w-60">
                   {isProcessing ? (
                     <><LoaderIcon className="w-5 h-5 mr-2 animate-spin" /> {t('bulk_ai_processing', { mode: aiExtractMode === 'direct' ? t('bulk_extraction_mode_direct') : t('bulk_extraction_mode_agent') })}</>
                   ) : mapsLoading ? (
@@ -858,8 +858,8 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
             </>
           ) : ( // Review Stage
             <>
-              <Button onClick={() => setStage('upload')} variant="secondary" className="mr-3">{t('common_back')}</Button>
-              <Button onClick={handleConfirmSave} variant="primary" className="flex items-center justify-center">
+              <Button id="bulk-review-back" onClick={() => setStage('upload')} variant="secondary" className="mr-3">{t('common_back')}</Button>
+              <Button id="bulk-review-save" onClick={handleConfirmSave} variant="primary" className="flex items-center justify-center">
                 <CheckIcon className="w-5 h-5 mr-2" /> {t('bulk_review_saveBtn', { count: draftTrips.length })}
               </Button>
             </>

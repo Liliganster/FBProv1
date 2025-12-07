@@ -198,6 +198,153 @@ export const Tutorial: React.FC<TutorialProps> = ({ userProfile, currentView }) 
             }
         ];
 
+        const bulkSteps: Array<{ element: string; popover: any }> = [
+            {
+                element: '#bulk-modal-title',
+                popover: {
+                    title: tr('tutorial_bulk_intro_title', 'Carga masiva de viajes'),
+                    description: tr('tutorial_bulk_intro_desc', 'Importa viajes desde CSV o usando IA. Sigue estos pasos para preparar y revisar.'),
+                    side: 'bottom',
+                    align: 'start'
+                }
+            },
+            {
+                element: '#bulk-mode-toggle',
+                popover: {
+                    title: tr('tutorial_bulk_mode_title', 'Elige modo'),
+                    description: tr('tutorial_bulk_mode_desc', 'CSV para archivos tabulares; IA para extraer desde PDFs/imágenes/correos.'),
+                    side: 'bottom',
+                    align: 'start'
+                }
+            },
+            {
+                element: '#bulk-csv-section',
+                popover: {
+                    title: tr('tutorial_bulk_csv_title', 'Cargar CSV'),
+                    description: tr('tutorial_bulk_csv_desc', 'Sigue el formato sugerido. Puedes subir archivo, pegar texto o usar Drive.'),
+                    side: 'bottom',
+                    align: 'start'
+                }
+            },
+            {
+                element: '#bulk-csv-file',
+                popover: {
+                    title: tr('tutorial_bulk_csv_file_title', 'Sube el archivo'),
+                    description: tr('tutorial_bulk_csv_file_desc', 'Selecciona tu CSV con columnas de fecha, proyecto, origen, destino y km.'),
+                    side: 'bottom',
+                    align: 'start'
+                }
+            },
+            {
+                element: '#bulk-csv-paste',
+                popover: {
+                    title: tr('tutorial_bulk_csv_paste_title', 'Pegar datos'),
+                    description: tr('tutorial_bulk_csv_paste_desc', 'Pega filas directamente y procesa si no tienes el archivo a mano.'),
+                    side: 'bottom',
+                    align: 'start'
+                }
+            },
+            {
+                element: '#bulk-ai-section',
+                popover: {
+                    title: tr('tutorial_bulk_ai_title', 'Extracción con IA'),
+                    description: tr('tutorial_bulk_ai_desc', 'Sube PDFs/imágenes o texto; la IA extrae viajes y los prepara para revisión.'),
+                    side: 'bottom',
+                    align: 'start'
+                }
+            },
+            {
+                element: '#bulk-ai-doc-type',
+                popover: {
+                    title: tr('tutorial_bulk_ai_doc_title', 'Tipo de documento'),
+                    description: tr('tutorial_bulk_ai_doc_desc', 'Selecciona callsheet o email para mejorar la extracción y mapeo.'),
+                    side: 'bottom',
+                    align: 'start'
+                }
+            },
+            {
+                element: '#bulk-ai-mode',
+                popover: {
+                    title: tr('tutorial_bulk_ai_mode_title', 'Modo de extracción'),
+                    description: tr('tutorial_bulk_ai_mode_desc', 'Directo: rápido y estructurado. Agente: más contextual, útil para documentos complejos.'),
+                    side: 'bottom',
+                    align: 'start'
+                }
+            },
+            {
+                element: '#bulk-ai-files',
+                popover: {
+                    title: tr('tutorial_bulk_ai_files_title', 'Sube archivos'),
+                    description: tr('tutorial_bulk_ai_files_desc', 'Adjunta tus PDFs, imágenes o textos; también puedes elegir desde Drive.'),
+                    side: 'bottom',
+                    align: 'start'
+                }
+            },
+            {
+                element: '#bulk-ai-paste',
+                popover: {
+                    title: tr('tutorial_bulk_ai_paste_title', 'Pega texto'),
+                    description: tr('tutorial_bulk_ai_paste_desc', 'Pega el contenido de un correo o texto plano para extraer viajes.'),
+                    side: 'bottom',
+                    align: 'start'
+                }
+            },
+            {
+                element: '#bulk-ai-drop',
+                popover: {
+                    title: tr('tutorial_bulk_ai_drop_title', 'Arrastra y suelta'),
+                    description: tr('tutorial_bulk_ai_drop_desc', 'También puedes arrastrar archivos aquí para cargarlos rápidamente.'),
+                    side: 'bottom',
+                    align: 'start'
+                }
+            },
+            {
+                element: '#bulk-review-title',
+                popover: {
+                    title: tr('tutorial_bulk_review_title', 'Revisión de viajes'),
+                    description: tr('tutorial_bulk_review_desc', 'Ajusta proyecto, distancia u otros datos antes de guardar definitivamente.'),
+                    side: 'bottom',
+                    align: 'start'
+                }
+            },
+            {
+                element: '#bulk-review-row',
+                popover: {
+                    title: tr('tutorial_bulk_review_row_title', 'Editar filas'),
+                    description: tr('tutorial_bulk_review_row_desc', 'Edita fecha, ruta y proyecto en cada fila detectada. Usa la X para descartar una entrada.'),
+                    side: 'bottom',
+                    align: 'start'
+                }
+            },
+            {
+                element: '#bulk-review-project',
+                popover: {
+                    title: tr('tutorial_bulk_review_project_title', 'Asignar proyecto'),
+                    description: tr('tutorial_bulk_review_project_desc', 'Selecciona el proyecto correcto para cada viaje importado.'),
+                    side: 'bottom',
+                    align: 'start'
+                }
+            },
+            {
+                element: '#bulk-review-distance',
+                popover: {
+                    title: tr('tutorial_bulk_review_distance_title', 'Validar distancia'),
+                    description: tr('tutorial_bulk_review_distance_desc', 'Ajusta los kilómetros antes de guardar si la extracción no fue exacta.'),
+                    side: 'bottom',
+                    align: 'start'
+                }
+            },
+            {
+                element: '#bulk-review-save',
+                popover: {
+                    title: tr('tutorial_bulk_review_save_title', 'Guardar importación'),
+                    description: tr('tutorial_bulk_review_save_desc', 'Confirma para guardar todos los viajes revisados o vuelve atrás para corregir.'),
+                    side: 'top',
+                    align: 'end'
+                }
+            }
+        ];
+
         const tripsSteps: Array<{ element: string; popover: any }> = [
             {
                 element: '#trips-title',
@@ -318,14 +465,16 @@ export const Tutorial: React.FC<TutorialProps> = ({ userProfile, currentView }) 
 
         const resolveSteps = () => {
             const isTripEditorOpen = Boolean(document.querySelector('#trip-editor-modal'));
-            const selectedSteps = isTripEditorOpen ? tripEditorSteps : currentView === 'trips' ? tripsSteps : dashboardSteps;
+            const isBulkOpen = Boolean(document.querySelector('#bulk-modal'));
+            const selectedSteps = isBulkOpen ? bulkSteps : isTripEditorOpen ? tripEditorSteps : currentView === 'trips' ? tripsSteps : dashboardSteps;
             return selectedSteps.filter(step => document.querySelector(step.element));
         };
 
         const tryStart = () => {
             if (driverObj.current) return;
             const isTripEditorOpen = Boolean(document.querySelector('#trip-editor-modal'));
-            const contextKey = isTripEditorOpen ? 'trip-editor' : currentView;
+            const isBulkOpen = Boolean(document.querySelector('#bulk-modal'));
+            const contextKey = isBulkOpen ? 'bulk-upload' : isTripEditorOpen ? 'trip-editor' : currentView;
             if (stopByContextRef.current[contextKey]) return;
             const resolvedSteps = resolveSteps();
             if (resolvedSteps.length === 0) return;
