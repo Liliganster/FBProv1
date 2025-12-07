@@ -112,31 +112,31 @@ const RouteTemplatesView: React.FC<RouteTemplatesViewProps> = ({ onBack, theme, 
   const containerBg = `rgba(18,18,18,${1 - personalization.uiTransparency})`;
 
   return (
-    <div className="p-8 rounded-lg -m-8 min-h-full">
-      <div className="flex items-center justify-between mb-8">
+    <div id="route-templates-view" className="p-8 rounded-lg -m-8 min-h-full">
+      <div id="route-templates-header" className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-4">
-          <button onClick={onBack} className="flex items-center bg-gray-700 hover:bg-gray-600 text-white font-bold p-3 rounded-lg transition-colors shadow-md">
+          <button id="route-templates-back" onClick={onBack} className="flex items-center bg-gray-700 hover:bg-gray-600 text-white font-bold p-3 rounded-lg transition-colors shadow-md">
             <ArrowLeft className="w-5 h-5" />
           </button>
           <div>
-            <h1 className="text-2xl font-bold bg-gradient-title bg-clip-text text-transparent">{t('route_templates_title')}</h1>
-            <p className="text-sm text-on-surface-dark-secondary">{t('route_templates_subtitle')}</p>
+            <h1 id="route-templates-title" className="text-2xl font-bold bg-gradient-title bg-clip-text text-transparent">{t('route_templates_title')}</h1>
+            <p id="route-templates-subtitle" className="text-sm text-on-surface-dark-secondary">{t('route_templates_subtitle')}</p>
           </div>
         </div>
-        <button onClick={openCreate} className="flex items-center gap-2 bg-brand-primary hover:bg-blue-600 text-white font-semibold px-4 py-2 rounded-lg transition-colors shadow-md">
+        <button id="route-templates-add" onClick={openCreate} className="flex items-center gap-2 bg-brand-primary hover:bg-blue-600 text-white font-semibold px-4 py-2 rounded-lg transition-colors shadow-md">
           <Plus size={18} /> {t('route_templates_create_button')}
         </button>
       </div>
 
       {/* Métricas */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+      <div id="route-templates-metrics" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
         <MetricCard title={t('route_templates_metric_total')} value={metrics.total.toString()} bg={bgCard} />
         <MetricCard title={t('route_templates_metric_avg_distance')} value={`${metrics.avgDistance.toFixed(1)} km`} bg={bgCard} />
         <MetricCard title={t('route_templates_metric_most_used')} value={metrics.mostUsedName} bg={bgCard} />
       </div>
 
       {/* Filtros */}
-      <div className="flex flex-wrap gap-2 mb-6">
+      <div id="route-templates-filters" className="flex flex-wrap gap-2 mb-6">
         <FilterButton active={categoryFilter === 'all'} onClick={() => setCategoryFilter('all')}>
           {t('route_templates_filter_all')}
         </FilterButton>
@@ -156,8 +156,8 @@ const RouteTemplatesView: React.FC<RouteTemplatesViewProps> = ({ onBack, theme, 
 
       {/* Lista o estado vacío */}
       {filtered.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-24 text-center text-gray-400 animate-fadeIn">
-          <div className="text-6xl mb-6 opacity-40 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">⋯</div>
+        <div id="route-templates-empty" className="flex flex-col items-center justify-center py-24 text-center text-gray-400 animate-fadeIn">
+          <div id="route-templates-empty-emoji" className="text-6xl mb-6 opacity-40 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">??</div>
           <p className="text-lg font-medium mb-2 text-gray-300">{t('route_templates_empty_title')}</p>
           <p className="text-sm mb-6 max-w-md">{t('route_templates_empty_desc')}</p>
           <button 
@@ -168,7 +168,7 @@ const RouteTemplatesView: React.FC<RouteTemplatesViewProps> = ({ onBack, theme, 
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        <div id="route-templates-grid" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {filtered.map(tpl => (
             <div 
               key={tpl.id} 

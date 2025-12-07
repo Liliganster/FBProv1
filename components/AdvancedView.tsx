@@ -447,11 +447,19 @@ const CostAnalysisDashboard: React.FC<{
                 </div>
 
                 {/* Tarjetas de métricas principales */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                    <StatCard title={t('cost_total_distance')} value={`${(costData?.totalKm || 0).toFixed(1)} km`} theme={theme} personalization={personalization} />
-                    <StatCard title={t('cost_total_trips')} value={(costData?.totalTrips || 0).toString()} theme={theme} personalization={personalization} />
-                    <StatCard title={t('cost_est_total')} value={formatCurrency(costData?.totalCost || 0)} theme={theme} personalization={personalization} />
-                    <StatCard title={t('cost_avg_cost_km')} value={formatCurrency(costData?.avgCostPerKm || 0)} theme={theme} personalization={personalization} />
+                <div id="cost-analysis-stats" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <div id="cost-analysis-stat-distance">
+                        <StatCard title={t('cost_total_distance')} value={`${(costData?.totalKm || 0).toFixed(1)} km`} theme={theme} personalization={personalization} />
+                    </div>
+                    <div id="cost-analysis-stat-trips">
+                        <StatCard title={t('cost_total_trips')} value={(costData?.totalTrips || 0).toString()} theme={theme} personalization={personalization} />
+                    </div>
+                    <div id="cost-analysis-stat-total">
+                        <StatCard title={t('cost_est_total')} value={formatCurrency(costData?.totalCost || 0)} theme={theme} personalization={personalization} />
+                    </div>
+                    <div id="cost-analysis-stat-avg">
+                        <StatCard title={t('cost_avg_cost_km')} value={formatCurrency(costData?.avgCostPerKm || 0)} theme={theme} personalization={personalization} />
+                    </div>
                 </div>
 
                 {/* Contenido condicional según el tab seleccionado */}
@@ -459,7 +467,7 @@ const CostAnalysisDashboard: React.FC<{
                     // Vista de Resumen con barras de progreso
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                         {/* Desglose de costos con barras de progreso */}
-                        <div style={glassStyle} className="bg-frost-glass p-6 rounded-gentle">
+                        <div id="cost-analysis-breakdown" style={glassStyle} className="bg-frost-glass p-6 rounded-gentle">
                             <h3 className="text-lg font-semibold mb-6 text-white">{t('cost_basic_breakdown')}</h3>
 
                             <div className="space-y-4">
@@ -516,7 +524,7 @@ const CostAnalysisDashboard: React.FC<{
                         </div>
 
                         {/* Supuestos de costos */}
-                        <div style={glassStyle} className="bg-frost-glass p-6 rounded-lg">
+                        <div id="cost-analysis-assumptions" style={glassStyle} className="bg-frost-glass p-6 rounded-lg">
                             <h3 className="text-lg font-semibold mb-6 text-white">{t('cost_assumptions')}</h3>
 
                             <div className="space-y-3">
@@ -559,7 +567,7 @@ const CostAnalysisDashboard: React.FC<{
                     </div>
                 ) : (
                     // Vista Mensual con tabla
-                    <div style={glassStyle} className="bg-frost-glass p-6 rounded-lg">
+                    <div id="cost-analysis-monthly" style={glassStyle} className="bg-frost-glass p-6 rounded-lg">
                         <h3 className="text-lg font-semibold mb-4 text-white">{t('cost_monthly_summary')}</h3>
                         <div className="overflow-x-auto">
                             <table className="w-full text-left">
@@ -596,7 +604,7 @@ const CostAnalysisDashboard: React.FC<{
 
                 {/* Análisis por Proyecto - solo en vista Resumen */}
                 {costView === 'summary' && (
-                    <div style={glassStyle} className="bg-frost-glass p-6 rounded-lg mt-8">
+                    <div id="cost-analysis-projects" style={glassStyle} className="bg-frost-glass p-6 rounded-lg mt-8">
                         <div className="flex justify-between items-center mb-6">
                             <h3 className="text-lg font-semibold text-white">{t('cost_project_analysis_title')}</h3>
                             <div className="flex items-center gap-2">

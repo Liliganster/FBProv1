@@ -792,6 +792,108 @@ export const Tutorial: React.FC<TutorialProps> = ({ userProfile, currentView }) 
                     side: 'bottom',
                     align: 'start'
                 }
+            },
+            {
+                element: '#cost-analysis-stats',
+                popover: {
+                    title: tr('tutorial_cost_stats_title', 'Resumen rápido'),
+                    description: tr('tutorial_cost_stats_desc', 'Estas tarjetas muestran distancia total, viajes, costo estimado y promedio por km para el rango elegido.'),
+                    side: 'bottom',
+                    align: 'start'
+                }
+            },
+            {
+                element: '#cost-analysis-breakdown',
+                popover: {
+                    title: tr('tutorial_cost_breakdown_title', 'Desglose de costos'),
+                    description: tr('tutorial_cost_breakdown_desc', 'Compara combustible/energía, mantenimiento, otros gastos y costo promedio por viaje con barras visuales.'),
+                    side: 'bottom',
+                    align: 'start'
+                }
+            },
+            {
+                element: '#cost-analysis-assumptions',
+                popover: {
+                    title: tr('tutorial_cost_assumptions_title', 'Supuestos del cálculo'),
+                    description: tr('tutorial_cost_assumptions_desc', 'Aquí ves los valores usados (consumo, tarifas, peajes, etc.). Ajusta tu vehículo para mejorar la precisión.'),
+                    side: 'left',
+                    align: 'start'
+                }
+            },
+            {
+                element: '#cost-analysis-monthly',
+                popover: {
+                    title: tr('tutorial_cost_monthly_title', 'Detalle mensual'),
+                    description: tr('tutorial_cost_monthly_desc', 'Tabla por mes con distancia, viajes y costos detallados. Cambia al tab “Mensual” para verla.'),
+                    side: 'top',
+                    align: 'start'
+                }
+            },
+            {
+                element: '#cost-analysis-projects',
+                popover: {
+                    title: tr('tutorial_cost_projects_title', 'Costos por proyecto'),
+                    description: tr('tutorial_cost_projects_desc', 'Compara proyectos: gráfico y tabla con distancia, viajes, total y costo por km. Usa el selector para filtrar.'),
+                    side: 'top',
+                    align: 'start'
+                }
+            }
+        ];
+
+        const routeTemplatesSteps: Array<{ element: string; popover: any }> = [
+            {
+                element: '#route-templates-title',
+                popover: {
+                    title: tr('tutorial_routes_intro_title', 'Plantillas de ruta'),
+                    description: tr('tutorial_routes_intro_desc', 'Guarda rutas frecuentes (origen/destino, distancia, descripción) para reutilizarlas al crear viajes.'),
+                    side: 'bottom',
+                    align: 'start'
+                }
+            },
+            {
+                element: '#route-templates-add',
+                popover: {
+                    title: tr('tutorial_routes_add_title', 'Crear plantilla'),
+                    description: tr('tutorial_routes_add_desc', 'Abre el formulario para definir una nueva ruta y tenerla lista en un clic.'),
+                    side: 'left',
+                    align: 'start'
+                }
+            },
+            {
+                element: '#route-templates-metrics',
+                popover: {
+                    title: tr('tutorial_routes_metrics_title', 'Métricas rápidas'),
+                    description: tr('tutorial_routes_metrics_desc', 'Mira cuántas plantillas tienes, distancia promedio y la más usada.'),
+                    side: 'bottom',
+                    align: 'start'
+                }
+            },
+            {
+                element: '#route-templates-filters',
+                popover: {
+                    title: tr('tutorial_routes_filters_title', 'Filtrar por categoría'),
+                    description: tr('tutorial_routes_filters_desc', 'Alterna entre negocio, commuting, cliente u otras categorías para encontrar la plantilla adecuada.'),
+                    side: 'bottom',
+                    align: 'start'
+                }
+            },
+            {
+                element: '#route-templates-grid',
+                popover: {
+                    title: tr('tutorial_routes_grid_title', 'Lista de plantillas'),
+                    description: tr('tutorial_routes_grid_desc', 'Cada tarjeta muestra ruta, distancia, tiempo y uso. Edita o elimina desde aquí.'),
+                    side: 'top',
+                    align: 'start'
+                }
+            },
+            {
+                element: '#route-templates-empty',
+                popover: {
+                    title: tr('tutorial_routes_empty_title', 'Aún no tienes plantillas'),
+                    description: tr('tutorial_routes_empty_desc', 'Crea tu primera plantilla con el botón “Nueva” o desde este estado vacío.'),
+                    side: 'top',
+                    align: 'start'
+                }
             }
         ];
 
@@ -930,6 +1032,8 @@ export const Tutorial: React.FC<TutorialProps> = ({ userProfile, currentView }) 
             if (isProjectEditorOpen) return 'project-editor';
             const isReportModalOpen = Boolean(document.querySelector('#report-modal'));
             if (isReportModalOpen) return 'report-modal';
+            const isRouteTemplates = Boolean(document.querySelector('#route-templates-view'));
+            if (isRouteTemplates) return 'route-templates';
             const isCostAnalysis = Boolean(document.querySelector('#cost-analysis-view'));
             if (isCostAnalysis) return 'cost-analysis';
             return currentView;
@@ -957,7 +1061,9 @@ export const Tutorial: React.FC<TutorialProps> = ({ userProfile, currentView }) 
                         ? advancedSteps
                         : contextKey === 'cost-analysis'
                             ? costAnalysisSteps
-                            : dashboardSteps;
+                            : contextKey === 'route-templates'
+                                ? routeTemplatesSteps
+                                : dashboardSteps;
             return selectedSteps.filter(step => document.querySelector(step.element));
         };
 
