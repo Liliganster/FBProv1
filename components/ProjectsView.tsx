@@ -223,8 +223,8 @@ const ProjectsView: React.FC<ProjectsViewProps> = ({ setCurrentView, personaliza
   };
 
   return (
-    <div className="text-on-surface-dark">
-      <div className="flex justify-between items-center mb-8">
+    <div className="text-on-surface-dark" id="projects-view">
+      <div className="flex justify-between items-center mb-8" id="projects-header">
         {selectedProjectIds.length > 0 ? (
           <div className="flex items-center gap-4 w-full">
             <h2 className="text-xl font-semibold text-white">{t('projects_selected_count', { count: selectedProjectIds.length })}</h2>
@@ -239,12 +239,12 @@ const ProjectsView: React.FC<ProjectsViewProps> = ({ setCurrentView, personaliza
           </div>
         ) : (
           <>
-            <div>
+            <div id="projects-title">
               <h1 className="text-3xl font-bold bg-gradient-title bg-clip-text text-transparent">{t('projects_title')}</h1>
               {userProfile && <h2 className="text-lg font-semibold text-brand-primary">{userProfile.name}</h2>}
             </div>
             <div className="flex items-center gap-4">
-              <div className="relative">
+              <div className="relative" id="projects-search">
                 <input
                   type="text"
                   placeholder={t('projects_search_placeholder')}
@@ -255,6 +255,7 @@ const ProjectsView: React.FC<ProjectsViewProps> = ({ setCurrentView, personaliza
                 <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-on-surface-dark-secondary" />
               </div>
               <Button
+                id="projects-add-btn"
                 variant="primary"
                 onClick={handleAddNew}
               >
@@ -399,11 +400,11 @@ const ProjectsView: React.FC<ProjectsViewProps> = ({ setCurrentView, personaliza
         </div>
       ) : (
         // Vista desktop con tabla
-        <div style={contentStyle} className="bg-frost-glass rounded-gentle shadow-lg overflow-hidden">
-          <table className="w-full text-left text-sm">
+        <div style={contentStyle} className="bg-frost-glass rounded-gentle shadow-lg overflow-hidden" id="projects-table-wrapper">
+          <table id="projects-table" className="w-full text-left text-sm">
             <thead className="bg-gray-700/50">
               <tr>
-                <th className="p-3 w-12">
+                <th id="projects-col-select" className="p-3 w-12">
                   <input
                     type="checkbox"
                     checked={isAllSelected}
@@ -412,15 +413,15 @@ const ProjectsView: React.FC<ProjectsViewProps> = ({ setCurrentView, personaliza
                     className="bg-background-dark border border-gray-600 rounded text-brand-primary focus:ring-brand-primary focus:ring-2 h-5 w-5"
                   />
                 </th>
-                <th className="p-3 text-[11px] font-semibold text-on-surface-dark-secondary uppercase tracking-wider">{t('projects_col_name')}</th>
-                <th className="p-3 text-[11px] font-semibold text-on-surface-dark-secondary uppercase tracking-wider">{t('projects_col_producer')}</th>
-                <th className="p-3 text-[11px] font-semibold text-on-surface-dark-secondary uppercase tracking-wider">{t('projects_col_trips')}</th>
-                <th className="p-3 text-[11px] font-semibold text-on-surface-dark-secondary uppercase tracking-wider">{t('projects_col_documents')}</th>
-                <th className="p-3 text-[11px] font-semibold text-on-surface-dark-secondary uppercase tracking-wider">{t('projects_col_invoices')}</th>
-                <th className="p-3 text-[11px] font-semibold text-on-surface-dark-secondary uppercase tracking-wider">{t('projects_col_total_km')}</th>
-                <th className="p-3 text-[11px] font-semibold text-on-surface-dark-secondary uppercase tracking-wider">{t('projects_col_est_cost')}</th>
-                <th className="p-3 text-[11px] font-semibold text-on-surface-dark-secondary uppercase tracking-wider text-center">{t('projects_col_dashboard')}</th>
-                <th className="p-3 text-[11px] font-semibold text-on-surface-dark-secondary uppercase tracking-wider text-right">{t('trips_col_actions')}</th>
+                <th id="projects-col-name" className="p-3 text-[11px] font-semibold text-on-surface-dark-secondary uppercase tracking-wider">{t('projects_col_name')}</th>
+                <th id="projects-col-producer" className="p-3 text-[11px] font-semibold text-on-surface-dark-secondary uppercase tracking-wider">{t('projects_col_producer')}</th>
+                <th id="projects-col-trips" className="p-3 text-[11px] font-semibold text-on-surface-dark-secondary uppercase tracking-wider">{t('projects_col_trips')}</th>
+                <th id="projects-col-documents" className="p-3 text-[11px] font-semibold text-on-surface-dark-secondary uppercase tracking-wider">{t('projects_col_documents')}</th>
+                <th id="projects-col-invoices" className="p-3 text-[11px] font-semibold text-on-surface-dark-secondary uppercase tracking-wider">{t('projects_col_invoices')}</th>
+                <th id="projects-col-total-km" className="p-3 text-[11px] font-semibold text-on-surface-dark-secondary uppercase tracking-wider">{t('projects_col_total_km')}</th>
+                <th id="projects-col-est-cost" className="p-3 text-[11px] font-semibold text-on-surface-dark-secondary uppercase tracking-wider">{t('projects_col_est_cost')}</th>
+                <th id="projects-col-dashboard" className="p-3 text-[11px] font-semibold text-on-surface-dark-secondary uppercase tracking-wider text-center">{t('projects_col_dashboard')}</th>
+                <th id="projects-col-actions" className="p-3 text-[11px] font-semibold text-on-surface-dark-secondary uppercase tracking-wider text-right">{t('trips_col_actions')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-700/50">

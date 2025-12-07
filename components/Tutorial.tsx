@@ -483,6 +483,126 @@ export const Tutorial: React.FC<TutorialProps> = ({ userProfile, currentView }) 
             }
         ];
 
+        const projectsSteps: Array<{ element: string; popover: any }> = [
+            {
+                element: '#projects-title',
+                popover: {
+                    title: tr('tutorial_projects_intro_title', 'Vista de proyectos'),
+                    description: tr('tutorial_projects_intro_desc', 'Administra tus proyectos/clientes, revisa viajes asociados y visibilidad en dashboard.'),
+                    side: 'bottom',
+                    align: 'start'
+                }
+            },
+            {
+                element: '#projects-search',
+                popover: {
+                    title: tr('tutorial_projects_search_title', 'Buscar proyectos'),
+                    description: tr('tutorial_projects_search_desc', 'Filtra por nombre o productor para encontrar rápidamente un proyecto.'),
+                    side: 'bottom',
+                    align: 'start'
+                }
+            },
+            {
+                element: '#projects-add-btn',
+                popover: {
+                    title: tr('tutorial_projects_add_title', 'Crear proyecto'),
+                    description: tr('tutorial_projects_add_desc', 'Añade un nuevo proyecto/cliente para asociar viajes y documentos.'),
+                    side: 'bottom',
+                    align: 'start'
+                }
+            },
+            {
+                element: '#projects-table',
+                popover: {
+                    title: tr('tutorial_projects_table_title', 'Tabla de proyectos'),
+                    description: tr('tutorial_projects_table_desc', 'Aquí ves los proyectos con sus viajes, documentos, facturas y totales. Selecciona filas para acciones masivas.'),
+                    side: 'top',
+                    align: 'start'
+                }
+            },
+            {
+                element: '#projects-col-name',
+                popover: {
+                    title: tr('tutorial_projects_name_title', 'Nombre'),
+                    description: tr('tutorial_projects_name_desc', 'Nombre del proyecto/cliente. Haz clic en la fila para ver detalles.'),
+                    side: 'bottom',
+                    align: 'start'
+                }
+            },
+            {
+                element: '#projects-col-producer',
+                popover: {
+                    title: tr('tutorial_projects_producer_title', 'Productor'),
+                    description: tr('tutorial_projects_producer_desc', 'Responsable o compañía del proyecto.'),
+                    side: 'bottom',
+                    align: 'start'
+                }
+            },
+            {
+                element: '#projects-col-trips',
+                popover: {
+                    title: tr('tutorial_projects_trips_title', 'Viajes'),
+                    description: tr('tutorial_projects_trips_desc', 'Cantidad de viajes asociados a este proyecto.'),
+                    side: 'bottom',
+                    align: 'start'
+                }
+            },
+            {
+                element: '#projects-col-documents',
+                popover: {
+                    title: tr('tutorial_projects_docs_title', 'Documentos'),
+                    description: tr('tutorial_projects_docs_desc', 'Cantidad de documentos/callsheets vinculados.'),
+                    side: 'bottom',
+                    align: 'start'
+                }
+            },
+            {
+                element: '#projects-col-invoices',
+                popover: {
+                    title: tr('tutorial_projects_invoices_title', 'Facturas/gastos'),
+                    description: tr('tutorial_projects_invoices_desc', 'Gastos registrados para viajes de este proyecto.'),
+                    side: 'bottom',
+                    align: 'start'
+                }
+            },
+            {
+                element: '#projects-col-total-km',
+                popover: {
+                    title: tr('tutorial_projects_km_title', 'Kilómetros totales'),
+                    description: tr('tutorial_projects_km_desc', 'Suma de kilómetros en viajes de este proyecto.'),
+                    side: 'bottom',
+                    align: 'start'
+                }
+            },
+            {
+                element: '#projects-col-est-cost',
+                popover: {
+                    title: tr('tutorial_projects_cost_title', 'Importe estimado'),
+                    description: tr('tutorial_projects_cost_desc', 'Estimación de reembolso/importe según tus tarifas.'),
+                    side: 'bottom',
+                    align: 'start'
+                }
+            },
+            {
+                element: '#projects-col-dashboard',
+                popover: {
+                    title: tr('tutorial_projects_dashboard_title', 'Visibilidad en dashboard'),
+                    description: tr('tutorial_projects_dashboard_desc', 'Activa o desactiva para mostrar este proyecto en los widgets del tablero.'),
+                    side: 'left',
+                    align: 'start'
+                }
+            },
+            {
+                element: '#projects-col-actions',
+                popover: {
+                    title: tr('tutorial_projects_actions_title', 'Acciones'),
+                    description: tr('tutorial_projects_actions_desc', 'Edita o elimina el proyecto. Haz clic en la fila para ver detalles completos.'),
+                    side: 'left',
+                    align: 'start'
+                }
+            }
+        ];
+
         const destroyDriver = () => {
             if (driverObj.current) {
                 driverObj.current.destroy();
@@ -511,7 +631,9 @@ export const Tutorial: React.FC<TutorialProps> = ({ userProfile, currentView }) 
                         ? tripEditorSteps
                         : contextKey === 'trips'
                             ? tripsSteps
-                            : dashboardSteps;
+                            : contextKey === 'projects'
+                                ? projectsSteps
+                                : dashboardSteps;
             return selectedSteps.filter(step => document.querySelector(step.element));
         };
 
