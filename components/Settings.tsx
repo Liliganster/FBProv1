@@ -647,9 +647,9 @@ const SettingsView: React.FC<{
     };
 
     return (
-        <div id="settings-view" className="fixed inset-0 bg-gradient-overlay backdrop-blur-glass flex items-center justify-center p-4 z-50" onClick={handleClose}>
+        <div id="settings-view" className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50" onClick={handleClose}>
             <div
-                className="glass-surface no-border rounded-organic shadow-glass-lg w-full max-w-4xl max-h-[90vh] flex flex-col backdrop-blur-glass relative text-on-surface-dark"
+                className="bg-frost-glass border border-gray-700/60 rounded-organic shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col backdrop-blur-glass relative text-on-surface-dark"
                 style={{
                     backgroundColor: `rgba(30, 30, 30, ${1 - personalization.uiTransparency})`,
                     backdropFilter: `blur(${personalization.uiBlur}px)`,
