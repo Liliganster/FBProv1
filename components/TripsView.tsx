@@ -64,6 +64,7 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
   const [selectedTrip, setSelectedTrip] = useState<Trip | null>(null);
   const [selectedTripIds, setSelectedTripIds] = useState<string[]>([]);
   const [projectFilter, setProjectFilter] = useState<string>('all');
+  const [yearFilter, setYearFilter] = useState<string>('all');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [currentPage, setCurrentPage] = useState<number>(1);
   const PAGE_SIZE = 100; // paginate to avoid rendering huge lists
@@ -80,6 +81,11 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
     });
     return map;
   }, [expenses]);
+
+  const availableYears = useMemo(() => {
+    const years = new Set(trips.map(t => new Date(t.date).getFullYear().toString()));
+    return Array.from(years).sort().reverse();
+  }, [trips]);
 
   const formatCurrency = (value: number, currency?: string | null) => {
     try {
@@ -228,7 +234,10 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
   const filteredTrips = useMemo(() => {
     if (!userProfile) return [];
 
-    const userTrips = trips.filter(trip => (projectFilter === 'all' || trip.projectId === projectFilter));
+    const userTrips = trips.filter(trip =>
+      (projectFilter === 'all' || trip.projectId === projectFilter) &&
+      (yearFilter === 'all' || trip.date.startsWith(yearFilter))
+    );
     const getTime = (d: string) => {
       const t = new Date(d).getTime();
       return Number.isFinite(t) ? t : 0;
@@ -236,12 +245,12 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
     const sortedByDateAsc = [...userTrips].sort((a, b) => getTime(a.date) - getTime(b.date));
     return sortOrder === 'desc' ? [...sortedByDateAsc].reverse() : sortedByDateAsc;
 
-  }, [trips, projectFilter, userProfile, sortOrder]);
+  }, [trips, projectFilter, yearFilter, userProfile, sortOrder]);
 
   // Reset pagination when filters/sorting change
   useEffect(() => {
     setCurrentPage(1);
-  }, [projectFilter, sortOrder]);
+  }, [projectFilter, yearFilter, sortOrder]);
 
   const totalPages = useMemo(() => Math.max(1, Math.ceil(filteredTrips.length / PAGE_SIZE)), [filteredTrips.length]);
   const pagedTrips = useMemo(() => {
@@ -334,6 +343,18 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
                   <option value="all">{t('trips_filter_all_projects')}</option>
                   {projects.map(p => (
                     <option key={p.id} value={p.id}>{p.name}</option>
+                  ))}
+                </select>
+
+                <select
+                  id="year-filter"
+                  value={yearFilter}
+                  onChange={(e) => setYearFilter(e.target.value)}
+                  className="bg-gradient-surface border-surface rounded-smooth py-2 px-4 focus:ring-2 focus:ring-brand-primary focus:outline-none text-white transition-all duration-200 text-sm font-medium h-[38px] ml-2"
+                >
+                  <option value="all">{t('common_all_years')}</option>
+                  {availableYears.map(year => (
+                    <option key={year} value={year}>{year}</option>
                   ))}
                 </select>
               </div>

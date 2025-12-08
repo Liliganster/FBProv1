@@ -658,6 +658,8 @@ export const translations = {
     expense_badge_aria_trip: '{{count}} {{label}} attached to this trip',
     expense_badge_aria_project: '{{count}} {{label}} linked to this project',
 
+    common_year: 'Year',
+    common_all_years: 'All years',
     common_cancel: 'Cancel',
     common_back: 'Back',
     common_undo: 'Undo',
@@ -1597,6 +1599,8 @@ export const translations = {
     expense_badge_aria_trip: '{{count}} {{label}} für diese Fahrt',
     expense_badge_aria_project: '{{count}} {{label}} für dieses Projekt',
 
+    common_year: 'Jahr',
+    common_all_years: 'Alle Jahre',
     common_cancel: 'Abbrechen',
     common_back: 'Zurück',
     common_undo: 'Rückgängig',
@@ -2536,6 +2540,8 @@ export const translations = {
     expense_badge_aria_trip: '{{count}} {{label}} en este viaje',
     expense_badge_aria_project: '{{count}} {{label}} en este proyecto',
 
+    common_year: 'Año',
+    common_all_years: 'Todos los años',
     common_cancel: 'Cancelar',
     common_back: 'Atrás',
     common_undo: 'Deshacer',

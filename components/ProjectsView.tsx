@@ -31,6 +31,7 @@ const ProjectsView: React.FC<ProjectsViewProps> = ({ setCurrentView, personaliza
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [yearFilter, setYearFilter] = useState<string>('all');
   const [selectedProjectIds, setSelectedProjectIds] = useState<string[]>([]);
   const { addAction, undo, getLastAction } = useUndoRedo();
   const [showUndoToast, setShowUndoToast] = useState(false);
@@ -138,13 +139,25 @@ const ProjectsView: React.FC<ProjectsViewProps> = ({ setCurrentView, personaliza
     });
   }, [projectsById, tripsByProject, userProfile, expensesByProject, buildExpenseTooltip]);
 
+  const availableYears = useMemo(() => {
+    const years = new Set(projects.map(p => new Date(p.createdAt).getFullYear().toString()));
+    return Array.from(years).sort().reverse();
+  }, [projects]);
+
   const filteredProjects = useMemo(() => {
-    if (!searchQuery) return userProjects;
-    return userProjects.filter(p =>
+    let filtered = userProjects;
+
+    if (yearFilter !== 'all') {
+      filtered = filtered.filter(p => new Date(p.createdAt).getFullYear().toString() === yearFilter);
+    }
+
+    if (!searchQuery) return filtered;
+
+    return filtered.filter(p =>
       p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       p.producer.toLowerCase().includes(searchQuery.toLowerCase())
     );
-  }, [userProjects, searchQuery]);
+  }, [userProjects, searchQuery, yearFilter]);
 
   const handleAddNew = () => {
     setSelectedProject(null);
@@ -244,6 +257,16 @@ const ProjectsView: React.FC<ProjectsViewProps> = ({ setCurrentView, personaliza
               {userProfile && <h2 className="text-lg font-semibold text-brand-primary">{userProfile.name}</h2>}
             </div>
             <div className="flex items-center gap-4">
+              <select
+                value={yearFilter}
+                onChange={(e) => setYearFilter(e.target.value)}
+                className="bg-surface-dark border border-gray-600 rounded-smooth py-2 px-4 focus:ring-2 focus:ring-brand-primary focus:outline-none text-on-surface-dark text-sm font-medium h-[38px]"
+              >
+                <option value="all">{t('common_all_years')}</option>
+                {availableYears.map(year => (
+                  <option key={year} value={year}>{year}</option>
+                ))}
+              </select>
               <div className="relative" id="projects-search">
                 <input
                   type="text"
@@ -319,8 +342,8 @@ const ProjectsView: React.FC<ProjectsViewProps> = ({ setCurrentView, personaliza
                           className="p-2 rounded-smooth hover:bg-gray-700/50 transition-colors"
                         >
                           <StarIcon className={`w-5 h-5 transition-all duration-150 transform hover:scale-125 ${visibleProjectIds.includes(project.id)
-                              ? 'text-yellow-400 fill-current'
-                              : 'text-gray-600 hover:text-yellow-500'
+                            ? 'text-yellow-400 fill-current'
+                            : 'text-gray-600 hover:text-yellow-500'
                             }`} />
                         </button>
                         <Button
@@ -472,8 +495,8 @@ const ProjectsView: React.FC<ProjectsViewProps> = ({ setCurrentView, personaliza
                         className="p-2 rounded-smooth hover:bg-gray-700/50 transition-colors"
                       >
                         <StarIcon className={`w-5 h-5 mx-auto transition-all duration-150 transform hover:scale-125 ${visibleProjectIds.includes(project.id)
-                            ? 'text-yellow-400 fill-current'
-                            : 'text-gray-600 hover:text-yellow-500'
+                          ? 'text-yellow-400 fill-current'
+                          : 'text-gray-600 hover:text-yellow-500'
                           }`} />
                       </button>
                     </td>
