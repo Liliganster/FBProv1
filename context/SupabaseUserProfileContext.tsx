@@ -10,7 +10,7 @@ interface UserProfileContextType {
   loading: boolean;
   error: string | null;
   setUserProfile: (profile: UserProfile | null) => Promise<void>;
-  updateUserProfile: (updates: Partial<UserProfile>) => Promise<void>;
+  updateUserProfile: (updates: Partial<UserProfile>, options?: { silent?: boolean }) => Promise<void>;
   refreshProfile: () => Promise<void>;
 }
 
@@ -245,7 +245,7 @@ export const UserProfileProvider: React.FC<{ children: React.ReactNode }> = ({ c
   }, [refreshProfile]);
 
   // Update profile
-  const updateUserProfile = useCallback(async (updates: Partial<UserProfile>) => {
+  const updateUserProfile = useCallback(async (updates: Partial<UserProfile>, options?: { silent?: boolean }) => {
     if (!user?.id) {
       throw new Error('User not authenticated');
     }
@@ -294,7 +294,7 @@ export const UserProfileProvider: React.FC<{ children: React.ReactNode }> = ({ c
     if (!hasOtherUpdates) {
       const baseProfile = userProfile ?? createDefaultProfile(user.id);
       mergeAndPersist(baseProfile);
-      if (!hasTutorialUpdates) {
+      if (!hasTutorialUpdates && !options?.silent) {
         showToast('Profile updated successfully', 'success');
       }
       return;
@@ -304,11 +304,15 @@ export const UserProfileProvider: React.FC<{ children: React.ReactNode }> = ({ c
     try {
       const updatedProfile = await databaseService.updateUserProfile(user.id, sanitizedUpdates);
       mergeAndPersist(updatedProfile);
-      showToast('Profile updated successfully', 'success');
+      if (!options?.silent) {
+        showToast('Profile updated successfully', 'success');
+      }
     } catch (err) {
       console.error('Error updating user profile:', err);
       const errorMessage = err instanceof Error ? err.message : 'Failed to update profile';
-      showToast(errorMessage, 'error');
+      if (!options?.silent) {
+        showToast(errorMessage, 'error');
+      }
 
       // Fallback to local update
       if (userProfile) {

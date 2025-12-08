@@ -139,7 +139,7 @@ const SettingsView: React.FC<{
         try {
             console.log('DEBUG: Saving profile updates:', localProfile);
             const { id, plan, createdAt, updatedAt, hasSeenTutorial, isTutorialEnabled, ...allowedUpdates } = localProfile;
-            await updateUserProfile(allowedUpdates);
+            await updateUserProfile(allowedUpdates, { silent: true });
             markAsSaved(); // Mark as saved after successful save
             showToast(t('settings_alert_saveSuccess'), 'success');
             onClose();
@@ -602,7 +602,7 @@ const SettingsView: React.FC<{
                                                 isTutorialEnabled: newValue,
                                                 // Resetear flag para que vuelva a mostrarse al activar
                                                 hasSeenTutorial: newValue ? false : undefined,
-                                            });
+                                            }, { silent: true });
                                         } catch (error) {
                                             console.error('Failed to update tutorial setting:', error);
                                             showToast('Error updating tutorial setting', 'error');
@@ -621,7 +621,7 @@ const SettingsView: React.FC<{
                                     onClick={async () => {
                                         setLocalProfile(prev => prev ? ({ ...prev, hasSeenTutorial: false }) : null);
                                         try {
-                                            await updateUserProfile({ hasSeenTutorial: false });
+                                            await updateUserProfile({ hasSeenTutorial: false }, { silent: true });
                                             showToast(t('settings_tutorial_restarted'), 'success');
                                         } catch (error) {
                                             console.error('Failed to restart tutorial:', error);
