@@ -578,9 +578,9 @@ const SettingsView: React.FC<{
                         <h2 className="text-xl font-semibold text-white">{t('settings_help_title')}</h2>
 
                         <div className="p-4 bg-background-dark/50 border border-gray-700/50 rounded-lg space-y-4">
-                            <h3 className="text-lg font-medium text-on-surface-dark">Tutorial Interactivo</h3>
+                            <h3 className="text-lg font-medium text-on-surface-dark">{t('settings_tutorial_title')}</h3>
                             <p className="text-sm text-on-surface-dark-secondary">
-                                Activa o desactiva la guía interactiva que te ayuda a conocer las funciones de la aplicación.
+                                {t('settings_tutorial_desc')}
                             </p>
 
                             <div id="settings-help-tutorial-toggle" className="flex items-center gap-3">
@@ -611,7 +611,7 @@ const SettingsView: React.FC<{
                                     className="w-5 h-5 rounded border-gray-600 bg-background-dark text-brand-primary focus:ring-brand-primary"
                                 />
                                 <label htmlFor="isTutorialEnabled" className="text-on-surface-dark cursor-pointer select-none">
-                                    {t('settings_tutorial_enable') || 'Activar Tutorial'}
+                                    {t('settings_tutorial_enable')}
                                 </label>
                             </div>
 
@@ -622,17 +622,17 @@ const SettingsView: React.FC<{
                                         setLocalProfile(prev => prev ? ({ ...prev, hasSeenTutorial: false }) : null);
                                         try {
                                             await updateUserProfile({ hasSeenTutorial: false });
-                                            showToast(t('settings_tutorial_restarted') || 'Tutorial reiniciado', 'success');
+                                            showToast(t('settings_tutorial_restarted'), 'success');
                                         } catch (error) {
                                             console.error('Failed to restart tutorial:', error);
                                             showToast('Error restarting tutorial', 'error');
                                         }
                                     }}
                                 >
-                                    {t('settings_tutorial_restart') || 'Reiniciar Tutorial'}
+                                    {t('settings_tutorial_restart')}
                                 </Button>
                                 <p className="text-xs text-on-surface-dark-secondary mt-2">
-                                    {t('settings_tutorial_restart_desc') || 'El tutorial volverá a aparecer en la próxima visita al panel.'}
+                                    {t('settings_tutorial_restart_desc')}
                                 </p>
                             </div>
                         </div>
