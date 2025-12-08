@@ -38,6 +38,8 @@ export interface Database {
           tolls_cost_per_km: number | null
           fines_cost_per_km: number | null
           misc_cost_per_km: number | null
+          has_seen_tutorial: boolean
+          is_tutorial_enabled: boolean
           created_at: string
           updated_at: string
         }
@@ -71,6 +73,8 @@ export interface Database {
           tolls_cost_per_km?: number | null
           fines_cost_per_km?: number | null
           misc_cost_per_km?: number | null
+          has_seen_tutorial?: boolean
+          is_tutorial_enabled?: boolean
           created_at?: string
           updated_at?: string
         }
@@ -104,6 +108,8 @@ export interface Database {
           tolls_cost_per_km?: number | null
           fines_cost_per_km?: number | null
           misc_cost_per_km?: number | null
+          has_seen_tutorial?: boolean
+          is_tutorial_enabled?: boolean
           created_at?: string
           updated_at?: string
         }
