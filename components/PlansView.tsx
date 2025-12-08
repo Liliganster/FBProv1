@@ -17,9 +17,9 @@ const plans = [
     id: 'free',
     name: 'Free',
     price: '0€',
-    badge: '15 solicitudes',
+    badge: '20 solicitudes',
     features: [
-      '15 días de itinerarios con IA',
+      '20 días de itinerarios con IA',
       'CSV/Excel ilimitado (sin IA)',
       'Proyectos y viajes ilimitados',
     ],
