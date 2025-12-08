@@ -1171,6 +1171,8 @@ class DatabaseService {
         tolls_cost_per_km: profileData.tollsCostPerKm ?? null,
         fines_cost_per_km: profileData.finesCostPerKm ?? null,
         misc_cost_per_km: profileData.miscCostPerKm ?? null,
+        has_seen_tutorial: profileData.hasSeenTutorial ?? false,
+        is_tutorial_enabled: profileData.isTutorialEnabled ?? true,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       }
@@ -1235,6 +1237,8 @@ class DatabaseService {
       if (updates.tollsCostPerKm !== undefined) updateData.tolls_cost_per_km = updates.tollsCostPerKm
       if (updates.finesCostPerKm !== undefined) updateData.fines_cost_per_km = updates.finesCostPerKm
       if (updates.miscCostPerKm !== undefined) updateData.misc_cost_per_km = updates.miscCostPerKm
+      if (updates.hasSeenTutorial !== undefined) updateData.has_seen_tutorial = updates.hasSeenTutorial
+      if (updates.isTutorialEnabled !== undefined) updateData.is_tutorial_enabled = updates.isTutorialEnabled
 
       const { data, error } = await supabase
         .from('user_profiles')
@@ -1303,6 +1307,8 @@ class DatabaseService {
       tollsCostPerKm: dbProfile.tolls_cost_per_km ?? null,
       finesCostPerKm: dbProfile.fines_cost_per_km ?? null,
       miscCostPerKm: dbProfile.misc_cost_per_km ?? null,
+      hasSeenTutorial: dbProfile.has_seen_tutorial ?? false,
+      isTutorialEnabled: dbProfile.is_tutorial_enabled ?? true,
       createdAt: dbProfile.created_at,
       updatedAt: dbProfile.updated_at
     }
