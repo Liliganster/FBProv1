@@ -26,6 +26,7 @@ import { Trip, PersonalizationSettings, UserProfile } from '../types';
 import { formatDateForDisplay } from '../i18n/translations';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Legend, ResponsiveContainer, BarChart, Bar, Tooltip } from 'recharts';
 import ExpenseUploadModal from './ExpenseUploadModal';
+import VehicleSettingsModal from './VehicleSettingsModal';
 import { Button } from './Button';
 
 type AuditResult = {
@@ -54,39 +55,11 @@ const CostAnalysisDashboard: React.FC<{
     const [timeRange, setTimeRange] = useState<'3m' | '6m' | '1y' | 'all'>('3m');
     const [costView, setCostView] = useState<'summary' | 'monthly'>('summary');
     const [showVehicleModal, setShowVehicleModal] = useState(false);
-    const [vehicleForm, setVehicleForm] = useState<UserProfile | null>(null);
     const [selectedProjectId, setSelectedProjectId] = useState<string>('');
     const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
 
-    // Inicializar el formulario cuando se abre el modal
-    useEffect(() => {
-        if (showVehicleModal && userProfile) {
-            setVehicleForm({ ...userProfile });
-        }
-    }, [showVehicleModal, userProfile]);
-
     const formatCurrency = (value: number) => {
         return new Intl.NumberFormat(language, { style: 'currency', currency: 'EUR' }).format(value);
-    };
-
-    const handleVehicleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-        if (!vehicleForm) return;
-        const { name, value } = e.target;
-        const type = 'type' in e.target ? e.target.type : 'text';
-        const finalValue = type === 'number' ? (value === '' ? undefined : parseFloat(value)) : value;
-
-        setVehicleForm(prev => {
-            if (!prev) return null;
-            return { ...prev, [name]: finalValue as any };
-        });
-    };
-
-    const handleSaveVehicleSettings = () => {
-        if (vehicleForm) {
-            setUserProfile(vehicleForm);
-            showToast(t('settings_alert_saveSuccess'), 'success');
-            setShowVehicleModal(false);
-        }
     };
 
     const filteredTrips = useMemo(() => {
@@ -694,160 +667,11 @@ const CostAnalysisDashboard: React.FC<{
             </main>
 
             {/* Modal de Configuración de Vehículo */}
-            {showVehicleModal && vehicleForm && (
-                <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
-                    <div
-                        style={{
-                            backgroundColor: `rgba(30, 30, 30, ${1 - personalization.uiTransparency})`,
-                            backdropFilter: `blur(${personalization.uiBlur}px)`,
-                        }}
-                        className="bg-frost-glass rounded-organic shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
-                    >
-                        <div className="p-6">
-                            <div className="flex items-center justify-between mb-6">
-                                <h2 className="text-2xl font-bold text-white">{t('settings_vehicle_title')}</h2>
-                                <button
-                                    onClick={() => setShowVehicleModal(false)}
-                                    className="text-gray-400 hover:text-white"
-                                >
-                                    <X size={24} />
-                                </button>
-                            </div>
-
-                            <div className="space-y-6">
-                                <h3 className="text-xl font-semibold text-white">{t('settings_vehicle_title')}</h3>
-
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                    {/* Tipo de Vehículo */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-300 mb-2">
-                                            {t('settings_vehicle_type')}
-                                        </label>
-                                        <select
-                                            name="vehicleType"
-                                            value={vehicleForm.vehicleType || ''}
-                                            onChange={handleVehicleFormChange}
-                                            className="w-full bg-gray-700 border border-gray-600 rounded-md p-3 text-white focus:ring-2 focus:ring-brand-primary focus:outline-none"
-                                        >
-                                            <option value="">{t('settings_vehicle_type_select')}</option>
-                                            <option value="combustion">{t('settings_vehicle_type_combustion')}</option>
-                                            <option value="electric">{t('settings_vehicle_type_electric')}</option>
-                                        </select>
-                                    </div>
-
-                                    {/* Campos específicos para combustión */}
-                                    {vehicleForm.vehicleType === 'combustion' && (
-                                        <>
-                                            <VehicleInputField
-                                                label={t('settings_vehicle_fuel_consumption')}
-                                                name="fuelConsumption"
-                                                type="number"
-                                                value={vehicleForm.fuelConsumption}
-                                                onChange={handleVehicleFormChange}
-                                                placeholder="l/100km"
-                                            />
-                                            <VehicleInputField
-                                                label={t('settings_vehicle_fuel_price')}
-                                                name="fuelPrice"
-                                                type="number"
-                                                value={vehicleForm.fuelPrice}
-                                                onChange={handleVehicleFormChange}
-                                                placeholder="€/l"
-                                            />
-                                        </>
-                                    )}
-
-                                    {/* Campos específicos para eléctrico */}
-                                    {vehicleForm.vehicleType === 'electric' && (
-                                        <>
-                                            <VehicleInputField
-                                                label={t('settings_vehicle_energy_consumption')}
-                                                name="energyConsumption"
-                                                type="number"
-                                                value={vehicleForm.energyConsumption}
-                                                onChange={handleVehicleFormChange}
-                                                placeholder="kWh/100km"
-                                            />
-                                            <VehicleInputField
-                                                label={t('settings_vehicle_energy_price')}
-                                                name="energyPrice"
-                                                type="number"
-                                                value={vehicleForm.energyPrice}
-                                                onChange={handleVehicleFormChange}
-                                                placeholder="€/kWh"
-                                            />
-                                        </>
-                                    )}
-                                </div>
-
-                                {/* Costos adicionales */}
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                    <VehicleInputField
-                                        label={t('settings_vehicle_maintenance_cost')}
-                                        name="maintenanceCostPerKm"
-                                        type="number"
-                                        value={vehicleForm.maintenanceCostPerKm}
-                                        onChange={handleVehicleFormChange}
-                                        placeholder="€/km"
-                                    />
-                                    <VehicleInputField
-                                        label={t('settings_vehicle_parking_cost')}
-                                        name="parkingCostPerKm"
-                                        type="number"
-                                        value={vehicleForm.parkingCostPerKm}
-                                        onChange={handleVehicleFormChange}
-                                        placeholder="€/km"
-                                    />
-                                    <VehicleInputField
-                                        label={t('settings_vehicle_tolls_cost')}
-                                        name="tollsCostPerKm"
-                                        type="number"
-                                        value={vehicleForm.tollsCostPerKm}
-                                        onChange={handleVehicleFormChange}
-                                        placeholder="€/km"
-                                    />
-                                </div>
-
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <VehicleInputField
-                                        label={t('settings_vehicle_fines_cost')}
-                                        name="finesCostPerKm"
-                                        type="number"
-                                        value={vehicleForm.finesCostPerKm}
-                                        onChange={handleVehicleFormChange}
-                                        placeholder="€/km"
-                                    />
-                                    <VehicleInputField
-                                        label={t('settings_vehicle_misc_cost')}
-                                        name="miscCostPerKm"
-                                        type="number"
-                                        value={vehicleForm.miscCostPerKm}
-                                        onChange={handleVehicleFormChange}
-                                        placeholder="€/km"
-                                    />
-                                </div>
-
-                                {/* Botones */}
-                                <div className="flex justify-end gap-4 pt-6 border-t border-gray-700">
-                                    <button
-                                        onClick={() => setShowVehicleModal(false)}
-                                        className="px-6 py-2 bg-gray-600 hover:bg-gray-500 text-white rounded-lg transition-colors"
-                                    >
-                                        {t('common_cancel')}
-                                    </button>
-                                    <button
-                                        onClick={handleSaveVehicleSettings}
-                                        className="px-6 py-2 bg-brand-primary hover:bg-blue-600 text-white rounded-lg transition-colors flex items-center gap-2"
-                                    >
-                                        <SaveIcon size={16} />
-                                        {t('advanced_costing_save_settings_btn')}
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
+            <VehicleSettingsModal
+                isOpen={showVehicleModal}
+                onClose={() => setShowVehicleModal(false)}
+                personalization={personalization}
+            />
 
             {/* Modal para subir facturas */}
             <ExpenseUploadModal
@@ -867,7 +691,7 @@ const StatCard: React.FC<{ title: string; value: string; theme: 'light' | 'dark'
         backdropFilter: `blur(${personalization.uiBlur}px)`,
         WebkitBackdropFilter: `blur(${personalization.uiBlur}px)`,
     } : {};
-    
+
     return (
         <div style={glassStyle} className="bg-frost-glass p-4 rounded-lg">
             <h3 className="text-sm font-medium text-on-surface-dark-secondary">{title}</h3>
@@ -1247,29 +1071,6 @@ const CostProgressBar: React.FC<{
     </div>
 );
 
-const VehicleInputField: React.FC<{
-    label: string;
-    name: string;
-    value?: string | number;
-    onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-    type?: string;
-    placeholder?: string;
-}> = ({ label, name, value, onChange, type = 'text', placeholder }) => (
-    <div>
-        <label htmlFor={name} className="block text-sm font-medium text-gray-300 mb-2">
-            {label}
-        </label>
-        <input
-            type={type}
-            id={name}
-            name={name}
-            value={value ?? ''}
-            onChange={onChange}
-            placeholder={placeholder}
-            step={type === 'number' ? '0.01' : undefined}
-            className="w-full bg-gray-700 border border-gray-600 rounded-md p-3 text-white focus:ring-2 focus:ring-brand-primary focus:outline-none"
-        />
-    </div>
-);
+
 
 export default AdvancedView;

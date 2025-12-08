@@ -11,6 +11,7 @@ import TripDetailModal from './TripDetailModal';
 import useDashboardSettings from '../hooks/useDashboardSettings';
 import { formatDateForDisplay } from '../i18n/translations';
 import { Button } from './Button';
+import VehicleSettingsModal from './VehicleSettingsModal';
 
 type ChartType = 'projectKm';
 
@@ -27,6 +28,7 @@ const Dashboard: React.FC<DashboardProps> = ({ setCurrentView, personalization, 
     const [chartType, setChartType] = useState<ChartType>('projectKm');
     const [viewingTrip, setViewingTrip] = useState<Trip | null>(null);
     const [isAlertsOpen, setIsAlertsOpen] = useState(false);
+    const [isVehicleSettingsOpen, setIsVehicleSettingsOpen] = useState(false);
     const [aiQuota, setAiQuota] = useState<AiQuotaCheck | null>(null);
     const [aiQuotaLoading, setAiQuotaLoading] = useState(false);
     const alertsRef = useRef<HTMLDivElement>(null);
@@ -282,7 +284,7 @@ const Dashboard: React.FC<DashboardProps> = ({ setCurrentView, personalization, 
                             <Button
                                 variant="secondary"
                                 size="sm"
-                                onClick={() => setCurrentView('advanced')}
+                                onClick={() => setIsVehicleSettingsOpen(true)}
                             >
                                 {t('settings_vehicle_title')}
                             </Button>
@@ -375,6 +377,12 @@ const Dashboard: React.FC<DashboardProps> = ({ setCurrentView, personalization, 
                     theme={theme}
                 />
             )}
+
+            <VehicleSettingsModal
+                isOpen={isVehicleSettingsOpen}
+                onClose={() => setIsVehicleSettingsOpen(false)}
+                personalization={personalization}
+            />
         </div>
     );
 };
