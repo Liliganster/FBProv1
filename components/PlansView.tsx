@@ -28,7 +28,7 @@ const plans = [
   {
     id: 'pro',
     name: 'Pro',
-    price: '15€/mes',
+    price: '11.99€/mes',
     badge: '150 solicitudes',
     highlight: true,
     features: [
