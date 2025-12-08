@@ -212,6 +212,11 @@ Si después de los 5 pasos NO has encontrado nada claro:
 
 5. **NO DUPLICAR**: Si hay nombre de lugar Y dirección, extrae solo la dirección física.
 
+6. **EXCLUSIÓN CRÍTICA - OFICINAS DE PRODUCCIÓN**:
+   - ❌ NUNCA extraigas la dirección de la productora (Production Office, Studio HQ) como lugar de rodaje.
+   - Si la dirección está junto al logo de la empresa o en el pie de página, ÍGNORALA.
+   - Solo inclúyela SI explícitamente dice "FILMING LOCATION" o "SET" junto a ella.
+
 ### Formatos de dirección:
 
 **REGLA CRÍTICA - NO DUPLICAR INFORMACIÓN**:
