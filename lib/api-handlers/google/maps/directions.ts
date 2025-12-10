@@ -65,7 +65,36 @@ export default async function handler(req: any, res: any) {
     return;
   }
 
-  const [origin, ...rest] = locations;
+  // Enrich addresses by geocoding them first (this normalizes and completes partial addresses)
+  const enrichedLocations: string[] = [];
+  for (const loc of locations) {
+    try {
+      const geocodeParams = new URLSearchParams();
+      geocodeParams.set('address', loc);
+      geocodeParams.set('key', apiKey);
+      if (region) {
+        geocodeParams.set('region', region);
+      }
+      
+      const geocodeResponse = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?${geocodeParams.toString()}`);
+      const geocodeData = await geocodeResponse.json();
+      
+      if (geocodeData.status === 'OK' && geocodeData.results && geocodeData.results.length > 0) {
+        // Use the formatted address from geocoding (complete and normalized)
+        enrichedLocations.push(geocodeData.results[0].formatted_address);
+      } else {
+        // If geocoding fails, use original address
+        console.warn(`[directions] Geocoding failed for "${loc}" (status: ${geocodeData.status}), using original`);
+        enrichedLocations.push(loc);
+      }
+    } catch (error) {
+      // If geocoding throws, use original address
+      console.warn(`[directions] Geocoding error for "${loc}":`, error);
+      enrichedLocations.push(loc);
+    }
+  }
+
+  const [origin, ...rest] = enrichedLocations;
   const destination = rest.pop() as string;
   const waypoints = rest;
 
@@ -82,6 +111,8 @@ export default async function handler(req: any, res: any) {
   params.set('units', 'metric');
   params.set('language', 'es');
   params.set('key', apiKey);
+
+  console.log(`[directions] Using enriched locations: ${enrichedLocations.join(' → ')}`);
 
   try {
     const response = await fetch(`${DIRECTIONS_ENDPOINT}?${params.toString()}`);

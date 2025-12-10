@@ -157,9 +157,34 @@ app.post('/api/google/maps/directions', async (req, res) => {
       return res.status(400).json({ error: 'At least two locations are required' });
     }
 
-    const origin = locations[0];
-    const destination = locations[locations.length - 1];
-    const waypoints = locations.slice(1, -1);
+    // Enrich addresses by geocoding them first (this normalizes and completes partial addresses)
+    const enrichedLocations = [];
+    for (const loc of locations) {
+      try {
+        const geocodeParams = new URLSearchParams();
+        geocodeParams.set('address', loc);
+        geocodeParams.set('key', apiKey);
+        if (region) geocodeParams.set('region', region);
+        
+        const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?${geocodeParams.toString()}`;
+        const geocodeResponse = await fetch(geocodeUrl);
+        const geocodeData = await geocodeResponse.json();
+        
+        if (geocodeData.status === 'OK' && geocodeData.results && geocodeData.results.length > 0) {
+          enrichedLocations.push(geocodeData.results[0].formatted_address);
+        } else {
+          console.warn(`[dev-server] Geocoding failed for "${loc}" (status: ${geocodeData.status}), using original`);
+          enrichedLocations.push(loc);
+        }
+      } catch (error) {
+        console.warn(`[dev-server] Geocoding error for "${loc}":`, error);
+        enrichedLocations.push(loc);
+      }
+    }
+
+    const origin = enrichedLocations[0];
+    const destination = enrichedLocations[enrichedLocations.length - 1];
+    const waypoints = enrichedLocations.slice(1, -1);
     const params = new URLSearchParams();
     params.set('origin', origin);
     params.set('destination', destination);
@@ -168,6 +193,8 @@ app.post('/api/google/maps/directions', async (req, res) => {
     params.set('units', 'metric');
     params.set('key', apiKey);
     if (region) params.set('region', region);
+
+    console.log(`[dev-server] Using enriched locations: ${enrichedLocations.join(' → ')}`);
 
     const url = `https://maps.googleapis.com/maps/api/directions/json?${params.toString()}`;
     const response = await fetch(url);
