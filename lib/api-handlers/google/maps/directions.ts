@@ -65,47 +65,55 @@ export default async function handler(req: any, res: any) {
     return;
   }
 
-  // Helper to enrich incomplete addresses with region context
-  const enrichAddress = (address: string, region?: string): string => {
-    const trimmed = address.trim();
-    
-    // Check if address already has postal code pattern (digits)
-    const hasPostalCode = /\d{4,5}/.test(trimmed);
-    
-    // If address already looks complete (has postal code or 3+ comma-separated parts), use as-is
-    const parts = trimmed.split(',').map(p => p.trim()).filter(p => p.length > 0);
-    if (hasPostalCode || parts.length >= 3) {
-      return trimmed; // Already complete enough
-    }
-    
-    // Add region context with postal code if available and address looks incomplete
-    if (region && parts.length < 3) {
-      // Map region codes to default city with postal code
-      const regionDefaults: Record<string, string> = {
-        'AT': '1010 Wien, Austria',
-        'DE': 'Deutschland',
-        'ES': '28001 Madrid, España',
-        'FR': '75001 Paris, France',
-        'IT': '00100 Roma, Italia',
-        'CH': '8001 Zürich, Switzerland',
-        'GB': 'London, UK',
-        'US': 'USA'
-      };
-      
-      const suffix = regionDefaults[region.toUpperCase()] || region;
-      return `${trimmed}, ${suffix}`;
-    }
-    
-    return trimmed;
-  };
-
-  // Process locations - add context but don't geocode (let Directions API handle it)
-  const processedLocations = locations.map(loc => enrichAddress(loc, region));
+  // Geocode each address to get complete, normalized version
+  const enrichedLocations: string[] = [];
   
-  console.log(`[directions] Original locations:`, locations);
-  console.log(`[directions] Processed locations:`, processedLocations);
+  for (const loc of locations) {
+    try {
+      const geocodeParams = new URLSearchParams();
+      geocodeParams.set('address', loc);
+      geocodeParams.set('key', apiKey);
+      if (region) {
+        geocodeParams.set('region', region);
+        // Also add region/country as components for better precision
+        geocodeParams.set('components', `country:${region}`);
+      }
+      
+      const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?${geocodeParams.toString()}`;
+      const geocodeResponse = await fetch(geocodeUrl);
+      const geocodeData = await geocodeResponse.json();
+      
+      if (geocodeData.status === 'OK' && geocodeData.results && geocodeData.results.length > 0) {
+        const result = geocodeData.results[0];
+        // Validate that the result is in the expected country/region
+        const addressComponents = result.address_components || [];
+        const countryComponent = addressComponents.find((c: any) => c.types.includes('country'));
+        const isCorrectRegion = !region || !countryComponent || countryComponent.short_name === region.toUpperCase();
+        
+        if (isCorrectRegion) {
+          enrichedLocations.push(result.formatted_address);
+          console.log(`[directions] ✓ Enriched "${loc}" → "${result.formatted_address}"`);
+        } else {
+          // Wrong country, use original
+          enrichedLocations.push(loc);
+          console.warn(`[directions] ⚠ Geocoded to wrong country: "${loc}" → "${result.formatted_address}", using original`);
+        }
+      } else {
+        // Geocoding failed, use original
+        enrichedLocations.push(loc);
+        console.warn(`[directions] ⚠ Geocoding failed for "${loc}" (status: ${geocodeData.status}), using original`);
+      }
+    } catch (error) {
+      // Error, use original
+      enrichedLocations.push(loc);
+      console.error(`[directions] ❌ Geocoding error for "${loc}":`, error);
+    }
+  }
 
-  const [origin, ...rest] = processedLocations;
+  console.log(`[directions] Original: ${locations.join(' → ')}`);
+  console.log(`[directions] Enriched: ${enrichedLocations.join(' → ')}`);
+
+  const [origin, ...rest] = enrichedLocations;
   const destination = rest.pop() as string;
   const waypoints = rest;
 

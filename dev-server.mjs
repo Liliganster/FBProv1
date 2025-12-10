@@ -157,48 +157,53 @@ app.post('/api/google/maps/directions', async (req, res) => {
       return res.status(400).json({ error: 'At least two locations are required' });
     }
 
-    // Helper to enrich incomplete addresses with region context
-    const enrichAddress = (address, region) => {
-      const trimmed = address.trim();
-      
-      // Check if address already has postal code pattern (digits)
-      const hasPostalCode = /\d{4,5}/.test(trimmed);
-      
-      // If address already looks complete (has postal code or 3+ comma-separated parts), use as-is
-      const parts = trimmed.split(',').map(p => p.trim()).filter(p => p.length > 0);
-      if (hasPostalCode || parts.length >= 3) {
-        return trimmed;
-      }
-      
-      // Add region context with postal code if available and address looks incomplete
-      if (region && parts.length < 3) {
-        const regionDefaults = {
-          'AT': '1010 Wien, Austria',
-          'DE': 'Deutschland',
-          'ES': '28001 Madrid, España',
-          'FR': '75001 Paris, France',
-          'IT': '00100 Roma, Italia',
-          'CH': '8001 Zürich, Switzerland',
-          'GB': 'London, UK',
-          'US': 'USA'
-        };
-        
-        const suffix = regionDefaults[region.toUpperCase()] || region;
-        return `${trimmed}, ${suffix}`;
-      }
-      
-      return trimmed;
-    };
-
-    // Process locations - add context but don't geocode
-    const processedLocations = locations.map(loc => enrichAddress(loc, region));
+    // Geocode each address to get complete, normalized version
+    const enrichedLocations = [];
     
-    console.log(`[dev-server] Original locations:`, locations);
-    console.log(`[dev-server] Processed locations:`, processedLocations);
+    for (const loc of locations) {
+      try {
+        const geocodeParams = new URLSearchParams();
+        geocodeParams.set('address', loc);
+        geocodeParams.set('key', apiKey);
+        if (region) {
+          geocodeParams.set('region', region);
+          geocodeParams.set('components', `country:${region}`);
+        }
+        
+        const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?${geocodeParams.toString()}`;
+        const geocodeResponse = await fetch(geocodeUrl);
+        const geocodeData = await geocodeResponse.json();
+        
+        if (geocodeData.status === 'OK' && geocodeData.results && geocodeData.results.length > 0) {
+          const result = geocodeData.results[0];
+          // Validate that the result is in the expected country/region
+          const addressComponents = result.address_components || [];
+          const countryComponent = addressComponents.find(c => c.types.includes('country'));
+          const isCorrectRegion = !region || !countryComponent || countryComponent.short_name === region.toUpperCase();
+          
+          if (isCorrectRegion) {
+            enrichedLocations.push(result.formatted_address);
+            console.log(`[dev-server] ✓ Enriched "${loc}" → "${result.formatted_address}"`);
+          } else {
+            enrichedLocations.push(loc);
+            console.warn(`[dev-server] ⚠ Geocoded to wrong country: "${loc}" → "${result.formatted_address}", using original`);
+          }
+        } else {
+          enrichedLocations.push(loc);
+          console.warn(`[dev-server] ⚠ Geocoding failed for "${loc}" (status: ${geocodeData.status}), using original`);
+        }
+      } catch (error) {
+        enrichedLocations.push(loc);
+        console.error(`[dev-server] ❌ Geocoding error for "${loc}":`, error);
+      }
+    }
 
-    const origin = processedLocations[0];
-    const destination = processedLocations[processedLocations.length - 1];
-    const waypoints = processedLocations.slice(1, -1);
+    console.log(`[dev-server] Original: ${locations.join(' → ')}`);
+    console.log(`[dev-server] Enriched: ${enrichedLocations.join(' → ')}`);
+
+    const origin = enrichedLocations[0];
+    const destination = enrichedLocations[enrichedLocations.length - 1];
+    const waypoints = enrichedLocations.slice(1, -1);
     const params = new URLSearchParams();
     params.set('origin', origin);
     params.set('destination', destination);
