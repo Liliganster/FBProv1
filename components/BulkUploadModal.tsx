@@ -156,9 +156,9 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
       // VERIFICAR CUOTA ANTES DE PROCESAR
       const currentQuota = await getAiQuota();
       
-      // Si el plan tiene límite y ya no tiene días restantes, no procesar
+      // Si el plan tiene límite y ya no tiene extracciones restantes, no procesar
       if (currentQuota.limit !== null && currentQuota.remaining !== null && currentQuota.remaining === 0) {
-        const errorMsg = `Has alcanzado el límite de tu plan (${currentQuota.used}/${currentQuota.limit} días únicos usados). No se puede procesar con IA. Actualiza tu plan o usa importación CSV.`;
+        const errorMsg = `Has alcanzado el límite de tu plan (${currentQuota.used}/${currentQuota.limit} extracciones usadas). No se puede procesar con IA. Actualiza tu plan o usa importación CSV.`;
         showToast(errorMsg, 'error');
         setIsProcessing(false);
         return;

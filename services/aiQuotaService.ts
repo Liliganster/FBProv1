@@ -21,23 +21,21 @@ const resolvePlan = (profile?: UserProfile | null, supabaseUser?: SupabaseUser |
   return normalizePlan(metaPlan || profilePlan);
 };
 
-const countAiDays = (entries: TripLedgerEntry[]): Set<string> => {
-  const aiDays = new Set<string>();
-  console.log('[countAiDays] Processing', entries.length, 'ledger entries');
+// Count total AI extractions (each trip = 1 call), not unique days
+const countAiExtractions = (entries: TripLedgerEntry[]): number => {
+  let count = 0;
+  console.log('[countAiExtractions] Processing', entries.length, 'ledger entries');
   entries.forEach(entry => {
     const matches = entry.source === TripLedgerSource.AI_AGENT &&
       (entry.operation === TripLedgerOperation.CREATE || entry.operation === TripLedgerOperation.IMPORT_BATCH);
     
     if (matches) {
-      const date = (entry.tripSnapshot as any)?.date;
-      if (typeof date === 'string' && date.trim()) {
-        console.log('[countAiDays] Found AI trip for date:', date, 'source:', entry.source, 'operation:', entry.operation);
-        aiDays.add(date.trim());
-      }
+      count++;
+      console.log('[countAiExtractions] Found AI extraction #' + count, 'date:', (entry.tripSnapshot as any)?.date, 'operation:', entry.operation);
     }
   });
-  console.log('[countAiDays] Total unique AI days:', aiDays.size, 'Days:', Array.from(aiDays));
-  return aiDays;
+  console.log('[countAiExtractions] Total AI extractions:', count);
+  return count;
 };
 
 export interface AiQuotaCheck {
@@ -64,30 +62,20 @@ export const checkAiQuota = async (params: {
   }
 
   const entries = await databaseService.getAiLedgerEntries(params.userId);
-  const usedDays = countAiDays(entries);
+  const used = countAiExtractions(entries);
 
-  const incomingDays = new Set<string>();
-  params.trips.forEach(trip => {
-    if (trip.date) {
-      incomingDays.add(trip.date);
-    }
-  });
+  // Each incoming trip = 1 AI call needed
+  const needed = params.trips.length;
 
-  let needed = 0;
-  incomingDays.forEach(date => {
-    if (!usedDays.has(date)) {
-      needed += 1;
-    }
-  });
-
-  const used = usedDays.size;
   const allowed = used + needed <= limit;
   const remaining = Math.max(limit - used, 0);
+
+  console.log('[checkAiQuota] Plan:', plan, 'Limit:', limit, 'Used:', used, 'Needed:', needed, 'Remaining:', remaining, 'Allowed:', allowed);
 
   return { plan, limit, used, needed, remaining, allowed };
 };
 
 export const buildQuotaError = (quota: AiQuotaCheck): string => {
-  const remainingText = quota.remaining === 0 ? 'sin cupo restante' : `te quedan ${quota.remaining} día(s)`;
-  return `Has alcanzado el límite de IA para tu plan (${quota.limit} días). Actualmente llevas ${quota.used} y ${remainingText}.`;
+  const remainingText = quota.remaining === 0 ? 'sin cupo restante' : `te quedan ${quota.remaining} extracción(es)`;
+  return `Has alcanzado el límite de IA para tu plan (${quota.limit} extracciones). Actualmente llevas ${quota.used} y ${remainingText}.`;
 };
