@@ -157,34 +157,48 @@ app.post('/api/google/maps/directions', async (req, res) => {
       return res.status(400).json({ error: 'At least two locations are required' });
     }
 
-    // Enrich addresses by geocoding them first (this normalizes and completes partial addresses)
-    const enrichedLocations = [];
-    for (const loc of locations) {
-      try {
-        const geocodeParams = new URLSearchParams();
-        geocodeParams.set('address', loc);
-        geocodeParams.set('key', apiKey);
-        if (region) geocodeParams.set('region', region);
-        
-        const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?${geocodeParams.toString()}`;
-        const geocodeResponse = await fetch(geocodeUrl);
-        const geocodeData = await geocodeResponse.json();
-        
-        if (geocodeData.status === 'OK' && geocodeData.results && geocodeData.results.length > 0) {
-          enrichedLocations.push(geocodeData.results[0].formatted_address);
-        } else {
-          console.warn(`[dev-server] Geocoding failed for "${loc}" (status: ${geocodeData.status}), using original`);
-          enrichedLocations.push(loc);
-        }
-      } catch (error) {
-        console.warn(`[dev-server] Geocoding error for "${loc}":`, error);
-        enrichedLocations.push(loc);
+    // Helper to enrich incomplete addresses with region context
+    const enrichAddress = (address, region) => {
+      const trimmed = address.trim();
+      
+      // Check if address already has postal code pattern (digits)
+      const hasPostalCode = /\d{4,5}/.test(trimmed);
+      
+      // If address already looks complete (has postal code or 3+ comma-separated parts), use as-is
+      const parts = trimmed.split(',').map(p => p.trim()).filter(p => p.length > 0);
+      if (hasPostalCode || parts.length >= 3) {
+        return trimmed;
       }
-    }
+      
+      // Add region context with postal code if available and address looks incomplete
+      if (region && parts.length < 3) {
+        const regionDefaults = {
+          'AT': '1010 Wien, Austria',
+          'DE': 'Deutschland',
+          'ES': '28001 Madrid, España',
+          'FR': '75001 Paris, France',
+          'IT': '00100 Roma, Italia',
+          'CH': '8001 Zürich, Switzerland',
+          'GB': 'London, UK',
+          'US': 'USA'
+        };
+        
+        const suffix = regionDefaults[region.toUpperCase()] || region;
+        return `${trimmed}, ${suffix}`;
+      }
+      
+      return trimmed;
+    };
 
-    const origin = enrichedLocations[0];
-    const destination = enrichedLocations[enrichedLocations.length - 1];
-    const waypoints = enrichedLocations.slice(1, -1);
+    // Process locations - add context but don't geocode
+    const processedLocations = locations.map(loc => enrichAddress(loc, region));
+    
+    console.log(`[dev-server] Original locations:`, locations);
+    console.log(`[dev-server] Processed locations:`, processedLocations);
+
+    const origin = processedLocations[0];
+    const destination = processedLocations[processedLocations.length - 1];
+    const waypoints = processedLocations.slice(1, -1);
     const params = new URLSearchParams();
     params.set('origin', origin);
     params.set('destination', destination);
@@ -193,8 +207,6 @@ app.post('/api/google/maps/directions', async (req, res) => {
     params.set('units', 'metric');
     params.set('key', apiKey);
     if (region) params.set('region', region);
-
-    console.log(`[dev-server] Using enriched locations: ${enrichedLocations.join(' → ')}`);
 
     const url = `https://maps.googleapis.com/maps/api/directions/json?${params.toString()}`;
     const response = await fetch(url);
