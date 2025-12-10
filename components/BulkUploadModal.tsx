@@ -501,10 +501,20 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
 
       console.log('[BulkUpload] Final nameToId mapping:', Array.from(nameToId.entries()));
 
+      // Helper to check if string is a valid UUID
+      const isUUID = (str: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
+
       // Map placeholder projectId (name) to real IDs
       const updatedDrafts = draftTrips.map((trip, index) => {
         const mapped = { ...trip };
         const originalProjectId = mapped.projectId;
+
+        // If projectId is already a valid UUID, no need to map it
+        if (isUUID(originalProjectId)) {
+          console.log(`[BulkUpload] Trip ${index}: Already has UUID "${originalProjectId}", skipping mapping`);
+          return mapped;
+        }
+
         const key = normalizeName(mapped.projectId);
 
         if (key && nameToId.has(key)) {
