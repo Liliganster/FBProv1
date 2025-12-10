@@ -357,10 +357,12 @@ export class TripLedgerService {
         sourceDocumentName: completedTrip.sourceDocumentName
       };
 
+      console.log('[importTripsBatch] Creating entry with source:', source, 'for trip:', completedTrip.date);
       batchEntries.push(entry);
       previousHash = entry.hash;
     }
 
+    console.log('[importTripsBatch] Saving', batchEntries.length, 'entries with source:', source);
     // Add all entries to Supabase
     await databaseService.addLedgerEntries(this.userId, batchEntries);
 

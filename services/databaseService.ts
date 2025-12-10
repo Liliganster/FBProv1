@@ -1657,6 +1657,7 @@ class DatabaseService {
    */
   async getAiLedgerEntries(userId: string): Promise<TripLedgerEntry[]> {
     try {
+      console.log('[getAiLedgerEntries] Fetching AI entries for user:', userId);
       const { data, error } = await supabase
         .from('trip_ledger')
         .select('*')
@@ -1665,13 +1666,18 @@ class DatabaseService {
         .in('operation', ['CREATE', 'IMPORT_BATCH']);
 
       if (error) {
-        console.error('Error fetching AI ledger entries:', error);
+        console.error('[getAiLedgerEntries] Error fetching AI ledger entries:', error);
         return [];
       }
 
-      return (data || []).map(this.transformDbLedgerToLegacy);
+      console.log('[getAiLedgerEntries] Found', (data || []).length, 'AI entries in database');
+      console.log('[getAiLedgerEntries] Raw data:', data);
+      
+      const transformed = (data || []).map(this.transformDbLedgerToLegacy);
+      console.log('[getAiLedgerEntries] Transformed entries:', transformed);
+      return transformed;
     } catch (error) {
-      console.error('Error fetching AI ledger entries (unexpected):', error);
+      console.error('[getAiLedgerEntries] Error fetching AI ledger entries (unexpected):', error);
       return [];
     }
   }
