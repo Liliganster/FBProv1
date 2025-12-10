@@ -104,7 +104,10 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
 
   const [aiFiles, setAiFiles] = useState<File[]>([]);
   const [aiText, setAiText] = useState<string>("");
-  const [isProcessing, setIsProcessing] = useState(false);
+  const [isAiProcessing, setIsAiProcessing] = useState(false);
+  const [isDriveProcessing, setIsDriveProcessing] = useState(false);
+  const isBusy = isAiProcessing || isDriveProcessing;
+
   const [aiExtractMode, setAiExtractMode] = useState<'direct' | 'agent'>('agent');
   const [documentType, setDocumentType] = useState<DocumentType>(DocumentType.CALLSHEET);
 
@@ -125,7 +128,8 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
     setNewlyCreatedProjects(new Map());
     setCsvPastedText('');
     setAiFiles([]);
-    setIsProcessing(false);
+    setIsAiProcessing(false);
+    setIsDriveProcessing(false);
   };
 
   const handleModeChange = (newMode: Mode) => {
@@ -145,7 +149,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
       return;
     }
 
-    setIsProcessing(true);
+    setIsAiProcessing(true);
 
     try {
       const hasTextOnly = aiFiles.length === 0 && aiText.trim().length > 0;
@@ -155,12 +159,12 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
 
       // VERIFICAR CUOTA ANTES DE PROCESAR
       const currentQuota = await getAiQuota();
-      
+
       // Si el plan tiene límite y ya no tiene extracciones restantes, no procesar
       if (currentQuota.limit !== null && currentQuota.remaining !== null && currentQuota.remaining === 0) {
         const errorMsg = `Has alcanzado el límite de tu plan (${currentQuota.used}/${currentQuota.limit} extracciones usadas). No se puede procesar con IA. Actualiza tu plan o usa importación CSV.`;
         showToast(errorMsg, 'error');
-        setIsProcessing(false);
+        setIsAiProcessing(false);
         return;
       }
 
@@ -237,7 +241,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
       console.error('[BulkUpload] Unexpected error during AI processing:', error);
       showToast(`Unexpected error: ${error instanceof Error ? error.message : String(error)}`, 'error');
     } finally {
-      setIsProcessing(false);
+      setIsAiProcessing(false);
     }
   };
 
@@ -253,7 +257,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
         if (!docs || docs.length === 0) return;
 
         showToast(`Importing ${docs.length} file(s) from Google Drive...`, 'info');
-        setIsProcessing(true);
+        setIsDriveProcessing(true);
 
         const csvDocs = docs.filter(d => d.mimeType === 'text/csv' || d.name.toLowerCase().endsWith('.csv'));
         const otherDocs = docs.filter(d => !csvDocs.some(cd => cd.id === d.id));
@@ -285,7 +289,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
           console.error("Error downloading from Drive:", error);
           showToast("Failed to download files from Google Drive.", 'error');
         } finally {
-          setIsProcessing(false);
+          setIsDriveProcessing(false);
         }
       }
     };
@@ -548,7 +552,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
           const files = fileData.map(fd => fd.file);
           const uploadedCallsheets = await addCallsheetsToProject(projectId, files);
           console.log(`[BulkUpload] Uploaded ${uploadedCallsheets.length} file(s) to project ${projectId}:`, uploadedCallsheets);
-          
+
           // Associate uploaded callsheets with their corresponding trips
           fileData.forEach((fd, index) => {
             const callsheet = uploadedCallsheets[index];
@@ -588,14 +592,14 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
       console.log('[BulkUpload] Calling onSave with mode:', mode);
       console.log('[BulkUpload] Number of trips to save:', sanitizedDrafts.length);
       console.log('[BulkUpload] Trip dates:', sanitizedDrafts.map(t => t.date));
-      
+
       await onSave(sanitizedDrafts, mode);
 
       // Refresh projects to show uploaded callsheets in project list
-      try { 
-        await fetchProjects(); 
+      try {
+        await fetchProjects();
         console.log('[BulkUpload] Projects refreshed after saving trips and callsheets');
-      } catch (e) { 
+      } catch (e) {
         console.warn('[BulkUpload] Failed to refresh projects:', e);
       }
     } catch (error) {
@@ -701,8 +705,8 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
                     <UploadCloudIcon className="w-5 h-5" /> {t('bulk_csv_upload_selectBtn')}
                     <input type="file" accept=".csv,text/csv" onChange={handleCsvFileSelected} id="csv-upload" className="hidden" />
                   </label>
-                  <Button id="bulk-drive-btn" onClick={handleDriveImport} disabled={isProcessing} variant="secondary" className="inline-flex items-center justify-center gap-2">
-                    {isProcessing ? <LoaderIcon className="w-5 h-5 animate-spin" /> : <DriveIcon className="w-5 h-5 text-[#0F9D58]" />} {t('bulk_drive_upload_selectBtn')}
+                  <Button id="bulk-drive-btn" onClick={handleDriveImport} disabled={isBusy} variant="secondary" className="inline-flex items-center justify-center gap-2">
+                    {isDriveProcessing ? <LoaderIcon className="w-5 h-5 animate-spin" /> : <DriveIcon className="w-5 h-5 text-[#0F9D58]" />} {t('bulk_drive_upload_selectBtn')}
                   </Button>
                 </div>
                 <div className="flex items-center">
@@ -807,8 +811,8 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
                   <p className="text-on-surface-dark-secondary text-sm">{t('bulk_ai_drag_drop_subtitle')}</p>
                   <input type="file" multiple accept="image/*,application/pdf,.txt,.eml,message/rfc822" onChange={handleAiFileSelected} id="ai-upload" className="hidden" />
                 </div>
-                <Button id="bulk-ai-drive-secondary" onClick={handleDriveImport} disabled={isProcessing} variant="secondary" className="w-full inline-flex items-center justify-center gap-2">
-                  {isProcessing ? <LoaderIcon className="w-5 h-5 animate-spin" /> : <DriveIcon className="w-5 h-5 text-[#0F9D58]" />} {t('bulk_drive_upload_selectBtn')}
+                <Button id="bulk-ai-drive-secondary" onClick={handleDriveImport} disabled={isBusy} variant="secondary" className="w-full inline-flex items-center justify-center gap-2">
+                  {isDriveProcessing ? <LoaderIcon className="w-5 h-5 animate-spin" /> : <DriveIcon className="w-5 h-5 text-[#0F9D58]" />} {t('bulk_drive_upload_selectBtn')}
                 </Button>
                 {aiFiles.length > 0 && (
                   <div className="max-h-60 overflow-y-auto space-y-2 bg-background-dark p-2 rounded-md">
@@ -858,8 +862,8 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
             <>
               <Button id="bulk-cancel" onClick={onClose} variant="secondary" className="mr-3">{t('common_cancel')}</Button>
               {mode === 'ai' && (
-                <Button id="bulk-ai-process" onClick={handleProcessAi} disabled={isProcessing || (aiFiles.length === 0 && aiText.trim().length === 0)} variant="primary" className="flex items-center justify-center w-auto min-w-60">
-                  {isProcessing ? (
+                <Button id="bulk-ai-process" onClick={handleProcessAi} disabled={isBusy || (aiFiles.length === 0 && aiText.trim().length === 0)} variant="primary" className="flex items-center justify-center w-auto min-w-60">
+                  {isAiProcessing ? (
                     <><LoaderIcon className="w-5 h-5 mr-2 animate-spin" /> {t('bulk_ai_processing', { mode: aiExtractMode === 'direct' ? t('bulk_extraction_mode_direct') : t('bulk_extraction_mode_agent') })}</>
                   ) : mapsLoading ? (
                     <><LoaderIcon className="w-5 h-5 mr-2 animate-spin" /> {t('bulk_ai_loading_maps')}</>
