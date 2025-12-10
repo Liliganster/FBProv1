@@ -585,6 +585,10 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
         return rest;
       });
 
+      console.log('[BulkUpload] Calling onSave with mode:', mode);
+      console.log('[BulkUpload] Number of trips to save:', sanitizedDrafts.length);
+      console.log('[BulkUpload] Trip dates:', sanitizedDrafts.map(t => t.date));
+      
       await onSave(sanitizedDrafts, mode);
 
       // Refresh projects to show uploaded callsheets in project list

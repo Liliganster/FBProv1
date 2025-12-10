@@ -165,10 +165,16 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
   };
 
   const handleSaveBulkTrips = async (newTrips: Omit<Trip, 'id'>[], source: 'ai' | 'csv') => {
+    console.log('[TripsView] handleSaveBulkTrips called with source:', source);
+    console.log('[TripsView] Number of trips:', newTrips.length);
+    console.log('[TripsView] Trip dates:', newTrips.map(t => t.date));
+    
     try {
       if (source === 'ai' && addAiTrips) {
+        console.log('[TripsView] Calling addAiTrips');
         await addAiTrips(newTrips);
       } else {
+        console.log('[TripsView] Calling addCsvTrips');
         await addCsvTrips(newTrips);
       }
       setIsBulkModalOpen(false);
