@@ -287,6 +287,9 @@ export const LedgerTripsProvider: React.FC<{ children: ReactNode }> = ({ childre
       throw new Error('User not available');
     }
 
+    console.log('[addAiTrips] Starting import of', newTrips.length, 'trips');
+    console.log('[addAiTrips] Trip dates:', newTrips.map(t => t.date));
+
     setLoading(true);
     try {
       const quota = await checkAiQuota({
@@ -296,15 +299,31 @@ export const LedgerTripsProvider: React.FC<{ children: ReactNode }> = ({ childre
         supabaseUser,
       });
 
+      console.log('[addAiTrips] Quota check result:', quota);
+
       if (!quota.allowed) {
         const message = buildQuotaError(quota);
         showToast(message, 'error');
         throw new Error(message);
       }
 
+      console.log('[addAiTrips] Calling importTripsBatch with source=AI_AGENT');
       const { entries } = await ledgerService.importTripsBatch(newTrips, TripLedgerSource.AI_AGENT);
+      console.log('[addAiTrips] Successfully created', entries.length, 'ledger entries');
+      console.log('[addAiTrips] Entry sources:', entries.map(e => e.source));
+      console.log('[addAiTrips] Entry dates:', entries.map(e => (e.tripSnapshot as any)?.date));
+      
       await refreshTrips();
       showToast(`${entries.length} trips imported via AI`, 'success');
+      
+      // Verify quota after save
+      const newQuota = await checkAiQuota({
+        userId: user.id,
+        trips: [],
+        profile: userProfile,
+        supabaseUser,
+      });
+      console.log('[addAiTrips] Quota after save:', newQuota);
     } catch (err) {
       console.error('Error adding AI trips:', err);
       const errorMessage = err instanceof Error ? err.message : 'Failed to import AI trips';

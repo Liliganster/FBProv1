@@ -23,17 +23,20 @@ const resolvePlan = (profile?: UserProfile | null, supabaseUser?: SupabaseUser |
 
 const countAiDays = (entries: TripLedgerEntry[]): Set<string> => {
   const aiDays = new Set<string>();
+  console.log('[countAiDays] Processing', entries.length, 'ledger entries');
   entries.forEach(entry => {
-    if (
-      entry.source === TripLedgerSource.AI_AGENT &&
-      (entry.operation === TripLedgerOperation.CREATE || entry.operation === TripLedgerOperation.IMPORT_BATCH)
-    ) {
+    const matches = entry.source === TripLedgerSource.AI_AGENT &&
+      (entry.operation === TripLedgerOperation.CREATE || entry.operation === TripLedgerOperation.IMPORT_BATCH);
+    
+    if (matches) {
       const date = (entry.tripSnapshot as any)?.date;
       if (typeof date === 'string' && date.trim()) {
+        console.log('[countAiDays] Found AI trip for date:', date, 'source:', entry.source, 'operation:', entry.operation);
         aiDays.add(date.trim());
       }
     }
   });
+  console.log('[countAiDays] Total unique AI days:', aiDays.size, 'Days:', Array.from(aiDays));
   return aiDays;
 };
 
