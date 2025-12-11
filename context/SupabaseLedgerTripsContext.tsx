@@ -11,7 +11,7 @@ interface LedgerTripsContextType {
   trips: Trip[];
   loading: boolean;
   error: string | null;
-  
+
   // Trip CRUD operations
   addTrip: (trip: Omit<Trip, 'id'>) => Promise<void>;
   updateTrip: (updatedTrip: Trip) => Promise<void>;
@@ -22,25 +22,25 @@ interface LedgerTripsContextType {
   addAiTrips: (newTrips: Omit<Trip, 'id'>[]) => Promise<void>;
   addCsvTrips: (drafts: Omit<Trip, 'id'>[]) => Promise<void>;
   getAiQuota: () => Promise<AiQuotaCheck>;
-  
+
   // Project operations (proxied to ProjectsContext)
   projects: any[];
   addProject: (project: any) => Promise<void>;
   updateProject: (updatedProject: any) => Promise<void>;
   deleteProject: (projectId: string) => Promise<void>;
   deleteMultipleProjects: (projectIds: string[]) => Promise<void>;
-  
+
   // File operations
   addCallsheetToProject: (projectId: string, file: File) => Promise<void>;
   deleteCallsheetFromProject: (projectId: string, callsheetId: string) => Promise<void>;
-  
+
   // CSV and bulk operations  
   downloadCsv: () => void;
   uploadCsv: (file: File) => Promise<void>;
   replaceAllTrips: (newTrips: Trip[]) => Promise<void>;
   replaceAllProjects: (newProjects: any[]) => Promise<void>;
   deleteAllData: () => Promise<void>;
-  
+
   // Ledger-specific functions
   verifyLedgerIntegrity: () => Promise<{ isValid: boolean; errors: string[] }>;
   getRootHash: () => Promise<string | null>;
@@ -53,15 +53,15 @@ export const LedgerTripsProvider: React.FC<{ children: ReactNode }> = ({ childre
   const { user, supabaseUser } = useAuth();
   const { showToast } = useToast();
   const { userProfile } = useUserProfile();
-  
+
   // Use ProjectsContext for project operations
   const projectsContext = useProjects();
-  
+
   // State for trips from Supabase ledger
   const [trips, setTrips] = useState<Trip[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
+
   // Create ledger service instance
   const ledgerService = useMemo(() => {
     if (!user?.id) return null;
@@ -91,7 +91,7 @@ export const LedgerTripsProvider: React.FC<{ children: ReactNode }> = ({ childre
 
     setLoading(true);
     setError(null);
-    
+
     try {
       const ledgerTrips = await ledgerService.getTrips();
       setTrips(ledgerTrips);
@@ -198,38 +198,51 @@ export const LedgerTripsProvider: React.FC<{ children: ReactNode }> = ({ childre
     try {
       // Get trip info before deleting to access sourceDocumentId and projectId
       const tripToDelete = trips.find(t => t.id === tripId);
-      
-      // Void the trip
+
+      // Import database service for cascading deletions
+      const databaseService = (await import('../services/databaseService')).default;
+
+      // 1. Delete all associated expenses
+      try {
+        await databaseService.deleteTripExpenses(tripId, user.id);
+      } catch (err) {
+        console.warn(`Failed to delete expenses for trip ${tripId}:`, err);
+        // Continue with deletion even if expense cleanup fails
+      }
+
+      // 2. Void the trip
       await ledgerService.voidTrip(tripId, 'Trip deleted by user', TripLedgerSource.MANUAL);
-      
-      // If trip has an associated callsheet, delete it
+
+      // 3. If trip has an associated callsheet, delete it
       if (tripToDelete?.sourceDocumentId) {
         try {
-          const databaseService = (await import('../services/databaseService')).default;
           await databaseService.deleteCallsheetFromProject(tripToDelete.sourceDocumentId, user.id);
           console.log(`Deleted associated callsheet: ${tripToDelete.sourceDocumentId}`);
-          
-          // Check if the project is now empty (no callsheets and no active trips)
-          if (tripToDelete.projectId) {
-            const isEmpty = await databaseService.isProjectEmpty(tripToDelete.projectId, user.id);
-            if (isEmpty) {
-              await projectsContext.deleteProject(tripToDelete.projectId);
-              console.log(`Deleted empty project: ${tripToDelete.projectId}`);
-              showToast('Trip, document, and empty project deleted successfully', 'success');
-            } else {
-              showToast('Trip and associated document deleted successfully', 'success');
-            }
-          } else {
-            showToast('Trip and associated document deleted successfully', 'success');
-          }
         } catch (docErr) {
-          console.warn('Could not delete associated document or project:', docErr);
+          console.warn('Could not delete associated document:', docErr);
           showToast('Trip deleted, but document cleanup failed', 'warning');
+        }
+      }
+
+      // 4. Check if the project is now empty (no callsheets, no expense documents, and no active trips)
+      if (tripToDelete?.projectId) {
+        try {
+          const isEmpty = await databaseService.isProjectEmpty(tripToDelete.projectId, user.id);
+          if (isEmpty) {
+            await projectsContext.deleteProject(tripToDelete.projectId);
+            console.log(`Deleted empty project: ${tripToDelete.projectId}`);
+            showToast('Trip and empty project deleted successfully', 'success');
+          } else {
+            showToast('Trip deleted successfully', 'success');
+          }
+        } catch (projErr) {
+          console.warn('Error checking/deleting empty project:', projErr);
+          showToast('Trip deleted successfully', 'success');
         }
       } else {
         showToast('Trip deleted successfully', 'success');
       }
-      
+
       await refreshTrips();
     } catch (err) {
       console.error('Error deleting trip:', err);
@@ -255,7 +268,7 @@ export const LedgerTripsProvider: React.FC<{ children: ReactNode }> = ({ childre
       const tripsToDelete = trips.filter(t => tripIds.includes(t.id));
       const callsheetsToDelete = new Set<string>();
       const projectsToCheck = new Set<string>();
-      
+
       tripsToDelete.forEach(trip => {
         if (trip.sourceDocumentId) {
           callsheetsToDelete.add(trip.sourceDocumentId);
@@ -264,19 +277,29 @@ export const LedgerTripsProvider: React.FC<{ children: ReactNode }> = ({ childre
           projectsToCheck.add(trip.projectId);
         }
       });
-      
-      // Delete all trips first
+
+      // Import database service
+      const databaseService = (await import('../services/databaseService')).default;
+
+      // Delete all trips and their expenses
       for (const tripId of tripIds) {
+        // 1. Delete expenses first
+        try {
+          await databaseService.deleteTripExpenses(tripId, user.id);
+        } catch (err) {
+          console.warn(`Failed to delete expenses for trip ${tripId}:`, err);
+        }
+
+        // 2. Void the trip
         await ledgerService.voidTrip(tripId, 'Batch delete by user', TripLedgerSource.MANUAL);
       }
-      
+
       // Wait for trips to be refreshed so project emptiness check is accurate
       await refreshTrips();
-      
+
       // Delete associated callsheets
       let deletedDocs = 0;
       if (callsheetsToDelete.size > 0) {
-        const databaseService = (await import('../services/databaseService')).default;
         for (const callsheetId of callsheetsToDelete) {
           try {
             await databaseService.deleteCallsheetFromProject(callsheetId, user.id);
@@ -286,11 +309,10 @@ export const LedgerTripsProvider: React.FC<{ children: ReactNode }> = ({ childre
           }
         }
       }
-      
+
       // Check and delete empty projects (after trips are already voided)
       let deletedProjects = 0;
       if (projectsToCheck.size > 0) {
-        const databaseService = (await import('../services/databaseService')).default;
         for (const projectId of projectsToCheck) {
           try {
             const isEmpty = await databaseService.isProjectEmpty(projectId, user.id);
@@ -303,7 +325,7 @@ export const LedgerTripsProvider: React.FC<{ children: ReactNode }> = ({ childre
           }
         }
       }
-      
+
       // Show appropriate success message
       if (deletedDocs > 0 && deletedProjects > 0) {
         showToast(`${tripIds.length} trips, ${deletedDocs} documents, and ${deletedProjects} empty projects deleted`, 'success');
@@ -406,10 +428,10 @@ export const LedgerTripsProvider: React.FC<{ children: ReactNode }> = ({ childre
       console.log('[addAiTrips] Successfully created', entries.length, 'ledger entries');
       console.log('[addAiTrips] Entry sources:', entries.map(e => e.source));
       console.log('[addAiTrips] Entry dates:', entries.map(e => (e.tripSnapshot as any)?.date));
-      
+
       await refreshTrips();
       showToast(`${entries.length} trips imported via AI`, 'success');
-      
+
       // Verify quota after save
       const newQuota = await checkAiQuota({
         userId: user.id,
@@ -518,7 +540,7 @@ export const LedgerTripsProvider: React.FC<{ children: ReactNode }> = ({ childre
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
-    
+
     link.setAttribute('href', url);
     link.setAttribute('download', `fahrtenbuch_${new Date().toISOString().split('T')[0]}.csv`);
     link.style.visibility = 'hidden';
@@ -547,7 +569,7 @@ export const LedgerTripsProvider: React.FC<{ children: ReactNode }> = ({ childre
         const { id, hash, previousHash, ...tripData } = trip;
         return tripData;
       });
-      
+
       const { entries } = await ledgerService.importTripsBatch(tripsWithoutId, TripLedgerSource.BULK_UPLOAD);
       await refreshTrips();
       showToast(`Replaced with ${entries.length} trips`, 'success');
@@ -574,10 +596,10 @@ export const LedgerTripsProvider: React.FC<{ children: ReactNode }> = ({ childre
           await ledgerService.voidTrip(trip.id, 'Delete all data operation', TripLedgerSource.MANUAL);
         }
       }
-      
+
       // Delete all projects
       await projectsContext.deleteAllProjects();
-      
+
       await refreshTrips();
       showToast('All data deleted successfully', 'success');
     } catch (err) {
@@ -630,7 +652,7 @@ export const LedgerTripsProvider: React.FC<{ children: ReactNode }> = ({ childre
     trips,
     loading: loading || projectsContext.loading,
     error: error || projectsContext.error,
-    
+
     // Trip operations
     addTrip,
     updateTrip,
@@ -641,25 +663,25 @@ export const LedgerTripsProvider: React.FC<{ children: ReactNode }> = ({ childre
     addMultipleTrips,
     addCsvTrips,
     getAiQuota,
-    
+
     // Project operations (proxied)
     projects: projectsContext.projects,
     addProject,
     updateProject,
     deleteProject,
     deleteMultipleProjects,
-    
+
     // File operations
     addCallsheetToProject,
     deleteCallsheetFromProject,
-    
+
     // CSV and bulk operations
     downloadCsv,
     uploadCsv,
     replaceAllTrips,
     replaceAllProjects,
     deleteAllData,
-    
+
     // Ledger-specific
     verifyLedgerIntegrity,
     getRootHash,
@@ -685,8 +707,8 @@ function generateCsvContent(trips: Trip[]): string {
     trip.reason,
     (trip.passengers || 0).toString()
   ]);
-  
-  return [headers, ...rows].map(row => 
+
+  return [headers, ...rows].map(row =>
     row.map(field => `"${field.replace(/"/g, '""')}"`).join(',')
   ).join('\n');
 }

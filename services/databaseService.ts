@@ -293,6 +293,9 @@ class DatabaseService {
 
       if (callsheetsError) throw callsheetsError
 
+      // Then delete all associated expenses
+      await this.deleteProjectExpenses(projectId, userId);
+
       // Then delete the project
       const { error } = await supabase
         .from('projects')
@@ -463,6 +466,16 @@ class DatabaseService {
 
       if (callsheetsError) throw callsheetsError;
       if (callsheets && callsheets.length > 0) return false;
+
+      // Check if project has any expense documents
+      const { data: expenses, error: expensesError } = await supabase
+        .from('expense_documents')
+        .select('id')
+        .eq('project_id', projectId)
+        .limit(1);
+
+      if (expensesError) throw expensesError;
+      if (expenses && expenses.length > 0) return false;
 
       // Check if project has any active trips (trips in ledger that aren't voided)
       const { data: ledgerEntries, error: ledgerError } = await supabase
@@ -786,6 +799,90 @@ class DatabaseService {
     } catch (error) {
       console.error('Error deleting all callsheets:', error);
       throw new Error('Failed to delete callsheets');
+    }
+  }
+
+  /**
+   * Delete all expenses associated with a trip
+   */
+  async deleteTripExpenses(tripId: string, userId: string): Promise<void> {
+    try {
+      // Get all expenses for this trip to delete files from storage
+      const { data: expenses, error: fetchError } = await supabase
+        .from('expense_documents')
+        .select('storage_path')
+        .eq('trip_id', tripId)
+        .eq('user_id', userId);
+
+      if (fetchError) throw fetchError;
+
+      const storagePaths = (expenses ?? [])
+        .map(expense => expense.storage_path)
+        .filter((path): path is string => Boolean(path));
+
+      if (storagePaths.length > 0) {
+        const { error: storageError } = await supabase.storage
+          .from('expenses')
+          .remove(storagePaths);
+
+        if (storageError) {
+          console.warn('Unable to remove some expense documents from storage:', storageError.message);
+        }
+      }
+
+      // Delete from database
+      const { error: deleteError } = await supabase
+        .from('expense_documents')
+        .delete()
+        .eq('trip_id', tripId)
+        .eq('user_id', userId);
+
+      if (deleteError) throw deleteError;
+    } catch (error) {
+      console.error('Error deleting trip expenses:', error);
+      throw new Error('Failed to delete trip expenses');
+    }
+  }
+
+  /**
+   * Delete all expenses associated with a project
+   */
+  async deleteProjectExpenses(projectId: string, userId: string): Promise<void> {
+    try {
+      // Get all expenses for this project to delete files from storage
+      const { data: expenses, error: fetchError } = await supabase
+        .from('expense_documents')
+        .select('storage_path')
+        .eq('project_id', projectId)
+        .eq('user_id', userId);
+
+      if (fetchError) throw fetchError;
+
+      const storagePaths = (expenses ?? [])
+        .map(expense => expense.storage_path)
+        .filter((path): path is string => Boolean(path));
+
+      if (storagePaths.length > 0) {
+        const { error: storageError } = await supabase.storage
+          .from('expenses')
+          .remove(storagePaths);
+
+        if (storageError) {
+          console.warn('Unable to remove some expense documents from storage:', storageError.message);
+        }
+      }
+
+      // Delete from database
+      const { error: deleteError } = await supabase
+        .from('expense_documents')
+        .delete()
+        .eq('project_id', projectId)
+        .eq('user_id', userId);
+
+      if (deleteError) throw deleteError;
+    } catch (error) {
+      console.error('Error deleting project expenses:', error);
+      throw new Error('Failed to delete project expenses');
     }
   }
 
@@ -1734,7 +1831,7 @@ class DatabaseService {
 
       console.log('[getAiLedgerEntries] Found', (data || []).length, 'AI entries in database');
       console.log('[getAiLedgerEntries] Raw data:', data);
-      
+
       const transformed = (data || []).map(this.transformDbLedgerToLegacy);
       console.log('[getAiLedgerEntries] Transformed entries:', transformed);
       return transformed;
