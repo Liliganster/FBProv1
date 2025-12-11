@@ -33,7 +33,7 @@ interface LedgerTripsContextType {
 
   // File operations
   addCallsheetToProject: (projectId: string, file: File) => Promise<void>;
-  deleteCallsheetFromProject: (projectId: string, callsheetId: string) => Promise<void>;
+  deleteCallsheetFromProject: (projectId: string, callsheetId: string, opts?: { silent?: boolean }) => Promise<void>;
 
   // CSV and bulk operations  
   downloadCsv: () => void;
@@ -230,7 +230,7 @@ export const LedgerTripsProvider: React.FC<{ children: ReactNode }> = ({ childre
         try {
           console.log(`Deleting callsheet ${tripToDelete.sourceDocumentId}...`);
           // Use projectsContext to delete callsheet AND update UI state
-          await projectsContext.deleteCallsheetFromProject(tripToDelete.projectId, tripToDelete.sourceDocumentId);
+          await projectsContext.deleteCallsheetFromProject(tripToDelete.projectId, tripToDelete.sourceDocumentId, { silent: true });
           console.log(`Deleted associated callsheet: ${tripToDelete.sourceDocumentId}`);
         } catch (docErr) {
           console.warn('Could not delete associated document:', docErr);
@@ -488,14 +488,18 @@ export const LedgerTripsProvider: React.FC<{ children: ReactNode }> = ({ childre
     }
   }, [projectsContext, showToast]);
 
-  const deleteCallsheetFromProject = useCallback(async (projectId: string, callsheetId: string): Promise<void> => {
+  const deleteCallsheetFromProject = useCallback(async (projectId: string, callsheetId: string, opts?: { silent?: boolean }): Promise<void> => {
     try {
       // Now handled by ProjectsContext which deletes from Supabase Storage
-      await projectsContext.deleteCallsheetFromProject(projectId, callsheetId);
-      showToast('Callsheet deleted successfully', 'success');
+      await projectsContext.deleteCallsheetFromProject(projectId, callsheetId, opts);
+      if (!opts?.silent) {
+        showToast('Callsheet deleted successfully', 'success');
+      }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to delete callsheet';
-      showToast(errorMessage, 'error');
+      if (!opts?.silent) {
+        showToast(errorMessage, 'error');
+      }
       throw err;
     }
   }, [projectsContext, showToast]);

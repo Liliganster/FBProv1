@@ -24,8 +24,8 @@ interface ProjectContextType extends ProjectsState {
   setEditingProject: (project: Project | null) => void
   setSelectedProject: (id: string | null) => void
   addCallsheetsToProject: (projectId: string, files: File[]) => Promise<CallsheetFile[]>
-  deleteCallsheetFromProject: (projectId: string, callsheetId: string) => Promise<void>
-  deleteCallsheetsFromProject: (projectId: string, callsheetIds: string[]) => Promise<void>
+  deleteCallsheetFromProject: (projectId: string, callsheetId: string, opts?: { silent?: boolean }) => Promise<void>
+  deleteCallsheetsFromProject: (projectId: string, callsheetIds: string[], opts?: { silent?: boolean }) => Promise<void>
   replaceAllProjects: (projects: Project[]) => Promise<void>
   deleteAllProjects: () => Promise<void>
 }
@@ -229,7 +229,7 @@ export function ProjectsProvider({ children }: { children: React.ReactNode }) {
     }
   }, [state.projects, showToast])
 
-  const deleteCallsheetFromProject = useCallback(async (projectId: string, callsheetId: string) => {
+  const deleteCallsheetFromProject = useCallback(async (projectId: string, callsheetId: string, opts?: { silent?: boolean }) => {
     if (!user?.id) {
       showToast('User not authenticated', 'error');
       return;
@@ -248,15 +248,19 @@ export function ProjectsProvider({ children }: { children: React.ReactNode }) {
         dispatch({ type: 'UPDATE_PROJECT', project: updatedProject })
       }
 
-      showToast('Callsheet deleted successfully', 'success')
+      if (!opts?.silent) {
+        showToast('Callsheet deleted successfully', 'success')
+      }
     } catch (error) {
       console.error('Error deleting callsheet:', error)
       const errorMessage = error instanceof Error ? error.message : 'Failed to delete callsheet'
-      showToast(errorMessage, 'error')
+      if (!opts?.silent) {
+        showToast(errorMessage, 'error')
+      }
     }
   }, [state.projects, showToast])
 
-  const deleteCallsheetsFromProject = useCallback(async (projectId: string, callsheetIds: string[]) => {
+  const deleteCallsheetsFromProject = useCallback(async (projectId: string, callsheetIds: string[], opts?: { silent?: boolean }) => {
     if (!user?.id) {
       showToast('User not authenticated', 'error');
       return;
@@ -280,11 +284,15 @@ export function ProjectsProvider({ children }: { children: React.ReactNode }) {
         dispatch({ type: 'UPDATE_PROJECT', project: updatedProject })
       }
 
-      showToast(`${callsheetIds.length} callsheets deleted successfully`, 'success')
+      if (!opts?.silent) {
+        showToast(`${callsheetIds.length} callsheets deleted successfully`, 'success')
+      }
     } catch (error) {
       console.error('Error deleting callsheets:', error)
       const errorMessage = error instanceof Error ? error.message : 'Failed to delete callsheets'
-      showToast(errorMessage, 'error')
+      if (!opts?.silent) {
+        showToast(errorMessage, 'error')
+      }
     }
   }, [state.projects, showToast, user?.id])
 
