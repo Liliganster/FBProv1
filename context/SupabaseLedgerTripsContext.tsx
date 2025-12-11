@@ -330,28 +330,44 @@ export const LedgerTripsProvider: React.FC<{ children: ReactNode }> = ({ childre
       // Delete associated callsheets
       let deletedDocs = 0;
       if (callsheetsToDelete.size > 0) {
-        // Map callsheets to their projects for context-aware deletion
-        const projectCallsheetMap = new Map<string, string>();
+        // Group callsheets by project for batch deletion
+        const projectCallsheetsMap = new Map<string, string[]>();
+        const orphanCallsheets: string[] = [];
+
         tripsToDelete.forEach(t => {
-          if (t.sourceDocumentId && t.projectId) {
-            projectCallsheetMap.set(t.sourceDocumentId, t.projectId);
+          if (t.sourceDocumentId) {
+            if (t.projectId) {
+              const existing = projectCallsheetsMap.get(t.projectId) || [];
+              existing.push(t.sourceDocumentId);
+              projectCallsheetsMap.set(t.projectId, existing);
+            } else {
+              orphanCallsheets.push(t.sourceDocumentId);
+            }
           }
         });
 
-        for (const callsheetId of callsheetsToDelete) {
+        // Delete from projects (batch update UI)
+        for (const [projectId, callsheetIds] of projectCallsheetsMap.entries()) {
           try {
-            const projectId = projectCallsheetMap.get(callsheetId);
-            if (projectId) {
-              await projectsContext.deleteCallsheetFromProject(projectId, callsheetId);
-            } else {
-              await databaseService.deleteCallsheetFromProject(callsheetId, user.id);
-            }
-            deletedDocs++;
+            console.log(`[Batch Delete] Deleting ${callsheetIds.length} callsheets from project ${projectId}`);
+            await projectsContext.deleteCallsheetsFromProject(projectId, callsheetIds);
+            deletedDocs += callsheetIds.length;
           } catch (err) {
-            console.warn(`Could not delete callsheet ${callsheetId}:`, err);
+            console.warn(`Failed to delete callsheets from project ${projectId}:`, err);
           }
         }
-        console.log(`[Batch Delete] Deleted ${deletedDocs} callsheets.`);
+
+        // Delete orphans
+        for (const callsheetId of orphanCallsheets) {
+          try {
+            await databaseService.deleteCallsheetFromProject(callsheetId, user.id);
+            deletedDocs++;
+          } catch (err) {
+            console.warn(`Failed to delete orphan callsheet ${callsheetId}:`, err);
+          }
+        }
+
+        console.log(`[Batch Delete] Deleted ${deletedDocs} callsheets total.`);
       }
 
       // Check and delete empty projects (after trips are already voided)

@@ -4,7 +4,7 @@ import { databaseService } from '../services/databaseService'
 import { useAuth } from '../hooks/useAuth'
 import useToast from '../hooks/useToast'
 
-type ProjectAction = 
+type ProjectAction =
   | { type: 'SET_LOADING'; loading: boolean }
   | { type: 'SET_PROJECTS'; projects: Project[] }
   | { type: 'ADD_PROJECT'; project: Project }
@@ -25,6 +25,7 @@ interface ProjectContextType extends ProjectsState {
   setSelectedProject: (id: string | null) => void
   addCallsheetsToProject: (projectId: string, files: File[]) => Promise<CallsheetFile[]>
   deleteCallsheetFromProject: (projectId: string, callsheetId: string) => Promise<void>
+  deleteCallsheetsFromProject: (projectId: string, callsheetIds: string[]) => Promise<void>
   replaceAllProjects: (projects: Project[]) => Promise<void>
   deleteAllProjects: () => Promise<void>
 }
@@ -41,18 +42,18 @@ function projectsReducer(state: ProjectsState, action: ProjectAction): ProjectsS
   switch (action.type) {
     case 'SET_LOADING':
       return { ...state, loading: action.loading, error: null }
-    
+
     case 'SET_PROJECTS':
       return { ...state, projects: action.projects, loading: false, error: null }
-    
+
     case 'ADD_PROJECT':
-      return { 
-        ...state, 
+      return {
+        ...state,
         projects: [action.project, ...state.projects],
         loading: false,
         error: null
       }
-    
+
     case 'UPDATE_PROJECT':
       return {
         ...state,
@@ -61,7 +62,7 @@ function projectsReducer(state: ProjectsState, action: ProjectAction): ProjectsS
         loading: false,
         error: null
       }
-    
+
     case 'DELETE_PROJECT':
       return {
         ...state,
@@ -71,7 +72,7 @@ function projectsReducer(state: ProjectsState, action: ProjectAction): ProjectsS
         loading: false,
         error: null
       }
-    
+
     case 'DELETE_MULTIPLE_PROJECTS':
       return {
         ...state,
@@ -81,16 +82,16 @@ function projectsReducer(state: ProjectsState, action: ProjectAction): ProjectsS
         loading: false,
         error: null
       }
-    
+
     case 'SET_EDITING_PROJECT':
       return { ...state, editingProject: action.project }
-    
+
     case 'SET_SELECTED_PROJECT':
       return { ...state, selectedProject: action.id }
-    
+
     case 'SET_ERROR':
       return { ...state, error: action.error, loading: false }
-    
+
     default:
       return state
   }
@@ -110,7 +111,7 @@ export function ProjectsProvider({ children }: { children: React.ReactNode }) {
     }
 
     dispatch({ type: 'SET_LOADING', loading: true })
-    
+
     try {
       const projects = await databaseService.getUserProjects(user.id)
       dispatch({ type: 'SET_PROJECTS', projects })
@@ -129,7 +130,7 @@ export function ProjectsProvider({ children }: { children: React.ReactNode }) {
     }
 
     dispatch({ type: 'SET_LOADING', loading: true })
-    
+
     try {
       const newProject = await databaseService.createProject(user.id, projectData)
       dispatch({ type: 'ADD_PROJECT', project: newProject })
@@ -147,9 +148,9 @@ export function ProjectsProvider({ children }: { children: React.ReactNode }) {
       showToast('User not authenticated', 'error');
       return;
     }
-    
+
     dispatch({ type: 'SET_LOADING', loading: true })
-    
+
     try {
       const updatedProject = await databaseService.updateProject(id, user.id, updates)
       dispatch({ type: 'UPDATE_PROJECT', project: updatedProject })
@@ -167,9 +168,9 @@ export function ProjectsProvider({ children }: { children: React.ReactNode }) {
       showToast('User not authenticated', 'error');
       return;
     }
-    
+
     dispatch({ type: 'SET_LOADING', loading: true })
-    
+
     try {
       await databaseService.deleteProject(id, user.id)
       dispatch({ type: 'DELETE_PROJECT', id })
@@ -184,14 +185,14 @@ export function ProjectsProvider({ children }: { children: React.ReactNode }) {
 
   const deleteSelectedProjects = useCallback(async (projectIds: string[]) => {
     if (projectIds.length === 0) return
-    
+
     if (!user?.id) {
       showToast('User not authenticated', 'error');
       return;
     }
-    
+
     dispatch({ type: 'SET_LOADING', loading: true })
-    
+
     try {
       await databaseService.deleteMultipleProjects(projectIds, user.id)
       dispatch({ type: 'DELETE_MULTIPLE_PROJECTS', ids: projectIds })
@@ -207,7 +208,7 @@ export function ProjectsProvider({ children }: { children: React.ReactNode }) {
   const addCallsheetsToProject = useCallback(async (projectId: string, files: File[]): Promise<CallsheetFile[]> => {
     try {
       const callsheets = await databaseService.addCallsheetsToProject(projectId, files)
-      
+
       // Update the project with new callsheets
       const currentProject = state.projects.find(p => p.id === projectId)
       if (currentProject) {
@@ -217,7 +218,7 @@ export function ProjectsProvider({ children }: { children: React.ReactNode }) {
         }
         dispatch({ type: 'UPDATE_PROJECT', project: updatedProject })
       }
-      
+
       showToast(`${callsheets.length} callsheet(s) added successfully`, 'success')
       return callsheets
     } catch (error) {
@@ -233,10 +234,10 @@ export function ProjectsProvider({ children }: { children: React.ReactNode }) {
       showToast('User not authenticated', 'error');
       return;
     }
-    
+
     try {
       await databaseService.deleteCallsheetFromProject(callsheetId, user.id)
-      
+
       // Update the project by removing the callsheet
       const currentProject = state.projects.find(p => p.id === projectId)
       if (currentProject) {
@@ -246,7 +247,7 @@ export function ProjectsProvider({ children }: { children: React.ReactNode }) {
         }
         dispatch({ type: 'UPDATE_PROJECT', project: updatedProject })
       }
-      
+
       showToast('Callsheet deleted successfully', 'success')
     } catch (error) {
       console.error('Error deleting callsheet:', error)
@@ -255,6 +256,34 @@ export function ProjectsProvider({ children }: { children: React.ReactNode }) {
     }
   }, [state.projects, showToast])
 
+  const deleteCallsheetsFromProject = useCallback(async (projectId: string, callsheetIds: string[]) => {
+    if (!user?.id) {
+      showToast('User not authenticated', 'error');
+      return;
+    }
+
+    try {
+      // Parallel delete from DB
+      await Promise.all(callsheetIds.map(id => databaseService.deleteCallsheetFromProject(id, user!.id)));
+
+      // Update the project by removing ALL callsheets at once
+      const currentProject = state.projects.find(p => p.id === projectId)
+      if (currentProject) {
+        const updatedProject: Project = {
+          ...currentProject,
+          callsheets: (currentProject.callsheets || []).filter(cs => !callsheetIds.includes(cs.id))
+        }
+        dispatch({ type: 'UPDATE_PROJECT', project: updatedProject })
+      }
+
+      showToast(`${callsheetIds.length} callsheets deleted successfully`, 'success')
+    } catch (error) {
+      console.error('Error deleting callsheets:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Failed to delete callsheets'
+      showToast(errorMessage, 'error')
+    }
+  }, [state.projects, showToast, user?.id])
+
   const replaceAllProjects = useCallback(async (projects: Project[]) => {
     if (!user?.id) {
       showToast('User not authenticated', 'error')
@@ -262,7 +291,7 @@ export function ProjectsProvider({ children }: { children: React.ReactNode }) {
     }
 
     dispatch({ type: 'SET_LOADING', loading: true })
-    
+
     try {
       await databaseService.replaceAllProjects(user.id, projects)
       await fetchProjects() // Refresh from database
@@ -282,7 +311,7 @@ export function ProjectsProvider({ children }: { children: React.ReactNode }) {
     }
 
     dispatch({ type: 'SET_LOADING', loading: true })
-    
+
     try {
       await databaseService.deleteAllUserProjects(user.id)
       dispatch({ type: 'SET_PROJECTS', projects: [] })
@@ -319,6 +348,7 @@ export function ProjectsProvider({ children }: { children: React.ReactNode }) {
     setSelectedProject,
     addCallsheetsToProject,
     deleteCallsheetFromProject,
+    deleteCallsheetsFromProject,
     replaceAllProjects,
     deleteAllProjects
   }
