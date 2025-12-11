@@ -666,6 +666,7 @@ export const translations = {
     common_redo: 'Redo',
     common_close: 'Close',
     common_save: 'Save',
+    common_saving: 'Saving...',
     common_edit: 'Edit',
     common_delete: 'Delete',
     common_refresh: 'Refresh',
