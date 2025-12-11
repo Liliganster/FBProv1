@@ -119,10 +119,10 @@ const Dashboard: React.FC<DashboardProps> = ({ setCurrentView, personalization, 
             if (!trip.reason?.trim()) {
                 allAlerts.push({ trip, type: 'missing_reason', message: t('dashboard_alert_missing_reason') });
             }
-            if (trip.distance > 1000) {
+            if (Number(trip.distance) > 1000) {
                 allAlerts.push({ trip, type: 'improbable_distance', message: t('dashboard_alert_improbable_distance') });
             }
-            if (trip.distance === 0) {
+            if (Number(trip.distance) === 0) {
                 allAlerts.push({ trip, type: 'zero_distance', message: t('dashboard_alert_zero_distance') });
             }
         });
