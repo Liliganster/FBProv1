@@ -106,7 +106,8 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
   const [aiText, setAiText] = useState<string>("");
   const [isAiProcessing, setIsAiProcessing] = useState(false);
   const [isDriveProcessing, setIsDriveProcessing] = useState(false);
-  const isBusy = isAiProcessing || isDriveProcessing;
+  const [isSaving, setIsSaving] = useState(false);
+  const isBusy = isAiProcessing || isDriveProcessing || isSaving;
 
   const [aiExtractMode, setAiExtractMode] = useState<'direct' | 'agent'>('agent');
   const [documentType, setDocumentType] = useState<DocumentType>(DocumentType.CALLSHEET);
@@ -453,6 +454,8 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
   }
 
   const handleConfirmSave = async () => {
+    if (isSaving) return;
+    setIsSaving(true);
     try {
       // Build mapping from project name (normalized) to ID
       const normalizeName = (s: string) => (s || '').trim().toLowerCase();
@@ -605,6 +608,8 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
     } catch (error) {
       console.error('[BulkUpload] handleConfirmSave error:', error);
       showToast('Error saving trips', 'error');
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -878,8 +883,9 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
           ) : ( // Review Stage
             <>
               <Button id="bulk-review-back" onClick={() => setStage('upload')} variant="secondary" className="mr-3">{t('common_back')}</Button>
-              <Button id="bulk-review-save" onClick={handleConfirmSave} variant="primary" className="flex items-center justify-center">
-                <CheckIcon className="w-5 h-5 mr-2" /> {t('bulk_review_saveBtn', { count: draftTrips.length })}
+              <Button id="bulk-review-save" onClick={handleConfirmSave} disabled={isSaving} variant="primary" className="flex items-center justify-center">
+                {isSaving ? <LoaderIcon className="w-5 h-5 mr-2 animate-spin" /> : <CheckIcon className="w-5 h-5 mr-2" />}
+                {isSaving ? t('common_saving') : t('bulk_review_saveBtn', { count: draftTrips.length })}
               </Button>
             </>
           )}
