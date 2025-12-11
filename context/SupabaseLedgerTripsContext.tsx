@@ -6,6 +6,7 @@ import { useProjects } from '../hooks/useProjects';
 import useToast from '../hooks/useToast';
 import useUserProfile from '../hooks/useUserProfile';
 import { checkAiQuota, buildQuotaError, AiQuotaCheck } from '../services/aiQuotaService';
+import useExpenses from '../hooks/useExpenses';
 
 interface LedgerTripsContextType {
   trips: Trip[];
@@ -56,6 +57,7 @@ export const LedgerTripsProvider: React.FC<{ children: ReactNode }> = ({ childre
 
   // Use ProjectsContext for project operations
   const projectsContext = useProjects();
+  const { refreshExpenses } = useExpenses();
 
   // State for trips from Supabase ledger
   const [trips, setTrips] = useState<Trip[]>([]);
@@ -224,13 +226,22 @@ export const LedgerTripsProvider: React.FC<{ children: ReactNode }> = ({ childre
       await ledgerService.voidTrip(tripId, 'Trip deleted by user', TripLedgerSource.MANUAL);
 
       // 3. If trip has an associated callsheet, delete it
-      if (tripToDelete?.sourceDocumentId) {
+      if (tripToDelete?.sourceDocumentId && tripToDelete?.projectId) {
         try {
-          await databaseService.deleteCallsheetFromProject(tripToDelete.sourceDocumentId, user.id);
+          console.log(`Deleting callsheet ${tripToDelete.sourceDocumentId}...`);
+          // Use projectsContext to delete callsheet AND update UI state
+          await projectsContext.deleteCallsheetFromProject(tripToDelete.projectId, tripToDelete.sourceDocumentId);
           console.log(`Deleted associated callsheet: ${tripToDelete.sourceDocumentId}`);
         } catch (docErr) {
           console.warn('Could not delete associated document:', docErr);
-          showToast('Trip deleted, but document cleanup failed', 'warning');
+          showToast('Trip deleted, but callsheet cleanup failed', 'warning');
+        }
+      } else if (tripToDelete?.sourceDocumentId) {
+        // Fallback for trips without projectId (legacy/edge case)
+        try {
+          await databaseService.deleteCallsheetFromProject(tripToDelete.sourceDocumentId, user.id);
+        } catch (err) {
+          console.warn('Could not delete orphan callsheet', err);
         }
       }
 
@@ -258,455 +269,473 @@ export const LedgerTripsProvider: React.FC<{ children: ReactNode }> = ({ childre
       }
 
       await refreshTrips();
-    } catch (err) {
-      console.error('Error deleting trip:', err);
-      const errorMessage = err instanceof Error ? err.message : 'Failed to delete trip';
-      showToast(errorMessage, 'error');
-      throw err;
-    } finally {
-      setLoading(false);
+      // Refresh expenses to remove deleted invoices from UI
+      await refreshExpenses();
     }
-  }, [ledgerService, trips, user?.id, projectsContext, refreshTrips, showToast]);
+  } catch (err) {
+    console.error('Error deleting trip:', err);
+    const errorMessage = err instanceof Error ? err.message : 'Failed to delete trip';
+    showToast(errorMessage, 'error');
+    throw err;
+  } finally {
+    setLoading(false);
+  }
+}, [ledgerService, trips, user?.id, projectsContext, refreshTrips, showToast]);
 
-  const deleteMultipleTrips = useCallback(async (tripIds: string[]): Promise<void> => {
-    if (!ledgerService) {
-      throw new Error('Ledger service not available');
+const deleteMultipleTrips = useCallback(async (tripIds: string[]): Promise<void> => {
+  if (!ledgerService) {
+    throw new Error('Ledger service not available');
+  }
+  if (!user?.id) {
+    throw new Error('User not authenticated');
+  }
+
+  setLoading(true);
+  try {
+    // Collect all trips info before deleting
+    const tripsToDelete = trips.filter(t => tripIds.includes(t.id));
+    const callsheetsToDelete = new Set<string>();
+    const projectsToCheck = new Set<string>();
+
+    tripsToDelete.forEach(trip => {
+      if (trip.sourceDocumentId) {
+        callsheetsToDelete.add(trip.sourceDocumentId);
+      }
+      if (trip.projectId) {
+        projectsToCheck.add(trip.projectId);
+      }
+    });
+
+    // Import database service
+    const databaseService = (await import('../services/databaseService')).default;
+
+    // Delete all trips and their expenses
+    for (const tripId of tripIds) {
+      // 1. Delete expenses first
+      try {
+        await databaseService.deleteTripExpenses(tripId, user.id);
+      } catch (err) {
+        console.warn(`Failed to delete expenses for trip ${tripId}:`, err);
+      }
+
+      // 2. Void the trip
+      await ledgerService.voidTrip(tripId, 'Batch delete by user', TripLedgerSource.MANUAL);
     }
-    if (!user?.id) {
-      throw new Error('User not authenticated');
-    }
 
-    setLoading(true);
-    try {
-      // Collect all trips info before deleting
-      const tripsToDelete = trips.filter(t => tripIds.includes(t.id));
-      const callsheetsToDelete = new Set<string>();
-      const projectsToCheck = new Set<string>();
+    // Wait for trips to be refreshed so project emptiness check is accurate
+    await refreshTrips();
 
-      tripsToDelete.forEach(trip => {
-        if (trip.sourceDocumentId) {
-          callsheetsToDelete.add(trip.sourceDocumentId);
-        }
-        if (trip.projectId) {
-          projectsToCheck.add(trip.projectId);
+    // Delete associated callsheets
+    let deletedDocs = 0;
+    if (callsheetsToDelete.size > 0) {
+      // Map callsheets to their projects for context-aware deletion
+      const projectCallsheetMap = new Map<string, string>();
+      tripsToDelete.forEach(t => {
+        if (t.sourceDocumentId && t.projectId) {
+          projectCallsheetMap.set(t.sourceDocumentId, t.projectId);
         }
       });
 
-      // Import database service
-      const databaseService = (await import('../services/databaseService')).default;
-
-      // Delete all trips and their expenses
-      for (const tripId of tripIds) {
-        // 1. Delete expenses first
+      for (const callsheetId of callsheetsToDelete) {
         try {
-          await databaseService.deleteTripExpenses(tripId, user.id);
-        } catch (err) {
-          console.warn(`Failed to delete expenses for trip ${tripId}:`, err);
-        }
-
-        // 2. Void the trip
-        await ledgerService.voidTrip(tripId, 'Batch delete by user', TripLedgerSource.MANUAL);
-      }
-
-      // Wait for trips to be refreshed so project emptiness check is accurate
-      await refreshTrips();
-
-      // Delete associated callsheets
-      let deletedDocs = 0;
-      if (callsheetsToDelete.size > 0) {
-        for (const callsheetId of callsheetsToDelete) {
-          try {
+          const projectId = projectCallsheetMap.get(callsheetId);
+          if (projectId) {
+            await projectsContext.deleteCallsheetFromProject(projectId, callsheetId);
+          } else {
             await databaseService.deleteCallsheetFromProject(callsheetId, user.id);
-            deletedDocs++;
-          } catch (err) {
-            console.warn(`Could not delete callsheet ${callsheetId}:`, err);
           }
+          deletedDocs++;
+        } catch (err) {
+          console.warn(`Could not delete callsheet ${callsheetId}:`, err);
         }
       }
+    }
 
-      // Check and delete empty projects (after trips are already voided)
-      let deletedProjects = 0;
-      if (projectsToCheck.size > 0) {
-        for (const projectId of projectsToCheck) {
-          try {
-            const isEmpty = await databaseService.isProjectEmpty(projectId, user.id);
-            if (isEmpty) {
-              await projectsContext.deleteProject(projectId);
-              deletedProjects++;
-            }
-          } catch (err) {
-            console.warn(`Could not check/delete project ${projectId}:`, err);
+    // Check and delete empty projects (after trips are already voided)
+    let deletedProjects = 0;
+    if (projectsToCheck.size > 0) {
+      for (const projectId of projectsToCheck) {
+        try {
+          const isEmpty = await databaseService.isProjectEmpty(projectId, user.id);
+          if (isEmpty) {
+            await projectsContext.deleteProject(projectId);
+            deletedProjects++;
           }
+        } catch (err) {
+          console.warn(`Could not check/delete project ${projectId}:`, err);
         }
       }
+    }
 
-      // Show appropriate success message
-      if (deletedDocs > 0 && deletedProjects > 0) {
-        showToast(`${tripIds.length} trips, ${deletedDocs} documents, and ${deletedProjects} empty projects deleted`, 'success');
-      } else if (deletedDocs > 0) {
-        showToast(`${tripIds.length} trips and ${deletedDocs} documents deleted`, 'success');
-      } else {
-        showToast(`${tripIds.length} trips deleted successfully`, 'success');
+    // Show appropriate success message
+    if (deletedDocs > 0 && deletedProjects > 0) {
+      showToast(`${tripIds.length} trips, ${deletedDocs} documents, and ${deletedProjects} empty projects deleted`, 'success');
+    } else if (deletedDocs > 0) {
+      showToast(`${tripIds.length} trips and ${deletedDocs} documents deleted`, 'success');
+    } else {
+      showToast(`${tripIds.length} trips deleted successfully`, 'success');
+    }
+
+    await refreshExpenses(); // Refresh expenses UI after batch delete
+  } catch (err) {
+    console.error('Error deleting multiple trips:', err);
+    const errorMessage = err instanceof Error ? err.message : 'Failed to delete trips';
+    showToast(errorMessage, 'error');
+    throw err;
+  } finally {
+    setLoading(false);
+  }
+}, [ledgerService, refreshTrips, showToast]);
+
+const updateMultipleTrips = useCallback(async (tripIds: string[], updates: Partial<Omit<Trip, 'id'>>): Promise<void> => {
+  if (!ledgerService) {
+    throw new Error('Ledger service not available');
+  }
+
+  setLoading(true);
+  try {
+    for (const tripId of tripIds) {
+      const existingTrip = trips.find(t => t.id === tripId);
+      if (existingTrip) {
+        const updatedTrip = { ...existingTrip, ...updates };
+        await ledgerService.amendTrip(
+          tripId,
+          updatedTrip,
+          'Batch update by user',
+          TripLedgerSource.MANUAL
+        );
       }
-    } catch (err) {
-      console.error('Error deleting multiple trips:', err);
-      const errorMessage = err instanceof Error ? err.message : 'Failed to delete trips';
-      showToast(errorMessage, 'error');
-      throw err;
-    } finally {
-      setLoading(false);
     }
-  }, [ledgerService, refreshTrips, showToast]);
+    await refreshTrips();
+    showToast(`${tripIds.length} trips updated successfully`, 'success');
+  } catch (err) {
+    console.error('Error updating multiple trips:', err);
+    const errorMessage = err instanceof Error ? err.message : 'Failed to update trips';
+    showToast(errorMessage, 'error');
+    throw err;
+  } finally {
+    setLoading(false);
+  }
+}, [ledgerService, trips, refreshTrips, showToast]);
 
-  const updateMultipleTrips = useCallback(async (tripIds: string[], updates: Partial<Omit<Trip, 'id'>>): Promise<void> => {
-    if (!ledgerService) {
-      throw new Error('Ledger service not available');
-    }
+const addMultipleTrips = useCallback(async (newTrips: Omit<Trip, 'id'>[]): Promise<void> => {
+  if (!ledgerService) {
+    throw new Error('Ledger service not available');
+  }
 
-    setLoading(true);
-    try {
-      for (const tripId of tripIds) {
-        const existingTrip = trips.find(t => t.id === tripId);
-        if (existingTrip) {
-          const updatedTrip = { ...existingTrip, ...updates };
-          await ledgerService.amendTrip(
-            tripId,
-            updatedTrip,
-            'Batch update by user',
-            TripLedgerSource.MANUAL
-          );
-        }
-      }
-      await refreshTrips();
-      showToast(`${tripIds.length} trips updated successfully`, 'success');
-    } catch (err) {
-      console.error('Error updating multiple trips:', err);
-      const errorMessage = err instanceof Error ? err.message : 'Failed to update trips';
-      showToast(errorMessage, 'error');
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  }, [ledgerService, trips, refreshTrips, showToast]);
+  setLoading(true);
+  try {
+    const { entries } = await ledgerService.importTripsBatch(newTrips, TripLedgerSource.BULK_UPLOAD);
+    await refreshTrips();
+    showToast(`${entries.length} trips imported successfully`, 'success');
+  } catch (err) {
+    console.error('Error adding multiple trips:', err);
+    const errorMessage = err instanceof Error ? err.message : 'Failed to import trips';
+    showToast(errorMessage, 'error');
+    throw err;
+  } finally {
+    setLoading(false);
+  }
+}, [ledgerService, refreshTrips, showToast]);
 
-  const addMultipleTrips = useCallback(async (newTrips: Omit<Trip, 'id'>[]): Promise<void> => {
-    if (!ledgerService) {
-      throw new Error('Ledger service not available');
-    }
+const addAiTrips = useCallback(async (newTrips: Omit<Trip, 'id'>[]): Promise<void> => {
+  if (!ledgerService) {
+    throw new Error('Ledger service not available');
+  }
+  if (!user?.id) {
+    throw new Error('User not available');
+  }
 
-    setLoading(true);
-    try {
-      const { entries } = await ledgerService.importTripsBatch(newTrips, TripLedgerSource.BULK_UPLOAD);
-      await refreshTrips();
-      showToast(`${entries.length} trips imported successfully`, 'success');
-    } catch (err) {
-      console.error('Error adding multiple trips:', err);
-      const errorMessage = err instanceof Error ? err.message : 'Failed to import trips';
-      showToast(errorMessage, 'error');
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  }, [ledgerService, refreshTrips, showToast]);
+  console.log('[addAiTrips] Starting import of', newTrips.length, 'trips');
+  console.log('[addAiTrips] Trip dates:', newTrips.map(t => t.date));
 
-  const addAiTrips = useCallback(async (newTrips: Omit<Trip, 'id'>[]): Promise<void> => {
-    if (!ledgerService) {
-      throw new Error('Ledger service not available');
-    }
-    if (!user?.id) {
-      throw new Error('User not available');
+  setLoading(true);
+  try {
+    const quota = await checkAiQuota({
+      userId: user.id,
+      trips: newTrips,
+      profile: userProfile,
+      supabaseUser,
+    });
+
+    console.log('[addAiTrips] Quota check result:', quota);
+
+    if (!quota.allowed) {
+      const message = buildQuotaError(quota);
+      showToast(message, 'error');
+      throw new Error(message);
     }
 
-    console.log('[addAiTrips] Starting import of', newTrips.length, 'trips');
-    console.log('[addAiTrips] Trip dates:', newTrips.map(t => t.date));
+    console.log('[addAiTrips] Calling importTripsBatch with source=AI_AGENT');
+    const { entries } = await ledgerService.importTripsBatch(newTrips, TripLedgerSource.AI_AGENT);
+    console.log('[addAiTrips] Successfully created', entries.length, 'ledger entries');
+    console.log('[addAiTrips] Entry sources:', entries.map(e => e.source));
+    console.log('[addAiTrips] Entry dates:', entries.map(e => (e.tripSnapshot as any)?.date));
 
-    setLoading(true);
-    try {
-      const quota = await checkAiQuota({
-        userId: user.id,
-        trips: newTrips,
-        profile: userProfile,
-        supabaseUser,
-      });
+    await refreshTrips();
+    showToast(`${entries.length} trips imported via AI`, 'success');
 
-      console.log('[addAiTrips] Quota check result:', quota);
-
-      if (!quota.allowed) {
-        const message = buildQuotaError(quota);
-        showToast(message, 'error');
-        throw new Error(message);
-      }
-
-      console.log('[addAiTrips] Calling importTripsBatch with source=AI_AGENT');
-      const { entries } = await ledgerService.importTripsBatch(newTrips, TripLedgerSource.AI_AGENT);
-      console.log('[addAiTrips] Successfully created', entries.length, 'ledger entries');
-      console.log('[addAiTrips] Entry sources:', entries.map(e => e.source));
-      console.log('[addAiTrips] Entry dates:', entries.map(e => (e.tripSnapshot as any)?.date));
-
-      await refreshTrips();
-      showToast(`${entries.length} trips imported via AI`, 'success');
-
-      // Verify quota after save
-      const newQuota = await checkAiQuota({
-        userId: user.id,
-        trips: [],
-        profile: userProfile,
-        supabaseUser,
-      });
-      console.log('[addAiTrips] Quota after save:', newQuota);
-    } catch (err) {
-      console.error('Error adding AI trips:', err);
-      const errorMessage = err instanceof Error ? err.message : 'Failed to import AI trips';
-      showToast(errorMessage, 'error');
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  }, [ledgerService, user?.id, userProfile, supabaseUser, refreshTrips, showToast]);
-
-  const getAiQuota = useCallback(async (): Promise<AiQuotaCheck> => {
-    if (!user?.id) {
-      return {
-        plan: 'free',
-        limit: 15,
-        used: 0,
-        needed: 0,
-        remaining: 15,
-        allowed: true
-      };
-    }
-    return checkAiQuota({
+    // Verify quota after save
+    const newQuota = await checkAiQuota({
       userId: user.id,
       trips: [],
       profile: userProfile,
-      supabaseUser
+      supabaseUser,
     });
-  }, [user?.id, userProfile, supabaseUser]);
+    console.log('[addAiTrips] Quota after save:', newQuota);
+  } catch (err) {
+    console.error('Error adding AI trips:', err);
+    const errorMessage = err instanceof Error ? err.message : 'Failed to import AI trips';
+    showToast(errorMessage, 'error');
+    throw err;
+  } finally {
+    setLoading(false);
+  }
+}, [ledgerService, user?.id, userProfile, supabaseUser, refreshTrips, showToast]);
 
-  const addCsvTrips = useCallback(async (drafts: Omit<Trip, 'id'>[]): Promise<void> => {
-    if (!ledgerService) {
-      throw new Error('Ledger service not available');
-    }
+const getAiQuota = useCallback(async (): Promise<AiQuotaCheck> => {
+  if (!user?.id) {
+    return {
+      plan: 'free',
+      limit: 15,
+      used: 0,
+      needed: 0,
+      remaining: 15,
+      allowed: true
+    };
+  }
+  return checkAiQuota({
+    userId: user.id,
+    trips: [],
+    profile: userProfile,
+    supabaseUser
+  });
+}, [user?.id, userProfile, supabaseUser]);
 
-    setLoading(true);
-    try {
-      const { entries } = await ledgerService.importTripsBatch(drafts, TripLedgerSource.CSV_IMPORT);
-      await refreshTrips();
-      showToast(`${entries.length} trips imported from CSV`, 'success');
-    } catch (err) {
-      console.error('Error importing CSV trips:', err);
-      const errorMessage = err instanceof Error ? err.message : 'Failed to import CSV trips';
-      showToast(errorMessage, 'error');
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  }, [ledgerService, refreshTrips, showToast]);
+const addCsvTrips = useCallback(async (drafts: Omit<Trip, 'id'>[]): Promise<void> => {
+  if (!ledgerService) {
+    throw new Error('Ledger service not available');
+  }
 
-  // ===== PROJECT OPERATIONS (Proxy to ProjectsContext) =====
+  setLoading(true);
+  try {
+    const { entries } = await ledgerService.importTripsBatch(drafts, TripLedgerSource.CSV_IMPORT);
+    await refreshTrips();
+    showToast(`${entries.length} trips imported from CSV`, 'success');
+  } catch (err) {
+    console.error('Error importing CSV trips:', err);
+    const errorMessage = err instanceof Error ? err.message : 'Failed to import CSV trips';
+    showToast(errorMessage, 'error');
+    throw err;
+  } finally {
+    setLoading(false);
+  }
+}, [ledgerService, refreshTrips, showToast]);
 
-  const addProject = useCallback(async (project: any): Promise<void> => {
-    await projectsContext.addProject(project);
-  }, [projectsContext]);
+// ===== PROJECT OPERATIONS (Proxy to ProjectsContext) =====
 
-  const updateProject = useCallback(async (updatedProject: any): Promise<void> => {
-    await projectsContext.updateProject(updatedProject.id, updatedProject);
-  }, [projectsContext]);
+const addProject = useCallback(async (project: any): Promise<void> => {
+  await projectsContext.addProject(project);
+}, [projectsContext]);
 
-  const deleteProject = useCallback(async (projectId: string): Promise<void> => {
-    await projectsContext.deleteProject(projectId);
-  }, [projectsContext]);
+const updateProject = useCallback(async (updatedProject: any): Promise<void> => {
+  await projectsContext.updateProject(updatedProject.id, updatedProject);
+}, [projectsContext]);
 
-  const deleteMultipleProjects = useCallback(async (projectIds: string[]): Promise<void> => {
-    await projectsContext.deleteSelectedProjects(projectIds);
-  }, [projectsContext]);
+const deleteProject = useCallback(async (projectId: string): Promise<void> => {
+  await projectsContext.deleteProject(projectId);
+}, [projectsContext]);
 
-  // ===== FILE OPERATIONS =====
+const deleteMultipleProjects = useCallback(async (projectIds: string[]): Promise<void> => {
+  await projectsContext.deleteSelectedProjects(projectIds);
+}, [projectsContext]);
 
-  const addCallsheetToProject = useCallback(async (projectId: string, file: File): Promise<void> => {
-    try {
-      // Now handled by ProjectsContext which uploads to Supabase Storage
-      await projectsContext.addCallsheetsToProject(projectId, [file]);
-      showToast('Callsheet added successfully', 'success');
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to add callsheet';
-      showToast(errorMessage, 'error');
-      throw err;
-    }
-  }, [projectsContext, showToast]);
+// ===== FILE OPERATIONS =====
 
-  const deleteCallsheetFromProject = useCallback(async (projectId: string, callsheetId: string): Promise<void> => {
-    try {
-      // Now handled by ProjectsContext which deletes from Supabase Storage
-      await projectsContext.deleteCallsheetFromProject(projectId, callsheetId);
-      showToast('Callsheet deleted successfully', 'success');
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to delete callsheet';
-      showToast(errorMessage, 'error');
-      throw err;
-    }
-  }, [projectsContext, showToast]);
+const addCallsheetToProject = useCallback(async (projectId: string, file: File): Promise<void> => {
+  try {
+    // Now handled by ProjectsContext which uploads to Supabase Storage
+    await projectsContext.addCallsheetsToProject(projectId, [file]);
+    showToast('Callsheet added successfully', 'success');
+  } catch (err) {
+    const errorMessage = err instanceof Error ? err.message : 'Failed to add callsheet';
+    showToast(errorMessage, 'error');
+    throw err;
+  }
+}, [projectsContext, showToast]);
 
-  // ===== CSV AND BULK OPERATIONS =====
+const deleteCallsheetFromProject = useCallback(async (projectId: string, callsheetId: string): Promise<void> => {
+  try {
+    // Now handled by ProjectsContext which deletes from Supabase Storage
+    await projectsContext.deleteCallsheetFromProject(projectId, callsheetId);
+    showToast('Callsheet deleted successfully', 'success');
+  } catch (err) {
+    const errorMessage = err instanceof Error ? err.message : 'Failed to delete callsheet';
+    showToast(errorMessage, 'error');
+    throw err;
+  }
+}, [projectsContext, showToast]);
 
-  const downloadCsv = useCallback(() => {
-    const csvContent = generateCsvContent(trips);
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
+// ===== CSV AND BULK OPERATIONS =====
 
-    link.setAttribute('href', url);
-    link.setAttribute('download', `fahrtenbuch_${new Date().toISOString().split('T')[0]}.csv`);
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  }, [trips]);
+const downloadCsv = useCallback(() => {
+  const csvContent = generateCsvContent(trips);
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  const url = URL.createObjectURL(blob);
 
-  const uploadCsv = useCallback(async (file: File): Promise<void> => {
-    // Implementation would parse CSV and call addCsvTrips
-    // For now, this is a placeholder
-    showToast('CSV upload not yet implemented', 'error');
-    throw new Error('CSV upload not yet implemented');
-  }, [showToast]);
+  link.setAttribute('href', url);
+  link.setAttribute('download', `fahrtenbuch_${new Date().toISOString().split('T')[0]}.csv`);
+  link.style.visibility = 'hidden';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}, [trips]);
 
-  const replaceAllTrips = useCallback(async (newTrips: Trip[]): Promise<void> => {
-    if (!ledgerService) {
-      throw new Error('Ledger service not available');
-    }
+const uploadCsv = useCallback(async (file: File): Promise<void> => {
+  // Implementation would parse CSV and call addCsvTrips
+  // For now, this is a placeholder
+  showToast('CSV upload not yet implemented', 'error');
+  throw new Error('CSV upload not yet implemented');
+}, [showToast]);
 
-    setLoading(true);
-    try {
-      // Clear existing ledger and import new trips
-      await ledgerService.clearCache();
-      const tripsWithoutId = newTrips.map(trip => {
-        const { id, hash, previousHash, ...tripData } = trip;
-        return tripData;
-      });
+const replaceAllTrips = useCallback(async (newTrips: Trip[]): Promise<void> => {
+  if (!ledgerService) {
+    throw new Error('Ledger service not available');
+  }
 
-      const { entries } = await ledgerService.importTripsBatch(tripsWithoutId, TripLedgerSource.BULK_UPLOAD);
-      await refreshTrips();
-      showToast(`Replaced with ${entries.length} trips`, 'success');
-    } catch (err) {
-      console.error('Error replacing trips:', err);
-      const errorMessage = err instanceof Error ? err.message : 'Failed to replace trips';
-      showToast(errorMessage, 'error');
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  }, [ledgerService, refreshTrips, showToast]);
+  setLoading(true);
+  try {
+    // Clear existing ledger and import new trips
+    await ledgerService.clearCache();
+    const tripsWithoutId = newTrips.map(trip => {
+      const { id, hash, previousHash, ...tripData } = trip;
+      return tripData;
+    });
 
-  const replaceAllProjects = useCallback(async (newProjects: any[]): Promise<void> => {
-    await projectsContext.replaceAllProjects(newProjects);
-  }, [projectsContext]);
+    const { entries } = await ledgerService.importTripsBatch(tripsWithoutId, TripLedgerSource.BULK_UPLOAD);
+    await refreshTrips();
+    showToast(`Replaced with ${entries.length} trips`, 'success');
+  } catch (err) {
+    console.error('Error replacing trips:', err);
+    const errorMessage = err instanceof Error ? err.message : 'Failed to replace trips';
+    showToast(errorMessage, 'error');
+    throw err;
+  } finally {
+    setLoading(false);
+  }
+}, [ledgerService, refreshTrips, showToast]);
 
-  const deleteAllData = useCallback(async (): Promise<void> => {
-    setLoading(true);
-    try {
-      // Delete all trips from ledger
-      if (ledgerService) {
-        for (const trip of trips) {
-          await ledgerService.voidTrip(trip.id, 'Delete all data operation', TripLedgerSource.MANUAL);
-        }
+const replaceAllProjects = useCallback(async (newProjects: any[]): Promise<void> => {
+  await projectsContext.replaceAllProjects(newProjects);
+}, [projectsContext]);
+
+const deleteAllData = useCallback(async (): Promise<void> => {
+  setLoading(true);
+  try {
+    // Delete all trips from ledger
+    if (ledgerService) {
+      for (const trip of trips) {
+        await ledgerService.voidTrip(trip.id, 'Delete all data operation', TripLedgerSource.MANUAL);
       }
-
-      // Delete all projects
-      await projectsContext.deleteAllProjects();
-
-      await refreshTrips();
-      showToast('All data deleted successfully', 'success');
-    } catch (err) {
-      console.error('Error deleting all data:', err);
-      const errorMessage = err instanceof Error ? err.message : 'Failed to delete all data';
-      showToast(errorMessage, 'error');
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  }, [ledgerService, trips, projectsContext, refreshTrips, showToast]);
-
-  // ===== LEDGER-SPECIFIC OPERATIONS =====
-
-  const verifyLedgerIntegrity = useCallback(async (): Promise<{ isValid: boolean; errors: string[] }> => {
-    if (!ledgerService) {
-      return { isValid: false, errors: ['Ledger service not available'] };
     }
 
-    try {
-      const verification = await ledgerService.verifyLedger();
-      return {
-        isValid: verification.isValid,
-        errors: verification.isValid ? [] : ['Ledger integrity check failed']
-      };
-    } catch (err) {
-      console.error('Error verifying ledger:', err);
-      return {
-        isValid: false,
-        errors: [err instanceof Error ? err.message : 'Verification failed']
-      };
-    }
-  }, [ledgerService]);
+    // Delete all projects
+    await projectsContext.deleteAllProjects();
 
-  const getRootHash = useCallback(async (): Promise<string | null> => {
-    if (!ledgerService) {
-      return null;
-    }
+    await refreshTrips();
+    showToast('All data deleted successfully', 'success');
+  } catch (err) {
+    console.error('Error deleting all data:', err);
+    const errorMessage = err instanceof Error ? err.message : 'Failed to delete all data';
+    showToast(errorMessage, 'error');
+    throw err;
+  } finally {
+    setLoading(false);
+  }
+}, [ledgerService, trips, projectsContext, refreshTrips, showToast]);
 
-    try {
-      const verification = await ledgerService.verifyLedger();
-      return verification.rootHash;
-    } catch (err) {
-      console.error('Error getting root hash:', err);
-      return null;
-    }
-  }, [ledgerService]);
+// ===== LEDGER-SPECIFIC OPERATIONS =====
 
-  const contextValue: LedgerTripsContextType = {
-    trips,
-    loading: loading || projectsContext.loading,
-    error: error || projectsContext.error,
+const verifyLedgerIntegrity = useCallback(async (): Promise<{ isValid: boolean; errors: string[] }> => {
+  if (!ledgerService) {
+    return { isValid: false, errors: ['Ledger service not available'] };
+  }
 
-    // Trip operations
-    addTrip,
-    updateTrip,
-    deleteTrip,
-    deleteMultipleTrips,
-    updateMultipleTrips,
-    addAiTrips,
-    addMultipleTrips,
-    addCsvTrips,
-    getAiQuota,
+  try {
+    const verification = await ledgerService.verifyLedger();
+    return {
+      isValid: verification.isValid,
+      errors: verification.isValid ? [] : ['Ledger integrity check failed']
+    };
+  } catch (err) {
+    console.error('Error verifying ledger:', err);
+    return {
+      isValid: false,
+      errors: [err instanceof Error ? err.message : 'Verification failed']
+    };
+  }
+}, [ledgerService]);
 
-    // Project operations (proxied)
-    projects: projectsContext.projects,
-    addProject,
-    updateProject,
-    deleteProject,
-    deleteMultipleProjects,
+const getRootHash = useCallback(async (): Promise<string | null> => {
+  if (!ledgerService) {
+    return null;
+  }
 
-    // File operations
-    addCallsheetToProject,
-    deleteCallsheetFromProject,
+  try {
+    const verification = await ledgerService.verifyLedger();
+    return verification.rootHash;
+  } catch (err) {
+    console.error('Error getting root hash:', err);
+    return null;
+  }
+}, [ledgerService]);
 
-    // CSV and bulk operations
-    downloadCsv,
-    uploadCsv,
-    replaceAllTrips,
-    replaceAllProjects,
-    deleteAllData,
+const contextValue: LedgerTripsContextType = {
+  trips,
+  loading: loading || projectsContext.loading,
+  error: error || projectsContext.error,
 
-    // Ledger-specific
-    verifyLedgerIntegrity,
-    getRootHash,
-    refreshTrips
-  };
+  // Trip operations
+  addTrip,
+  updateTrip,
+  deleteTrip,
+  deleteMultipleTrips,
+  updateMultipleTrips,
+  addAiTrips,
+  addMultipleTrips,
+  addCsvTrips,
+  getAiQuota,
 
-  return (
-    <LedgerTripsContext.Provider value={contextValue}>
-      {children}
-    </LedgerTripsContext.Provider>
-  );
+  // Project operations (proxied)
+  projects: projectsContext.projects,
+  addProject,
+  updateProject,
+  deleteProject,
+  deleteMultipleProjects,
+
+  // File operations
+  addCallsheetToProject,
+  deleteCallsheetFromProject,
+
+  // CSV and bulk operations
+  downloadCsv,
+  uploadCsv,
+  replaceAllTrips,
+  replaceAllProjects,
+  deleteAllData,
+
+  // Ledger-specific
+  verifyLedgerIntegrity,
+  getRootHash,
+  refreshTrips
+};
+
+return (
+  <LedgerTripsContext.Provider value={contextValue}>
+    {children}
+  </LedgerTripsContext.Provider>
+);
 };
 
 // Helper function to generate CSV content
