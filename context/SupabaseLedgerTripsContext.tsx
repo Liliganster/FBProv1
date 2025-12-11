@@ -299,11 +299,14 @@ export const LedgerTripsProvider: React.FC<{ children: ReactNode }> = ({ childre
       tripsToDelete.forEach(trip => {
         if (trip.sourceDocumentId) {
           callsheetsToDelete.add(trip.sourceDocumentId);
+          console.log(`[Batch Delete] Found callsheet ${trip.sourceDocumentId} for trip ${trip.id} (Project: ${trip.projectId})`);
         }
         if (trip.projectId) {
           projectsToCheck.add(trip.projectId);
         }
       });
+
+      console.log(`[Batch Delete] Found ${callsheetsToDelete.size} callsheets to delete.`);
 
       // Import database service
       const databaseService = (await import('../services/databaseService')).default;
@@ -348,6 +351,7 @@ export const LedgerTripsProvider: React.FC<{ children: ReactNode }> = ({ childre
             console.warn(`Could not delete callsheet ${callsheetId}:`, err);
           }
         }
+        console.log(`[Batch Delete] Deleted ${deletedDocs} callsheets.`);
       }
 
       // Check and delete empty projects (after trips are already voided)
