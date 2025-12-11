@@ -139,7 +139,8 @@ const TripEditorModal: React.FC<TripEditorModalProps> = ({ trip, projects, trips
       setIsStaticMapLoading(true);
       try {
         const locations = Array.isArray(formData.locations) ? formData.locations : [];
-        const url = await getStaticMapUrlViaBackend(locations);
+        const regionCode = getCountryCode(userProfile?.country);
+        const url = await getStaticMapUrlViaBackend(locations, { region: regionCode });
         if (!cancelled) {
           setStaticMapUrl(url);
         }

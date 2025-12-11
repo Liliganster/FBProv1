@@ -26,6 +26,8 @@ async function getHandler(path: string): Promise<Handler | null> {
         return (await import('../lib/api-handlers/google/maps/directions.js')).default as unknown as Handler;
       case 'google/maps/staticmap':
         return (await import('../lib/api-handlers/google/maps/staticmap.js')).default as unknown as Handler;
+      case 'google/maps/geocode':
+        return (await import('../lib/api-handlers/google/maps/geocode.js')).default as unknown as Handler;
       case 'google/maps/script':
         return (await import('../lib/api-handlers/google/maps/script.js')).default as unknown as Handler;
       // Auth endpoints

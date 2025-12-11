@@ -337,6 +337,10 @@ export async function processFileForTripUniversal(
       openRouterApiKey: userProfile.openRouterApiKey || null,
       openRouterModel: userProfile.openRouterModel || null,
     },
+    geocodeBias: {
+      city: userProfile.city,
+      country: userProfile.country,
+    },
   });
   const locations = [userHomeAddress, ...extraction.locations, userHomeAddress];
 

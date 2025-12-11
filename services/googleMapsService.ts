@@ -33,6 +33,7 @@ type StaticMapOptions = {
   pathWeight?: number;
   scale?: number;
   markers?: Array<{ color?: string; label?: string; location: string }>;
+  region?: string;
 };
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
@@ -75,6 +76,41 @@ export async function calculateDistanceViaBackend(
     }
     return null;
   }
+}
+
+export type GeocodedAddress = {
+  input: string;
+  formatted_address: string;
+  latitude: number;
+  longitude: number;
+};
+
+/**
+ * Geocodes a list of addresses using the backend proxy (keeps API key server-side).
+ */
+export async function geocodeAddressesViaBackend(
+  locations: string[],
+  region?: string
+): Promise<GeocodedAddress[]> {
+  if (!Array.isArray(locations) || locations.length === 0) return [];
+  try {
+    const data = await postJson<{ results: GeocodedAddress[] }>('/api/google/maps/geocode', {
+      locations,
+      region,
+    });
+    if (Array.isArray(data?.results)) return data.results;
+  } catch (error) {
+    if (import.meta.env.DEV) {
+      console.warn('[GoogleMaps] Geocoding failed - API not configured:', error);
+    }
+  }
+  // Fallback: return originals
+  return locations.map((loc) => ({
+    input: loc,
+    formatted_address: loc,
+    latitude: NaN,
+    longitude: NaN,
+  }));
 }
 
 /**

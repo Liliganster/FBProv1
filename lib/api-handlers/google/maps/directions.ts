@@ -36,6 +36,44 @@ type DirectionsResponse = {
   error_message?: string;
 };
 
+function extractCountryCode(result: any): string | undefined {
+  const countryComponent = result?.address_components?.find((c: any) => Array.isArray(c.types) && c.types.includes('country'));
+  return countryComponent?.short_name ? String(countryComponent.short_name).toUpperCase() : undefined;
+}
+
+function countryHintFromString(raw: string): string | undefined {
+  const map: Record<string, string> = {
+    austria: 'AT',
+    österreich: 'AT',
+    oesterreich: 'AT',
+    germany: 'DE',
+    deutschland: 'DE',
+    spain: 'ES',
+    españa: 'ES',
+    espana: 'ES',
+    france: 'FR',
+    italy: 'IT',
+    italia: 'IT',
+    switzerland: 'CH',
+    schweiz: 'CH',
+    suisse: 'CH',
+    usa: 'US',
+    'united states': 'US',
+    uk: 'GB',
+    'united kingdom': 'GB',
+    portugal: 'PT',
+    netherlands: 'NL',
+    holland: 'NL',
+  };
+  const lower = raw.toLowerCase();
+  for (const [name, code] of Object.entries(map)) {
+    if (lower.includes(name)) return code;
+  }
+  const codeMatch = raw.match(/\b([A-Z]{2})\b/);
+  if (codeMatch) return codeMatch[1];
+  return undefined;
+}
+
 export default async function handler(req: any, res: any) {
   if (req.method !== 'POST') {
     json(res, 405, { error: 'Method Not Allowed' });
@@ -65,50 +103,73 @@ export default async function handler(req: any, res: any) {
     return;
   }
 
-  // Geocode each address to get complete, normalized version
+  // Geocode each address to get complete, normalized version (retry without region bias if needed)
   const enrichedLocations: string[] = [];
-  
+
+  const geocode = async (query: string, regionBias?: string) => {
+    const params = new URLSearchParams();
+    params.set('address', query);
+    params.set('key', apiKey);
+    if (regionBias) {
+      params.set('region', regionBias);
+      params.set('components', `country:${regionBias}`);
+    }
+    const url = `https://maps.googleapis.com/maps/api/geocode/json?${params.toString()}`;
+    const res = await fetch(url);
+    return res.json();
+  };
+
   for (const loc of locations) {
     try {
-      const geocodeParams = new URLSearchParams();
-      geocodeParams.set('address', loc);
-      geocodeParams.set('key', apiKey);
-      if (region) {
-        geocodeParams.set('region', region);
-        // Also add region/country as components for better precision
-        geocodeParams.set('components', `country:${region}`);
-      }
-      
-      const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?${geocodeParams.toString()}`;
-      const geocodeResponse = await fetch(geocodeUrl);
-      const geocodeData = await geocodeResponse.json();
-      
-      if (geocodeData.status === 'OK' && geocodeData.results && geocodeData.results.length > 0) {
-        const result = geocodeData.results[0];
-        // Validate that the result is in the expected country/region
-        const addressComponents = result.address_components || [];
-        const countryComponent = addressComponents.find((c: any) => c.types.includes('country'));
-        const isCorrectRegion = !region || !countryComponent || countryComponent.short_name === region.toUpperCase();
-        
-        if (isCorrectRegion) {
-          enrichedLocations.push(result.formatted_address);
-          console.log(`[directions] ✓ Enriched "${loc}" → "${result.formatted_address}"`);
-        } else {
-          // Wrong country, use original
-          enrichedLocations.push(loc);
-          console.warn(`[directions] ⚠ Geocoded to wrong country: "${loc}" → "${result.formatted_address}", using original`);
-        }
+      const primary = await geocode(loc, region);
+      const primaryResult = primary?.results?.[0] || null;
+
+      const matchesRegion = (result: any) => {
+        if (!region) return true;
+        const countryComponent = result?.address_components?.find((c: any) => c.types?.includes('country'));
+        return !countryComponent || countryComponent.short_name === region.toUpperCase();
+      };
+
+      let chosen = primaryResult && matchesRegion(primaryResult) ? primaryResult : null;
+      let fallbackResult: any = null;
+
+      if (!chosen) {
+        const fallback = await geocode(loc);
+        fallbackResult = fallback?.results?.[0] || null;
+        chosen = fallbackResult;
       } else {
-        // Geocoding failed, use original
+        // Still fetch fallback to compare if countries differ
+        const fallback = await geocode(loc);
+        fallbackResult = fallback?.results?.[0] || null;
+      }
+
+      const originalCountryHint = countryHintFromString(loc);
+      const primaryCode = primaryResult ? extractCountryCode(primaryResult) : undefined;
+      const fallbackCode = fallbackResult ? extractCountryCode(fallbackResult) : undefined;
+
+      if (primaryResult && fallbackResult && primaryCode && fallbackCode && primaryCode !== fallbackCode) {
+        if (originalCountryHint) {
+          if (primaryCode === originalCountryHint) chosen = primaryResult;
+          else if (fallbackCode === originalCountryHint) chosen = fallbackResult;
+        } else if (region) {
+          if (primaryCode === region.toUpperCase()) chosen = primaryResult;
+          else if (fallbackCode === region.toUpperCase()) chosen = fallbackResult;
+        }
+      }
+
+      if (chosen?.formatted_address) {
+        enrichedLocations.push(chosen.formatted_address);
+        console.log(`[directions] Enriched "${loc}" -> "${chosen.formatted_address}"`);
+      } else {
         enrichedLocations.push(loc);
-        console.warn(`[directions] ⚠ Geocoding failed for "${loc}" (status: ${geocodeData.status}), using original`);
+        console.warn(`[directions] Geocoding failed for "${loc}" (status: ${primary?.status ?? 'unknown'}), using original`);
       }
     } catch (error) {
-      // Error, use original
       enrichedLocations.push(loc);
-      console.error(`[directions] ❌ Geocoding error for "${loc}":`, error);
+      console.error(`[directions] Geocoding error for "${loc}":`, error);
     }
   }
+
 
   console.log(`[directions] Original: ${locations.join(' → ')}`);
   console.log(`[directions] Enriched: ${enrichedLocations.join(' → ')}`);

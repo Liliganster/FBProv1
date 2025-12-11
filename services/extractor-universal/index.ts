@@ -12,6 +12,7 @@ import { isCallsheetExtraction } from './verify';
 import { postProcessCrewFirstData } from './postProcess';
 import { agenticParse, directParse } from '../../lib/gemini/parser';
 import { parseWithGemini, parseWithOpenRouter } from './providers';
+import { geocodeAddressesViaBackend, getCountryCode } from '../googleMapsService';
 
 export type ExtractMode = 'direct' | 'agent';
 export type ExtractProvider = 'auto' | 'gemini' | 'openrouter';
@@ -19,6 +20,11 @@ export type ExtractProvider = 'auto' | 'gemini' | 'openrouter';
 export type ExtractInput = {
   text?: string; // pasted text
   file?: File;   // pdf/csv/image/txt
+};
+
+export type ExtractGeoBias = {
+  city?: string | null;
+  country?: string | null;
 };
 
 class ExtractorError extends Error {
@@ -31,6 +37,82 @@ class ExtractorError extends Error {
   constructor(code: ExtractorError['code'], message: string) {
     super(message);
     this.code = code;
+  }
+}
+
+function countryHintFromString(raw: string): string | undefined {
+  const map: Record<string, string> = {
+    austria: 'AT',
+    österreich: 'AT',
+    oesterreich: 'AT',
+    germany: 'DE',
+    deutschland: 'DE',
+    spain: 'ES',
+    españa: 'ES',
+    espana: 'ES',
+    france: 'FR',
+    italy: 'IT',
+    italia: 'IT',
+    switzerland: 'CH',
+    schweiz: 'CH',
+    suisse: 'CH',
+    usa: 'US',
+    'united states': 'US',
+    uk: 'GB',
+    'united kingdom': 'GB',
+    portugal: 'PT',
+    netherlands: 'NL',
+    holland: 'NL',
+  };
+  const lower = raw.toLowerCase();
+  for (const [name, code] of Object.entries(map)) {
+    if (lower.includes(name)) return code;
+  }
+  const codeMatch = raw.match(/\b([A-Z]{2})\b/);
+  if (codeMatch) return codeMatch[1];
+  return undefined;
+}
+
+function appendBiasIfIncomplete(address: string, bias?: ExtractGeoBias): string {
+  const raw = (address || '').trim();
+  if (!raw) return '';
+  const lower = raw.toLowerCase();
+  const hasComma = raw.includes(',');
+  const hasCity = bias?.city ? lower.includes(String(bias.city).toLowerCase()) : false;
+  const hasCountry = bias?.country ? lower.includes(String(bias.country).toLowerCase()) : false;
+
+  const biasCode = bias?.country ? (getCountryCode(bias.country) || bias.country).toUpperCase() : undefined;
+  const countryHint = countryHintFromString(raw);
+  if (countryHint && biasCode && countryHint !== biasCode) {
+    // Already hints another country; do not force bias
+    return raw;
+  }
+
+  if (bias?.city && bias?.country && (!hasComma || !hasCity || !hasCountry)) {
+    return `${raw}, ${bias.city}, ${bias.country}`;
+  }
+  return raw;
+}
+
+async function normalizeExtractedAddresses(
+  locations: string[],
+  bias?: ExtractGeoBias
+): Promise<string[]> {
+  const cleaned = (Array.isArray(locations) ? locations : []).map((loc) => (loc || '').trim()).filter(Boolean);
+  if (cleaned.length === 0) return [];
+
+  const prepared = cleaned.map((loc) => appendBiasIfIncomplete(loc, bias));
+  const region = bias?.country ? (getCountryCode(bias.country) || bias.country) : undefined;
+
+  try {
+    const geocoded = await geocodeAddressesViaBackend(prepared, region);
+    return geocoded.map((result, idx) => {
+      const formatted = result?.formatted_address;
+      return formatted && formatted.trim() ? formatted.trim() : prepared[idx];
+    });
+  } catch (error) {
+    console.warn('[ExtractorUniversal] Address normalization failed, using originals:', error);
+    return prepared;
   }
 }
 
@@ -125,6 +207,7 @@ export async function extractUniversalStructured({
   credentials,
   useCrewFirst = false, // Use simple schema by default
   contentType = 'callsheet', // 'callsheet' | 'email'
+  geocodeBias,
 }: {
   mode: ExtractMode;
   input: ExtractInput;
@@ -132,6 +215,7 @@ export async function extractUniversalStructured({
   credentials?: ProviderCredentials;
   useCrewFirst?: boolean; // Optional parameter to use CrewFirst schema
   contentType?: 'callsheet' | 'email';
+  geocodeBias?: ExtractGeoBias;
 }): Promise<CallsheetExtraction> {
   console.log('[ExtractorUniversal] Starting extraction:', { mode, provider, useCrewFirst, contentType, hasFile: !!input.file, hasText: !!input.text });
   
@@ -193,8 +277,14 @@ export async function extractUniversalStructured({
     
     const processed = postProcessCrewFirstData(parsed, normalized.text, fileName);
     console.log('[ExtractorUniversal] Post-processed result:', processed);
+
+    const normalizedLocations = await normalizeExtractedAddresses(processed.locations, geocodeBias);
+    const finalResult: CallsheetExtraction = {
+      ...processed,
+      locations: normalizedLocations,
+    };
     
-    return processed;
+    return finalResult;
   } catch (error) {
     console.error('[ExtractorUniversal] Extraction failed:', error);
     throw error;
