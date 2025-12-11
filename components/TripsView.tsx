@@ -168,7 +168,7 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
     console.log('[TripsView] handleSaveBulkTrips called with source:', source);
     console.log('[TripsView] Number of trips:', newTrips.length);
     console.log('[TripsView] Trip dates:', newTrips.map(t => t.date));
-    
+
     try {
       if (source === 'ai' && addAiTrips) {
         console.log('[TripsView] Calling addAiTrips');
@@ -418,8 +418,8 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
                     const isSelected = selectedTripIds.includes(trip.id);
                     const isLocked = userProfile?.lockedUntilDate ? new Date(trip.date) <= new Date(userProfile.lockedUntilDate) : false;
                     const allWarnings = [...(trip.warnings || [])];
-                    if (trip.distance > 1000) { allWarnings.push(t('trips_warning_improbable_distance')); }
-                    if (trip.distance === 0) { allWarnings.push(t('trips_warning_zero_distance')); }
+                    if (Number(trip.distance) > 1000) { allWarnings.push(t('trips_warning_improbable_distance')); }
+                    if (Number(trip.distance) === 0) { allWarnings.push(t('trips_warning_zero_distance')); }
                     if (!trip.reason?.trim()) { allWarnings.push(t('dashboard_alert_missing_reason')); }
                     const project = projects.find(p => p.id === trip.projectId);
                     const reimbursement = calculateTripReimbursement(trip, userProfile, project);
@@ -543,10 +543,10 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
                   const isLocked = userProfile?.lockedUntilDate ? new Date(trip.date) <= new Date(userProfile.lockedUntilDate) : false;
 
                   const allWarnings = [...(trip.warnings || [])];
-                  if (trip.distance > 1000) {
+                  if (Number(trip.distance) > 1000) {
                     allWarnings.push(t('trips_warning_improbable_distance'));
                   }
-                  if (trip.distance === 0) {
+                  if (Number(trip.distance) === 0) {
                     allWarnings.push(t('trips_warning_zero_distance'));
                   }
                   if (!trip.reason?.trim()) {
@@ -755,10 +755,10 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
                 const isLocked = userProfile?.lockedUntilDate ? new Date(trip.date) <= new Date(userProfile.lockedUntilDate) : false;
 
                 const allWarnings = [...(trip.warnings || [])];
-                if (trip.distance > 1000) {
+                if (Number(trip.distance) > 1000) {
                   allWarnings.push(t('trips_warning_improbable_distance'));
                 }
-                if (trip.distance === 0) {
+                if (Number(trip.distance) === 0) {
                   allWarnings.push(t('trips_warning_zero_distance'));
                 }
                 if (!trip.reason?.trim()) {
