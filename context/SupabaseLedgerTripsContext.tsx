@@ -291,78 +291,16 @@ export const LedgerTripsProvider: React.FC<{ children: ReactNode }> = ({ childre
     if (!user?.id) {
       throw new Error('User not authenticated');
     }
+    if (!Array.isArray(tripIds) || tripIds.length === 0) return;
 
     setLoading(true);
     try {
-      // Collect all trips info before deleting
-      const tripsToDelete = trips.filter(t => tripIds.includes(t.id));
-      const projectsToCheck = new Set<string>();
-
-      // Import database service
-      const databaseService = (await import('../services/databaseService')).default;
-
-      let deletedDocs = 0;
-
-      // Delete all trips, expenses, and associated callsheets
-      for (const trip of tripsToDelete) {
-        // 1. Delete expenses first
-        try {
-          await databaseService.deleteTripExpenses(trip.id, user.id);
-        } catch (err) {
-          console.warn(`Failed to delete expenses for trip ${trip.id}:`, err);
-        }
-
-        // 2. Void the trip
-        await ledgerService.voidTrip(trip.id, 'Batch delete by user', TripLedgerSource.MANUAL);
-
-        // 3. Delete associated callsheet/document
-        if (trip.sourceDocumentId) {
-          try {
-            if (trip.projectId) {
-              await projectsContext.deleteCallsheetFromProject(trip.projectId, trip.sourceDocumentId);
-            } else {
-              await databaseService.deleteCallsheetFromProject(trip.sourceDocumentId, user.id);
-            }
-            deletedDocs += 1;
-          } catch (err) {
-            console.warn(`Failed to delete callsheet ${trip.sourceDocumentId} for trip ${trip.id}:`, err);
-          }
-        }
-
-        if (trip.projectId) {
-          projectsToCheck.add(trip.projectId);
-        }
+      // Reuse the single-delete flow to ensure consistency (expenses, callsheets, ledger, UI)
+      for (const tripId of tripIds) {
+        await deleteTrip(tripId);
       }
 
-      // Wait for trips to be refreshed so project emptiness check is accurate
-      await refreshTrips();
-
-      // Check and delete empty projects (after trips are already voided and docs removed)
-      let deletedProjects = 0;
-      if (projectsToCheck.size > 0) {
-        for (const projectId of projectsToCheck) {
-          try {
-            const isEmpty = await databaseService.isProjectEmpty(projectId, user.id);
-            if (isEmpty) {
-              await projectsContext.deleteProject(projectId);
-              deletedProjects++;
-            }
-          } catch (err) {
-            console.warn(`Could not check/delete project ${projectId}:`, err);
-          }
-        }
-      }
-
-      // Show appropriate success message
-      if (deletedDocs > 0 && deletedProjects > 0) {
-        showToast(`${tripIds.length} trips, ${deletedDocs} documents, and ${deletedProjects} empty projects deleted`, 'success');
-      } else if (deletedDocs > 0) {
-        showToast(`${tripIds.length} trips and ${deletedDocs} documents deleted`, 'success');
-      } else {
-        showToast(`${tripIds.length} trips deleted successfully`, 'success');
-      }
-
-      await refreshExpenses(); // Refresh expenses UI after batch delete
+      showToast(`${tripIds.length} trips deleted successfully`, 'success');
     } catch (err) {
       console.error('Error deleting multiple trips:', err);
       const errorMessage = err instanceof Error ? err.message : 'Failed to delete trips';
@@ -371,10 +309,7 @@ export const LedgerTripsProvider: React.FC<{ children: ReactNode }> = ({ childre
     } finally {
       setLoading(false);
     }
-
-    // Optimistic local removal to avoid stale UI if cache delays refresh
-    setTrips(prev => prev.filter(t => !tripIds.includes(t.id)));
-  }, [ledgerService, refreshTrips, showToast]);
+  }, [ledgerService, user?.id, deleteTrip, showToast]);
 
   const updateMultipleTrips = useCallback(async (tripIds: string[], updates: Partial<Omit<Trip, 'id'>>): Promise<void> => {
     if (!ledgerService) {
