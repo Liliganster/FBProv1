@@ -189,11 +189,11 @@ export const LedgerTripsProvider: React.FC<{ children: ReactNode }> = ({ childre
   }, [ledgerService, trips, refreshTrips, showToast]);
 
   const deleteTrip = useCallback(async (tripId: string): Promise<void> => {
-    if (!ledgerService) {
-      throw new Error('Ledger service not available');
-    }
-    if (!user?.id) {
-      throw new Error('User not authenticated');
+      if (!ledgerService) {
+        throw new Error('Ledger service not available');
+      }
+      if (!user?.id) {
+        throw new Error('User not authenticated');
     }
 
     setLoading(true);
@@ -271,15 +271,18 @@ export const LedgerTripsProvider: React.FC<{ children: ReactNode }> = ({ childre
       await refreshTrips();
       // Refresh expenses to remove deleted invoices from UI
       await refreshExpenses();
-    } catch (err) {
-      console.error('Error deleting trip:', err);
-      const errorMessage = err instanceof Error ? err.message : 'Failed to delete trip';
-      showToast(errorMessage, 'error');
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  }, [ledgerService, trips, user?.id, projectsContext, refreshTrips, showToast]);
+      } catch (err) {
+        console.error('Error deleting trip:', err);
+        const errorMessage = err instanceof Error ? err.message : 'Failed to delete trip';
+        showToast(errorMessage, 'error');
+        throw err;
+      } finally {
+        setLoading(false);
+      }
+
+      // Optimistic local removal to avoid stale UI if cache delays refresh
+      setTrips(prev => prev.filter(t => t.id !== tripId));
+    }, [ledgerService, trips, user?.id, projectsContext, refreshTrips, showToast]);
 
   const deleteMultipleTrips = useCallback(async (tripIds: string[]): Promise<void> => {
     if (!ledgerService) {
@@ -368,6 +371,9 @@ export const LedgerTripsProvider: React.FC<{ children: ReactNode }> = ({ childre
     } finally {
       setLoading(false);
     }
+
+    // Optimistic local removal to avoid stale UI if cache delays refresh
+    setTrips(prev => prev.filter(t => !tripIds.includes(t.id)));
   }, [ledgerService, refreshTrips, showToast]);
 
   const updateMultipleTrips = useCallback(async (tripIds: string[], updates: Partial<Omit<Trip, 'id'>>): Promise<void> => {
