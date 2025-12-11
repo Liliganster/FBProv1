@@ -298,6 +298,8 @@ export const LedgerTripsProvider: React.FC<{ children: ReactNode }> = ({ childre
       // Import database service
       const databaseService = (await import('../services/databaseService')).default;
 
+      let deletedDocs = 0;
+
       // Delete all trips, expenses, and associated callsheets
       for (const trip of tripsToDelete) {
         // 1. Delete expenses first
@@ -318,6 +320,7 @@ export const LedgerTripsProvider: React.FC<{ children: ReactNode }> = ({ childre
             } else {
               await databaseService.deleteCallsheetFromProject(trip.sourceDocumentId, user.id);
             }
+            deletedDocs += 1;
           } catch (err) {
             console.warn(`Failed to delete callsheet ${trip.sourceDocumentId} for trip ${trip.id}:`, err);
           }
