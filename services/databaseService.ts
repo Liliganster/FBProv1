@@ -450,6 +450,68 @@ class DatabaseService {
   }
 
   /**
+   * Check if a project is empty (no callsheets and no active trips)
+   */
+  async isProjectEmpty(projectId: string, userId: string): Promise<boolean> {
+    try {
+      // Check if project has any callsheets
+      const { data: callsheets, error: callsheetsError } = await supabase
+        .from('callsheets')
+        .select('id')
+        .eq('project_id', projectId)
+        .limit(1);
+
+      if (callsheetsError) throw callsheetsError;
+      if (callsheets && callsheets.length > 0) return false;
+
+      // Check if project has any active trips (trips in ledger that aren't voided)
+      const { data: ledgerEntries, error: ledgerError } = await supabase
+        .from('trip_ledger')
+        .select('operation, trip_id')
+        .eq('user_id', userId)
+        .order('timestamp', { ascending: true });
+
+      if (ledgerError) throw ledgerError;
+
+      // Build a map of active trips by replaying the ledger
+      const activeTripIds = new Set<string>();
+      (ledgerEntries || []).forEach((entry: any) => {
+        if (entry.operation === 'CREATE' || entry.operation === 'AMEND') {
+          activeTripIds.add(entry.trip_id);
+        } else if (entry.operation === 'VOID') {
+          activeTripIds.delete(entry.trip_id);
+        }
+      });
+
+      // Now check if any active trip belongs to this project
+      if (activeTripIds.size > 0) {
+        const { data: projectTrips, error: tripsError } = await supabase
+          .from('trip_ledger')
+          .select('trip_id, trip_snapshot')
+          .eq('user_id', userId)
+          .in('trip_id', Array.from(activeTripIds))
+          .in('operation', ['CREATE', 'AMEND'])
+          .order('timestamp', { ascending: false });
+
+        if (tripsError) throw tripsError;
+
+        // Check if any active trip has this projectId
+        const hasTripsInProject = (projectTrips || []).some((entry: any) => {
+          const snapshot = entry.trip_snapshot;
+          return snapshot?.projectId === projectId && activeTripIds.has(entry.trip_id);
+        });
+
+        if (hasTripsInProject) return false;
+      }
+
+      return true; // Project is empty
+    } catch (error) {
+      console.error('Error checking if project is empty:', error);
+      return false; // On error, assume not empty to avoid accidental deletion
+    }
+  }
+
+  /**
    * Delete a callsheet from a project (with explicit ownership validation)
    */
   async deleteCallsheetFromProject(callsheetId: string, userId: string): Promise<void> {

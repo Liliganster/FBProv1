@@ -190,12 +190,47 @@ export const LedgerTripsProvider: React.FC<{ children: ReactNode }> = ({ childre
     if (!ledgerService) {
       throw new Error('Ledger service not available');
     }
+    if (!user?.id) {
+      throw new Error('User not authenticated');
+    }
 
     setLoading(true);
     try {
+      // Get trip info before deleting to access sourceDocumentId and projectId
+      const tripToDelete = trips.find(t => t.id === tripId);
+      
+      // Void the trip
       await ledgerService.voidTrip(tripId, 'Trip deleted by user', TripLedgerSource.MANUAL);
+      
+      // If trip has an associated callsheet, delete it
+      if (tripToDelete?.sourceDocumentId) {
+        try {
+          const databaseService = (await import('../services/databaseService')).default;
+          await databaseService.deleteCallsheetFromProject(tripToDelete.sourceDocumentId, user.id);
+          console.log(`Deleted associated callsheet: ${tripToDelete.sourceDocumentId}`);
+          
+          // Check if the project is now empty (no callsheets and no active trips)
+          if (tripToDelete.projectId) {
+            const isEmpty = await databaseService.isProjectEmpty(tripToDelete.projectId, user.id);
+            if (isEmpty) {
+              await projectsContext.deleteProject(tripToDelete.projectId);
+              console.log(`Deleted empty project: ${tripToDelete.projectId}`);
+              showToast('Trip, document, and empty project deleted successfully', 'success');
+            } else {
+              showToast('Trip and associated document deleted successfully', 'success');
+            }
+          } else {
+            showToast('Trip and associated document deleted successfully', 'success');
+          }
+        } catch (docErr) {
+          console.warn('Could not delete associated document or project:', docErr);
+          showToast('Trip deleted, but document cleanup failed', 'warning');
+        }
+      } else {
+        showToast('Trip deleted successfully', 'success');
+      }
+      
       await refreshTrips();
-      showToast('Trip deleted successfully', 'success');
     } catch (err) {
       console.error('Error deleting trip:', err);
       const errorMessage = err instanceof Error ? err.message : 'Failed to delete trip';
@@ -204,20 +239,79 @@ export const LedgerTripsProvider: React.FC<{ children: ReactNode }> = ({ childre
     } finally {
       setLoading(false);
     }
-  }, [ledgerService, refreshTrips, showToast]);
+  }, [ledgerService, trips, user?.id, projectsContext, refreshTrips, showToast]);
 
   const deleteMultipleTrips = useCallback(async (tripIds: string[]): Promise<void> => {
     if (!ledgerService) {
       throw new Error('Ledger service not available');
     }
+    if (!user?.id) {
+      throw new Error('User not authenticated');
+    }
 
     setLoading(true);
     try {
+      // Collect all trips info before deleting
+      const tripsToDelete = trips.filter(t => tripIds.includes(t.id));
+      const callsheetsToDelete = new Set<string>();
+      const projectsToCheck = new Set<string>();
+      
+      tripsToDelete.forEach(trip => {
+        if (trip.sourceDocumentId) {
+          callsheetsToDelete.add(trip.sourceDocumentId);
+        }
+        if (trip.projectId) {
+          projectsToCheck.add(trip.projectId);
+        }
+      });
+      
+      // Delete all trips first
       for (const tripId of tripIds) {
         await ledgerService.voidTrip(tripId, 'Batch delete by user', TripLedgerSource.MANUAL);
       }
+      
+      // Wait for trips to be refreshed so project emptiness check is accurate
       await refreshTrips();
-      showToast(`${tripIds.length} trips deleted successfully`, 'success');
+      
+      // Delete associated callsheets
+      let deletedDocs = 0;
+      if (callsheetsToDelete.size > 0) {
+        const databaseService = (await import('../services/databaseService')).default;
+        for (const callsheetId of callsheetsToDelete) {
+          try {
+            await databaseService.deleteCallsheetFromProject(callsheetId, user.id);
+            deletedDocs++;
+          } catch (err) {
+            console.warn(`Could not delete callsheet ${callsheetId}:`, err);
+          }
+        }
+      }
+      
+      // Check and delete empty projects (after trips are already voided)
+      let deletedProjects = 0;
+      if (projectsToCheck.size > 0) {
+        const databaseService = (await import('../services/databaseService')).default;
+        for (const projectId of projectsToCheck) {
+          try {
+            const isEmpty = await databaseService.isProjectEmpty(projectId, user.id);
+            if (isEmpty) {
+              await projectsContext.deleteProject(projectId);
+              deletedProjects++;
+            }
+          } catch (err) {
+            console.warn(`Could not check/delete project ${projectId}:`, err);
+          }
+        }
+      }
+      
+      // Show appropriate success message
+      if (deletedDocs > 0 && deletedProjects > 0) {
+        showToast(`${tripIds.length} trips, ${deletedDocs} documents, and ${deletedProjects} empty projects deleted`, 'success');
+      } else if (deletedDocs > 0) {
+        showToast(`${tripIds.length} trips and ${deletedDocs} documents deleted`, 'success');
+      } else {
+        showToast(`${tripIds.length} trips deleted successfully`, 'success');
+      }
     } catch (err) {
       console.error('Error deleting multiple trips:', err);
       const errorMessage = err instanceof Error ? err.message : 'Failed to delete trips';
