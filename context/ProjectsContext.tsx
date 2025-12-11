@@ -264,7 +264,11 @@ export function ProjectsProvider({ children }: { children: React.ReactNode }) {
 
     try {
       // Parallel delete from DB
-      await Promise.all(callsheetIds.map(id => databaseService.deleteCallsheetFromProject(id, user!.id)));
+      // Parallel delete from DB (best effort, don't fail all if one fails)
+      await Promise.all(callsheetIds.map(id =>
+        databaseService.deleteCallsheetFromProject(id, user!.id)
+          .catch(err => console.warn(`Failed to delete callsheet ${id} from DB:`, err))
+      ));
 
       // Update the project by removing ALL callsheets at once
       const currentProject = state.projects.find(p => p.id === projectId)

@@ -351,6 +351,7 @@ export const LedgerTripsProvider: React.FC<{ children: ReactNode }> = ({ childre
           try {
             console.log(`[Batch Delete] Deleting ${callsheetIds.length} callsheets from project ${projectId}`);
             await projectsContext.deleteCallsheetsFromProject(projectId, callsheetIds);
+            showToast(`Removed ${callsheetIds.length} docs from project view`, 'success');
             deletedDocs += callsheetIds.length;
           } catch (err) {
             console.warn(`Failed to delete callsheets from project ${projectId}:`, err);
