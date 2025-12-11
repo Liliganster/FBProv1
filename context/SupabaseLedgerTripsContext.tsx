@@ -200,13 +200,23 @@ export const LedgerTripsProvider: React.FC<{ children: ReactNode }> = ({ childre
       const tripToDelete = trips.find(t => t.id === tripId);
 
       // Import database service for cascading deletions
-      const databaseService = (await import('../services/databaseService')).default;
+      console.log('Loading databaseService for cascading deletion...');
+      const databaseServiceModule = await import('../services/databaseService');
+      const databaseService = databaseServiceModule.default;
+
+      if (!databaseService) {
+        console.error('Failed to load databaseService:', databaseServiceModule);
+        throw new Error('System error: Database service could not be loaded');
+      }
 
       // 1. Delete all associated expenses
       try {
+        console.log(`Deleting expenses for trip ${tripId}...`);
         await databaseService.deleteTripExpenses(tripId, user.id);
+        console.log('Expenses deleted successfully.');
       } catch (err) {
         console.warn(`Failed to delete expenses for trip ${tripId}:`, err);
+        showToast('Warning: Associated expenses could not be deleted', 'error');
         // Continue with deletion even if expense cleanup fails
       }
 
@@ -227,8 +237,12 @@ export const LedgerTripsProvider: React.FC<{ children: ReactNode }> = ({ childre
       // 4. Check if the project is now empty (no callsheets, no expense documents, and no active trips)
       if (tripToDelete?.projectId) {
         try {
+          console.log(`Checking if project ${tripToDelete.projectId} is empty...`);
           const isEmpty = await databaseService.isProjectEmpty(tripToDelete.projectId, user.id);
+          console.log(`Project empty status: ${isEmpty}`);
+
           if (isEmpty) {
+            console.log(`Deleting project ${tripToDelete.projectId}...`);
             await projectsContext.deleteProject(tripToDelete.projectId);
             console.log(`Deleted empty project: ${tripToDelete.projectId}`);
             showToast('Trip and empty project deleted successfully', 'success');
@@ -237,7 +251,7 @@ export const LedgerTripsProvider: React.FC<{ children: ReactNode }> = ({ childre
           }
         } catch (projErr) {
           console.warn('Error checking/deleting empty project:', projErr);
-          showToast('Trip deleted successfully', 'success');
+          showToast('Trip deleted, but project cleanup failed', 'warning');
         }
       } else {
         showToast('Trip deleted successfully', 'success');
