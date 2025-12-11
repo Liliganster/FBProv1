@@ -35,7 +35,7 @@ export const LOCATION_AGENT_SYSTEM_PROMPT = `You are a precision data extraction
 5. **Filming vs Logistics**: Extract where actors perform and cameras film. Ignore where crew eats/rests/parks.
 
 **Formatting:**
-- Convert Vienna district prefixes (e.g., "2." → "1020 Wien")
+- Convert Vienna district prefixes regardless of position (e.g., "13., Erzbischofgasse 6C" → "Erzbischofgasse 6C, 1130 Wien")
 - If both place name and address exist, extract only the address
 - Remove duplicates
 - Output: {"locations": ["address1", "address2", ...]}`;

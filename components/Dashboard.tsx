@@ -116,15 +116,37 @@ const Dashboard: React.FC<DashboardProps> = ({ setCurrentView, personalization, 
         if (!userTrips) return [];
         const allAlerts: { trip: Trip; type: string; message: string }[] = [];
         userTrips.forEach(trip => {
+            const warnings = trip.warnings || [];
+
+            // Check for missing reason
             if (!trip.reason?.trim()) {
                 allAlerts.push({ trip, type: 'missing_reason', message: t('dashboard_alert_missing_reason') });
             }
+
+            // Check for improbable distance (explicit numeric check)
             if (Number(trip.distance) > 1000) {
-                allAlerts.push({ trip, type: 'improbable_distance', message: t('dashboard_alert_improbable_distance') });
+                // Avoid duplicate if backend already sent it
+                if (!warnings.some(w => w.includes('Improbable'))) {
+                    allAlerts.push({ trip, type: 'improbable_distance', message: t('dashboard_alert_improbable_distance') });
+                }
             }
+
+            // Check for zero distance (explicit numeric check)
             if (Number(trip.distance) === 0) {
-                allAlerts.push({ trip, type: 'zero_distance', message: t('dashboard_alert_zero_distance') });
+                // Avoid duplicate if backend already sent it
+                if (!warnings.some(w => w.includes('Zero'))) {
+                    allAlerts.push({ trip, type: 'zero_distance', message: t('dashboard_alert_zero_distance') });
+                }
             }
+
+            // Add any other backend warnings not covered above
+            warnings.forEach(w => {
+                // Simple deduplication based on content matching
+                const isDistanceWarning = w.includes('1000') || w.includes('0 km');
+                if (!isDistanceWarning) {
+                    allAlerts.push({ trip, type: 'backend_warning', message: w });
+                }
+            });
         });
         return allAlerts;
     }, [userTrips, t]);
