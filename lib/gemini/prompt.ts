@@ -23,7 +23,7 @@ Contexto adicional:
 - **AMBIGÜEDAD**: "Produktion:" a veces introduce el TÍTULO. Si dice "Produktion: TATORT", ignóralo como empresa.
 - **SUFIJOS LEGALES**: Prioriza nombres con "GmbH", "LLC", "Inc", "Filmproduktion". Si ves "Gebhardt Productions GmbH", esa es la empresa.
 - Ignora títulos genéricos como CALLSHEET/Tagesdisposition
-- Regla Viena: "2., Rustenschacherallee 9" → "Rustenschacherallee 9, 1020 Wien"
+- Regla Viena ESTRICTA: El número inicial con punto (ej. "13.", "2.") es el DISTRITO (1130, 1020), NUNCA el número de casa. Ej: "13., Erzbischofgasse 6C" → "Erzbischofgasse 6C, 1130 Wien".
 - Deduplica ubicaciones preservando el orden
 
 Salida:
@@ -75,7 +75,7 @@ CRÍTICO: Diferencia correctamente estos campos del encabezado:
 4.  El campo 'version' siempre debe ser "parser-crew-1".
 
 **Contexto práctico adicional**
-- Regla Viena: "2., Rustenschacherallee 9" → "Rustenschacherallee 9, 1020 Wien".
+- Regla Viena ESTRICTA: El número inicial con punto (ej. "13.", "2.") es el DISTRITO (1130, 1020), NUNCA el número de casa. Ej: "13., Erzbischofgasse 6C" → "Erzbischofgasse 6C, 1130 Wien".
 - No inventes datos: si una herramienta falla, usa null en coordenadas pero conserva la dirección original.
 - Sé metódico: no intentes hacerlo todo a la vez; llama herramientas secuencialmente para cada dirección.
 - Respuesta final: solo el JSON completo, sin explicaciones.`;
