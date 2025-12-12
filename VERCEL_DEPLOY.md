@@ -35,7 +35,7 @@ GOOGLE_MAPS_API_KEY=tu_maps_server_key
 GOOGLE_CALENDAR_API_KEY=tu_calendar_server_key
 GEMINI_API_KEY=tu_gemini_key
 OPENROUTER_API_KEY=tu_openrouter_key
-OPENROUTER_MODEL=google/gemini-2.0-flash-001
+OPENROUTER_MODEL=google/gemini-2.5-flash-001
 OPENROUTER_HTTP_REFERER=https://fb-prov1.vercel.app
 OPENROUTER_TITLE=Fahrtenbuch Pro
 ```

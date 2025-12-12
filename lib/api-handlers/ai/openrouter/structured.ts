@@ -5,13 +5,13 @@ import { isCallsheetExtraction, isCrewFirstCallsheet } from '../../../../service
 import { withRateLimit } from '../../../rate-limiter.js';
 import { GoogleGenAI } from '@google/genai';
 
-const DEFAULT_MODEL = process.env.OPENROUTER_MODEL || 'google/gemini-2.0-flash-001';
+const DEFAULT_MODEL = process.env.OPENROUTER_MODEL || 'google/gemini-2.5-flash-001';
 function deriveReferer(req: any): string {
   try {
     const xfProto = (req.headers?.['x-forwarded-proto'] || 'https') as string;
     const xfHost = (req.headers?.['x-forwarded-host'] || req.headers?.host || '').toString();
     if (xfHost) return `${xfProto}://${xfHost}`;
-  } catch {}
+  } catch { }
   return process.env.OPENROUTER_HTTP_REFERER || 'https://fahrtenbuch-pro.app';
 }
 const APP_TITLE = process.env.OPENROUTER_TITLE || 'Fahrtenbuch Pro';
@@ -162,13 +162,13 @@ async function structuredHandler(req: any, res: any) {
       // strip common code fences
       t = t.replace(/^```json\s*|```$/gim, '').trim();
       // Try full parse first
-      try { return JSON.parse(t); } catch {}
+      try { return JSON.parse(t); } catch { }
       // Try to locate first {...} block
       const start = t.indexOf('{');
       const end = t.lastIndexOf('}');
       if (start >= 0 && end > start) {
         const slice = t.slice(start, end + 1);
-        try { return JSON.parse(slice); } catch {}
+        try { return JSON.parse(slice); } catch { }
       }
       return null;
     }

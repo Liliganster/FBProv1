@@ -1,12 +1,12 @@
 import { withRateLimit } from '../../../rate-limiter.js';
 
-const DEFAULT_MODEL = process.env.OPENROUTER_MODEL || 'google/gemini-2.0-flash-001';
+const DEFAULT_MODEL = process.env.OPENROUTER_MODEL || 'google/gemini-2.5-flash-001';
 function deriveReferer(req: any): string {
   try {
     const xfProto = (req.headers?.['x-forwarded-proto'] || 'https') as string;
     const xfHost = (req.headers?.['x-forwarded-host'] || req.headers?.host || '').toString();
     if (xfHost) return `${xfProto}://${xfHost}`;
-  } catch {}
+  } catch { }
   return process.env.OPENROUTER_HTTP_REFERER || 'https://fahrtenbuch-pro.app';
 }
 const APP_TITLE = process.env.OPENROUTER_TITLE || 'Fahrtenbuch Pro';

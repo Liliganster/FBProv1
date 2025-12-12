@@ -159,7 +159,7 @@ app.post('/api/google/maps/directions', async (req, res) => {
 
     // Geocode each address to get complete, normalized version
     const enrichedLocations = [];
-    
+
     for (const loc of locations) {
       try {
         const geocodeParams = new URLSearchParams();
@@ -169,18 +169,18 @@ app.post('/api/google/maps/directions', async (req, res) => {
           geocodeParams.set('region', region);
           geocodeParams.set('components', `country:${region}`);
         }
-        
+
         const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?${geocodeParams.toString()}`;
         const geocodeResponse = await fetch(geocodeUrl);
         const geocodeData = await geocodeResponse.json();
-        
+
         if (geocodeData.status === 'OK' && geocodeData.results && geocodeData.results.length > 0) {
           const result = geocodeData.results[0];
           // Validate that the result is in the expected country/region
           const addressComponents = result.address_components || [];
           const countryComponent = addressComponents.find(c => c.types.includes('country'));
           const isCorrectRegion = !region || !countryComponent || countryComponent.short_name === region.toUpperCase();
-          
+
           if (isCorrectRegion) {
             enrichedLocations.push(result.formatted_address);
             console.log(`[dev-server] ✓ Enriched "${loc}" → "${result.formatted_address}"`);
@@ -404,10 +404,11 @@ CRITICAL RULES:
 5. If a location has both a place name AND an address, use ONLY the address
 6. Remove duplicates
 7. Order locations in the sequence they appear on the callsheet
+8. Convert Vienna districts: "13., Street" -> "Street, 1130 Wien". The leading number with dot/comma is the district (13 -> 1130), NOT the house number.
 
 Output format: {"date":"YYYY-MM-DD","projectName":"string","locations":["complete address 1","complete address 2",...]}
 
-Example good locations: ["Palais Rasumofsky, 23-25, 1030 Wien", "Salmgasse 10, 1030 Wien"]
+Example good locations: ["Palais Rasumofsky, 23-25, 1030 Wien", "Salmgasse 10, 1130 Wien"]
 Example BAD locations to IGNORE: ["Suite Nico", "Keller", "Catering Bereich", "Basis", "Parken"]`;
 
     const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
@@ -459,7 +460,7 @@ app.post('/api/ai/openrouter/chat', async (req, res) => {
       return res.status(400).json({ error: 'OpenRouter API key is required. Please add your API key in Settings.' });
     }
 
-    const model = bodyModel || 'google/gemini-2.0-flash-001';
+    const model = bodyModel || 'google/gemini-2.5-flash-001';
 
     console.log(`[dev-server] OpenRouter chat request: model=${model}, messages=${messages.length}`);
 
@@ -558,9 +559,9 @@ app.get('/api/ai/openrouter/models', async (req, res) => {
     const data = await response.json();
     const models = Array.isArray(data?.data)
       ? data.data
-          .map(m => ({ id: m.id, name: m.name || m.id }))
-          .filter(m => m.id && typeof m.id === 'string')
-          .sort((a, b) => (a.name || '').localeCompare(b.name || ''))
+        .map(m => ({ id: m.id, name: m.name || m.id }))
+        .filter(m => m.id && typeof m.id === 'string')
+        .sort((a, b) => (a.name || '').localeCompare(b.name || ''))
       : [];
 
     if (models.length === 0) {

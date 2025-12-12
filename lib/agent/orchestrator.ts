@@ -26,7 +26,7 @@ type AgentConfig = {
  * Ejecuta el agente con OpenRouter usando function calling
  */
 export async function runAgentWithOpenRouter(config: AgentConfig): Promise<CrewFirstCallsheet> {
-  const { apiKey, text, model = 'google/gemini-2.0-flash-exp:free' } = config;
+  const { apiKey, text, model = 'google/gemini-2.5-flash-001' } = config;
 
   // Inicializar conversación
   const messages: Message[] = [
