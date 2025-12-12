@@ -423,7 +423,7 @@ const ProjectsView: React.FC<ProjectsViewProps> = ({ setCurrentView, personaliza
         </div>
       ) : (
         // Vista desktop con tabla
-        <div style={contentStyle} className="bg-frost-glass rounded-gentle shadow-lg overflow-hidden" id="projects-table-wrapper">
+        <div style={contentStyle} className="bg-frost-glass rounded-gentle shadow-lg overflow-x-auto" id="projects-table-wrapper">
           <table id="projects-table" className="w-full text-left text-sm">
             <thead className="bg-gray-700/50">
               <tr>
