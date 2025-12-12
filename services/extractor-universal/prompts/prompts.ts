@@ -35,7 +35,10 @@ export const LOCATION_AGENT_SYSTEM_PROMPT = `You are a precision data extraction
 5. **Filming vs Logistics**: Extract where actors perform and cameras film. Ignore where crew eats/rests/parks.
 
 **Formatting:**
-- Convert Vienna district prefixes regardless of position (e.g., "13., Erzbischofgasse 6C" → "Erzbischofgasse 6C, 1130 Wien")
+- Convert Vienna district prefixes regardless of position. The leading number followed by punctuation (e.g. "13.", "13.,", "13,") is the District Code. It is NEVER the house number.
+- Example Input 1: "13., Erzbischofgasse 6C" -> CORRECT: "Erzbischofgasse 6C, 1130 Wien"
+- Example Input 2: "13, Erzbischofgasse 6C" -> CORRECT: "Erzbischofgasse 6C, 1130 Wien"
+- INCORRECT Output: "Erzbischofgasse 13, Wien"
 - If both place name and address exist, extract only the address
 - Remove duplicates
 - Output: {"locations": ["address1", "address2", ...]}`;
@@ -44,7 +47,10 @@ export const LOCATION_AGENT_SYSTEM_PROMPT_EMAIL = `Extract a sequence of physica
 
 **Extract**: Physical addresses (street + number + city), landmarks, known places with city.
 **Ignore**: Transport words ("TAXI", "UBER"), logistics (lunch, catering, office), room names without addresses, email signatures.
-**Format**: Convert Vienna districts (e.g., "2." → "1020 Wien"). Remove duplicates.`;
+**Format**:
+- Convert Vienna districts regardless of position. The leading number followed by punctuation (e.g. "13.", "13.,", "13,") is the District Code (1130). It is NEVER the house number.
+- Example: "13., Erzbischofgasse 6C" -> "Erzbischofgasse 6C, 1130 Wien"
+- Remove duplicates.`;
 
 export const PRODUCTION_COMPANY_AGENT_SYSTEM_PROMPT = `You are a specialized document analyst for the film industry. Your only task is to identify and extract the **Production Company** from the top half of the first page of a given document.
 
