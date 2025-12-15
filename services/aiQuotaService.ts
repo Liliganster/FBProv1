@@ -24,17 +24,14 @@ const resolvePlan = (profile?: UserProfile | null, supabaseUser?: SupabaseUser |
 // Count total AI extractions (each trip = 1 call), not unique days
 const countAiExtractions = (entries: TripLedgerEntry[]): number => {
   let count = 0;
-  console.log('[countAiExtractions] Processing', entries.length, 'ledger entries');
   entries.forEach(entry => {
     const matches = entry.source === TripLedgerSource.AI_AGENT &&
       (entry.operation === TripLedgerOperation.CREATE || entry.operation === TripLedgerOperation.IMPORT_BATCH);
-    
+
     if (matches) {
       count++;
-      console.log('[countAiExtractions] Found AI extraction #' + count, 'date:', (entry.tripSnapshot as any)?.date, 'operation:', entry.operation);
     }
   });
-  console.log('[countAiExtractions] Total AI extractions:', count);
   return count;
 };
 
@@ -70,7 +67,7 @@ export const checkAiQuota = async (params: {
   const allowed = used + needed <= limit;
   const remaining = Math.max(limit - used, 0);
 
-  console.log('[checkAiQuota] Plan:', plan, 'Limit:', limit, 'Used:', used, 'Needed:', needed, 'Remaining:', remaining, 'Allowed:', allowed);
+
 
   return { plan, limit, used, needed, remaining, allowed };
 };
