@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Report, Project, PersonalizationSettings } from '../types';
 import { ArrowLeftIcon, DownloadIcon, PrintIcon } from './Icons';
 import useTranslation from '../hooks/useTranslation';
@@ -17,6 +17,7 @@ interface ReportDetailViewProps {
 const ReportDetailView: React.FC<ReportDetailViewProps> = ({ report, projects, onBack, personalization, theme }) => {
   const { t } = useTranslation();
   const { showToast } = useToast();
+  const [showDownloadMenu, setShowDownloadMenu] = useState(false);
   // FIX: Destructure userProfileSnapshot from report and alias it to driverSnapshot.
   const { userProfileSnapshot: driverSnapshot, trips: reportTrips, totalDistance, projectName, startDate, endDate, generationDate } = report;
 
@@ -400,14 +401,59 @@ const ReportDetailView: React.FC<ReportDetailViewProps> = ({ report, projects, o
             <ArrowLeftIcon className="w-5 h-5 mr-2" />
             {t('common_back')}
           </button>
-          <button onClick={handleDownloadExcel} className="flex items-center bg-green-600 hover:bg-green-500 text-white font-bold py-2 px-4 rounded-lg">
-            <DownloadIcon className="w-5 h-5 mr-2" />
-            Excel
-          </button>
-          <button onClick={handleDownloadPdf} className="flex items-center bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg">
-            <DownloadIcon className="w-5 h-5 mr-2" />
-            PDF
-          </button>
+          
+          {/* Botón de descarga con menú desplegable */}
+          <div className="relative">
+            <button 
+              onClick={() => setShowDownloadMenu(!showDownloadMenu)}
+              className="flex items-center bg-brand-primary hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg"
+            >
+              <DownloadIcon className="w-5 h-5 mr-2" />
+              {t('report_downloadBtn_menu')}
+              <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            
+            {showDownloadMenu && (
+              <>
+                {/* Overlay para cerrar el menú al hacer clic fuera */}
+                <div 
+                  className="fixed inset-0 z-10" 
+                  onClick={() => setShowDownloadMenu(false)}
+                />
+                
+                {/* Menú desplegable */}
+                <div className="absolute right-0 mt-2 w-48 rounded-lg shadow-lg bg-gray-800 border border-gray-700 z-20">
+                  <button
+                    onClick={() => {
+                      handleDownloadExcel();
+                      setShowDownloadMenu(false);
+                    }}
+                    className="w-full text-left px-4 py-3 text-white hover:bg-gray-700 rounded-t-lg flex items-center transition-colors"
+                  >
+                    <svg className="w-5 h-5 mr-3 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    {t('report_download_excel')}
+                  </button>
+                  <button
+                    onClick={() => {
+                      handleDownloadPdf();
+                      setShowDownloadMenu(false);
+                    }}
+                    className="w-full text-left px-4 py-3 text-white hover:bg-gray-700 rounded-b-lg flex items-center transition-colors"
+                  >
+                    <svg className="w-5 h-5 mr-3 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                    </svg>
+                    {t('report_download_pdf')}
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+
           <button onClick={handlePrint} className="flex items-center bg-brand-secondary hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg">
             <PrintIcon className="w-5 h-5 mr-2" />
             {t('report_printBtn')}
