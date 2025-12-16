@@ -397,7 +397,7 @@ const ReportDetailView: React.FC<ReportDetailViewProps> = ({ report, projects, o
           <p className="text-on-surface-dark-secondary">{t('reports_generated_on')}: {formatDateForDisplay(generationDate)}</p>
         </div>
         <div className="flex items-center gap-4">
-          <button onClick={onBack} className="flex items-center bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg">
+          <button onClick={onBack} className="flex items-center bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg h-[38px]">
             <ArrowLeftIcon className="w-5 h-5 mr-2" />
             {t('common_back')}
           </button>
@@ -406,7 +406,7 @@ const ReportDetailView: React.FC<ReportDetailViewProps> = ({ report, projects, o
           <div className="relative">
             <button 
               onClick={() => setShowDownloadMenu(!showDownloadMenu)}
-              className="flex items-center bg-brand-primary hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg"
+              className="flex items-center bg-brand-primary hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg h-[38px]"
             >
               <DownloadIcon className="w-5 h-5 mr-2" />
               {t('report_downloadBtn_menu')}
