@@ -4,6 +4,7 @@ import { ArrowLeftIcon, DownloadIcon, PrintIcon } from './Icons';
 import useTranslation from '../hooks/useTranslation';
 import useToast from '../hooks/useToast';
 import { formatDateForDisplay } from '../i18n/translations';
+import * as XLSX from 'xlsx';
 
 interface ReportDetailViewProps {
   report: Report;
@@ -294,6 +295,82 @@ const ReportDetailView: React.FC<ReportDetailViewProps> = ({ report, projects, o
     handlePrint();
   };
 
+  const handleDownloadExcel = () => {
+    try {
+      // Crear los datos para el Excel
+      const excelData = reportTrips.map(trip => {
+        const project = getProjectInfo(trip.projectId);
+        const projectNameDisplay = project ? project.name : t('report_unknownProject');
+        const producerDisplay = project ? project.producer : t('detail_unknown');
+        const passengers = typeof trip.passengers === 'number' ? trip.passengers : 0;
+        
+        return {
+          [t('report_col_date')]: formatDateForDisplay(trip.date),
+          [t('report_col_project')]: projectNameDisplay,
+          [t('report_col_producer')]: producerDisplay,
+          [t('report_col_route')]: trip.locations.join(' -> '),
+          [t('report_col_passengers') || 'Pasajeros']: passengers,
+          [t('report_col_distance')]: `${trip.distance.toFixed(1)} km`
+        };
+      });
+
+      // Agregar fila de total
+      excelData.push({
+        [t('report_col_date')]: '',
+        [t('report_col_project')]: '',
+        [t('report_col_producer')]: '',
+        [t('report_col_route')]: t('report_total_kms'),
+        [t('report_col_passengers') || 'Pasajeros']: '',
+        [t('report_col_distance')]: `${totalDistance.toFixed(1)} km`
+      });
+
+      // Crear el libro de trabajo
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.json_to_sheet(excelData);
+
+      // Ajustar el ancho de las columnas
+      const colWidths = [
+        { wch: 12 }, // Fecha
+        { wch: 25 }, // Proyecto
+        { wch: 25 }, // Productor
+        { wch: 50 }, // Ruta
+        { wch: 12 }, // Pasajeros
+        { wch: 15 }  // Distancia
+      ];
+      ws['!cols'] = colWidths;
+
+      // Agregar información del header
+      XLSX.utils.sheet_add_aoa(ws, [
+        [t('report_preview_title')],
+        [`${t('reports_period')}: ${formatDateForDisplay(startDate)} - ${formatDateForDisplay(endDate)}`],
+        [`${t('report_preview_driver')}: ${driverSnapshot?.name}`],
+        [`${t('report_preview_address')}: ${driverSnapshot?.address}, ${driverSnapshot?.city}`],
+        [`${t('report_preview_licensePlate')}: ${licensePlate}`],
+        [`${t('report_preview_project')}: ${mainProjectInfo ? mainProjectInfo.name : projectName}`],
+        [''],
+      ], { origin: 'A1' });
+
+      // Ajustar las referencias de rango después de agregar las filas del header
+      const range = XLSX.utils.decode_range(ws['!ref'] || 'A1');
+      range.e.r += 7;
+      ws['!ref'] = XLSX.utils.encode_range(range);
+
+      // Agregar la hoja al libro
+      XLSX.utils.book_append_sheet(wb, ws, t('reports_title'));
+
+      // Generar el nombre del archivo
+      const fileName = `Informe_${projectName}_${formatDateForDisplay(startDate)}_${formatDateForDisplay(endDate)}.xlsx`.replace(/\//g, '-');
+
+      // Descargar el archivo
+      XLSX.writeFile(wb, fileName);
+
+      showToast(t('report_excel_downloaded') || 'Informe descargado en Excel', 'success');
+    } catch (error) {
+      console.error('Error generating Excel:', error);
+      showToast('Error al generar el archivo Excel', 'error');
+    }
+  };
+
   const licensePlate = driverSnapshot?.licensePlate || t('detail_unknown');
 
   const transparency = 1 - personalization.uiTransparency;
@@ -323,9 +400,13 @@ const ReportDetailView: React.FC<ReportDetailViewProps> = ({ report, projects, o
             <ArrowLeftIcon className="w-5 h-5 mr-2" />
             {t('common_back')}
           </button>
+          <button onClick={handleDownloadExcel} className="flex items-center bg-green-600 hover:bg-green-500 text-white font-bold py-2 px-4 rounded-lg">
+            <DownloadIcon className="w-5 h-5 mr-2" />
+            Excel
+          </button>
           <button onClick={handleDownloadPdf} className="flex items-center bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg">
             <DownloadIcon className="w-5 h-5 mr-2" />
-            {t('report_downloadBtn')}
+            PDF
           </button>
           <button onClick={handlePrint} className="flex items-center bg-brand-secondary hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg">
             <PrintIcon className="w-5 h-5 mr-2" />
