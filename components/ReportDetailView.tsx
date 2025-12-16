@@ -442,22 +442,27 @@ const ReportDetailView: React.FC<ReportDetailViewProps> = ({ report, projects, o
                       handleDownloadPdf();
                       setShowDownloadMenu(false);
                     }}
-                    className="w-full text-left px-4 py-3 text-white hover:bg-gray-700 rounded-b-lg flex items-center transition-colors"
+                    className="w-full text-left px-4 py-3 text-white hover:bg-gray-700 flex items-center transition-colors"
                   >
                     <svg className="w-5 h-5 mr-3 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
                     </svg>
                     {t('report_download_pdf')}
                   </button>
+                  <button
+                    onClick={() => {
+                      handlePrint();
+                      setShowDownloadMenu(false);
+                    }}
+                    className="w-full text-left px-4 py-3 text-white hover:bg-gray-700 rounded-b-lg flex items-center transition-colors"
+                  >
+                    <PrintIcon className="w-5 h-5 mr-3 text-blue-400" />
+                    {t('report_printBtn')}
+                  </button>
                 </div>
               </>
             )}
           </div>
-
-          <button onClick={handlePrint} className="flex items-center bg-brand-secondary hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg">
-            <PrintIcon className="w-5 h-5 mr-2" />
-            {t('report_printBtn')}
-          </button>
         </div>
       </div>
 
