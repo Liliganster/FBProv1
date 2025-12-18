@@ -92,7 +92,7 @@ const ALLOWED_EXTENSIONS = [
 /**
  * Maximum file size (10MB)
  */
-const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB in bytes
+const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB in bytes
 
 /**
  * Read the first N bytes of a file
@@ -238,7 +238,7 @@ async function validateMagicNumber(file: File): Promise<FileValidationResult> {
   try {
     // Special handling for text files and emails
     if (file.type === 'text/plain' || file.name.endsWith('.txt') ||
-        file.type === 'message/rfc822' || file.name.endsWith('.eml')) {
+      file.type === 'message/rfc822' || file.name.endsWith('.eml')) {
       // Text files don't have a specific magic number, so we skip this check
       return { valid: true };
     }
@@ -260,7 +260,7 @@ async function validateMagicNumber(file: File): Promise<FileValidationResult> {
 
     // For ZIP-based formats (DOCX, XLSX), they all have the same signature
     const isZipBased = declaredType.includes('openxmlformats') ||
-                       detectedType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+      detectedType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
 
     if (isZipBased && detectedType.includes('openxmlformats')) {
       // ZIP-based Office formats are OK
@@ -269,7 +269,7 @@ async function validateMagicNumber(file: File): Promise<FileValidationResult> {
 
     // For legacy Office formats, DOC/XLS have the same signature
     const isLegacyOffice = declaredType === 'application/msword' ||
-                           declaredType === 'application/vnd.ms-excel';
+      declaredType === 'application/vnd.ms-excel';
 
     if (isLegacyOffice && detectedType === 'application/msword') {
       // Legacy Office formats share signature

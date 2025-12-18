@@ -21,7 +21,9 @@ import {
     LuFileText as FileText,
     LuSunMedium as Sun,
     LuMoonStar as Moon,
+    LuRefreshCw
 } from 'react-icons/lu';
+import { useVersionCheck } from '../hooks/useVersionCheck';
 import { Button } from './Button';
 
 type Tab = 'profile' | 'compliance' | 'api' | 'personalization' | 'language' | 'changelog' | 'help';
@@ -45,6 +47,8 @@ const SettingsView: React.FC<{
     const [deleteConfirmation, setDeleteConfirmation] = useState('');
     const [isDeletingAccount, setIsDeletingAccount] = useState(false);
     const showExtractorUi = (import.meta as any)?.env?.VITE_ENABLE_EXTRACTOR_UI === 'true';
+    const { reloadPage, hasUpdate, checkVersion } = useVersionCheck(); // Hook for updates
+    const [isCheckingUpdate, setIsCheckingUpdate] = useState(false);
 
     const fileInputRef = useRef<HTMLInputElement>(null);
     const currentTheme = personalization.theme || 'light';
@@ -633,6 +637,64 @@ const SettingsView: React.FC<{
                                 </Button>
                                 <p className="text-xs text-on-surface-dark-secondary mt-2">
                                     {t('settings_tutorial_restart_desc')}
+                                </p>
+                            </div>
+                        </div>
+
+                        <hr className="border-gray-700/50" />
+
+                        <div id="settings-help-troubleshoot" className="p-4 bg-background-dark/50 border border-yellow-500/20 rounded-lg space-y-4">
+                            <h3 className="text-lg font-medium text-on-surface-dark flex items-center gap-2">
+                                <HelpCircle className="text-yellow-500" />
+                                {t('settings_troubleshoot_title') || 'Solución de Problemas'}
+                            </h3>
+                            <p className="text-sm text-on-surface-dark-secondary">
+                                {t('settings_troubleshoot_desc') || 'Si tienes problemas con la sincronización o ves versiones antiguas, utiliza estas opciones.'}
+                            </p>
+
+                            <div className="flex flex-col gap-3">
+                                <div className="flex items-center justify-between p-3 bg-black/20 rounded border border-white/5">
+                                    <div>
+                                        <p className="font-medium text-sm text-on-surface-dark">Versión Actual</p>
+                                        <p className="text-xs text-on-surface-dark-secondary font-mono">
+                                            {typeof __BUILD_TIME__ !== 'undefined' ? new Date(__BUILD_TIME__).toLocaleString() : 'Modo Desarrollo'}
+                                        </p>
+                                    </div>
+                                    {hasUpdate && (
+                                        <span className="px-2 py-1 bg-green-500/20 text-green-400 text-xs rounded border border-green-500/30">
+                                            Nueva versión disponible
+                                        </span>
+                                    )}
+                                </div>
+
+                                <div className="flex gap-3">
+                                    <Button
+                                        variant="secondary"
+                                        isLoading={isCheckingUpdate}
+                                        onClick={async () => {
+                                            setIsCheckingUpdate(true);
+                                            try {
+                                                await checkVersion();
+                                                showToast('Verificación completada', 'success');
+                                            } catch (e) { /* silent */ }
+                                            setIsCheckingUpdate(false);
+                                        }}
+                                    >
+                                        <LuRefreshCw className="mr-2 w-4 h-4" />
+                                        Verificar Actualización
+                                    </Button>
+
+                                    <Button
+                                        variant="primary"
+                                        className="bg-yellow-600/80 hover:bg-yellow-500/80 text-white border-yellow-500/50"
+                                        onClick={reloadPage}
+                                    >
+                                        <LuRefreshCw className="mr-2 w-4 h-4" />
+                                        Forzar Actualización (Reset)
+                                    </Button>
+                                </div>
+                                <p className="text-xs text-gray-500">
+                                    Nota: "Forzar Actualización" recargará la página y limpiará el caché del navegador para esta aplicación. Úsalo si notas que los cambios no se aplican.
                                 </p>
                             </div>
                         </div>

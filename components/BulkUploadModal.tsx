@@ -577,9 +577,10 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
               });
             }
           });
-        } catch (e) {
+        } catch (e: any) {
           console.error(`[BulkUpload] Failed to upload documents for project ${projectId}:`, e);
-          showToast(`No se pudieron adjuntar algunos documentos al proyecto`, 'warning');
+          const msg = e?.message || 'Error desconocido';
+          showToast(`Error adjuntando documentos: ${msg}`, 'error');
         }
       }
 
