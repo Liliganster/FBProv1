@@ -299,8 +299,23 @@ export async function extractUniversalStructured({
     let parsed: any;
     try {
       if (mode === 'vision') {
+        // HYBRID MODE: Run Text Agent FIRST to get high-accuracy text extraction
+        let preliminaryData = null;
+        try {
+          console.log('[ExtractorUniversal] Running Hybrid Pre-pass (OCR Agent)...');
+          // Use directParse (or agenticParse) to get valid candidates
+          preliminaryData = await directParse(textForModel, chosen, creds, useCrewFirst);
+          console.log('[ExtractorUniversal] Hybrid Pre-pass success:', preliminaryData);
+        } catch (e) {
+          console.warn('[ExtractorUniversal] Hybrid Pre-pass failed, proceeding with raw vision:', e);
+        }
+
+        const visionContext = preliminaryData
+          ? `PRELIMINARY_DATA_JSON:\n${JSON.stringify(preliminaryData, null, 2)}\n\nRAW_OCR_TEXT:\n${textForModel}`
+          : textForModel;
+
         // Vision is exclusively Gemini for now
-        parsed = await visionParse(textForModel, normalized.image || '', useCrewFirst);
+        parsed = await visionParse(visionContext, normalized.image || '', useCrewFirst);
       } else {
         parsed = mode === 'agent'
           ? await agenticParse(textForModel, tools, chosen, creds, useCrewFirst)

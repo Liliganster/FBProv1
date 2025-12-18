@@ -1,7 +1,16 @@
 export function buildVisionPrompt(ocrText: string) {
-  return `You are an elite production coordinator with VISION capabilities. 
+  const hasPreliminaryData = ocrText.includes('PRELIMINARY_DATA_JSON');
+
+  return `You are an elite production coordinator with VISION capabilities.
 Your task is to analyze the provided IMAGE of a callsheet (or document) to extract structured data.
-You also have the raw OCR text as context, but you must PRIORITIZE VISUAL CUES from the image.
+
+${hasPreliminaryData ? `**IMPORTANT: HYBRID VERIFICATION MODE**
+I have provided PRELIMINARY DATA extracted by a text-only parser below.
+Your job is to **VERIFY and REFINE** this data using your visual understanding of the document layout.
+1. **CHECK LOCATIONS**: The text parser might have picked up "Production Office" or "Catering" as a location. Visually confirm if it is a "SET", "LOC", or "FILMING" box. If not, REMOVE IT.
+2. **CHECK HEADER/FOOTER**: If the text parser included addresses from the footer (legal text), REMOVE THEM.
+3. **CONFIRM PROJECT NAME**: Ensure the text parser didn't pick the production company name as the project name.
+` : ''}
 
 **MISSION**: Return a single valid JSON object.
 
