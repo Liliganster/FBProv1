@@ -123,3 +123,48 @@ export async function getPdfFirstPageAsImage(file: File): Promise<string> {
   // Return as JPEG for better compression/quality ratio for photos/scans
   return canvas.toDataURL('image/jpeg', 0.85);
 }
+
+export async function compressImageFile(file: File): Promise<string> {
+  // Always resize/compress to ensure it fits in API payload (< 4MB)
+  const MAX_WIDTH = 2048;
+  const MAX_HEIGHT = 2048;
+  const QUALITY = 0.8;
+
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (event) => {
+      const img = new Image();
+      img.src = event.target?.result as string;
+      img.onload = () => {
+        let width = img.width;
+        let height = img.height;
+
+        if (width > MAX_WIDTH || height > MAX_HEIGHT) {
+          if (width > height) {
+            height = Math.round((height * MAX_WIDTH) / width);
+            width = MAX_WIDTH;
+          } else {
+            width = Math.round((width * MAX_HEIGHT) / height);
+            height = MAX_HEIGHT;
+          }
+        }
+
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          reject(new Error('Canvas context unavailable'));
+          return;
+        }
+        ctx.drawImage(img, 0, 0, width, height);
+        // Clean base64 prefix
+        const dataUrl = canvas.toDataURL('image/jpeg', QUALITY);
+        resolve(dataUrl);
+      };
+      img.onerror = (err) => reject(err);
+    };
+    reader.onerror = (err) => reject(err);
+  });
+}

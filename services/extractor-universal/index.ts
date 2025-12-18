@@ -7,6 +7,7 @@ import {
   extractTextWithOCRFromPdfFile,
   extractTextWithOCRFromImageFile,
   getPdfFirstPageAsImage,
+  compressImageFile,
 } from './miner';
 import { cleanOcrText, normalizeCsvForModel } from './normalize';
 import { isCallsheetExtraction } from './verify';
@@ -157,12 +158,8 @@ async function normalizeVision(input: ExtractInput): Promise<{ text: string; ima
   }
 
   if (kind === 'image') {
-    // Convert file to base64
-    const dataUrl = await new Promise<string>((resolve) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result as string);
-      reader.readAsDataURL(file);
-    });
+    // Resize & Compress Image to ensure payload is small
+    const dataUrl = await compressImageFile(file);
     image = dataUrl.split(',')[1] || dataUrl;
     return { text: '', image, source: 'image_vision' };
   }
