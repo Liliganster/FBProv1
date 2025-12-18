@@ -304,7 +304,7 @@ const ReportDetailView: React.FC<ReportDetailViewProps> = ({ report, projects, o
         const projectNameDisplay = project ? project.name : t('report_unknownProject');
         const producerDisplay = project ? project.producer : t('detail_unknown');
         const passengers = typeof trip.passengers === 'number' ? trip.passengers : 0;
-        
+
         return {
           [t('report_col_date')]: formatDateForDisplay(trip.date),
           [t('report_col_project')]: projectNameDisplay,
@@ -401,10 +401,10 @@ const ReportDetailView: React.FC<ReportDetailViewProps> = ({ report, projects, o
             <ArrowLeftIcon className="w-5 h-5 mr-2" />
             {t('common_back')}
           </button>
-          
+
           {/* Botón de descarga con menú desplegable */}
           <div className="relative">
-            <button 
+            <button
               onClick={() => setShowDownloadMenu(!showDownloadMenu)}
               className="flex items-center bg-brand-primary hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg h-[38px]"
             >
@@ -414,15 +414,15 @@ const ReportDetailView: React.FC<ReportDetailViewProps> = ({ report, projects, o
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
               </svg>
             </button>
-            
+
             {showDownloadMenu && (
               <>
                 {/* Overlay para cerrar el menú al hacer clic fuera */}
-                <div 
-                  className="fixed inset-0 z-10" 
+                <div
+                  className="fixed inset-0 z-10"
                   onClick={() => setShowDownloadMenu(false)}
                 />
-                
+
                 {/* Menú desplegable */}
                 <div className="absolute right-0 mt-2 w-48 rounded-lg shadow-lg bg-gray-800 border border-gray-700 z-20">
                   <button
@@ -522,15 +522,15 @@ const ReportDetailView: React.FC<ReportDetailViewProps> = ({ report, projects, o
                   </tr>
                 );
               })}
-            </tbody>
-            <tfoot className={`${tableFooterClass} font-bold`}>
-              <tr>
-                <td className="p-2" colSpan={5}>{t('report_total_kms')}</td>
+
+              {/* Total Row - As part of tbody to ensure column alignment but strictly avoiding tfoot repetition */}
+              <tr className={`${tableFooterClass} font-bold border-t-2 border-gray-600`}>
+                <td className="p-2 text-right" colSpan={5}>{t('report_total_kms')}</td>
                 <td className="p-2 text-right text-base">
                   {totalDistance.toFixed(1)} km
                 </td>
               </tr>
-            </tfoot>
+            </tbody>
           </table>
         </div>
 
