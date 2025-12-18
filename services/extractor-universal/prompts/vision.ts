@@ -25,11 +25,18 @@ You also have the raw OCR text as context, but you must PRIORITIZE VISUAL CUES f
 1. **Date**: Find the shooting date. Normalize to YYYY-MM-DD.
 2. **Project Name**: The CREATIVE title. Main big text.
 3. **Production Companies**: ALL companies involved. Use the logos and legal text you see.
-4. **Locations**: EXTRACT FULL ADDRESSES.
-   - DO NOT return just "Vienna" or "London".
-   - MUST include: Street Name + Number, City, Zip Code (if visible).
-   - Look for "Loc 1", "Base", "Set", "Unit Base".
-   - If the document lists multiple locations with full addresses, capture them all exactly as written.
+4. **Locations**: EXTRACT ONLY VALID PHYSICAL FILMING ADDRESSES.
+   - **CRITICAL**: Distinguish between FILMING (Set) and LOGISTICS (Base, Parking).
+   - **PRIORITY**:
+     1. "Set" / "Loc" / "Drehort" / "Motiv" (Where cameras roll) -> **TYPE: FILMING**
+     2. "Base" / "Unit Base" / "Basis" -> **TYPE: LOGISTICS** (Only include if distinct from Set)
+   - **EXCLUDE**:
+     - Production Office addresses (usually in header/footer/logo).
+     - Crew Parking / Catering / Hospital (unless explicitly requested).
+     - "Taxi", "Uber", "Airport" (unless it's a filming location).
+   - **FORMAT**: Return ONLY the physical address (Street, Number, City, Zip).
+     - NO distinct names prefixed (e.g., NOT "Hotel Imperial, Kärntner Ring", BUT "Kärntner Ring...").
+     - Must be geocodable.
 
 **CONTEXT (OCR TEXT)**:
 ${ocrText}`;
