@@ -532,7 +532,7 @@ const App: React.FC = () => {
             </div>
             <button
               onClick={reloadPage}
-              className="bg-white/90 text-blue-900 px-4 py-2 rounded-full text-xs font-bold hover:bg-white transition-all shadow-md active:scale-95"
+              className="bg-blue-950/80 text-white border border-white/20 px-4 py-2 rounded-full text-xs font-bold hover:bg-blue-900 transition-all shadow-lg active:scale-95"
             >
               Actualizar
             </button>
