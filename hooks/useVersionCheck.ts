@@ -17,7 +17,7 @@ export const useVersionCheck = (intervalMs = 60 * 1000) => {
 
     const checkVersion = useCallback(async () => {
         // Skip check in development if we don't have a stable build time (or rely on HMR)
-        if (import.meta.env.DEV) return;
+        // if (import.meta.env.DEV) return;
 
         try {
             // Add timestamp to prevent browser caching of the JSON file itself
