@@ -817,7 +817,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
                       )}
                     </Button>
                   </div>
-                  <p className="mt-1 text-[10px] text-on-surface-dark-secondary">{t('bulk_extraction_mode_selected', { mode: aiExtractMode === 'direct' ? t('bulk_extraction_mode_direct') : t('bulk_extraction_mode_agent') })}</p>
+                  <p className="mt-1 text-[10px] text-on-surface-dark-secondary">{t('bulk_extraction_mode_selected', { mode: aiExtractMode === 'vision' ? 'Vision' : (aiExtractMode === 'direct' ? t('bulk_extraction_mode_direct') : t('bulk_extraction_mode_agent')) })}</p>
                 </div>
                 {documentType === DocumentType.EMAIL && (
                   <div id="bulk-ai-paste">
@@ -891,13 +891,13 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
               {mode === 'ai' && (
                 <Button id="bulk-ai-process" onClick={handleProcessAi} disabled={isBusy || (aiFiles.length === 0 && aiText.trim().length === 0)} variant="primary" className="flex items-center justify-center w-auto min-w-60">
                   {isAiProcessing ? (
-                    <><LoaderIcon className="w-5 h-5 mr-2 animate-spin" /> {t('bulk_ai_processing', { mode: aiExtractMode === 'direct' ? t('bulk_extraction_mode_direct') : t('bulk_extraction_mode_agent') })}</>
+                    <><LoaderIcon className="w-5 h-5 mr-2 animate-spin" /> {t('bulk_ai_processing', { mode: aiExtractMode === 'vision' ? 'Vision' : (aiExtractMode === 'direct' ? t('bulk_extraction_mode_direct') : t('bulk_extraction_mode_agent')) })}</>
                   ) : mapsLoading ? (
                     <><LoaderIcon className="w-5 h-5 mr-2 animate-spin" /> {t('bulk_ai_loading_maps')}</>
                   ) : aiFiles.length > 0 ? (
-                    <><SparklesIcon className="w-5 h-5 mr-2" /> {t('bulk_ai_process_files', { count: aiFiles.length, plural: aiFiles.length > 1 ? 's' : '', mode: aiExtractMode === 'direct' ? t('bulk_extraction_mode_direct') : t('bulk_extraction_mode_agent') })}</>
+                    <><SparklesIcon className="w-5 h-5 mr-2" /> {t('bulk_ai_process_files', { count: aiFiles.length, plural: aiFiles.length > 1 ? 's' : '', mode: aiExtractMode === 'vision' ? 'Vision' : (aiExtractMode === 'direct' ? t('bulk_extraction_mode_direct') : t('bulk_extraction_mode_agent')) })}</>
                   ) : (
-                    <><SparklesIcon className="w-5 h-5 mr-2" /> {t('bulk_ai_process_text', { mode: aiExtractMode === 'direct' ? t('bulk_extraction_mode_direct') : t('bulk_extraction_mode_agent') })}</>
+                    <><SparklesIcon className="w-5 h-5 mr-2" /> {t('bulk_ai_process_text', { mode: aiExtractMode === 'vision' ? 'Vision' : (aiExtractMode === 'direct' ? t('bulk_extraction_mode_direct') : t('bulk_extraction_mode_agent')) })}</>
                   )}
                 </Button>
               )}
