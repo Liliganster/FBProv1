@@ -7,6 +7,7 @@
     "dev": "vite",
     "dev:api": "node dev-server.mjs",
     "dev:full": "concurrently -n api,web -c blue,green \"npm:dev:api\" \"npm:dev\"",
+    "prebuild": "node scripts/generate-version.js",
     "build": "tsc && vite build",
     "preview": "vite preview",
     "lint": "tsc --noEmit"

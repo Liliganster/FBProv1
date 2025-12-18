@@ -13,6 +13,7 @@ import {
   LuRocket as Rocket,
   LuSettings as Settings,
   LuLogOut as LogOut,
+  LuRefreshCw as RefreshIcon,
 } from 'react-icons/lu';
 const Dashboard = lazy(() => import('./components/Dashboard'));
 const TripsView = lazy(() => import('./components/TripsView'));
@@ -24,6 +25,7 @@ const AdvancedView = lazy(() => import('./components/AdvancedView'));
 const PlansView = lazy(() => import('./components/PlansView'));
 import useTranslation from './hooks/useTranslation';
 import { useMobile } from './hooks/useMediaQuery';
+import { useVersionCheck } from './hooks/useVersionCheck';
 import { View, PersonalizationSettings, DEFAULT_PERSONALIZATION_SETTINGS } from './types';
 
 // Extendemos View para incluir la ruta de autenticación
@@ -107,7 +109,6 @@ const App: React.FC = () => {
   // Hook para detectar si es dispositivo móvil
   const isMobile = useMobile();
 
-  // Handle body overflow when mobile menu is open
   useEffect(() => {
     if (mobileMenuOpen) {
       document.body.classList.add('mobile-menu-open');
@@ -118,6 +119,9 @@ const App: React.FC = () => {
       document.body.classList.remove('mobile-menu-open');
     };
   }, [mobileMenuOpen]);
+
+  // Version Check Hook
+  const { hasUpdate, reloadPage } = useVersionCheck();
 
   const { t } = useTranslation();
   const { userProfile, updateUserProfile } = useUserProfile();
@@ -514,6 +518,27 @@ const App: React.FC = () => {
         </div>
       </main>
       <Tutorial userProfile={userProfile} currentView={currentView as any} />
+
+      {/* Version Update Notification */}
+      {hasUpdate && (
+        <div className="fixed bottom-4 right-4 z-50 animate-bounce-subtle">
+          <div className="bg-gradient-to-br from-brand-primary to-blue-600 text-white p-4 rounded-organic shadow-lg border border-white/20 backdrop-blur-md flex items-center gap-4 max-w-sm">
+            <div className="bg-white/20 p-2 rounded-full">
+              <RefreshIcon className="w-6 h-6 animate-spin-slow" />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-bold text-sm">Actualización disponible</h3>
+              <p className="text-xs text-blue-100">Una nueva versión de la app está lista.</p>
+            </div>
+            <button
+              onClick={reloadPage}
+              className="bg-white text-brand-primary px-3 py-2 rounded-smooth text-xs font-bold hover:bg-blue-50 transition-colors shadow-sm"
+            >
+              Actualizar
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
