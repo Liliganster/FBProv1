@@ -63,9 +63,27 @@ export const useVersionCheck = (intervalMs = 60 * 1000) => {
         };
     }, [checkVersion, intervalMs]);
 
-    const reloadPage = () => {
-        // Force reload bypassing cache
-        window.location.reload();
+    const reloadPage = async () => {
+        // 1. Unregister all service workers to force update
+        if ('serviceWorker' in navigator) {
+            const registrations = await navigator.serviceWorker.getRegistrations();
+            for (const registration of registrations) {
+                await registration.unregister();
+            }
+        }
+
+        // 2. Clear browser cache for the app (optional but recommended for persistent issues)
+        if ('caches' in window) {
+            const cacheNames = await caches.keys();
+            for (const name of cacheNames) {
+                await caches.delete(name);
+            }
+        }
+
+        // 3. Force reload with cache busting query param to ensure fresh index.html
+        const url = new URL(window.location.href);
+        url.searchParams.set('reload', Date.now().toString());
+        window.location.href = url.toString();
     };
 
     return { hasUpdate, reloadPage, currentVersion: CURRENT_BUILD_TIME, serverVersion };

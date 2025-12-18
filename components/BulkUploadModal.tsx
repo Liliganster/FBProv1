@@ -178,10 +178,15 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
           return { status: 'fulfilled' as const, value: primary };
         } catch (reason: any) {
           const code = reason?.code || (reason instanceof Error ? reason.message : String(reason));
-          // Auto-fallback to Agent (OCR) when direct path reports missing text layer
+          // Auto-fallback to Agent (OCR) when direct path reports missing text layer or Vision fails
           const needsOcr = String(code).toLowerCase().includes('requires_ocr') || String(code).toLowerCase().includes('no text layer');
-          if (aiExtractMode === 'direct' && needsOcr) {
+
+          // Enhanced Fallback Logic:
+          // 1. If Direct mode fails due to no text layer -> fallback to Agent
+          // 2. If Vision mode fails (any reason) -> fallback to Agent (as requested: "vuelve a tirar con el OCR")
+          if ((aiExtractMode === 'direct' && needsOcr) || (aiExtractMode === 'vision')) {
             try {
+              console.log(`[BulkUpload] Fallback triggering for ${name}. Original mode: ${aiExtractMode}, specific error: ${code}`);
               const secondary = await processFileForTripUniversal(params, userProfile, documentType, 'agent');
               console.log(`[BulkUpload] Fallback to Agent (OCR) succeeded for ${name}:`, secondary);
               return { status: 'fulfilled' as const, value: secondary };

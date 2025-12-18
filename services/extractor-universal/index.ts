@@ -141,11 +141,17 @@ async function normalizeVision(input: ExtractInput): Promise<{ text: string; ima
       throw new ExtractorError('pdf_parse_error', 'Could not render PDF for Vision.');
     }
 
-    // 2. Get Text Context (Best Effort)
+    // 2. Get Text Context (Best Effort with OCR Fallback)
     try {
       text = await extractTextFromPdfFile(file);
     } catch (e) {
-      console.warn('Vision PDF Text extraction failed (using image only):', e);
+      console.warn('Vision PDF Text extraction failed, attempting OCR to improve context:', e);
+      try {
+        // "Use OCR to see better": If text layer is missing, force OCR so Vision has text context
+        text = await extractTextWithOCRFromPdfFile(file);
+      } catch (ocrError) {
+        console.warn('Vision PDF OCR extraction also failed (using image only):', ocrError);
+      }
     }
     return { text, image, source: 'pdf_vision' };
   }

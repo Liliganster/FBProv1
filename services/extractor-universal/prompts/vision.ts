@@ -1,5 +1,5 @@
 export function buildVisionPrompt(ocrText: string) {
-    return `You are an elite production coordinator with VISION capabilities. 
+  return `You are an elite production coordinator with VISION capabilities. 
 Your task is to analyze the provided IMAGE of a callsheet (or document) to extract structured data.
 You also have the raw OCR text as context, but you must PRIORITIZE VISUAL CUES from the image.
 
@@ -32,5 +32,5 @@ ${ocrText}`;
 }
 
 export function sanitizeVisionText(text: string) {
-    return text.trim();
+  return text.trim();
 }
