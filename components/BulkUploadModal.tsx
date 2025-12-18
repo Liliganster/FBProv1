@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Trip, Project, SpecialOrigin, UserProfile, DocumentType, PersonalizationSettings } from '../types';
 import useTrips from '../hooks/useTrips';
-import { XIcon, TrashIcon, UploadCloudIcon, CheckIcon, WarningIcon, FileCsvIcon, SparklesIcon, LoaderIcon, FileTextIcon, DriveIcon } from './Icons';
+import { XIcon, TrashIcon, UploadCloudIcon, CheckIcon, WarningIcon, FileCsvIcon, SparklesIcon, LoaderIcon, FileTextIcon, DriveIcon, EyeIcon } from './Icons';
 import { Button } from './Button';
 import useTranslation from '../hooks/useTranslation';
 import { formatDateForStorage } from '../i18n/translations';
@@ -109,7 +109,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
   const [isSaving, setIsSaving] = useState(false);
   const isBusy = isAiProcessing || isDriveProcessing || isSaving;
 
-  const [aiExtractMode, setAiExtractMode] = useState<'direct' | 'agent'>('agent');
+  const [aiExtractMode, setAiExtractMode] = useState<'direct' | 'agent' | 'vision'>('vision');
   const [documentType, setDocumentType] = useState<DocumentType>(DocumentType.CALLSHEET);
 
   const { t } = useTranslation();
@@ -787,6 +787,23 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
                     >
                       <span className="text-xs font-medium">{t('bulk_extraction_mode_agent')}</span>
                       {aiExtractMode === 'agent' ? (
+                        <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-white">
+                          <CheckIcon className="w-3 h-3 text-brand-primary" />
+                        </span>
+                      ) : (
+                        <span className="inline-block w-4 h-4 rounded-full border border-gray-400" />
+                      )}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant={aiExtractMode === 'vision' ? 'primary' : 'secondary'}
+                      aria-pressed={aiExtractMode === 'vision'}
+                      onClick={() => setAiExtractMode('vision')}
+                      className="flex-1 flex items-center justify-between gap-2"
+                      title="New Multimodal Vision (Best for scanned PDFs)"
+                    >
+                      <span className="text-xs font-medium">Vision (Beta)</span>
+                      {aiExtractMode === 'vision' ? (
                         <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-white">
                           <CheckIcon className="w-3 h-3 text-brand-primary" />
                         </span>
