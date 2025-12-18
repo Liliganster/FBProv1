@@ -190,6 +190,12 @@ Si después de los 5 pasos NO has encontrado nada claro:
 
 **Razonamiento**: Como humano, ¿qué EMPRESAS/ESTUDIOS financian y producen este proyecto? (pueden ser varias en co-producción)
 
+**ESTRATEGIAS AVANZADAS**:
+- **Sufijos Legales**: Si ves un nombre con "GmbH", "S.L.", "Inc.", "Limited" en el encabezado o pie de página, es una productora (incluso sin la etiqueta "Production:").
+- **Logos**: Los textos en las esquinas superiores suelen ser logos de productoras.
+- **Copyright**: Busca "© 2024 Netflix" o similar en el pie de página.
+- **Distinción**: NO confundas la productora con el cliente o la agencia si es publicidad (aunque para cine/TV, la productora es lo que buscamos).
+
 ---
 
 ## CAMPO 4: locations (UBICACIONES DE FILMACIÓN)
