@@ -25,7 +25,11 @@ You also have the raw OCR text as context, but you must PRIORITIZE VISUAL CUES f
 1. **Date**: Find the shooting date. Normalize to YYYY-MM-DD.
 2. **Project Name**: The CREATIVE title. Main big text.
 3. **Production Companies**: ALL companies involved. Use the logos and legal text you see.
-4. **Locations**: Standard set shooting locations.
+4. **Locations**: EXTRACT FULL ADDRESSES.
+   - DO NOT return just "Vienna" or "London".
+   - MUST include: Street Name + Number, City, Zip Code (if visible).
+   - Look for "Loc 1", "Base", "Set", "Unit Base".
+   - If the document lists multiple locations with full addresses, capture them all exactly as written.
 
 **CONTEXT (OCR TEXT)**:
 ${ocrText}`;
