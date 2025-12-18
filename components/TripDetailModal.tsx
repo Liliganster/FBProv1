@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { Trip, Project, PersonalizationSettings } from '../types';
 import { XIcon, MapPinIcon, FileTextIcon, TrashIcon, UploadCloudIcon, LoaderIcon } from './Icons';
 import { Button } from './Button';
@@ -27,6 +27,36 @@ const TripDetailModal: React.FC<TripDetailModalProps> = ({ trip, project, onClos
   const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
   const [viewMode, setViewMode] = useState<'map' | 'document'>('map');
   const { isLoaded: mapsLoaded, error: mapsError } = useGoogleMapsScript();
+  const [refreshedUrl, setRefreshedUrl] = useState<string | null>(null);
+
+  // Attempt to refresh signed URL if the stored one is stale/public-on-private-bucket
+  useEffect(() => {
+    if (!trip.sourceDocumentUrl) return;
+
+    const refreshUrl = async () => {
+      try {
+        // Extract path from public URL if possible: .../callsheets/<path>
+        // Supabase public URL format: .../storage/v1/object/public/callsheets/userId/projectId/...
+        const parts = trip.sourceDocumentUrl!.split('/callsheets/');
+        if (parts.length > 1) {
+          const path = decodeURIComponent(parts[1]);
+          // Import supabase client dynamically to avoid circular deps if any
+          const { supabase } = await import('../lib/supabase');
+          const { data, error } = await supabase.storage
+            .from('callsheets')
+            .createSignedUrl(path, 3600); // 1 hour validity
+
+          if (data?.signedUrl) {
+            setRefreshedUrl(data.signedUrl);
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to refresh document URL:', err);
+      }
+    };
+
+    refreshUrl();
+  }, [trip.sourceDocumentUrl]);
 
   const tripExpenses = useMemo(() => getExpensesForTrip(trip.id), [getExpensesForTrip, trip.id]);
   const totalExpense = useMemo(
@@ -234,10 +264,10 @@ const TripDetailModal: React.FC<TripDetailModalProps> = ({ trip, project, onClos
                   <LoaderIcon className="w-8 h-8 animate-spin text-brand-primary" />
                 </div>
               )
-            ) : trip.sourceDocumentUrl ? (
-              <div className="w-full h-full overflow-auto">
+            ) : (trip.sourceDocumentUrl || refreshedUrl) ? (
+              <div className="w-full h-full overflow-auto bg-gray-900 border border-gray-800 rounded-lg">
                 <iframe
-                  src={trip.sourceDocumentUrl}
+                  src={refreshedUrl || trip.sourceDocumentUrl}
                   className="w-full h-full border-0"
                   title={`Documento: ${trip.sourceDocumentName || 'Callsheet'}`}
                 />

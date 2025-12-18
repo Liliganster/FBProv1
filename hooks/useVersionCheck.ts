@@ -83,7 +83,9 @@ export const useVersionCheck = (intervalMs = 60 * 1000) => {
         // 3. Force reload with cache busting query param to ensure fresh index.html
         const url = new URL(window.location.href);
         url.searchParams.set('reload', Date.now().toString());
-        window.location.href = url.toString();
+        // Use replaceState to update URL without navigation, then reload() to force server check
+        window.history.replaceState({}, '', url.toString());
+        window.location.reload();
     };
 
     return { hasUpdate, reloadPage, currentVersion: CURRENT_BUILD_TIME, serverVersion };
