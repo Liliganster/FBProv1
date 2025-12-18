@@ -310,7 +310,7 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
 
   return (
     <div className="text-on-surface-dark">
-      <div className="flex justify-between items-center mb-8">
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 md:mb-8 gap-4">
         {selectedTripIds.length > 0 ? (
           <div className="flex items-center gap-4 w-full">
             <h2 className="text-xl font-semibold text-white">{t('trips_selected_count', { count: selectedTripIds.length })}</h2>
@@ -337,14 +337,14 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
               <h1 className="text-3xl font-bold text-white">{t('trips_title')}</h1>
               {userProfile && <h2 className="text-lg font-semibold text-brand-primary">{userProfile.name}</h2>}
             </div>
-            <div className="flex items-center gap-4">
-              <div id="trips-filter">
+            <div className="flex flex-wrap items-center gap-2 md:gap-4 w-full lg:w-auto">
+              <div id="trips-filter" className="flex gap-2 w-full md:w-auto">
                 <label htmlFor="project-filter" className="sr-only">{t('trips_filter_by_project')}</label>
                 <select
                   id="project-filter"
                   value={projectFilter}
                   onChange={(e) => setProjectFilter(e.target.value)}
-                  className="bg-gradient-surface border-surface rounded-smooth py-2 px-4 focus:ring-2 focus:ring-brand-primary focus:outline-none text-white transition-all duration-200 text-sm font-medium h-[38px]"
+                  className="bg-gradient-surface border-surface rounded-smooth py-2 px-4 focus:ring-2 focus:ring-brand-primary focus:outline-none text-white transition-all duration-200 text-sm font-medium h-[38px] flex-1 md:flex-none"
                 >
                   <option value="all">{t('trips_filter_all_projects')}</option>
                   {projects.map(p => (
@@ -356,7 +356,7 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
                   id="year-filter"
                   value={yearFilter}
                   onChange={(e) => setYearFilter(e.target.value)}
-                  className="bg-gradient-surface border-surface rounded-smooth py-2 px-4 focus:ring-2 focus:ring-brand-primary focus:outline-none text-white transition-all duration-200 text-sm font-medium h-[38px] ml-2"
+                  className="bg-gradient-surface border-surface rounded-smooth py-2 px-4 focus:ring-2 focus:ring-brand-primary focus:outline-none text-white transition-all duration-200 text-sm font-medium h-[38px] flex-1 md:flex-none"
                 >
                   <option value="all">{t('common_all_years')}</option>
                   {availableYears.map(year => (
@@ -717,8 +717,9 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
         </div>
       ) : (
         // Vista desktop con tabla
-        <div style={contentStyle} className="bg-frost-glass border-glass rounded-fluid shadow-glass overflow-x-auto backdrop-blur-glass">
-          <table id="trips-table" className="w-full text-left text-sm">
+        <div className="-mx-4 md:mx-0">
+          <div style={contentStyle} className="bg-frost-glass border-glass rounded-fluid shadow-glass overflow-x-auto backdrop-blur-glass">
+            <table id="trips-table" className="w-full min-w-[720px] text-left text-sm">
             <thead className="bg-gray-700/50 border-b border-glass">
               <tr>
                 <th id="trips-col-select" className="p-3 w-12">
@@ -890,6 +891,7 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
               </div>
             </div>
           )}
+          </div>
         </div>
       )}
 

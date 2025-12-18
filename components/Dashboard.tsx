@@ -194,7 +194,7 @@ const Dashboard: React.FC<DashboardProps> = ({ setCurrentView, personalization, 
     };
 
     const StatCard = ({ title, value, cta, onClick, children }: { title: string, value: string, cta?: string, onClick?: () => void, children?: React.ReactNode }) => (
-        <div style={glassStyle} className="bg-frost-glass border border-white/10 rounded-fluid p-6 flex flex-col justify-between min-h-[160px] h-full transition-all duration-300 hover:-translate-y-[2px] hover:shadow-glass shadow-sm">
+        <div style={glassStyle} className="bg-frost-glass border border-white/10 rounded-fluid p-4 md:p-6 flex flex-col justify-between min-h-[140px] md:min-h-[160px] h-full transition-all duration-300 hover:-translate-y-[2px] hover:shadow-glass shadow-sm">
             <div>
                 <div className="flex items-start justify-between">
                     <h3 className="text-sm font-medium text-on-surface-secondary uppercase tracking-wider">{title}</h3>
@@ -226,7 +226,7 @@ const Dashboard: React.FC<DashboardProps> = ({ setCurrentView, personalization, 
 
     return (
         <div className="text-on-surface-dark animate-fade-in">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4" id="dashboard-header">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 md:mb-8 gap-4" id="dashboard-header">
                 <div>
                     <h1 id="dashboard-title" className="text-3xl font-bold text-white tracking-tight">{t('dashboard_title')}</h1>
                     {userProfile && <h2 className="text-lg font-medium text-brand-primary/90">{userProfile.name}</h2>}
@@ -286,7 +286,7 @@ const Dashboard: React.FC<DashboardProps> = ({ setCurrentView, personalization, 
                 </div>
             </div>
 
-            <div id="dashboard-overview" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8 items-stretch">
+            <div id="dashboard-overview" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mb-6 md:mb-8 items-stretch">
                 <div id="dashboard-card-total-km">
                     <StatCard title={t('dashboard_totalKm')} value={`${totalKm.toFixed(1)} km`} cta={t('dashboard_viewAllTrips')} onClick={() => setCurrentView('trips')}>
                         <div id="dashboard-trips-cta" />
@@ -299,7 +299,7 @@ const Dashboard: React.FC<DashboardProps> = ({ setCurrentView, personalization, 
                     {hasCO2Settings ? (
                         <StatCard title={t('dashboard_total_co2')} value={`${totalCo2.toFixed(1)} kg`} />
                     ) : (
-                        <div style={glassStyle} className="bg-frost-glass border border-white/10 rounded-fluid p-6 backdrop-blur-glass flex flex-col justify-center items-center text-center hover:shadow-glass transition-all duration-300 h-full">
+                        <div style={glassStyle} className="bg-frost-glass border border-white/10 rounded-fluid p-4 md:p-6 backdrop-blur-glass flex flex-col justify-center items-center text-center hover:shadow-glass transition-all duration-300 h-full">
                             <Co2EmissionIcon className="w-10 h-10 text-on-surface-secondary mb-3 opacity-50" />
                             <h4 className="text-sm font-medium text-on-surface-secondary mb-2">{t('dashboard_total_co2')}</h4>
                             <p className="text-xs text-on-surface-secondary mb-4 max-w-[200px]">{t('co2_settings_required_notice')}</p>
@@ -315,15 +315,15 @@ const Dashboard: React.FC<DashboardProps> = ({ setCurrentView, personalization, 
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div id="dashboard-chart" style={glassStyle} className="lg:col-span-2 bg-frost-glass border border-white/10 rounded-fluid p-6 backdrop-blur-glass shadow-sm">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
+                <div id="dashboard-chart" style={glassStyle} className="lg:col-span-2 bg-frost-glass border border-white/10 rounded-fluid p-4 md:p-6 backdrop-blur-glass shadow-sm">
                     <div className="flex justify-between items-center mb-6">
                         <h3 className="text-lg font-semibold text-white flex items-center gap-2">
                             <BarChartIcon className="w-5 h-5 text-brand-primary" />
                             {t('dashboard_visualAnalysis')}
                         </h3>
                     </div>
-                    <div className="h-[300px] w-full">
+                    <div className="h-56 md:h-72 lg:h-80 w-full">
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                                 <defs>
@@ -352,7 +352,7 @@ const Dashboard: React.FC<DashboardProps> = ({ setCurrentView, personalization, 
                         </ResponsiveContainer>
                     </div>
                 </div>
-                <div id="dashboard-recent-trips" style={glassStyle} className="bg-frost-glass border border-white/10 rounded-fluid p-6 backdrop-blur-glass shadow-sm flex flex-col">
+                <div id="dashboard-recent-trips" style={glassStyle} className="bg-frost-glass border border-white/10 rounded-fluid p-4 md:p-6 backdrop-blur-glass shadow-sm flex flex-col">
                     <h3 className="text-lg font-semibold mb-4 text-white flex items-center gap-2">
                         <ListIcon className="w-5 h-5 text-brand-secondary" />
                         {t('dashboard_recentTrips')}

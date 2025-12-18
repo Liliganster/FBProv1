@@ -79,7 +79,7 @@ const ReportsView: React.FC<ReportsViewProps> = ({ personalization, theme }) => 
   
   return (
     <div className="text-on-surface-dark" id="reports-view">
-      <div className="flex justify-between items-center mb-8" id="reports-header">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 md:mb-8 gap-4" id="reports-header">
         {selectedReportIds.length > 0 ? (
           <div className="flex items-center gap-4 w-full">
             <h2 className="text-base font-semibold text-white">{t('reports_selected_count', { count: selectedReportIds.length })}</h2>
@@ -196,8 +196,9 @@ const ReportsView: React.FC<ReportsViewProps> = ({ personalization, theme }) => 
         </div>
       ) : (
         // Vista desktop con tabla
-        <div style={contentStyle} className="bg-frost-glass rounded-lg shadow-lg overflow-hidden" id="reports-table-wrapper">
-          <table id="reports-table" className="w-full text-left">
+        <div className="-mx-4 md:mx-0">
+          <div style={contentStyle} className="bg-frost-glass rounded-lg shadow-lg overflow-x-auto" id="reports-table-wrapper">
+            <table id="reports-table" className="w-full min-w-[720px] text-left">
             <thead className="bg-gray-700/50">
               <tr>
                 <th id="reports-col-select" className="p-4 w-12">
@@ -252,7 +253,8 @@ const ReportsView: React.FC<ReportsViewProps> = ({ personalization, theme }) => 
                 </tr>
               )}
             </tbody>
-          </table>
+            </table>
+          </div>
         </div>
       )}
       

@@ -599,10 +599,10 @@ const CostAnalysisDashboard: React.FC<{
                             </div>
                         </div>
                         {projectChartData.length > 0 ? (
-                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
                                 {/* Gráfico más pequeño */}
-                                <div>
-                                    <ResponsiveContainer width="100%" height={300}>
+                                <div className="h-56 md:h-72 lg:h-80">
+                                    <ResponsiveContainer width="100%" height="100%">
                                         <BarChart data={projectChartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                                             <CartesianGrid strokeDasharray="3 3" stroke="#4a4a4a" />
                                             <XAxis

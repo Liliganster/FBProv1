@@ -732,8 +732,8 @@ const SettingsView: React.FC<{
                     </Button>
                 </header>
 
-                <div className="flex-grow flex min-h-0">
-                    <nav id="settings-tabs" className="w-1/4 p-4 border-r border-glass flex-shrink-0 space-y-1">
+                <div className="flex-grow flex flex-col md:flex-row min-h-0 overflow-hidden">
+                    <nav id="settings-tabs" className="w-full md:w-1/4 p-4 md:border-r border-glass flex-shrink-0 space-y-1 overflow-y-auto">
                         <TabButton
                             id="settings-tab-profile"
                             label={t('settings_tab_profile')}
@@ -794,7 +794,7 @@ const SettingsView: React.FC<{
                         />
                     </nav>
 
-                    <main className="w-3/4 p-6 overflow-y-auto">
+                    <main className="w-full md:w-3/4 p-4 md:p-6 overflow-y-auto overflow-x-hidden">
                         {renderTabContent()}
                     </main>
                 </div>

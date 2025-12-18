@@ -237,7 +237,7 @@ const ProjectsView: React.FC<ProjectsViewProps> = ({ setCurrentView, personaliza
 
   return (
     <div className="text-on-surface-dark" id="projects-view">
-      <div className="flex justify-between items-center mb-8" id="projects-header">
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 md:mb-8 gap-4" id="projects-header">
         {selectedProjectIds.length > 0 ? (
           <div className="flex items-center gap-4 w-full">
             <h2 className="text-xl font-semibold text-white">{t('projects_selected_count', { count: selectedProjectIds.length })}</h2>
@@ -256,24 +256,24 @@ const ProjectsView: React.FC<ProjectsViewProps> = ({ setCurrentView, personaliza
               <h1 className="text-3xl font-bold text-white">{t('projects_title')}</h1>
               {userProfile && <h2 className="text-lg font-semibold text-brand-primary">{userProfile.name}</h2>}
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex flex-wrap items-center gap-2 md:gap-4 w-full lg:w-auto">
               <select
                 value={yearFilter}
                 onChange={(e) => setYearFilter(e.target.value)}
-                className="bg-surface-dark border border-gray-600 rounded-smooth py-2 px-4 focus:ring-2 focus:ring-brand-primary focus:outline-none text-on-surface-dark text-sm font-medium h-[38px]"
+                className="bg-surface-dark border border-gray-600 rounded-smooth py-2 px-4 focus:ring-2 focus:ring-brand-primary focus:outline-none text-on-surface-dark text-sm font-medium h-[38px] flex-1 md:flex-none"
               >
                 <option value="all">{t('common_all_years')}</option>
                 {availableYears.map(year => (
                   <option key={year} value={year}>{year}</option>
                 ))}
               </select>
-              <div className="relative" id="projects-search">
+              <div className="relative flex-1 md:flex-none" id="projects-search">
                 <input
                   type="text"
                   placeholder={t('projects_search_placeholder')}
                   value={searchQuery}
                   onChange={e => setSearchQuery(e.target.value)}
-                  className="bg-surface-dark border border-gray-600 rounded-smooth py-2 pl-10 pr-4 focus:ring-2 focus:ring-brand-primary focus:outline-none text-on-surface-dark text-sm font-medium h-[38px]"
+                  className="bg-surface-dark border border-gray-600 rounded-smooth py-2 pl-10 pr-4 focus:ring-2 focus:ring-brand-primary focus:outline-none text-on-surface-dark text-sm font-medium h-[38px] w-full"
                 />
                 <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-on-surface-dark-secondary" />
               </div>
@@ -423,8 +423,9 @@ const ProjectsView: React.FC<ProjectsViewProps> = ({ setCurrentView, personaliza
         </div>
       ) : (
         // Vista desktop con tabla
-        <div style={contentStyle} className="bg-frost-glass rounded-gentle shadow-lg overflow-x-auto" id="projects-table-wrapper">
-          <table id="projects-table" className="w-full text-left text-sm">
+        <div className="-mx-4 md:mx-0">
+          <div style={contentStyle} className="bg-frost-glass rounded-gentle shadow-lg overflow-x-auto" id="projects-table-wrapper">
+            <table id="projects-table" className="w-full min-w-[720px] text-left text-sm">
             <thead className="bg-gray-700/50">
               <tr>
                 <th id="projects-col-select" className="p-3 w-12">
@@ -530,7 +531,8 @@ const ProjectsView: React.FC<ProjectsViewProps> = ({ setCurrentView, personaliza
                 </tr>
               )}
             </tbody>
-          </table>
+            </table>
+          </div>
         </div>
       )}
 

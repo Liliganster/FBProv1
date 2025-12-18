@@ -440,7 +440,7 @@ const App: React.FC = () => {
 
   return (
     <div
-      className="relative flex flex-col md:flex-row h-screen w-screen overflow-hidden font-sans bg-gradient-dark"
+      className="relative flex flex-col md:flex-row h-screen w-screen overflow-x-hidden overflow-y-hidden font-sans bg-gradient-dark"
       style={{
         background: personalization.backgroundImage
           ? (personalization.backgroundBlur > 0
@@ -468,29 +468,27 @@ const App: React.FC = () => {
         />
       )}
 
-      {/* Mobile Header with Hamburger Menu */}
-      {isMobile && (
-        <div className="fixed top-0 left-0 right-0 z-30 bg-gradient-to-br from-white/5 via-blue-400/8 to-blue-500/5 backdrop-blur-xl backdrop-saturate-150 border-b border-white/10 shadow-glass">
-          <div className="flex items-center justify-between p-4">
-            <h1 className="text-lg font-bold text-white">FahrtenBuch Pro</h1>
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 rounded-smooth transition-all duration-300 transform hover:scale-105 hover:bg-gradient-surface hover:shadow-brand/20 hover:shadow-md text-white"
-            >
-              <Menu size={24} />
-            </button>
-          </div>
+      {/* Mobile/Tablet Header with Hamburger Menu */}
+      <div className="fixed top-0 left-0 right-0 z-30 lg:hidden bg-gradient-to-br from-white/5 via-blue-400/8 to-blue-500/5 backdrop-blur-xl backdrop-saturate-150 border-b border-white/10 shadow-glass">
+        <div className="flex items-center justify-between p-4 md:px-6">
+          <h1 className="text-lg md:text-xl font-bold text-white">FahrtenBuch Pro</h1>
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="p-2 min-h-11 min-w-11 rounded-smooth transition-all duration-300 transform hover:scale-105 hover:bg-gradient-surface hover:shadow-brand/20 hover:shadow-md text-white"
+          >
+            <Menu size={24} />
+          </button>
         </div>
-      )}
+      </div>
 
-      {/* Mobile Menu Overlay */}
-      {isMobile && mobileMenuOpen && (
+      {/* Mobile/Tablet Menu Overlay */}
+      {mobileMenuOpen && (
         <>
           <div
-            className="fixed inset-0 bg-black/50 z-40 animate-fadeIn"
+            className="fixed inset-0 bg-black/50 z-40 animate-fadeIn lg:hidden"
             onClick={() => setMobileMenuOpen(false)}
           />
-          <nav className="fixed top-0 left-0 w-4/5 max-w-sm h-screen z-50 text-on-surface-dark flex flex-col shadow-glass bg-gradient-to-br from-white/5 via-blue-400/8 to-blue-500/5 backdrop-blur-xl backdrop-saturate-150 border-white/10 animate-slideInLeft overflow-y-auto">
+          <nav className="fixed top-0 left-0 w-4/5 max-w-sm md:max-w-md h-screen z-50 text-on-surface-dark flex flex-col shadow-glass bg-gradient-to-br from-white/5 via-blue-400/8 to-blue-500/5 backdrop-blur-xl backdrop-saturate-150 border-white/10 animate-slideInLeft overflow-y-auto lg:hidden">
             {renderSidebarContent()}
           </nav>
         </>
@@ -499,8 +497,8 @@ const App: React.FC = () => {
       {/* Desktop Sidebar */}
       {!isMobile && (
         <nav
-          className={`relative z-10 flex
-        ${sidebarCollapsed ? 'w-20' : 'w-72'}
+          className={`relative z-10 hidden lg:flex
+        ${sidebarCollapsed ? 'lg:w-20' : 'lg:w-64'}
         text-on-surface-dark border-r
         transition-all duration-300 flex-col shadow-glass
         bg-gradient-to-br from-white/5 via-blue-400/8 to-blue-500/5
@@ -510,8 +508,8 @@ const App: React.FC = () => {
           {renderSidebarContent()}
         </nav>
       )}
-      <main className={`relative z-10 flex-1 overflow-y-auto overflow-x-hidden bg-transparent w-full h-full ${isMobile ? 'pt-20 px-4 pb-4' : 'p-8'}`}>
-        <div className="w-full h-full">
+      <main className="relative z-10 flex-1 overflow-y-auto overflow-x-hidden bg-transparent w-full h-full pt-20 lg:pt-0 px-4 md:px-6 lg:px-8 pb-4 md:pb-6 lg:pb-8">
+        <div className="w-full h-full max-w-screen-xl mx-auto">
           <Suspense fallback={<div className="text-sm text-on-surface-dark-secondary">Loading…</div>}>
             {renderView()}
           </Suspense>
