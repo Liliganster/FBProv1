@@ -687,7 +687,7 @@ const SettingsView: React.FC<{
                                     <Button
                                         variant="primary"
                                         className="bg-yellow-600/80 hover:bg-yellow-500/80 text-white border-yellow-500/50"
-                                        onClick={reloadPage}
+                                        onClick={() => reloadPage(true)}
                                     >
                                         <LuRefreshCw className="mr-2 w-4 h-4" />
                                         Forzar Actualización (Reset)

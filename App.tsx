@@ -531,7 +531,7 @@ const App: React.FC = () => {
               <p className="text-xs text-blue-100">Una nueva versión de la app está lista.</p>
             </div>
             <button
-              onClick={reloadPage}
+              onClick={() => reloadPage(false)}
               className="bg-blue-950/80 text-white border border-white/20 px-4 py-2 rounded-full text-xs font-bold hover:bg-blue-900 transition-all shadow-lg active:scale-95"
             >
               Actualizar
