@@ -6,6 +6,7 @@ import {
   buildCrewFirstDirectPrompt,
   sanitizeModelText
 } from '../../../services/extractor-universal/prompts/callsheet.js';
+import { buildVisionPrompt, sanitizeVisionText } from '../../../services/extractor-universal/prompts/vision.js';
 import { isCallsheetExtraction, isCrewFirstCallsheet as isCrewFirstCallsheetVerify } from '../../../services/extractor-universal/verify.js';
 import {
   SYSTEM_INSTRUCTION_AGENT,
@@ -16,8 +17,10 @@ import { withRateLimit } from '../../rate-limiter.js';
 import { tools as toolDeclarations } from '../../agent/tools.js';
 import { executeTool } from '../../agent/executor.js';
 
-type Mode = 'direct' | 'agent';
+type Mode = 'direct' | 'agent' | 'vision';
 
+// Modelo por defecto para Google AI Studio. El usuario ha indicado explícitamente usar gemini-2.5-flash.
+// Si defines GEMINI_MODEL en las variables de entorno, tendrá prioridad sobre este valor.
 // Modelo por defecto para Google AI Studio. El usuario ha indicado explícitamente usar gemini-2.5-flash.
 // Si defines GEMINI_MODEL en las variables de entorno, tendrá prioridad sobre este valor.
 const GEMINI_MODEL = (process.env.GEMINI_MODEL || 'gemini-2.5-flash').trim() || 'gemini-2.5-flash';
@@ -166,7 +169,7 @@ type ToolFn = (args: Record<string, unknown>) => Promise<Record<string, unknown>
 
 async function runAgent(text: string, ai: GoogleGenAI, useCrewFirst = false): Promise<CallsheetExtraction | CrewFirstCallsheet> {
   console.log(`[Gemini runAgent] Starting with useCrewFirst: ${useCrewFirst}, text length: ${text.length}`);
-  
+
   // Real tool execution is implemented server-side via executor
   const tools: Record<string, ToolFn> = {
     geocode_address: async ({ address }) => {
@@ -194,7 +197,7 @@ async function runAgent(text: string, ai: GoogleGenAI, useCrewFirst = false): Pr
   const maxAttempts = 2;
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
     console.log(`[Gemini runAgent] Attempt ${attempt + 1}/${maxAttempts}`);
-    
+
     // Usar "contents" en lugar de "messages"
     const response: any = await ai.models.generateContent({
       model: GEMINI_MODEL,
@@ -224,7 +227,7 @@ async function runAgent(text: string, ai: GoogleGenAI, useCrewFirst = false): Pr
       || [];
 
     let parts = extractParts(response);
-    
+
     // Fallback for models that fail with responseSchema
     if (parts.length === 0) {
       console.warn('[Gemini runAgent] Empty response with schema, retrying without it.');
@@ -262,9 +265,9 @@ async function runAgent(text: string, ai: GoogleGenAI, useCrewFirst = false): Pr
         const result = await tool(args || {});
         console.log('[Gemini runAgent] Tool result:', result);
         // Agregar resultado de la herramienta en formato correcto
-        contents.push({ 
+        contents.push({
           role: 'function',
-          parts: [{ 
+          parts: [{
             functionResponse: {
               name,
               response: result
@@ -273,9 +276,9 @@ async function runAgent(text: string, ai: GoogleGenAI, useCrewFirst = false): Pr
         });
       } catch (error) {
         console.error('[Gemini runAgent] Tool error:', error);
-        contents.push({ 
+        contents.push({
           role: 'function',
-          parts: [{ 
+          parts: [{
             functionResponse: {
               name,
               response: { error: (error as Error).message }
@@ -323,6 +326,81 @@ async function runAgent(text: string, ai: GoogleGenAI, useCrewFirst = false): Pr
   return await runDirect(text, ai, useCrewFirst);
 }
 
+
+
+async function runVision(
+  text: string,
+  base64Image: string,
+  ai: GoogleGenAI,
+  useCrewFirst = false
+): Promise<CallsheetExtraction | CrewFirstCallsheet> {
+  console.log(`[Gemini runVision] Starting vision extraction. Text len: ${text.length}, Image provided: ${!!base64Image}`);
+
+  const prompt = buildVisionPrompt(sanitizeVisionText(text));
+
+  // Construct multimodel payload
+  // inlineData expects "data" to be the base64 string (no prefix)
+  const imagePart = {
+    inlineData: {
+      data: base64Image,
+      mimeType: 'image/jpeg',
+    }
+  };
+
+  const contents: any[] = [
+    {
+      role: 'user',
+      parts: [
+        { text: prompt },
+        imagePart
+      ]
+    }
+  ];
+
+  console.log('[Gemini runVision] Calling Gemini API (Multimodal)...');
+
+  const result: any = await ai.models.generateContent({
+    model: GEMINI_MODEL,
+    contents,
+    generationConfig: {
+      responseMimeType: 'application/json',
+      responseSchema: useCrewFirst ? (crewFirstCallsheetSchema as any) : (callsheetSchema as any),
+      temperature: 0,
+    },
+    safetySettings: [
+      { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_NONE' },
+      { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_NONE' },
+      { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_NONE' },
+      { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' },
+    ],
+  } as any);
+
+  console.log('[Gemini runVision] Result received.');
+
+  let output = '';
+  const schemaParts = extractParts(result);
+  if (schemaParts.length && typeof schemaParts[0]?.text === 'string') {
+    output = schemaParts[0].text;
+  } else if (typeof (result as any).text === 'function') {
+    output = (result as any).text();
+  }
+
+  if (!output) {
+    throw new Error('Empty response from Gemini Vision.');
+  }
+
+  const parsed = JSON.parse(sanitizeJsonText(output));
+  console.log('[Gemini runVision] Parsed JSON:', parsed);
+
+  if (useCrewFirst) {
+    if (!isCrewFirstCallsheetVerify(parsed)) throw new Error('Invalid CrewFirst schema');
+    return parsed;
+  }
+
+  if (!isCallsheetExtraction(parsed)) throw new Error('Invalid callsheet schema');
+  return normalizeExtraction(parsed);
+}
+
 async function geminiHandler(req: any, res: any) {
   if (req.method !== 'POST') {
     toJsonResponse(res, 405, { error: 'Method Not Allowed' });
@@ -346,8 +424,13 @@ async function geminiHandler(req: any, res: any) {
     return;
   }
 
-  const mode: Mode = body?.mode === 'agent' ? 'agent' : 'direct';
+  const modeRaw = body?.mode;
+  let mode: Mode = 'direct';
+  if (modeRaw === 'agent') mode = 'agent';
+  if (modeRaw === 'vision') mode = 'vision';
+
   const text = body?.text;
+  const image = body?.image; // base64
   const useCrewFirst = body?.useCrewFirst === true; // Enable crew-first mode if explicitly set
 
   if (typeof text !== 'string' || !text.trim()) {
@@ -361,9 +444,16 @@ async function geminiHandler(req: any, res: any) {
 
   try {
     const ai = new GoogleGenAI({ apiKey });
-    const extraction = mode === 'agent'
-      ? await runAgent(text, ai, useCrewFirst)
-      : await runDirect(text, ai, useCrewFirst);
+    let extraction;
+
+    if (mode === 'vision') {
+      if (!image) throw new Error('Vision mode requires image data');
+      extraction = await runVision(text, image, ai, useCrewFirst);
+    } else if (mode === 'agent') {
+      extraction = await runAgent(text, ai, useCrewFirst);
+    } else {
+      extraction = await runDirect(text, ai, useCrewFirst);
+    }
 
     console.log('[Gemini Handler] Extraction successful:', extraction);
     toJsonResponse(res, 200, extraction);

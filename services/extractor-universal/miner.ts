@@ -71,7 +71,7 @@ async function renderPdfToDataUrls(file: File): Promise<string[]> {
 
 async function ocrImageDataUrl(dataUrl: string, lang = 'spa+eng'): Promise<string> {
   const { createWorker } = await import('tesseract.js');
-  const worker = await createWorker(undefined, undefined, { logger: () => {} });
+  const worker = await createWorker(undefined, undefined, { logger: () => { } });
   await worker.load();
   await worker.reinitialize(lang);
   const { data } = await worker.recognize(dataUrl);
@@ -98,4 +98,28 @@ export async function extractTextWithOCRFromImageFile(file: File): Promise<strin
     reader.readAsDataURL(file);
   });
   return ocrImageDataUrl(dataUrl);
+}
+
+export async function getPdfFirstPageAsImage(file: File): Promise<string> {
+  const { pdfjsLib } = (window as any);
+  if (!pdfjsLib) throw Object.assign(new Error('pdf.js is not loaded'), { code: 'pdfjs_not_loaded' });
+  pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.mjs`;
+
+  const arrayBuffer = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
+
+  // Get extraction for Page 1 only
+  const page = await pdf.getPage(1);
+  const viewport = page.getViewport({ scale: 2.0 }); // High quality for text reading
+  const canvas = document.createElement('canvas');
+  canvas.width = viewport.width;
+  canvas.height = viewport.height;
+
+  const ctx = canvas.getContext('2d');
+  if (!ctx) throw new Error('Canvas context not available');
+
+  await page.render({ canvasContext: ctx as any, viewport }).promise;
+
+  // Return as JPEG for better compression/quality ratio for photos/scans
+  return canvas.toDataURL('image/jpeg', 0.85);
 }

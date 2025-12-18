@@ -6,15 +6,16 @@ import {
   extractTextFromPdfFile,
   extractTextWithOCRFromPdfFile,
   extractTextWithOCRFromImageFile,
+  getPdfFirstPageAsImage,
 } from './miner';
 import { cleanOcrText, normalizeCsvForModel } from './normalize';
 import { isCallsheetExtraction } from './verify';
 import { postProcessCrewFirstData } from './postProcess';
-import { agenticParse, directParse } from '../../lib/gemini/parser';
+import { agenticParse, directParse, visionParse } from '../../lib/gemini/parser';
 import { parseWithGemini, parseWithOpenRouter } from './providers';
 import { geocodeAddressesViaBackend, getCountryCode } from '../googleMapsService';
 
-export type ExtractMode = 'direct' | 'agent';
+export type ExtractMode = 'direct' | 'agent' | 'vision';
 export type ExtractProvider = 'auto' | 'gemini' | 'openrouter';
 
 export type ExtractInput = {
@@ -121,6 +122,48 @@ export type ProviderCredentials = {
   openRouterModel?: string | null;
 };
 
+async function normalizeVision(input: ExtractInput): Promise<{ text: string; image?: string; source: string }> {
+  const file = input.file;
+  if (!file) throw new ExtractorError('no_input', 'Vision mode requires a file.');
+
+  const kind = detectKind(file);
+  let text = '';
+  let image = '';
+
+  if (kind === 'pdf') {
+    // 1. Get First Page Image (High Quality)
+    try {
+      image = await getPdfFirstPageAsImage(file);
+      // Remove data:image/jpeg;base64, prefix if present
+      image = image.split(',')[1] || image;
+    } catch (e) {
+      console.error('Vision PDF Render failed:', e);
+      throw new ExtractorError('pdf_parse_error', 'Could not render PDF for Vision.');
+    }
+
+    // 2. Get Text Context (Best Effort)
+    try {
+      text = await extractTextFromPdfFile(file);
+    } catch (e) {
+      console.warn('Vision PDF Text extraction failed (using image only):', e);
+    }
+    return { text, image, source: 'pdf_vision' };
+  }
+
+  if (kind === 'image') {
+    // Convert file to base64
+    const dataUrl = await new Promise<string>((resolve) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.readAsDataURL(file);
+    });
+    image = dataUrl.split(',')[1] || dataUrl;
+    return { text: '', image, source: 'image_vision' };
+  }
+
+  throw new ExtractorError('no_input', 'Vision mode only supports PDF and Images.');
+}
+
 async function normalizeDirect(input: ExtractInput): Promise<{ text: string; source: string }> {
   if (input.text && input.text.trim()) {
     return { text: input.text.trim(), source: 'text' };
@@ -184,16 +227,16 @@ function resolveProvider(
     openRouterApiKey: creds?.openRouterApiKey ?? null,
     openRouterModel: creds?.openRouterModel ?? null,
   };
-  
+
   // Casos explícitos: el usuario eligió específicamente un proveedor
   if (provider === 'gemini') return { provider: 'gemini', creds: c };
   if (provider === 'openrouter') return { provider: 'openrouter', creds: c };
-  
+
   // Caso 'auto': Preferir OpenRouter si el usuario lo ha configurado
   if (c.openRouterApiKey && c.openRouterModel) {
     return { provider: 'openrouter', creds: c };
   }
-  
+
   // Fallback a Gemini si no hay OpenRouter configurado
   // Gemini es gratis para el usuario (usa API key del servidor)
   console.log('[ExtractorUniversal] Auto-selecting Gemini (default/fallback)');
@@ -218,15 +261,22 @@ export async function extractUniversalStructured({
   geocodeBias?: ExtractGeoBias;
 }): Promise<CallsheetExtraction> {
   console.log('[ExtractorUniversal] Starting extraction:', { mode, provider, useCrewFirst, contentType, hasFile: !!input.file, hasText: !!input.text });
-  
+
   // Get filename if available for fallback inference
   const fileName = input.file?.name || '';
   console.log('[ExtractorUniversal] Filename:', fileName || 'N/A');
-  
+
   try {
-    const normalized = mode === 'direct' ? await normalizeDirect(input) : await normalizeAgent(input);
-    console.log('[ExtractorUniversal] Normalized text length:', normalized.text.length, 'source:', normalized.source);
-    
+    let normalized: { text: string; image?: string; source: string };
+
+    if (mode === 'vision') {
+      normalized = await normalizeVision(input);
+    } else {
+      normalized = mode === 'direct' ? await normalizeDirect(input) : await normalizeAgent(input);
+    }
+
+    console.log('[ExtractorUniversal] Normalized: len=', normalized.text.length, 'src=', normalized.source, 'img=', !!normalized.image);
+
     const { provider: chosen, creds } = resolveProvider(provider, credentials);
     console.log('[ExtractorUniversal] Using provider:', chosen);
 
@@ -235,33 +285,38 @@ export async function extractUniversalStructured({
       contentType === 'email'
         ? `[CONTEXT: The following text is an email or short message that may contain filming addresses. Extract date, project name, production companies and ONLY filming locations (not parking/catering).]\n\n${normalized.text}`
         : normalized.text;
-    
+
     const tools = {
       geocode_address: async ({ address }: { address: string }) => ({ lat: 40.4168, lng: -3.7038, confidence: 0.4, address }),
       address_normalize: async ({ address }: { address: string }) => ({ normalized: (address || '').trim() }),
     };
-    
+
     // Mode controls OCR behavior, useCrewFirst controls schema
     // direct mode = fast, no OCR | agent mode = with OCR and optional function calling
     let parsed: any;
     try {
-      parsed = mode === 'agent'
-        ? await agenticParse(textForModel, tools, chosen, creds, useCrewFirst)
-        : await directParse(textForModel, chosen, creds, useCrewFirst);
+      if (mode === 'vision') {
+        // Vision is exclusively Gemini for now
+        parsed = await visionParse(textForModel, normalized.image || '', useCrewFirst);
+      } else {
+        parsed = mode === 'agent'
+          ? await agenticParse(textForModel, tools, chosen, creds, useCrewFirst)
+          : await directParse(textForModel, chosen, creds, useCrewFirst);
+      }
     } catch (err) {
       // Do NOT fallback to Gemini when OpenRouter is selected or configured.
       // Surface the OpenRouter error to the UI so the user can fix API key/model/network issues.
       console.error('[ExtractorUniversal] OpenRouter (or chosen provider) failed:', (err as Error)?.message || err);
       throw err;
     }
-    
+
     console.log('[ExtractorUniversal] Parsed result:', parsed);
-    
+
     if (!isCallsheetExtraction(parsed)) {
       console.error('[ExtractorUniversal] Invalid extraction format:', parsed);
       throw new ExtractorError('ai_invalid_json', 'The AI did not return a valid JSON.');
     }
-    
+
     // Add warning if projectName is empty or just whitespace
     if (!parsed.projectName || !parsed.projectName.trim()) {
       console.warn('[ExtractorUniversal] ⚠️ WARNING: AI returned empty projectName!', {
@@ -274,7 +329,7 @@ export async function extractUniversalStructured({
     } else {
       console.log('[ExtractorUniversal] ✓ Extracted projectName:', parsed.projectName);
     }
-    
+
     const processed = postProcessCrewFirstData(parsed, normalized.text, fileName);
     console.log('[ExtractorUniversal] Post-processed result:', processed);
 
@@ -283,7 +338,7 @@ export async function extractUniversalStructured({
       ...processed,
       locations: normalizedLocations,
     };
-    
+
     return finalResult;
   } catch (error) {
     console.error('[ExtractorUniversal] Extraction failed:', error);

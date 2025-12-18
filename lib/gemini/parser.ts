@@ -12,7 +12,7 @@ export async function directParse(
   useCrewFirst = false
 ): Promise<CallsheetExtraction | CrewFirstCallsheet> {
   console.log('[DirectParse] Starting parse with provider:', provider, 'useCrewFirst:', useCrewFirst);
-  
+
   try {
     if (provider === 'openrouter') {
       const result = await parseWithOpenRouter(
@@ -41,7 +41,7 @@ export async function agenticParse(
   useCrewFirst = false
 ): Promise<CallsheetExtraction | CrewFirstCallsheet> {
   console.log('[AgenticParse] Starting parse with provider:', provider, 'useCrewFirst:', useCrewFirst);
-  
+
   try {
     if (provider === 'openrouter') {
       // Run via OpenRouter structured endpoint. If useCrewFirst is true, the server uses
@@ -75,15 +75,45 @@ export async function agenticParse(
 
     const payload = await res.json();
     console.log('[AgenticParse] Gemini API response:', payload);
-    
+
     if (!isCrewFirstCallsheet(payload)) {
       console.error('[AgenticParse] Invalid payload format:', payload);
       throw new Error('Gemini agent request returned an unexpected payload');
     }
 
     return payload;
+    return payload;
   } catch (error) {
     console.error('[AgenticParse] Parse failed:', error);
     throw error;
   }
 }
+
+export async function visionParse(
+  text: string,
+  image: string,
+  useCrewFirst = false
+): Promise<CallsheetExtraction | CrewFirstCallsheet> {
+  console.log('[VisionParse] Starting with useCrewFirst:', useCrewFirst);
+
+  try {
+    const res = await fetch('/api/ai/gemini', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mode: 'vision', text, image, useCrewFirst }),
+    });
+
+    if (!res.ok) {
+      const errorText = await res.text();
+      console.error('[VisionParse] Gemini API request failed:', res.status, errorText);
+      throw new Error(`Gemini vision request failed: ${res.status} ${errorText}`);
+    }
+
+    const payload = await res.json();
+    return payload;
+  } catch (error) {
+    console.error('[VisionParse] Parse failed:', error);
+    throw error;
+  }
+}
+

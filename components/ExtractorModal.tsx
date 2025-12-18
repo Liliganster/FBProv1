@@ -62,8 +62,8 @@ const ExtractorModal: React.FC<ExtractorModalProps> = ({ onClose, personalizatio
               type="button"
               onClick={() => setMode('direct')}
               className={`flex-1 rounded-lg border-2 px-4 py-3 text-left transition-all ${mode === 'direct'
-                  ? 'border-brand-primary bg-brand-primary/20 shadow-md'
-                  : 'border-surface-light/30 bg-background-dark hover:border-surface-light/50'
+                ? 'border-brand-primary bg-brand-primary/20 shadow-md'
+                : 'border-surface-light/30 bg-background-dark hover:border-surface-light/50'
                 }`}
             >
               <div className="flex items-center gap-2">
@@ -82,8 +82,8 @@ const ExtractorModal: React.FC<ExtractorModalProps> = ({ onClose, personalizatio
               type="button"
               onClick={() => setMode('agent')}
               className={`flex-1 rounded-lg border-2 px-4 py-3 text-left transition-all ${mode === 'agent'
-                  ? 'border-brand-primary bg-brand-primary/20 shadow-md'
-                  : 'border-surface-light/30 bg-background-dark hover:border-surface-light/50'
+                ? 'border-brand-primary bg-brand-primary/20 shadow-md'
+                : 'border-surface-light/30 bg-background-dark hover:border-surface-light/50'
                 }`}
             >
               <div className="flex items-center gap-2">
@@ -97,6 +97,26 @@ const ExtractorModal: React.FC<ExtractorModalProps> = ({ onClose, personalizatio
                 </div>
               </div>
             </button>
+
+            <button
+              type="button"
+              onClick={() => setMode('vision')}
+              className={`flex-1 rounded-lg border-2 px-4 py-3 text-left transition-all ${mode === 'vision'
+                ? 'border-brand-primary bg-brand-primary/20 shadow-md'
+                : 'border-surface-light/30 bg-background-dark hover:border-surface-light/50'
+                }`}
+            >
+              <div className="flex items-center gap-2">
+                <div className={`h-4 w-4 rounded-full border-2 flex items-center justify-center ${mode === 'vision' ? 'border-brand-primary bg-brand-primary' : 'border-surface-light/50'
+                  }`}>
+                  {mode === 'vision' && <div className="h-2 w-2 rounded-full bg-white"></div>}
+                </div>
+                <div>
+                  <div className="font-semibold">Vision (Beta)</div>
+                  <div className="text-xs text-on-surface-dark-secondary">Multimodal AI (Best for PDFs)</div>
+                </div>
+              </div>
+            </button>
           </div>
         </div>
 
@@ -107,8 +127,8 @@ const ExtractorModal: React.FC<ExtractorModalProps> = ({ onClose, personalizatio
               type="button"
               onClick={() => setContentType('callsheet')}
               className={`flex-1 rounded-lg border-2 px-4 py-3 text-left transition-all ${contentType === 'callsheet'
-                  ? 'border-brand-primary bg-brand-primary/20 shadow-md'
-                  : 'border-surface-light/30 bg-background-dark hover:border-surface-light/50'
+                ? 'border-brand-primary bg-brand-primary/20 shadow-md'
+                : 'border-surface-light/30 bg-background-dark hover:border-surface-light/50'
                 }`}
             >
               <div className="font-semibold">{t('extractor_content_callsheet_title')}</div>
@@ -118,8 +138,8 @@ const ExtractorModal: React.FC<ExtractorModalProps> = ({ onClose, personalizatio
               type="button"
               onClick={() => setContentType('email')}
               className={`flex-1 rounded-lg border-2 px-4 py-3 text-left transition-all ${contentType === 'email'
-                  ? 'border-brand-primary bg-brand-primary/20 shadow-md'
-                  : 'border-surface-light/30 bg-background-dark hover:border-surface-light/50'
+                ? 'border-brand-primary bg-brand-primary/20 shadow-md'
+                : 'border-surface-light/30 bg-background-dark hover:border-surface-light/50'
                 }`}
             >
               <div className="font-semibold">{t('extractor_content_email_title')}</div>
