@@ -646,23 +646,23 @@ const SettingsView: React.FC<{
                         <div id="settings-help-troubleshoot" className="p-4 bg-background-dark/50 border border-yellow-500/20 rounded-lg space-y-4">
                             <h3 className="text-lg font-medium text-on-surface-dark flex items-center gap-2">
                                 <HelpCircle className="text-yellow-500" />
-                                {t('settings_troubleshoot_title') || 'Solución de Problemas'}
+                                {t('settings_troubleshoot_title')}
                             </h3>
                             <p className="text-sm text-on-surface-dark-secondary">
-                                {t('settings_troubleshoot_desc') || 'Si tienes problemas con la sincronización o ves versiones antiguas, utiliza estas opciones.'}
+                                {t('settings_troubleshoot_desc')}
                             </p>
 
                             <div className="flex flex-col gap-3">
                                 <div className="flex items-center justify-between p-3 bg-black/20 rounded border border-white/5">
                                     <div>
-                                        <p className="font-medium text-sm text-on-surface-dark">Versión Actual</p>
+                                        <p className="font-medium text-sm text-on-surface-dark">{t('settings_current_version')}</p>
                                         <p className="text-xs text-on-surface-dark-secondary font-mono">
-                                            {typeof __BUILD_TIME__ !== 'undefined' ? new Date(__BUILD_TIME__).toLocaleString() : 'Modo Desarrollo'}
+                                            {typeof __BUILD_TIME__ !== 'undefined' ? new Date(__BUILD_TIME__).toLocaleString() : t('dev_mode')}
                                         </p>
                                     </div>
                                     {hasUpdate && (
                                         <span className="px-2 py-1 bg-green-500/20 text-green-400 text-xs rounded border border-green-500/30">
-                                            Nueva versión disponible
+                                            {t('update_available')}
                                         </span>
                                     )}
                                 </div>
@@ -675,13 +675,13 @@ const SettingsView: React.FC<{
                                             setIsCheckingUpdate(true);
                                             try {
                                                 await checkVersion();
-                                                showToast('Verificación completada', 'success');
+                                                showToast(t('check_completed'), 'success');
                                             } catch (e) { /* silent */ }
                                             setIsCheckingUpdate(false);
                                         }}
                                     >
                                         <LuRefreshCw className="mr-2 w-4 h-4" />
-                                        Verificar Actualización
+                                        {t('settings_check_update')}
                                     </Button>
 
                                     <Button
@@ -690,11 +690,11 @@ const SettingsView: React.FC<{
                                         onClick={() => reloadPage(true)}
                                     >
                                         <LuRefreshCw className="mr-2 w-4 h-4" />
-                                        Forzar Actualización (Reset)
+                                        {t('settings_force_update')}
                                     </Button>
                                 </div>
                                 <p className="text-xs text-gray-500">
-                                    Nota: "Forzar Actualización" recargará la página y limpiará el caché del navegador para esta aplicación. Úsalo si notas que los cambios no se aplican.
+                                    {t('settings_force_update_desc')}
                                 </p>
                             </div>
                         </div>

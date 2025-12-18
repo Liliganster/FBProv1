@@ -233,7 +233,7 @@ const App: React.FC = () => {
         calendar: t('nav_calendar'),
         advanced: t('nav_advanced'),
         settings: t('nav_settings'),
-        plans: 'Planes'
+        plans: t('nav_plans')
       };
       return `${titles[view]} - Fahrtenbuch Pro`;
     };
@@ -335,7 +335,7 @@ const App: React.FC = () => {
     { view: 'reports', label: t('nav_reports'), icon: <FileText size={20} />, id: 'nav-reports' },
     { view: 'calendar', label: t('nav_calendar'), icon: <CalendarDays size={20} />, id: 'nav-calendar' },
     { view: 'advanced', label: t('nav_advanced'), icon: <Rocket size={20} />, id: 'nav-advanced' },
-    { view: 'plans', label: 'Planes', icon: <Star size={20} />, id: 'nav-plans' },
+    { view: 'plans', label: t('nav_plans'), icon: <Star size={20} />, id: 'nav-plans' },
   ];
 
   const baseBackground = isDarkMode
@@ -527,14 +527,14 @@ const App: React.FC = () => {
               <RefreshIcon className="w-6 h-6 animate-spin-slow" />
             </div>
             <div className="flex-1">
-              <h3 className="font-bold text-sm">Actualización disponible</h3>
-              <p className="text-xs text-blue-100">Una nueva versión de la app está lista.</p>
+              <h3 className="font-bold text-sm">{t('update_available')}</h3>
+              <p className="text-xs text-blue-100">{t('update_available_desc')}</p>
             </div>
             <button
               onClick={() => reloadPage(false)}
               className="bg-blue-950/80 text-white border border-white/20 px-4 py-2 rounded-full text-xs font-bold hover:bg-blue-900 transition-all shadow-lg active:scale-95"
             >
-              Actualizar
+              {t('update_now')}
             </button>
           </div>
         </div>
