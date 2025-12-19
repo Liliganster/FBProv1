@@ -508,8 +508,8 @@ const App: React.FC = () => {
           {renderSidebarContent()}
         </nav>
       )}
-      <main className="relative z-10 flex-1 overflow-y-auto overflow-x-hidden bg-transparent w-full h-full pt-20 lg:pt-0 px-4 md:px-6 lg:px-8 pb-4 md:pb-6 lg:pb-8">
-        <div className="w-full h-full max-w-screen-xl mx-auto">
+      <main className="relative z-10 flex-1 overflow-y-auto overflow-x-hidden bg-transparent w-full h-full pt-20 lg:pt-0 pb-4 md:pb-6 lg:p-8">
+        <div className="w-full h-full">
           <Suspense fallback={<div className="text-sm text-on-surface-dark-secondary">Loading…</div>}>
             {renderView()}
           </Suspense>
