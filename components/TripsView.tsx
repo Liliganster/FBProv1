@@ -371,7 +371,7 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
                   id="trips-bulk-upload-btn"
                   variant="success"
                   onClick={() => setIsBulkModalOpen(true)}
-                  className="h-[38px] w-full sm:w-auto border border-white/10"
+                  className="h-[38px] w-full sm:w-auto min-w-[160px] border border-white/10"
                 >
                   <UploadCloudIcon className="w-5 h-5 mr-2" />
                   {t('trips_bulkUpload')}
@@ -380,7 +380,7 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
                   id="trips-add-btn"
                   variant="primary"
                   onClick={handleAddTrip}
-                  className="h-[38px] w-full sm:w-auto"
+                  className="h-[38px] w-full sm:w-auto min-w-[160px]"
                 >
                   <PlusIcon className="w-5 h-5 mr-2" />
                   {t('trips_addTrip')}
@@ -462,7 +462,7 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
                                   <LockIcon className="w-4 h-4 text-yellow-400 hover:text-yellow-300" />
                                 </span>
                               )}
-                              <span className="text-white font-medium">{formatDateForDisplay(trip.date)}</span>
+                              <span className="text-white font-medium whitespace-nowrap">{formatDateForDisplay(trip.date)}</span>
                               {allWarnings.length > 0 && (
                                 <div className="cursor-pointer hover:scale-110 transition-transform" title={allWarnings.join('\n')}>
                                   <WarningIcon className="w-4 h-4 text-yellow-400 hover:text-yellow-300" />
@@ -596,7 +596,7 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
                                 <LockIcon className="w-4 h-4 text-yellow-400 hover:text-yellow-300" />
                               </span>
                             )}
-                            <span className="text-white font-medium">{formatDateForDisplay(trip.date)}</span>
+                            <span className="text-white font-medium whitespace-nowrap">{formatDateForDisplay(trip.date)}</span>
                             {allWarnings.length > 0 && (
                               <div className="cursor-pointer hover:scale-110 transition-transform" title={allWarnings.join('\n')}>
                                 <WarningIcon className="w-4 h-4 text-yellow-400 hover:text-yellow-300" />
@@ -864,9 +864,9 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
                           {formatDateForDisplay(trip.date)}
                         </div>
                       </td>
-                      <td className="p-2 cursor-pointer truncate max-w-[260px] xl:max-w-[360px]" onClick={() => handleViewTrip(trip)}>
-                        <div className="flex items-center gap-1 overflow-hidden">
-                          <span className="truncate w-full" title={trip.locations.join(' -> ')}>{trip.locations.join(' -> ')}</span>
+                      <td className="p-2 cursor-pointer align-top max-w-[260px] xl:max-w-[420px] whitespace-normal break-words" onClick={() => handleViewTrip(trip)}>
+                        <div className="flex items-start gap-1">
+                          <span className="w-full" title={trip.locations.join(' -> ')}>{trip.locations.join(' -> ')}</span>
                           <SpecialOriginTag originType={trip.specialOrigin} />
                           {allWarnings.length > 0 && (
                             <div className="ml-1 cursor-pointer hover:scale-110 transition-transform flex-shrink-0" title={allWarnings.join('\n')}>
