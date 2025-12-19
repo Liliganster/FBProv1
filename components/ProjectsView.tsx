@@ -253,8 +253,8 @@ const ProjectsView: React.FC<ProjectsViewProps> = ({ setCurrentView, personaliza
         ) : (
           <>
             <div id="projects-title">
-              <h1 className="text-3xl font-bold text-white">{t('projects_title')}</h1>
-              {userProfile && <h2 className="text-lg font-semibold text-brand-primary">{userProfile.name}</h2>}
+              <h1 className="text-2xl md:text-3xl font-bold text-white">{t('projects_title')}</h1>
+              {userProfile && <h2 className="text-base md:text-lg font-semibold text-brand-primary">{userProfile.name}</h2>}
             </div>
             <div className="flex flex-wrap items-center gap-2 md:gap-4 w-full lg:w-auto">
               <select

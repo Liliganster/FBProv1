@@ -197,10 +197,10 @@ const Dashboard: React.FC<DashboardProps> = ({ setCurrentView, personalization, 
         <div style={glassStyle} className="bg-frost-glass border border-white/10 rounded-fluid p-4 md:p-6 flex flex-col justify-between min-h-[140px] md:min-h-[160px] h-full transition-all duration-300 hover:-translate-y-[2px] hover:shadow-glass shadow-sm">
             <div>
                 <div className="flex items-start justify-between">
-                    <h3 className="text-sm font-medium text-on-surface-secondary uppercase tracking-wider">{title}</h3>
+                    <h3 className="text-xs md:text-sm font-medium text-on-surface-secondary uppercase tracking-wider">{title}</h3>
                     {children && !cta && <div className="text-right">{children}</div>}
                 </div>
-                <p className="text-3xl font-bold mt-2 text-white tracking-tight">{value}</p>
+                <p className="text-2xl md:text-3xl font-bold mt-2 text-white tracking-tight">{value}</p>
             </div>
             <div className="flex-grow flex flex-col justify-end">
                 {children && cta && <div className="mt-4">{children}</div>}
@@ -228,8 +228,8 @@ const Dashboard: React.FC<DashboardProps> = ({ setCurrentView, personalization, 
         <div className="text-on-surface-dark animate-fade-in">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 md:mb-8 gap-4" id="dashboard-header">
                 <div>
-                    <h1 id="dashboard-title" className="text-3xl font-bold text-white tracking-tight">{t('dashboard_title')}</h1>
-                    {userProfile && <h2 className="text-lg font-medium text-brand-primary/90">{userProfile.name}</h2>}
+                    <h1 id="dashboard-title" className="text-2xl md:text-3xl font-bold text-white tracking-tight">{t('dashboard_title')}</h1>
+                    {userProfile && <h2 className="text-base md:text-lg font-medium text-brand-primary/90">{userProfile.name}</h2>}
                 </div>
                 <div className="flex items-center gap-3 w-full md:w-auto justify-end">
                     <div className="relative" ref={alertsRef} id="dashboard-alerts">
@@ -318,7 +318,7 @@ const Dashboard: React.FC<DashboardProps> = ({ setCurrentView, personalization, 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
                 <div id="dashboard-chart" style={glassStyle} className="lg:col-span-2 bg-frost-glass border border-white/10 rounded-fluid p-4 md:p-6 backdrop-blur-glass shadow-sm">
                     <div className="flex justify-between items-center mb-6">
-                        <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+                        <h3 className="text-base md:text-lg font-semibold text-white flex items-center gap-2">
                             <BarChartIcon className="w-5 h-5 text-brand-primary" />
                             {t('dashboard_visualAnalysis')}
                         </h3>
@@ -353,7 +353,7 @@ const Dashboard: React.FC<DashboardProps> = ({ setCurrentView, personalization, 
                     </div>
                 </div>
                 <div id="dashboard-recent-trips" style={glassStyle} className="bg-frost-glass border border-white/10 rounded-fluid p-4 md:p-6 backdrop-blur-glass shadow-sm flex flex-col">
-                    <h3 className="text-lg font-semibold mb-4 text-white flex items-center gap-2">
+                    <h3 className="text-base md:text-lg font-semibold mb-4 text-white flex items-center gap-2">
                         <ListIcon className="w-5 h-5 text-brand-secondary" />
                         {t('dashboard_recentTrips')}
                     </h3>

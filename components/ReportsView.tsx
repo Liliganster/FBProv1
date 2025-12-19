@@ -94,8 +94,8 @@ const ReportsView: React.FC<ReportsViewProps> = ({ personalization, theme }) => 
         ) : (
           <>
             <div>
-                <h1 id="reports-title" className="text-[28px] font-bold text-white">{t('reports_title')}</h1>
-                {userProfile && <h2 className="text-base font-semibold text-brand-primary">{userProfile.name}</h2>}
+                <h1 id="reports-title" className="text-xl md:text-[28px] font-bold text-white">{t('reports_title')}</h1>
+                {userProfile && <h2 className="text-sm md:text-base font-semibold text-brand-primary">{userProfile.name}</h2>}
             </div>
             <Button 
               id="reports-generate-btn"

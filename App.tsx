@@ -471,7 +471,7 @@ const App: React.FC = () => {
       {/* Mobile/Tablet Header with Hamburger Menu */}
       <div className="fixed top-0 left-0 right-0 z-30 lg:hidden bg-gradient-to-br from-white/5 via-blue-400/8 to-blue-500/5 backdrop-blur-xl backdrop-saturate-150 border-b border-white/10 shadow-glass">
         <div className="flex items-center justify-between p-4 md:px-6">
-          <h1 className="text-lg md:text-xl font-bold text-white">FahrtenBuch Pro</h1>
+          <h1 className="text-base md:text-lg font-bold text-white">FahrtenBuch Pro</h1>
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             className="p-2 min-h-11 min-w-11 rounded-smooth transition-all duration-300 transform hover:scale-105 hover:bg-gradient-surface hover:shadow-brand/20 hover:shadow-md text-white"
@@ -498,7 +498,7 @@ const App: React.FC = () => {
       {!isMobile && (
         <nav
           className={`relative z-10 hidden lg:flex
-        ${sidebarCollapsed ? 'lg:w-20' : 'lg:w-64'}
+        ${sidebarCollapsed ? 'lg:w-20' : 'lg:w-72'}
         text-on-surface-dark border-r
         transition-all duration-300 flex-col shadow-glass
         bg-gradient-to-br from-white/5 via-blue-400/8 to-blue-500/5
