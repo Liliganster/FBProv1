@@ -722,32 +722,32 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
             <table id="trips-table" className="w-full text-left text-xs lg:text-sm table-fixed">
               <thead className="bg-gray-700/50 border-b border-glass">
                 <tr>
-                  <th id="trips-col-select" className="p-2 w-10">
+                  <th id="trips-col-select" className="p-2 lg:p-3 w-10 lg:w-12">
                     <input
                       type="checkbox"
                       checked={isAllSelected}
                       onChange={handleSelectAll}
                       disabled={filteredTrips.length === 0}
-                      className="bg-gradient-surface border-surface rounded text-brand-primary focus:ring-brand-primary focus:ring-2 h-4 w-4 transition-all duration-200"
+                      className="bg-gradient-surface border-surface rounded text-brand-primary focus:ring-brand-primary focus:ring-2 h-4 w-4 lg:h-5 lg:w-5 transition-all duration-200"
                     />
                   </th>
-                  <th id="trips-col-date" className="p-2 font-semibold text-on-surface-secondary uppercase tracking-wider w-24">
+                  <th id="trips-col-date" className="p-2 lg:p-3 font-semibold text-on-surface-secondary uppercase tracking-wider w-24 lg:w-32">
                     <div onClick={handleSortByDate} className="uppercase flex items-center gap-1 hover:text-white transition-colors duration-200 cursor-pointer select-none">
-                      <span className="truncate">{t('trips_col_date')}</span>
+                      <span>{t('trips_col_date')}</span>
                       <div className="flex flex-col -space-y-2 flex-shrink-0">
                         <ChevronUpIcon className={`w-3 h-3 transition-colors ${sortOrder === 'asc' ? 'text-brand-primary' : 'text-on-surface-tertiary'}`} />
                         <ChevronDownIcon className={`w-3 h-3 transition-colors ${sortOrder === 'desc' ? 'text-brand-primary' : 'text-on-surface-tertiary'}`} />
                       </div>
                     </div>
                   </th>
-                  <th id="trips-col-route" className="p-2 font-semibold text-on-surface-dark-secondary uppercase tracking-wider w-auto">{t('trips_col_route')}</th>
-                  <th id="trips-col-project" className="p-2 font-semibold text-on-surface-dark-secondary uppercase tracking-wider w-24 hidden sm:table-cell truncate">{t('trips_col_project')}</th>
-                  <th id="trips-col-passengers" className="p-2 font-semibold text-on-surface-dark-secondary uppercase tracking-wider text-center w-12 hidden md:table-cell" title={t('trips_col_passengers')}>{t('trips_col_passengers_short')}</th>
-                  <th id="trips-col-invoices" className="p-2 font-semibold text-on-surface-dark-secondary uppercase tracking-wider text-center w-12 hidden lg:table-cell" title={t('trips_col_invoices')}>{t('trips_col_invoices_short')}</th>
-                  <th id="trips-col-distance" className="p-2 font-semibold text-on-surface-dark-secondary uppercase tracking-wider w-20 truncate">{t('trips_col_distance')}</th>
-                  <th id="trips-col-emissions" className="p-2 font-semibold text-on-surface-dark-secondary uppercase tracking-wider w-20 hidden xl:table-cell truncate">{t('trips_col_emissions')}</th>
-                  <th id="trips-col-earnings" className="p-2 font-semibold text-on-surface-dark-secondary uppercase tracking-wider w-24 truncate">{t('trips_col_earnings')}</th>
-                  <th id="trips-col-actions" className="p-2 font-semibold text-on-surface-dark-secondary uppercase tracking-wider text-right w-20">{t('trips_col_actions')}</th>
+                  <th id="trips-col-route" className="p-2 lg:p-3 font-semibold text-on-surface-dark-secondary uppercase tracking-wider w-auto min-w-[200px]">{t('trips_col_route')}</th>
+                  <th id="trips-col-project" className="p-2 lg:p-3 font-semibold text-on-surface-dark-secondary uppercase tracking-wider w-24 lg:w-32 hidden sm:table-cell">{t('trips_col_project')}</th>
+                  <th id="trips-col-passengers" className="p-2 lg:p-3 font-semibold text-on-surface-dark-secondary uppercase tracking-wider text-center w-12 lg:w-16 hidden md:table-cell" title={t('trips_col_passengers')}>{t('trips_col_passengers_short')}</th>
+                  <th id="trips-col-invoices" className="p-2 lg:p-3 font-semibold text-on-surface-dark-secondary uppercase tracking-wider text-center w-12 lg:w-16 hidden lg:table-cell" title={t('trips_col_invoices')}>{t('trips_col_invoices_short')}</th>
+                  <th id="trips-col-distance" className="p-2 lg:p-3 font-semibold text-on-surface-dark-secondary uppercase tracking-wider w-20 lg:w-28 whitespace-nowrap">{t('trips_col_distance')}</th>
+                  <th id="trips-col-emissions" className="p-2 lg:p-3 font-semibold text-on-surface-dark-secondary uppercase tracking-wider w-20 lg:w-24 hidden xl:table-cell whitespace-nowrap">{t('trips_col_emissions')}</th>
+                  <th id="trips-col-earnings" className="p-2 lg:p-3 font-semibold text-on-surface-dark-secondary uppercase tracking-wider w-24 lg:w-32 whitespace-nowrap">{t('trips_col_earnings')}</th>
+                  <th id="trips-col-actions" className="p-2 lg:p-3 font-semibold text-on-surface-dark-secondary uppercase tracking-wider text-right w-24 lg:w-32">{t('trips_col_actions')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-700/50">
