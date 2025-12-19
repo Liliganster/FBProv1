@@ -719,178 +719,178 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
         // Vista desktop con tabla
         <div className="-mx-4 md:mx-0">
           <div style={contentStyle} className="bg-frost-glass border-glass rounded-fluid shadow-glass overflow-x-auto backdrop-blur-glass">
-            <table id="trips-table" className="w-full min-w-[720px] text-left text-sm">
-            <thead className="bg-gray-700/50 border-b border-glass">
-              <tr>
-                <th id="trips-col-select" className="p-3 w-12">
-                  <input
-                    type="checkbox"
-                    checked={isAllSelected}
-                    onChange={handleSelectAll}
-                    disabled={filteredTrips.length === 0}
-                    className="bg-gradient-surface border-surface rounded text-brand-primary focus:ring-brand-primary focus:ring-2 h-5 w-5 transition-all duration-200"
-                  />
-                </th>
-                <th id="trips-col-date" className="p-3 text-[11px] font-semibold text-on-surface-secondary uppercase tracking-wider">
-                  <div onClick={handleSortByDate} className="uppercase flex items-center gap-1 hover:text-white transition-colors duration-200 cursor-pointer select-none">
-                    {t('trips_col_date')}
-                    <div className="flex flex-col -space-y-2">
-                      <ChevronUpIcon className={`w-4 h-4 transition-colors ${sortOrder === 'asc' ? 'text-brand-primary' : 'text-on-surface-tertiary'}`} />
-                      <ChevronDownIcon className={`w-4 h-4 transition-colors ${sortOrder === 'desc' ? 'text-brand-primary' : 'text-on-surface-tertiary'}`} />
-                    </div>
-                  </div>
-                </th>
-                <th id="trips-col-route" className="p-3 text-[11px] font-semibold text-on-surface-dark-secondary uppercase tracking-wider">{t('trips_col_route')}</th>
-                <th id="trips-col-project" className="p-3 text-[11px] font-semibold text-on-surface-dark-secondary uppercase tracking-wider">{t('trips_col_project')}</th>
-                <th id="trips-col-passengers" className="p-3 text-[11px] font-semibold text-on-surface-dark-secondary uppercase tracking-wider">{t('trips_col_passengers')}</th>
-                <th id="trips-col-invoices" className="p-3 text-[11px] font-semibold text-on-surface-dark-secondary uppercase tracking-wider">{t('trips_col_invoices')}</th>
-                <th id="trips-col-distance" className="p-3 text-[11px] font-semibold text-on-surface-dark-secondary uppercase tracking-wider">{t('trips_col_distance')}</th>
-                <th id="trips-col-emissions" className="p-3 text-[11px] font-semibold text-on-surface-dark-secondary uppercase tracking-wider">{t('trips_col_emissions')}</th>
-                <th id="trips-col-earnings" className="p-3 text-[11px] font-semibold text-on-surface-dark-secondary uppercase tracking-wider">{t('trips_col_earnings')}</th>
-                <th id="trips-col-actions" className="p-3 text-[11px] font-semibold text-on-surface-dark-secondary uppercase tracking-wider text-right">{t('trips_col_actions')}</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-700/50">
-              {filteredTrips.length > 0 ? pagedTrips.map((trip) => {
-                const isSelected = selectedTripIds.includes(trip.id);
-                const isLocked = userProfile?.lockedUntilDate ? new Date(trip.date) <= new Date(userProfile.lockedUntilDate) : false;
-
-                const allWarnings = [...(trip.warnings || [])];
-                if (Number(trip.distance) > 1000) {
-                  allWarnings.push(t('trips_warning_improbable_distance'));
-                }
-                if (Number(trip.distance) === 0) {
-                  allWarnings.push(t('trips_warning_zero_distance'));
-                }
-                if (!trip.reason?.trim()) {
-                  allWarnings.push(t('dashboard_alert_missing_reason'));
-                }
-
-                const project = projects.find(p => p.id === trip.projectId);
-                const reimbursement = calculateTripReimbursement(trip, userProfile, project);
-                const emissions = (trip.distance * EMISSION_FACTOR_G_PER_KM) / 1000;
-                const tripExpenses = expensesByTrip[trip.id] ?? [];
-                const invoiceCount = tripExpenses.length;
-                const invoiceTooltip = buildExpenseTooltip(tripExpenses);
-                const invoiceLabel = t(invoiceCount === 1 ? 'expense_badge_single' : 'expense_badge_plural');
-                const invoiceAriaLabel = t('expense_badge_aria_trip', { count: invoiceCount, label: invoiceLabel });
-
-                return (
-                  <tr
-                    key={trip.id}
-                    className={`${isSelected ? 'bg-brand-primary/20' : ''} hover:bg-gradient-surface/50 transition-all duration-200 text-white border-b border-glass/20 last:border-b-0`}
-                  >
-                    <td className="p-3" onClick={(e) => e.stopPropagation()}>
-                      <input
-                        type="checkbox"
-                        checked={isSelected}
-                        onChange={() => handleSelectTrip(trip.id)}
-                        className="bg-gradient-surface border-surface rounded text-brand-primary focus:ring-brand-primary focus:ring-2 h-5 w-5 transition-all duration-200"
-                        disabled={isLocked}
-                      />
-                    </td>
-                    <td className="p-3 whitespace-nowrap cursor-pointer text-sm" onClick={() => handleViewTrip(trip)}>
-                      <div className="flex items-center gap-2">
-                        {/* FIX: Wrap LockIcon in a span with a title attribute to fix prop assignment error. */}
-                        {isLocked && <span title={t('trips_locked_tooltip')} className="cursor-pointer hover:scale-110 transition-transform"><LockIcon className="w-4 h-4 text-yellow-400 hover:text-yellow-300" /></span>}
-                        {formatDateForDisplay(trip.date)}
-                      </div>
-                    </td>
-                    <td className="p-3 cursor-pointer text-sm" onClick={() => handleViewTrip(trip)}>
-                      <div className="flex items-center gap-1">
-                        <span className="truncate max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg" title={trip.locations.join(' -> ')}>{trip.locations.join(' -> ')}</span>
-                        <SpecialOriginTag originType={trip.specialOrigin} />
-                        {allWarnings.length > 0 && (
-                          <div className="ml-1 cursor-pointer hover:scale-110 transition-transform flex-shrink-0" title={allWarnings.join('\n')}>
-                            <WarningIcon className="w-5 h-5 text-yellow-400 hover:text-yellow-300" />
-                          </div>
-                        )}
-                      </div>
-                    </td>
-                    <td className="p-3 whitespace-nowrap cursor-pointer text-sm" onClick={() => handleViewTrip(trip)}>{getProjectName(trip.projectId)}</td>
-                    <td className="p-3 whitespace-nowrap cursor-pointer text-sm" onClick={() => handleViewTrip(trip)}>{trip.passengers || '-'}</td>
-                    <td className="p-3 whitespace-nowrap cursor-pointer" onClick={() => handleViewTrip(trip)}>
-                      {invoiceCount > 0 ? (
-                        <span
-                          className="inline-flex items-center gap-1.5 rounded-full bg-brand-secondary/10 px-2.5 py-1 text-[11px] font-semibold text-brand-secondary"
-                          title={invoiceTooltip}
-                          aria-label={invoiceAriaLabel}
-                        >
-                          <FileTextIcon className="h-3.5 w-3.5" />
-                          <span>{invoiceCount}</span>
-                        </span>
-                      ) : (
-                        // Use an em dash via HTML entity to avoid mojibake in some environments
-                        <span className="text-on-surface-dark-secondary" aria-hidden="true">&mdash;</span>
-                      )}
-                    </td>
-                    <td className="p-3 whitespace-nowrap text-brand-primary font-semibold text-sm cursor-pointer" onClick={() => handleViewTrip(trip)}>{trip.distance.toFixed(1)} km</td>
-                    <td className="p-3 whitespace-nowrap cursor-pointer text-sm" onClick={() => handleViewTrip(trip)}>
-                      <span className="font-semibold">{emissions.toFixed(1)}</span>
-                      <span className="text-xs text-on-surface-dark-secondary ml-1">kg</span>
-                    </td>
-                    <td className="p-3 whitespace-nowrap font-semibold text-sm text-brand-secondary cursor-pointer" onClick={() => handleViewTrip(trip)}>EUR {reimbursement.toFixed(2)}</td>
-
-                    <td
-                      className="p-3 whitespace-nowrap text-right"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <Button variant="icon" size="sm" onClick={() => handleViewTrip(trip)} className="mr-2" title={t('trips_view_trip')}>
-                        <MapIcon className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        variant="icon"
-                        size="sm"
-                        onClick={() => handleAddToCalendar(trip)}
-                        disabled={isLocked || !isSignedIn}
-                        className="mr-2 text-green-400 hover:text-green-300"
-                        title={isSignedIn ? t('trips_col_actions_add_to_calendar') : t('trips_col_actions_add_to_calendar_disabled')}
-                      >
-                        <CalendarPlusIcon className="w-4 h-4" />
-                      </Button>
-                      <Button variant="icon" size="sm" onClick={() => handleEditTrip(trip)} disabled={isLocked} className="mr-2 text-blue-400 hover:text-blue-300" title={t('common_edit')}>
-                        <EditIcon className="w-4 h-4" />
-                      </Button>
-                      <Button variant="icon" size="sm" onClick={() => handleDeleteTrip(trip.id)} disabled={isLocked} className="text-red-400 hover:text-red-300" title={t('common_delete')}>
-                        <TrashIcon className="w-4 h-4" />
-                      </Button>
-                    </td>
-                  </tr>
-                );
-              }) : (
+            <table id="trips-table" className="w-full text-left text-[10px] md:text-xs lg:text-sm table-auto">
+              <thead className="bg-gray-700/50 border-b border-glass">
                 <tr>
-                  <td colSpan={9} className="text-center p-8 text-on-surface-dark-secondary">{t('trips_noTrips')}</td>
+                  <th id="trips-col-select" className="p-1 md:p-2 lg:p-3 w-8 md:w-12">
+                    <input
+                      type="checkbox"
+                      checked={isAllSelected}
+                      onChange={handleSelectAll}
+                      disabled={filteredTrips.length === 0}
+                      className="bg-gradient-surface border-surface rounded text-brand-primary focus:ring-brand-primary focus:ring-2 h-4 w-4 md:h-5 md:w-5 transition-all duration-200"
+                    />
+                  </th>
+                  <th id="trips-col-date" className="p-1 md:p-2 lg:p-3 font-semibold text-on-surface-secondary uppercase tracking-wider">
+                    <div onClick={handleSortByDate} className="uppercase flex items-center gap-1 hover:text-white transition-colors duration-200 cursor-pointer select-none">
+                      {t('trips_col_date')}
+                      <div className="flex flex-col -space-y-2">
+                        <ChevronUpIcon className={`w-3 h-3 md:w-4 md:h-4 transition-colors ${sortOrder === 'asc' ? 'text-brand-primary' : 'text-on-surface-tertiary'}`} />
+                        <ChevronDownIcon className={`w-3 h-3 md:w-4 md:h-4 transition-colors ${sortOrder === 'desc' ? 'text-brand-primary' : 'text-on-surface-tertiary'}`} />
+                      </div>
+                    </div>
+                  </th>
+                  <th id="trips-col-route" className="p-1 md:p-2 lg:p-3 font-semibold text-on-surface-dark-secondary uppercase tracking-wider">{t('trips_col_route')}</th>
+                  <th id="trips-col-project" className="p-1 md:p-2 lg:p-3 font-semibold text-on-surface-dark-secondary uppercase tracking-wider">{t('trips_col_project')}</th>
+                  <th id="trips-col-passengers" className="p-1 md:p-2 lg:p-3 font-semibold text-on-surface-dark-secondary uppercase tracking-wider">{t('trips_col_passengers')}</th>
+                  <th id="trips-col-invoices" className="p-1 md:p-2 lg:p-3 font-semibold text-on-surface-dark-secondary uppercase tracking-wider">{t('trips_col_invoices')}</th>
+                  <th id="trips-col-distance" className="p-1 md:p-2 lg:p-3 font-semibold text-on-surface-dark-secondary uppercase tracking-wider">{t('trips_col_distance')}</th>
+                  <th id="trips-col-emissions" className="p-1 md:p-2 lg:p-3 font-semibold text-on-surface-dark-secondary uppercase tracking-wider">{t('trips_col_emissions')}</th>
+                  <th id="trips-col-earnings" className="p-1 md:p-2 lg:p-3 font-semibold text-on-surface-dark-secondary uppercase tracking-wider">{t('trips_col_earnings')}</th>
+                  <th id="trips-col-actions" className="p-1 md:p-2 lg:p-3 font-semibold text-on-surface-dark-secondary uppercase tracking-wider text-right">{t('trips_col_actions')}</th>
                 </tr>
-              )}
-            </tbody>
-          </table>
-          {/* Pagination controls for desktop/table view */}
-          {filteredTrips.length > PAGE_SIZE && (
-            <div className="flex items-center justify-between p-4">
-              <span className="text-sm text-on-surface-dark-secondary">
-                {t('trips_total') || 'Total'}: {filteredTrips.length}
-              </span>
-              <div className="flex items-center gap-2">
-                <button
-                  className="px-3 py-1 rounded-smooth bg-gradient-surface disabled:opacity-50"
-                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                  disabled={currentPage === 1}
-                >
-                  {t('prev') || 'Previous'}
-                </button>
+              </thead>
+              <tbody className="divide-y divide-gray-700/50">
+                {filteredTrips.length > 0 ? pagedTrips.map((trip) => {
+                  const isSelected = selectedTripIds.includes(trip.id);
+                  const isLocked = userProfile?.lockedUntilDate ? new Date(trip.date) <= new Date(userProfile.lockedUntilDate) : false;
+
+                  const allWarnings = [...(trip.warnings || [])];
+                  if (Number(trip.distance) > 1000) {
+                    allWarnings.push(t('trips_warning_improbable_distance'));
+                  }
+                  if (Number(trip.distance) === 0) {
+                    allWarnings.push(t('trips_warning_zero_distance'));
+                  }
+                  if (!trip.reason?.trim()) {
+                    allWarnings.push(t('dashboard_alert_missing_reason'));
+                  }
+
+                  const project = projects.find(p => p.id === trip.projectId);
+                  const reimbursement = calculateTripReimbursement(trip, userProfile, project);
+                  const emissions = (trip.distance * EMISSION_FACTOR_G_PER_KM) / 1000;
+                  const tripExpenses = expensesByTrip[trip.id] ?? [];
+                  const invoiceCount = tripExpenses.length;
+                  const invoiceTooltip = buildExpenseTooltip(tripExpenses);
+                  const invoiceLabel = t(invoiceCount === 1 ? 'expense_badge_single' : 'expense_badge_plural');
+                  const invoiceAriaLabel = t('expense_badge_aria_trip', { count: invoiceCount, label: invoiceLabel });
+
+                  return (
+                    <tr
+                      key={trip.id}
+                      className={`${isSelected ? 'bg-brand-primary/20' : ''} hover:bg-gradient-surface/50 transition-all duration-200 text-white border-b border-glass/20 last:border-b-0`}
+                    >
+                      <td className="p-1 md:p-2 lg:p-3" onClick={(e) => e.stopPropagation()}>
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={() => handleSelectTrip(trip.id)}
+                          className="bg-gradient-surface border-surface rounded text-brand-primary focus:ring-brand-primary focus:ring-2 h-4 w-4 md:h-5 md:w-5 transition-all duration-200"
+                          disabled={isLocked}
+                        />
+                      </td>
+                      <td className="p-1 md:p-2 lg:p-3 whitespace-nowrap cursor-pointer" onClick={() => handleViewTrip(trip)}>
+                        <div className="flex items-center gap-2">
+                          {/* FIX: Wrap LockIcon in a span with a title attribute to fix prop assignment error. */}
+                          {isLocked && <span title={t('trips_locked_tooltip')} className="cursor-pointer hover:scale-110 transition-transform"><LockIcon className="w-3 h-3 md:w-4 md:h-4 text-yellow-400 hover:text-yellow-300" /></span>}
+                          {formatDateForDisplay(trip.date)}
+                        </div>
+                      </td>
+                      <td className="p-1 md:p-2 lg:p-3 cursor-pointer" onClick={() => handleViewTrip(trip)}>
+                        <div className="flex items-center gap-1">
+                          <span className="truncate max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg" title={trip.locations.join(' -> ')}>{trip.locations.join(' -> ')}</span>
+                          <SpecialOriginTag originType={trip.specialOrigin} />
+                          {allWarnings.length > 0 && (
+                            <div className="ml-1 cursor-pointer hover:scale-110 transition-transform flex-shrink-0" title={allWarnings.join('\n')}>
+                              <WarningIcon className="w-5 h-5 text-yellow-400 hover:text-yellow-300" />
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                      <td className="p-3 whitespace-nowrap cursor-pointer text-sm" onClick={() => handleViewTrip(trip)}>{getProjectName(trip.projectId)}</td>
+                      <td className="p-3 whitespace-nowrap cursor-pointer text-sm" onClick={() => handleViewTrip(trip)}>{trip.passengers || '-'}</td>
+                      <td className="p-3 whitespace-nowrap cursor-pointer" onClick={() => handleViewTrip(trip)}>
+                        {invoiceCount > 0 ? (
+                          <span
+                            className="inline-flex items-center gap-1.5 rounded-full bg-brand-secondary/10 px-2.5 py-1 text-[11px] font-semibold text-brand-secondary"
+                            title={invoiceTooltip}
+                            aria-label={invoiceAriaLabel}
+                          >
+                            <FileTextIcon className="h-3.5 w-3.5" />
+                            <span>{invoiceCount}</span>
+                          </span>
+                        ) : (
+                          // Use an em dash via HTML entity to avoid mojibake in some environments
+                          <span className="text-on-surface-dark-secondary" aria-hidden="true">&mdash;</span>
+                        )}
+                      </td>
+                      <td className="p-3 whitespace-nowrap text-brand-primary font-semibold text-sm cursor-pointer" onClick={() => handleViewTrip(trip)}>{trip.distance.toFixed(1)} km</td>
+                      <td className="p-3 whitespace-nowrap cursor-pointer text-sm" onClick={() => handleViewTrip(trip)}>
+                        <span className="font-semibold">{emissions.toFixed(1)}</span>
+                        <span className="text-xs text-on-surface-dark-secondary ml-1">kg</span>
+                      </td>
+                      <td className="p-3 whitespace-nowrap font-semibold text-sm text-brand-secondary cursor-pointer" onClick={() => handleViewTrip(trip)}>EUR {reimbursement.toFixed(2)}</td>
+
+                      <td
+                        className="p-3 whitespace-nowrap text-right"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <Button variant="icon" size="sm" onClick={() => handleViewTrip(trip)} className="mr-2" title={t('trips_view_trip')}>
+                          <MapIcon className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="icon"
+                          size="sm"
+                          onClick={() => handleAddToCalendar(trip)}
+                          disabled={isLocked || !isSignedIn}
+                          className="mr-2 text-green-400 hover:text-green-300"
+                          title={isSignedIn ? t('trips_col_actions_add_to_calendar') : t('trips_col_actions_add_to_calendar_disabled')}
+                        >
+                          <CalendarPlusIcon className="w-4 h-4" />
+                        </Button>
+                        <Button variant="icon" size="sm" onClick={() => handleEditTrip(trip)} disabled={isLocked} className="mr-2 text-blue-400 hover:text-blue-300" title={t('common_edit')}>
+                          <EditIcon className="w-4 h-4" />
+                        </Button>
+                        <Button variant="icon" size="sm" onClick={() => handleDeleteTrip(trip.id)} disabled={isLocked} className="text-red-400 hover:text-red-300" title={t('common_delete')}>
+                          <TrashIcon className="w-4 h-4" />
+                        </Button>
+                      </td>
+                    </tr>
+                  );
+                }) : (
+                  <tr>
+                    <td colSpan={9} className="text-center p-8 text-on-surface-dark-secondary">{t('trips_noTrips')}</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+            {/* Pagination controls for desktop/table view */}
+            {filteredTrips.length > PAGE_SIZE && (
+              <div className="flex items-center justify-between p-4">
                 <span className="text-sm text-on-surface-dark-secondary">
-                  {t('page') || 'Page'} {currentPage} / {totalPages}
+                  {t('trips_total') || 'Total'}: {filteredTrips.length}
                 </span>
-                <button
-                  className="px-3 py-1 rounded-smooth bg-gradient-surface disabled:opacity-50"
-                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                  disabled={currentPage >= totalPages}
-                >
-                  {t('next') || 'Next'}
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    className="px-3 py-1 rounded-smooth bg-gradient-surface disabled:opacity-50"
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                  >
+                    {t('prev') || 'Previous'}
+                  </button>
+                  <span className="text-sm text-on-surface-dark-secondary">
+                    {t('page') || 'Page'} {currentPage} / {totalPages}
+                  </span>
+                  <button
+                    className="px-3 py-1 rounded-smooth bg-gradient-surface disabled:opacity-50"
+                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                    disabled={currentPage >= totalPages}
+                  >
+                    {t('next') || 'Next'}
+                  </button>
+                </div>
               </div>
-            </div>
-          )}
+            )}
           </div>
         </div>
       )}
