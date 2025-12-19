@@ -337,8 +337,8 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
               <h1 className="text-2xl md:text-3xl font-bold text-white">{t('trips_title')}</h1>
               {userProfile && <h2 className="text-base md:text-lg font-semibold text-brand-primary">{userProfile.name}</h2>}
             </div>
-            <div className="flex flex-wrap items-center gap-2 md:gap-4 w-full lg:w-auto">
-              <div id="trips-filter" className="flex gap-2 w-full md:w-auto">
+            <div className="flex flex-col md:flex-row md:flex-wrap items-stretch md:items-center gap-2 md:gap-4 w-full lg:w-auto">
+              <div id="trips-filter" className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
                 <label htmlFor="project-filter" className="sr-only">{t('trips_filter_by_project')}</label>
                 <select
                   id="project-filter"
@@ -364,11 +364,21 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
                   ))}
                 </select>
               </div>
-              <Button id="trips-bulk-upload-btn" variant="success" onClick={() => setIsBulkModalOpen(true)} className="h-[38px] border border-white/10">
+              <Button
+                id="trips-bulk-upload-btn"
+                variant="success"
+                onClick={() => setIsBulkModalOpen(true)}
+                className="h-[38px] w-full sm:w-auto border border-white/10"
+              >
                 <UploadCloudIcon className="w-5 h-5 mr-2" />
                 {t('trips_bulkUpload')}
               </Button>
-              <Button id="trips-add-btn" variant="primary" onClick={handleAddTrip} className="h-[38px]">
+              <Button
+                id="trips-add-btn"
+                variant="primary"
+                onClick={handleAddTrip}
+                className="h-[38px] w-full sm:w-auto"
+              >
                 <PlusIcon className="w-5 h-5 mr-2" />
                 {t('trips_addTrip')}
               </Button>
