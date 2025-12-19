@@ -716,13 +716,23 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
           )}
         </div>
       ) : (
-        // Vista desktop con tabla
+        // Vista desktop con tabla (solo en pantallas grandes; en pantallas
+        // compactas usamos tarjetas para evitar scroll horizontal)
         <div className="-mx-4 md:mx-0">
-          <div style={contentStyle} className="bg-frost-glass border-glass rounded-fluid shadow-glass overflow-x-auto backdrop-blur-glass">
-            <table id="trips-table" className="w-full text-left text-xs lg:text-sm table-fixed">
+          <div
+            style={contentStyle}
+            className="bg-frost-glass border-glass rounded-fluid shadow-glass overflow-x-auto backdrop-blur-glass"
+          >
+            <table
+              id="trips-table"
+              className="w-full text-left text-xs lg:text-sm table-auto"
+            >
               <thead className="bg-gray-700/50 border-b border-glass">
                 <tr>
-                  <th id="trips-col-select" className="p-2 lg:p-3 w-10 lg:w-12">
+                  <th
+                    id="trips-col-select"
+                    className="p-2 lg:p-3 w-10 lg:w-12"
+                  >
                     <input
                       type="checkbox"
                       checked={isAllSelected}
@@ -731,7 +741,10 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
                       className="bg-gradient-surface border-surface rounded text-brand-primary focus:ring-brand-primary focus:ring-2 h-4 w-4 lg:h-5 lg:w-5 transition-all duration-200"
                     />
                   </th>
-                  <th id="trips-col-date" className="p-2 lg:p-3 font-semibold text-on-surface-secondary uppercase tracking-wider w-24 lg:w-32">
+                  <th
+                    id="trips-col-date"
+                    className="p-2 lg:p-3 font-semibold text-on-surface-secondary uppercase tracking-wider w-20 lg:w-24"
+                  >
                     <div onClick={handleSortByDate} className="uppercase flex items-center gap-1 hover:text-white transition-colors duration-200 cursor-pointer select-none">
                       <span>{t('trips_col_date')}</span>
                       <div className="flex flex-col -space-y-2 flex-shrink-0">
@@ -740,14 +753,56 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
                       </div>
                     </div>
                   </th>
-                  <th id="trips-col-route" className="p-2 lg:p-3 font-semibold text-on-surface-dark-secondary uppercase tracking-wider w-auto min-w-[200px]">{t('trips_col_route')}</th>
-                  <th id="trips-col-project" className="p-2 lg:p-3 font-semibold text-on-surface-dark-secondary uppercase tracking-wider w-24 lg:w-32 hidden sm:table-cell">{t('trips_col_project')}</th>
-                  <th id="trips-col-passengers" className="p-2 lg:p-3 font-semibold text-on-surface-dark-secondary uppercase tracking-wider text-center w-12 lg:w-16 hidden md:table-cell" title={t('trips_col_passengers')}>{t('trips_col_passengers_short')}</th>
-                  <th id="trips-col-invoices" className="p-2 lg:p-3 font-semibold text-on-surface-dark-secondary uppercase tracking-wider text-center w-12 lg:w-16 hidden lg:table-cell" title={t('trips_col_invoices')}>{t('trips_col_invoices_short')}</th>
-                  <th id="trips-col-distance" className="p-2 lg:p-3 font-semibold text-on-surface-dark-secondary uppercase tracking-wider w-20 lg:w-28 whitespace-nowrap">{t('trips_col_distance')}</th>
-                  <th id="trips-col-emissions" className="p-2 lg:p-3 font-semibold text-on-surface-dark-secondary uppercase tracking-wider w-20 lg:w-24 hidden xl:table-cell whitespace-nowrap">{t('trips_col_emissions')}</th>
-                  <th id="trips-col-earnings" className="p-2 lg:p-3 font-semibold text-on-surface-dark-secondary uppercase tracking-wider w-24 lg:w-32 whitespace-nowrap">{t('trips_col_earnings')}</th>
-                  <th id="trips-col-actions" className="p-2 lg:p-3 font-semibold text-on-surface-dark-secondary uppercase tracking-wider text-right w-24 lg:w-32">{t('trips_col_actions')}</th>
+                  <th
+                    id="trips-col-route"
+                    className="p-2 lg:p-3 font-semibold text-on-surface-dark-secondary uppercase tracking-wider w-auto min-w-[160px] lg:min-w-[200px]"
+                  >
+                    {t('trips_col_route')}
+                  </th>
+                  <th
+                    id="trips-col-project"
+                    className="p-2 lg:p-3 font-semibold text-on-surface-dark-secondary uppercase tracking-wider w-20 lg:w-24 hidden sm:table-cell"
+                  >
+                    {t('trips_col_project')}
+                  </th>
+                  <th
+                    id="trips-col-passengers"
+                    className="p-2 lg:p-3 font-semibold text-on-surface-dark-secondary uppercase tracking-wider text-center w-12 lg:w-16 hidden md:table-cell"
+                    title={t('trips_col_passengers')}
+                  >
+                    {t('trips_col_passengers_short')}
+                  </th>
+                  <th
+                    id="trips-col-invoices"
+                    className="p-2 lg:p-3 font-semibold text-on-surface-dark-secondary uppercase tracking-wider text-center w-12 lg:w-16 hidden lg:table-cell"
+                    title={t('trips_col_invoices')}
+                  >
+                    {t('trips_col_invoices_short')}
+                  </th>
+                  <th
+                    id="trips-col-distance"
+                    className="p-2 lg:p-3 font-semibold text-on-surface-dark-secondary uppercase tracking-wider w-16 lg:w-20"
+                  >
+                    {t('trips_col_distance')}
+                  </th>
+                  <th
+                    id="trips-col-emissions"
+                    className="p-2 lg:p-3 font-semibold text-on-surface-dark-secondary uppercase tracking-wider w-16 lg:w-20 hidden xl:table-cell"
+                  >
+                    {t('trips_col_emissions')}
+                  </th>
+                  <th
+                    id="trips-col-earnings"
+                    className="p-2 lg:p-3 font-semibold text-on-surface-dark-secondary uppercase tracking-wider w-20 lg:w-24"
+                  >
+                    {t('trips_col_earnings')}
+                  </th>
+                  <th
+                    id="trips-col-actions"
+                    className="p-2 lg:p-3 font-semibold text-on-surface-dark-secondary uppercase tracking-wider text-right w-20 lg:w-24"
+                  >
+                    {t('trips_col_actions')}
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-700/50">

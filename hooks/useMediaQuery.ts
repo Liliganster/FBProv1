@@ -70,7 +70,7 @@ export const useMediaQuery = (query: string): boolean => {
  * @returns boolean - true si es un dispositivo móvil (pantalla <= 768px)
  */
 export const useMobile = (): boolean => {
-  return useMediaQuery('(max-width: 640px)');
+  return useMediaQuery('(max-width: 1280px)');
 };
 
 export default useMediaQuery;
