@@ -337,7 +337,9 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
               <h1 className="text-2xl md:text-3xl font-bold text-white">{t('trips_title')}</h1>
               {userProfile && <h2 className="text-base md:text-lg font-semibold text-brand-primary">{userProfile.name}</h2>}
             </div>
-            <div className="flex flex-col md:flex-row md:flex-wrap items-stretch md:items-center gap-2 md:gap-4 w-full lg:w-auto">
+            {/* Filtros y botones: en pantallas pequeñas se apilan en columna para evitar solapamientos.
+                Solo en escritorio ancho se alinean en fila. */}
+            <div className="flex flex-col xl:flex-row xl:flex-wrap items-stretch xl:items-center gap-2 md:gap-4 w-full xl:w-auto">
               <div id="trips-filter" className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
                 <label htmlFor="project-filter" className="sr-only">{t('trips_filter_by_project')}</label>
                 <select
@@ -364,24 +366,26 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
                   ))}
                 </select>
               </div>
-              <Button
-                id="trips-bulk-upload-btn"
-                variant="success"
-                onClick={() => setIsBulkModalOpen(true)}
-                className="h-[38px] w-full sm:w-auto border border-white/10"
-              >
-                <UploadCloudIcon className="w-5 h-5 mr-2" />
-                {t('trips_bulkUpload')}
-              </Button>
-              <Button
-                id="trips-add-btn"
-                variant="primary"
-                onClick={handleAddTrip}
-                className="h-[38px] w-full sm:w-auto"
-              >
-                <PlusIcon className="w-5 h-5 mr-2" />
-                {t('trips_addTrip')}
-              </Button>
+              <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
+                <Button
+                  id="trips-bulk-upload-btn"
+                  variant="success"
+                  onClick={() => setIsBulkModalOpen(true)}
+                  className="h-[38px] w-full sm:w-auto border border-white/10"
+                >
+                  <UploadCloudIcon className="w-5 h-5 mr-2" />
+                  {t('trips_bulkUpload')}
+                </Button>
+                <Button
+                  id="trips-add-btn"
+                  variant="primary"
+                  onClick={handleAddTrip}
+                  className="h-[38px] w-full sm:w-auto"
+                >
+                  <PlusIcon className="w-5 h-5 mr-2" />
+                  {t('trips_addTrip')}
+                </Button>
+              </div>
             </div>
           </>
         )}
@@ -771,23 +775,23 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
                   </th>
                   <th
                     id="trips-col-project"
-                    className="p-2 lg:p-3 font-semibold text-on-surface-dark-secondary uppercase tracking-wider w-20 lg:w-24 hidden sm:table-cell"
+                    className="p-2 lg:p-3 font-semibold text-on-surface-dark-secondary uppercase tracking-wider w-20 lg:w-24 hidden sm:table-cell whitespace-normal break-words"
                   >
                     {t('trips_col_project')}
                   </th>
                   <th
                     id="trips-col-passengers"
-                    className="p-2 lg:p-3 font-semibold text-on-surface-dark-secondary uppercase tracking-wider text-center w-12 lg:w-16 hidden md:table-cell"
+                    className="p-2 lg:p-3 font-semibold text-on-surface-dark-secondary uppercase tracking-wider text-center w-12 lg:w-16 hidden md:table-cell whitespace-normal break-words"
                     title={t('trips_col_passengers')}
                   >
-                    {t('trips_col_passengers_short')}
+                    {t('trips_col_passengers')}
                   </th>
                   <th
                     id="trips-col-invoices"
-                    className="p-2 lg:p-3 font-semibold text-on-surface-dark-secondary uppercase tracking-wider text-center w-12 lg:w-16 hidden lg:table-cell"
+                    className="p-2 lg:p-3 font-semibold text-on-surface-dark-secondary uppercase tracking-wider text-center w-12 lg:w-16 hidden lg:table-cell whitespace-normal break-words"
                     title={t('trips_col_invoices')}
                   >
-                    {t('trips_col_invoices_short')}
+                    {t('trips_col_invoices')}
                   </th>
                   <th
                     id="trips-col-distance"
@@ -860,7 +864,7 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
                           {formatDateForDisplay(trip.date)}
                         </div>
                       </td>
-                      <td className="p-2 cursor-pointer truncate" onClick={() => handleViewTrip(trip)}>
+                      <td className="p-2 cursor-pointer truncate max-w-[260px] xl:max-w-[360px]" onClick={() => handleViewTrip(trip)}>
                         <div className="flex items-center gap-1 overflow-hidden">
                           <span className="truncate w-full" title={trip.locations.join(' -> ')}>{trip.locations.join(' -> ')}</span>
                           <SpecialOriginTag originType={trip.specialOrigin} />
