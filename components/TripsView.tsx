@@ -311,7 +311,7 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
   return (
     <div className="text-on-surface-dark">
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 md:mb-8 gap-4">
-        {selectedTripIds.length > 0 ? (
+        {false ? (
           <div className="flex items-center gap-4 w-full">
             <h2 className="text-xl font-semibold text-white">{t('trips_selected_count', { count: selectedTripIds.length })}</h2>
             <div className="ml-auto flex items-center gap-2">
@@ -396,7 +396,7 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
         <div className="space-y-4">
           {filteredTrips.length > 0 ? (
             <>
-              {selectedTripIds.length > 0 && (
+              {false && selectedTripIds.length > 0 && (
                 <div style={contentStyle} className="bg-frost-glass border-glass rounded-fluid p-4 mb-4 backdrop-blur-glass">
                   <div className="flex items-center justify-between">
                     <span className="text-white font-medium">{t('trips_selected_count', { count: selectedTripIds.length })}</span>
@@ -958,6 +958,37 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
                 </div>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {selectedTripIds.length > 0 && (
+        <div className="fixed inset-x-0 bottom-4 z-40 flex justify-center pointer-events-none">
+          <div
+            className="pointer-events-auto bg-frost-glass border-glass rounded-full px-4 py-2 md:px-6 md:py-2.5 shadow-glass flex items-center gap-3 text-sm"
+            style={contentStyle}
+          >
+            <span className="font-medium text-white">
+              {t('trips_selected_count', { count: selectedTripIds.length })}
+            </span>
+            <div className="flex items-center gap-2 ml-2">
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => setIsBatchEditModalOpen(true)}
+              >
+                <EditIcon className="w-4 h-4 mr-1" />
+                {t('trips_edit_selected_btn')}
+              </Button>
+              <Button
+                variant="danger"
+                size="sm"
+                onClick={handleDeleteSelected}
+              >
+                <TrashIcon className="w-4 h-4 mr-1" />
+                {t('trips_delete_selected_btn')}
+              </Button>
+            </div>
           </div>
         </div>
       )}
