@@ -62,7 +62,7 @@ module.exports = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        
+
         // Brand Colors - Professional Blue
         'brand-primary': '#007aff',
         'brand-primary-dark': '#0056cc',
@@ -108,14 +108,14 @@ module.exports = {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
-        'micro': '2px',     // Micro elementos: badges, dots
-        'subtle': '4px',    // Elementos pequeños: inputs, small buttons
-        'soft': '6px',      // Botones medianos, tags
-        'smooth': '8px',    // Botones principales, cards pequeños
-        'gentle': '12px',   // Cards medianos, panels
-        'fluid': '16px',    // Cards grandes, containers
-        'organic': '20px',  // Modales, hero sections
-        'natural': '24px',  // Special containers, features
+        'micro': '2px',
+        'subtle': '4px',
+        'soft': '6px',
+        'smooth': '8px',
+        'gentle': '12px',
+        'fluid': '16px',
+        'organic': '20px',
+        'natural': '24px',
       },
       boxShadow: {
         'glass': '0 8px 32px rgba(0, 0, 0, 0.3), 0 2px 8px rgba(0, 0, 0, 0.2)',
