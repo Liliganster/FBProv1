@@ -279,18 +279,19 @@ export const GoogleCalendarProvider: React.FC<{ children: ReactNode }> = ({ chil
   }, [userProfile, showToast, t, calendarProxyReady]);
 
   useEffect(() => {
-    // This effect should run only once when the client is ready to perform the initial check.
+    // Before: this effect tried to restore the previous Google session
+    // automatically by calling requestAccessToken({ prompt: 'none' }).
+    // Now: we only log the previous state and wait for an explicit user action
+    // (click on "Connect Google Calendar" or similar) before requesting access.
     if (isInitialized && tokenClient && !initialAuthCheckPerformed.current && GOOGLE_AUTH_STATE_KEY) {
       initialAuthCheckPerformed.current = true;
-      
+
       const previousAuthState = localStorage.getItem(GOOGLE_AUTH_STATE_KEY);
 
-      // Don't attempt silent sign-in if the user manually signed out in the current session.
       if (!manualSignOut.current && previousAuthState === 'signed_in') {
-        console.log("[Google Auth] Attempting to restore previous session.");
-        tokenClient.requestAccessToken({ prompt: 'none' });
+        console.log('[Google Auth] Previous Google session detected. Waiting for explicit user action to reconnect (no automatic sign-in).');
       } else {
-        console.log("[Google Auth] Skipping silent sign-in (user was not previously authenticated or signed out).");
+        console.log('[Google Auth] No previous Google session or user signed out. Google Calendar will connect only on user request.');
       }
     }
   }, [isInitialized, tokenClient, GOOGLE_AUTH_STATE_KEY]);

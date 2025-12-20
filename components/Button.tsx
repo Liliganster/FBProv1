@@ -43,10 +43,10 @@ export const Button: React.FC<ButtonProps> = ({
       focus:ring-gray-500
     `,
     success: `
-      bg-brand-secondary text-white 
+      bg-gradient-to-r from-brand-secondary to-success-dark text-white
       border border-white/10 
       shadow-[0_2px_10px_rgba(52,199,89,0.3),inset_0_1px_0_rgba(255,255,255,0.2)]
-      hover:bg-green-500 hover:shadow-[0_4px_16px_rgba(52,199,89,0.4),inset_0_1px_0_rgba(255,255,255,0.3)]
+      hover:shadow-[0_4px_16px_rgba(52,199,89,0.4),inset_0_1px_0_rgba(255,255,255,0.3)]
       hover:-translate-y-[1px] active:translate-y-[0px] active:scale-[0.98]
       focus:ring-green-500
     `,
