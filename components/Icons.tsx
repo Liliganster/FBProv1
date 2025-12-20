@@ -286,7 +286,22 @@ export const KeyRoundIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => 
 );
 
 export const DriveIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
-  <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M6 2h12l4 4v12l-4 4H6l-4-4V6l4-4zm2.1 4L5.6 11h4.25l-1.6-4h-2.2zm4.3 0l1.6 4h4.25l-2.5-4h-3.35zM17.4 13H13.5l1.6 4h2.3zm-10.8 0l-1.6 4h2.3l1.6-4H6.6zM12 12.25l-2.1 4h4.2z"></path></svg>
+  <svg
+    {...props}
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.6"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    {/* Simple stylized triangle similar to Google Drive */}
+    <path d="M9 3h6l4 7-3 5H8L4 10l5-7z" fill="none" />
+    <path d="M9 3 4 10l4 8" />
+    <path d="M15 3 20 10l-4 8" />
+    <path d="M8 18h8" />
+  </svg>
 );
 
 export const TreePineIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (

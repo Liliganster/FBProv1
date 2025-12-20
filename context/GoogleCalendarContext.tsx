@@ -29,7 +29,10 @@ interface GoogleApiContextType {
 
 export const GoogleCalendarContext = createContext<GoogleApiContextType | undefined>(undefined);
 
-const SCOPES = 'https://www.googleapis.com/auth/calendar.events https://www.googleapis.com/auth/calendar.readonly';
+// We need Calendar scopes plus Drive read‑only to allow
+// Google Picker + Drive file downloads for bulk import.
+const SCOPES =
+  'https://www.googleapis.com/auth/calendar.events https://www.googleapis.com/auth/calendar.readonly https://www.googleapis.com/auth/drive.readonly';
 const DISCOVERY_DOCS = [
     'https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest',
     'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest',
