@@ -439,7 +439,7 @@ const App: React.FC = () => {
 
   return (
     <div
-      className="relative flex flex-col lg:flex-row min-h-screen w-full overflow-x-hidden overflow-y-auto font-sans bg-gradient-dark"
+      className="relative flex flex-col lg:flex-row h-screen w-full overflow-x-hidden overflow-y-hidden font-sans bg-gradient-dark"
       style={{
         background: personalization.backgroundImage
           ? (personalization.backgroundBlur > 0
@@ -468,7 +468,7 @@ const App: React.FC = () => {
       )}
 
       {/* Mobile/Tablet Header with Hamburger Menu */}
-      <div className="sticky top-0 z-30 lg:hidden bg-gradient-to-br from-white/5 via-blue-400/8 to-blue-500/5 backdrop-blur-xl backdrop-saturate-150 border-b border-white/10 shadow-glass">
+      <div className="fixed top-0 left-0 right-0 z-30 lg:hidden bg-gradient-to-br from-white/5 via-blue-400/8 to-blue-500/5 backdrop-blur-xl backdrop-saturate-150 border-b border-white/10 shadow-glass">
         <div className="flex items-center justify-between px-4 py-3 md:px-6 md:py-4">
           <h1 className="text-lg md:text-xl font-bold text-white">FahrtenBuch Pro</h1>
           <Button
@@ -510,7 +510,7 @@ const App: React.FC = () => {
           {renderSidebarContent()}
         </nav>
       )}
-      <main className="relative z-10 flex-1 overflow-y-auto overflow-x-hidden bg-transparent w-full h-full pt-2 lg:pt-6 px-4 md:px-6 lg:px-8 pb-6">
+      <main className="relative z-10 flex-1 overflow-y-auto overflow-x-hidden bg-transparent w-full h-full pt-16 lg:pt-6 px-4 md:px-6 lg:px-8 pb-6">
         <div className="w-full max-w-7xl mx-auto h-full">
           <Suspense fallback={<div className="text-sm text-on-surface-dark-secondary">Loading…</div>}>
             {renderView()}
