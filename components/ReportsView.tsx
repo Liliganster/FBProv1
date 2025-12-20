@@ -79,35 +79,21 @@ const ReportsView: React.FC<ReportsViewProps> = ({ personalization, theme }) => 
   
   return (
     <div className="text-on-surface-dark" id="reports-view">
+      {/* Cabecera fija: el título y el botón nunca desaparecen */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 md:mb-8 gap-4" id="reports-header">
-        {selectedReportIds.length > 0 ? (
-          <div className="flex items-center gap-4 w-full">
-            <h2 className="text-base font-semibold text-white">{t('reports_selected_count', { count: selectedReportIds.length })}</h2>
-            <button
-              onClick={handleDeleteSelected}
-              className="flex items-center bg-red-600 hover:bg-red-500 text-white font-bold py-2 px-4 rounded-lg transition-colors ml-auto text-sm"
-            >
-              <TrashIcon className="w-5 h-5 mr-2" />
-              {t('reports_delete_selected_btn')}
-            </button>
-          </div>
-        ) : (
-          <>
-            <div>
-                <h1 id="reports-title" className="text-xl md:text-[28px] font-bold text-white">{t('reports_title')}</h1>
-                {userProfile && <h2 className="text-sm md:text-base font-semibold text-brand-primary">{userProfile.name}</h2>}
-            </div>
-            <Button 
-              id="reports-generate-btn"
-              variant="primary"
-              onClick={() => setIsGeneratorOpen(true)} 
-              className="h-[38px]"
-            >
-              <PlusIcon className="w-5 h-5 mr-2" />
-              {t('reports_generateNew')}
-            </Button>
-          </>
-        )}
+        <div>
+          <h1 id="reports-title" className="text-xl md:text-[28px] font-bold text-white">{t('reports_title')}</h1>
+          {userProfile && <h2 className="text-sm md:text-base font-semibold text-brand-primary">{userProfile.name}</h2>}
+        </div>
+        <Button 
+          id="reports-generate-btn"
+          variant="primary"
+          onClick={() => setIsGeneratorOpen(true)} 
+          className="h-[38px]"
+        >
+          <PlusIcon className="w-5 h-5 mr-2" />
+          {t('reports_generateNew')}
+        </Button>
       </div>
 
 {isMobile ? (
@@ -115,20 +101,7 @@ const ReportsView: React.FC<ReportsViewProps> = ({ personalization, theme }) => 
         <div className="space-y-4">
           {reports.length > 0 ? (
             <>
-              {selectedReportIds.length > 0 && (
-                <div className="bg-frost-glass border-glass rounded-fluid p-4 mb-4 backdrop-blur-glass">
-                  <div className="flex items-center justify-between">
-                    <span className="text-white font-medium">{t('reports_selected_count', { count: selectedReportIds.length })}</span>
-                    <button
-                      onClick={handleDeleteSelected}
-                      className="flex items-center bg-gradient-to-r from-red-600 to-red-700 hover:shadow-md hover:shadow-red-500/30 hover:scale-[1.02] text-white font-bold py-2 px-4 rounded-smooth transition-all duration-200 text-sm"
-                    >
-                      <TrashIcon className="w-4 h-4 mr-1" />
-                      {t('reports_deleteSelected')}
-                    </button>
-                  </div>
-                </div>
-              )}
+              {/* Banner inline desactivado: usamos barra flotante para selección masiva */}
               {reports.map(report => {
                 const isSelected = selectedReportIds.includes(report.id);
                 return (
@@ -257,7 +230,30 @@ const ReportsView: React.FC<ReportsViewProps> = ({ personalization, theme }) => 
           </div>
         </div>
       )}
-      
+
+      {selectedReportIds.length > 0 && (
+        <div className="fixed inset-x-0 bottom-4 z-40 flex justify-center pointer-events-none">
+          <div
+            className="pointer-events-auto bg-frost-glass border-glass rounded-full px-4 py-2 md:px-6 md:py-2.5 shadow-glass flex items-center gap-3 text-sm"
+            style={contentStyle}
+          >
+            <span className="font-medium text-white">
+              {t('reports_selected_count', { count: selectedReportIds.length })}
+            </span>
+            <div className="flex items-center gap-2 ml-2">
+              <Button
+                variant="danger"
+                size="sm"
+                onClick={handleDeleteSelected}
+              >
+                <TrashIcon className="w-4 h-4 mr-1" />
+                {t('reports_delete_selected_btn')}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {isGeneratorOpen && (
         <GenerateReportModal
           trips={trips}

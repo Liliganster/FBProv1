@@ -237,57 +237,42 @@ const ProjectsView: React.FC<ProjectsViewProps> = ({ setCurrentView, personaliza
 
   return (
     <div className="text-on-surface-dark" id="projects-view">
+      {/* Cabecera fija: el título y los filtros nunca desaparecen */}
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 md:mb-8 gap-4" id="projects-header">
-        {selectedProjectIds.length > 0 ? (
-          <div className="flex items-center gap-4 w-full">
-            <h2 className="text-xl font-semibold text-white">{t('projects_selected_count', { count: selectedProjectIds.length })}</h2>
-            <Button
-              variant="danger"
-              onClick={handleDeleteSelected}
-              className="ml-auto"
-            >
-              <TrashIcon className="w-5 h-5 mr-2" />
-              {t('projects_delete_selected_btn')}
-            </Button>
+        <div id="projects-title">
+          <h1 className="text-2xl md:text-3xl font-bold text-white">{t('projects_title')}</h1>
+          {userProfile && <h2 className="text-base md:text-lg font-semibold text-brand-primary">{userProfile.name}</h2>}
+        </div>
+        <div className="flex flex-wrap items-center gap-2 md:gap-4 w-full lg:w-auto">
+          <select
+            value={yearFilter}
+            onChange={(e) => setYearFilter(e.target.value)}
+            className="bg-surface-dark border border-gray-600 rounded-smooth py-2 px-4 focus:ring-2 focus:ring-brand-primary focus:outline-none text-on-surface-dark text-sm font-medium h-[38px] flex-1 md:flex-none"
+          >
+            <option value="all">{t('common_all_years')}</option>
+            {availableYears.map(year => (
+              <option key={year} value={year}>{year}</option>
+            ))}
+          </select>
+          <div className="relative flex-1 md:flex-none" id="projects-search">
+            <input
+              type="text"
+              placeholder={t('projects_search_placeholder')}
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              className="bg-surface-dark border border-gray-600 rounded-smooth py-2 pl-10 pr-4 focus:ring-2 focus:ring-brand-primary focus:outline-none text-on-surface-dark text-sm font-medium h-[38px] w-full"
+            />
+            <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-on-surface-dark-secondary" />
           </div>
-        ) : (
-          <>
-            <div id="projects-title">
-              <h1 className="text-2xl md:text-3xl font-bold text-white">{t('projects_title')}</h1>
-              {userProfile && <h2 className="text-base md:text-lg font-semibold text-brand-primary">{userProfile.name}</h2>}
-            </div>
-            <div className="flex flex-wrap items-center gap-2 md:gap-4 w-full lg:w-auto">
-              <select
-                value={yearFilter}
-                onChange={(e) => setYearFilter(e.target.value)}
-                className="bg-surface-dark border border-gray-600 rounded-smooth py-2 px-4 focus:ring-2 focus:ring-brand-primary focus:outline-none text-on-surface-dark text-sm font-medium h-[38px] flex-1 md:flex-none"
-              >
-                <option value="all">{t('common_all_years')}</option>
-                {availableYears.map(year => (
-                  <option key={year} value={year}>{year}</option>
-                ))}
-              </select>
-              <div className="relative flex-1 md:flex-none" id="projects-search">
-                <input
-                  type="text"
-                  placeholder={t('projects_search_placeholder')}
-                  value={searchQuery}
-                  onChange={e => setSearchQuery(e.target.value)}
-                  className="bg-surface-dark border border-gray-600 rounded-smooth py-2 pl-10 pr-4 focus:ring-2 focus:ring-brand-primary focus:outline-none text-on-surface-dark text-sm font-medium h-[38px] w-full"
-                />
-                <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-on-surface-dark-secondary" />
-              </div>
-              <Button
-                id="projects-add-btn"
-                variant="primary"
-                onClick={handleAddNew}
-              >
-                <PlusIcon className="w-5 h-5 mr-2" />
-                {t('projects_addNew')}
-              </Button>
-            </div>
-          </>
-        )}
+          <Button
+            id="projects-add-btn"
+            variant="primary"
+            onClick={handleAddNew}
+          >
+            <PlusIcon className="w-5 h-5 mr-2" />
+            {t('projects_addNew')}
+          </Button>
+        </div>
       </div>
 
       {isMobile ? (
@@ -295,21 +280,7 @@ const ProjectsView: React.FC<ProjectsViewProps> = ({ setCurrentView, personaliza
         <div className="space-y-4">
           {filteredProjects.length > 0 ? (
             <>
-              {selectedProjectIds.length > 0 && (
-                <div className="bg-frost-glass border-glass rounded-fluid p-4 mb-4 backdrop-blur-glass">
-                  <div className="flex items-center justify-between">
-                    <span className="text-white font-medium">{t('projects_selected_count', { count: selectedProjectIds.length })}</span>
-                    <Button
-                      variant="danger"
-                      size="sm"
-                      onClick={handleDeleteSelected}
-                    >
-                      <TrashIcon className="w-4 h-4 mr-1" />
-                      {t('projects_deleteSelected')}
-                    </Button>
-                  </div>
-                </div>
-              )}
+              {/* Banner in-line desactivado: usamos barra flotante para selección masiva */}
               {filteredProjects.map(project => {
                 const isSelected = selectedProjectIds.includes(project.id);
                 const invoiceCount = project.expenseCount || 0;
@@ -532,6 +503,29 @@ const ProjectsView: React.FC<ProjectsViewProps> = ({ setCurrentView, personaliza
               )}
             </tbody>
             </table>
+          </div>
+        </div>
+      )}
+
+      {selectedProjectIds.length > 0 && (
+        <div className="fixed inset-x-0 bottom-4 z-40 flex justify-center pointer-events-none">
+          <div
+            className="pointer-events-auto bg-frost-glass border-glass rounded-full px-4 py-2 md:px-6 md:py-2.5 shadow-glass flex items-center gap-3 text-sm"
+            style={contentStyle}
+          >
+            <span className="font-medium text-white">
+              {t('projects_selected_count', { count: selectedProjectIds.length })}
+            </span>
+            <div className="flex items-center gap-2 ml-2">
+              <Button
+                variant="danger"
+                size="sm"
+                onClick={handleDeleteSelected}
+              >
+                <TrashIcon className="w-4 h-4 mr-1" />
+                {t('projects_delete_selected_btn')}
+              </Button>
+            </div>
           </div>
         </div>
       )}
