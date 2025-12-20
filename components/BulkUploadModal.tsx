@@ -108,8 +108,6 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
   const [isDriveProcessing, setIsDriveProcessing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const isBusy = isAiProcessing || isDriveProcessing || isSaving;
-
-  const [aiExtractMode, setAiExtractMode] = useState<'direct' | 'agent' | 'vision'>('vision');
   const [documentType, setDocumentType] = useState<DocumentType>(DocumentType.CALLSHEET);
 
   const { t } = useTranslation();
@@ -144,6 +142,23 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
     setAiFiles(prev => [...prev, ...files].slice(0, 50));
   };
 
+  const pickAutoExtractMode = (file?: File, text?: string): 'direct' | 'agent' | 'vision' => {
+    if (file) {
+      const name = file.name.toLowerCase();
+      if (name.endsWith('.png') || name.endsWith('.jpg') || name.endsWith('.jpeg') || name.endsWith('.webp') || name.endsWith('.heic') || name.endsWith('.tif') || name.endsWith('.tiff')) {
+        // Pure image files benefit most from Vision (OCR + image understanding)
+        return 'vision';
+      }
+      // PDFs, CSV, TXT and other document types start with the fast direct path.
+      // If the PDF has no text layer, the fallback logic below will retry with OCR/agent.
+      return 'direct';
+    }
+    if (text && text.trim().length > 0) {
+      return 'direct';
+    }
+    return 'direct';
+  };
+
   const handleProcessAi = async () => {
     if (!userProfile) {
       showToast(t('report_alert_missingData'), 'error');
@@ -156,7 +171,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
       const hasTextOnly = aiFiles.length === 0 && aiText.trim().length > 0;
       const itemsToProcess = hasTextOnly ? 1 : aiFiles.length;
 
-      console.log(`[BulkUpload] Starting AI extraction for ${itemsToProcess} item(s) in ${aiExtractMode} mode`);
+      console.log(`[BulkUpload] Starting AI extraction for ${itemsToProcess} item(s) in automatic mode`);
 
       // VERIFICAR CUOTA ANTES DE PROCESAR
       const currentQuota = await getAiQuota();
@@ -172,21 +187,22 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
       console.log(`[BulkUpload] Quota check passed: ${currentQuota.remaining} days remaining`);
 
       const attemptProcess = async (params: { file?: File; text?: string }, name: string) => {
+        const primaryMode = pickAutoExtractMode(params.file, params.text);
         try {
-          const primary = await processFileForTripUniversal(params, userProfile, documentType, aiExtractMode);
-          console.log(`[BulkUpload] Processed (${aiExtractMode}) ${name}:`, primary);
+          const primary = await processFileForTripUniversal(params, userProfile, documentType, primaryMode);
+          console.log(`[BulkUpload] Processed (${primaryMode}) ${name}:`, primary);
           return { status: 'fulfilled' as const, value: primary };
         } catch (reason: any) {
           const code = reason?.code || (reason instanceof Error ? reason.message : String(reason));
           // Auto-fallback to Agent (OCR) when direct path reports missing text layer or Vision fails
           const needsOcr = String(code).toLowerCase().includes('requires_ocr') || String(code).toLowerCase().includes('no text layer');
 
-          // Enhanced Fallback Logic:
-          // 1. If Direct mode fails due to no text layer -> fallback to Agent
+          // Enhanced Fallback Logic in automatic mode:
+          // 1. If Direct mode fails due to no text layer -> fallback to Agent (OCR)
           // 2. If Vision mode fails (any reason) -> fallback to Agent (as requested: "vuelve a tirar con el OCR")
-          if ((aiExtractMode === 'direct' && needsOcr) || (aiExtractMode === 'vision')) {
+          if ((primaryMode === 'direct' && needsOcr) || (primaryMode === 'vision')) {
             try {
-              console.log(`[BulkUpload] Fallback triggering for ${name}. Original mode: ${aiExtractMode}, specific error: ${code}`);
+              console.log(`[BulkUpload] Fallback triggering for ${name}. Original mode: ${primaryMode}, specific error: ${code}`);
               const secondary = await processFileForTripUniversal(params, userProfile, documentType, 'agent');
               console.log(`[BulkUpload] Fallback to Agent (OCR) succeeded for ${name}:`, secondary);
               return { status: 'fulfilled' as const, value: secondary };
@@ -754,60 +770,9 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
                 </div>
                 <div id="bulk-ai-mode">
                   <label className="block text-xs font-medium uppercase tracking-wide text-on-surface-dark-secondary mb-2">{t('bulk_extraction_mode_label')}</label>
-                  <div className="flex gap-2">
-                    <Button
-                      type="button"
-                      variant={aiExtractMode === 'direct' ? 'primary' : 'secondary'}
-                      aria-pressed={aiExtractMode === 'direct'}
-                      onClick={() => setAiExtractMode('direct')}
-                      className="flex-1 flex items-center justify-between gap-2"
-                      title={t('bulk_extraction_mode_direct_description')}
-                    >
-                      <span className="text-xs font-medium">{t('bulk_extraction_mode_direct')}</span>
-                      {aiExtractMode === 'direct' ? (
-                        <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-white">
-                          <CheckIcon className="w-3 h-3 text-brand-primary" />
-                        </span>
-                      ) : (
-                        <span className="inline-block w-4 h-4 rounded-full border border-gray-400" />
-                      )}
-                    </Button>
-                    <Button
-                      type="button"
-                      variant={aiExtractMode === 'agent' ? 'primary' : 'secondary'}
-                      aria-pressed={aiExtractMode === 'agent'}
-                      onClick={() => setAiExtractMode('agent')}
-                      className="flex-1 flex items-center justify-between gap-2"
-                      title={t('bulk_extraction_mode_agent_description')}
-                    >
-                      <span className="text-xs font-medium">{t('bulk_extraction_mode_agent')}</span>
-                      {aiExtractMode === 'agent' ? (
-                        <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-white">
-                          <CheckIcon className="w-3 h-3 text-brand-primary" />
-                        </span>
-                      ) : (
-                        <span className="inline-block w-4 h-4 rounded-full border border-gray-400" />
-                      )}
-                    </Button>
-                    <Button
-                      type="button"
-                      variant={aiExtractMode === 'vision' ? 'primary' : 'secondary'}
-                      aria-pressed={aiExtractMode === 'vision'}
-                      onClick={() => setAiExtractMode('vision')}
-                      className="flex-1 flex items-center justify-between gap-2"
-                      title="New Multimodal Vision (Best for scanned PDFs)"
-                    >
-                      <span className="text-xs font-medium">Vision (Beta)</span>
-                      {aiExtractMode === 'vision' ? (
-                        <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-white">
-                          <CheckIcon className="w-3 h-3 text-brand-primary" />
-                        </span>
-                      ) : (
-                        <span className="inline-block w-4 h-4 rounded-full border border-gray-400" />
-                      )}
-                    </Button>
-                  </div>
-                  <p className="mt-1 text-[10px] text-on-surface-dark-secondary">{t('bulk_extraction_mode_selected', { mode: aiExtractMode === 'vision' ? 'Vision' : (aiExtractMode === 'direct' ? t('bulk_extraction_mode_direct') : t('bulk_extraction_mode_agent')) })}</p>
+                  <p className="text-[11px] text-on-surface-dark-secondary">
+                    {t('bulk_extraction_mode_auto_hint')}
+                  </p>
                 </div>
                 <div id="bulk-ai-drop" onDragOver={handleDragOver} onDrop={handleDrop} className="border-2 border-dashed border-gray-600 rounded-lg p-8 text-center cursor-pointer hover:border-brand-primary transition-colors" onClick={() => document.getElementById('ai-upload')?.click()}>
                   <UploadCloudIcon className="w-12 h-12 mx-auto text-gray-500 mb-2" />
@@ -868,13 +833,13 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
               {mode === 'ai' && (
                 <Button id="bulk-ai-process" onClick={handleProcessAi} disabled={isBusy || (aiFiles.length === 0 && aiText.trim().length === 0)} variant="primary" className="flex items-center justify-center w-auto min-w-60">
                   {isAiProcessing ? (
-                    <><LoaderIcon className="w-5 h-5 mr-2 animate-spin" /> {t('bulk_ai_processing', { mode: aiExtractMode === 'vision' ? 'Vision' : (aiExtractMode === 'direct' ? t('bulk_extraction_mode_direct') : t('bulk_extraction_mode_agent')) })}</>
+                    <><LoaderIcon className="w-5 h-5 mr-2 animate-spin" /> {t('bulk_ai_processing_auto')}</>
                   ) : mapsLoading ? (
                     <><LoaderIcon className="w-5 h-5 mr-2 animate-spin" /> {t('bulk_ai_loading_maps')}</>
                   ) : aiFiles.length > 0 ? (
-                    <><SparklesIcon className="w-5 h-5 mr-2" /> {t('bulk_ai_process_files', { count: aiFiles.length, plural: aiFiles.length > 1 ? 's' : '', mode: aiExtractMode === 'vision' ? 'Vision' : (aiExtractMode === 'direct' ? t('bulk_extraction_mode_direct') : t('bulk_extraction_mode_agent')) })}</>
+                    <><SparklesIcon className="w-5 h-5 mr-2" /> {t('bulk_ai_process_files_auto', { count: aiFiles.length, plural: aiFiles.length > 1 ? 's' : '' })}</>
                   ) : (
-                    <><SparklesIcon className="w-5 h-5 mr-2" /> {t('bulk_ai_process_text', { mode: aiExtractMode === 'vision' ? 'Vision' : (aiExtractMode === 'direct' ? t('bulk_extraction_mode_direct') : t('bulk_extraction_mode_agent')) })}</>
+                    <><SparklesIcon className="w-5 h-5 mr-2" /> {t('bulk_ai_process_text_auto')}</>
                   )}
                 </Button>
               )}
