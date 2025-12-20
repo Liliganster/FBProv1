@@ -1,20 +1,21 @@
 import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
+import { Button } from '@/components/ui/button';
 import { AppErrorBoundary } from './components/GranularErrorBoundary';
 import {
-  LuLayoutDashboard as LayoutDashboard,
-  LuCar as Car,
-  LuFolderOpen as FolderOpen,
-  LuFileText as FileText,
-  LuStar as Star,
-  LuMenu as Menu,
-  LuX as X,
-  LuCalendarDays as CalendarDays,
-  LuRoute as Route,
-  LuRocket as Rocket,
-  LuSettings as Settings,
-  LuLogOut as LogOut,
-  LuRefreshCw as RefreshIcon,
-} from 'react-icons/lu';
+  LayoutDashboard,
+  Car,
+  FolderOpen,
+  FileText,
+  Star,
+  Menu,
+  X,
+  CalendarDays,
+  Route,
+  Rocket,
+  Settings,
+  LogOut,
+  RefreshCw as RefreshIcon,
+} from 'lucide-react';
 const Dashboard = lazy(() => import('./components/Dashboard'));
 const TripsView = lazy(() => import('./components/TripsView'));
 const ProjectsView = lazy(() => import('./components/ProjectsView'));
@@ -358,20 +359,23 @@ const App: React.FC = () => {
             FahrtenBuch Pro
           </h1>
         )}
-        <button
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={() => {
             setSidebarCollapsed(!sidebarCollapsed);
             setMobileMenuOpen(false);
           }}
-          className="p-2 rounded-smooth transition-all duration-300 transform hover:scale-105 hover:bg-gradient-surface hover:shadow-brand/20 hover:shadow-md"
+          className="rounded-smooth hover:bg-gradient-surface"
+          aria-label={sidebarCollapsed ? 'Expandir sidebar' : 'Colapsar sidebar'}
         >
-          {sidebarCollapsed ? <Menu size={20} /> : <X size={20} />}
-        </button>
+          {sidebarCollapsed ? <Menu size={18} /> : <X size={18} />}
+        </Button>
       </div>
 
       <div className="flex-1 p-4 space-y-2 overflow-y-auto">
         {navItems.map((item) => (
-          <button
+          <Button
             key={item.view}
             id={item.id}
             onClick={() => {
@@ -379,45 +383,39 @@ const App: React.FC = () => {
               setMobileMenuOpen(false);
             }}
             title={sidebarCollapsed ? item.label : undefined}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-smooth transition-all duration-300 transform ${sidebarCollapsed ? 'justify-center' : ''} ${currentView === item.view
-              ? `${activeNavTextClass} scale-[1.02] shadow-lg`
-              : inactiveNavClasses
-              }`}
-            style={currentView === item.view ? { backgroundColor: activeNavBackground } : undefined}
+            variant={currentView === item.view ? 'secondary' : 'ghost'}
+            className={`w-full ${sidebarCollapsed ? 'justify-center' : 'justify-start'} gap-3 px-4 py-3 rounded-smooth ${currentView === item.view ? 'text-white scale-105' : 'text-on-surface-secondary hover:text-on-surface-dark'}`}
           >
             {item.icon}
             {!sidebarCollapsed && <span className="font-medium">{item.label}</span>}
-          </button>
+          </Button>
         ))}
       </div>
 
       <div className="p-4 space-y-2 border-t border-glass">
 
-        <button
+        <Button
           onClick={() => {
             setCurrentView('settings');
             setMobileMenuOpen(false);
           }}
           title={sidebarCollapsed ? t('nav_settings') : undefined}
-          className={`w-full flex items-center gap-3 px-4 py-3 rounded-smooth transition-all duration-300 transform ${sidebarCollapsed ? 'justify-center' : ''} ${currentView === 'settings'
-            ? `${activeNavTextClass} scale-[1.02] shadow-lg`
-            : inactiveNavClasses
-            }`}
-          style={currentView === 'settings' ? { backgroundColor: activeNavBackground } : undefined}
+          variant={currentView === 'settings' ? 'secondary' : 'ghost'}
+          className={`w-full ${sidebarCollapsed ? 'justify-center' : 'justify-start'} gap-3 px-4 py-3 rounded-smooth ${currentView === 'settings' ? 'text-white scale-105' : 'text-on-surface-secondary hover:text-on-surface-dark'}`}
         >
-          <Settings size={20} />
+          <Settings size={18} />
           {!sidebarCollapsed && <span className="font-medium">{t('nav_settings')}</span>}
-        </button>
+        </Button>
 
-        <button
+        <Button
           onClick={logout}
           title={sidebarCollapsed ? t('logout_btn') : undefined}
-          className={`w-full flex items-center gap-3 px-4 py-3 rounded-smooth transition-all duration-300 transform hover:scale-[1.02] ${sidebarCollapsed ? 'justify-center' : ''}
-            hover:bg-gradient-to-r hover:from-red-600/80 hover:to-red-700/80 text-on-surface-secondary hover:text-white hover:shadow-md hover:shadow-red-500/30`}
+          variant="destructive"
+          className={`w-full ${sidebarCollapsed ? 'justify-center' : 'justify-start'} gap-3 px-4 py-3 rounded-smooth`}
         >
-          <LogOut size={20} />
+          <LogOut size={18} />
           {!sidebarCollapsed && <span className="font-medium">{t('logout_btn')}</span>}
-        </button>
+        </Button>
 
         <div
           className={`w-full flex items-center gap-3 px-4 pt-4 mt-2 ${sidebarCollapsed ? 'justify-center' : ''}`}
@@ -440,7 +438,7 @@ const App: React.FC = () => {
 
   return (
     <div
-      className="relative flex flex-col lg:flex-row h-screen w-full overflow-x-hidden overflow-y-hidden font-sans bg-gradient-dark"
+      className="relative flex flex-col lg:flex-row min-h-screen w-full overflow-x-hidden overflow-y-auto font-sans bg-gradient-dark"
       style={{
         background: personalization.backgroundImage
           ? (personalization.backgroundBlur > 0
@@ -469,15 +467,18 @@ const App: React.FC = () => {
       )}
 
       {/* Mobile/Tablet Header with Hamburger Menu */}
-      <div className="fixed top-0 left-0 right-0 z-30 lg:hidden bg-gradient-to-br from-white/5 via-blue-400/8 to-blue-500/5 backdrop-blur-xl backdrop-saturate-150 border-b border-white/10 shadow-glass">
+      <div className="sticky top-0 z-30 lg:hidden bg-gradient-to-br from-white/5 via-blue-400/8 to-blue-500/5 backdrop-blur-xl backdrop-saturate-150 border-b border-white/10 shadow-glass">
         <div className="flex items-center justify-between px-4 py-3 md:px-6 md:py-4">
           <h1 className="text-lg md:text-xl font-bold text-white">FahrtenBuch Pro</h1>
-          <button
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="p-2 rounded-md transition-all duration-200 hover:bg-white/10 text-white active:scale-95"
+            className="text-white hover:bg-white/10"
+            aria-label={mobileMenuOpen ? 'Cerrar menú' : 'Abrir menú'}
           >
-            <Menu size={24} />
-          </button>
+            <Menu size={20} />
+          </Button>
         </div>
       </div>
 
@@ -508,7 +509,7 @@ const App: React.FC = () => {
           {renderSidebarContent()}
         </nav>
       )}
-      <main className="relative z-10 flex-1 overflow-y-auto overflow-x-hidden bg-transparent w-full h-full pt-20 lg:pt-6 px-4 md:px-6 lg:px-8 pb-6">
+      <main className="relative z-10 flex-1 overflow-y-auto overflow-x-hidden bg-transparent w-full h-full pt-2 lg:pt-6 px-4 md:px-6 lg:px-8 pb-6">
         <div className="w-full max-w-7xl mx-auto h-full">
           <Suspense fallback={<div className="text-sm text-on-surface-dark-secondary">Loading…</div>}>
             {renderView()}
@@ -528,12 +529,12 @@ const App: React.FC = () => {
               <h3 className="font-bold text-sm">{t('update_available')}</h3>
               <p className="text-xs text-blue-100">{t('update_available_desc')}</p>
             </div>
-            <button
+            <Button
               onClick={() => reloadPage(false)}
-              className="w-full md:w-auto bg-blue-950/80 text-white border border-white/20 px-4 py-2 rounded-full text-xs font-bold hover:bg-blue-900 transition-all shadow-lg active:scale-95"
+              className="w-full md:w-auto bg-blue-950/80 text-white border border-white/20 px-4 py-2 rounded-full text-xs font-bold hover:bg-blue-900 transition-all shadow-lg"
             >
               {t('update_now')}
-            </button>
+            </Button>
           </div>
         </div>
       )}
