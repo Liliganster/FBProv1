@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { Button } from '@/components/ui/button';
+import { Portal } from '@/components/ui/portal';
 import { AppErrorBoundary } from './components/GranularErrorBoundary';
 import {
   LayoutDashboard,
@@ -520,23 +521,25 @@ const App: React.FC = () => {
 
       {/* Version Update Notification */}
       {hasUpdate && (
-        <div className="fixed bottom-4 left-4 right-4 md:left-auto md:right-4 z-50 animate-bounce-subtle">
-          <div className="bg-gradient-to-br from-brand-primary to-blue-600 text-white p-4 rounded-xl shadow-lg border border-white/20 backdrop-blur-md flex flex-col md:flex-row items-start md:items-center gap-3 md:gap-4 w-full md:max-w-sm">
-            <div className="bg-white/20 p-2 rounded-full">
-              <RefreshIcon className="w-6 h-6 animate-spin-slow" />
+        <Portal>
+          <div className="fixed bottom-4 left-4 right-4 md:left-auto md:right-4 z-50 animate-bounce-subtle pointer-events-auto">
+            <div className="bg-gradient-to-br from-brand-primary to-blue-600 text-white p-4 rounded-xl shadow-lg border border-white/20 backdrop-blur-md flex flex-col md:flex-row items-start md:items-center gap-3 md:gap-4 w-full md:max-w-sm">
+              <div className="bg-white/20 p-2 rounded-full">
+                <RefreshIcon className="w-6 h-6 animate-spin-slow" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-bold text-sm">{t('update_available')}</h3>
+                <p className="text-xs text-blue-100">{t('update_available_desc')}</p>
+              </div>
+              <Button
+                onClick={() => reloadPage(false)}
+                className="w-full md:w-auto bg-blue-950/80 text-white border border-white/20 px-4 py-2 rounded-full text-xs font-bold hover:bg-blue-900 transition-all shadow-lg"
+              >
+                {t('update_now')}
+              </Button>
             </div>
-            <div className="flex-1">
-              <h3 className="font-bold text-sm">{t('update_available')}</h3>
-              <p className="text-xs text-blue-100">{t('update_available_desc')}</p>
-            </div>
-            <Button
-              onClick={() => reloadPage(false)}
-              className="w-full md:w-auto bg-blue-950/80 text-white border border-white/20 px-4 py-2 rounded-full text-xs font-bold hover:bg-blue-900 transition-all shadow-lg"
-            >
-              {t('update_now')}
-            </Button>
           </div>
-        </div>
+        </Portal>
       )}
     </div>
   );
