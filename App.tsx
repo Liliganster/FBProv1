@@ -440,7 +440,7 @@ const App: React.FC = () => {
 
   return (
     <div
-      className="relative flex flex-col md:flex-row h-screen w-screen overflow-x-hidden overflow-y-hidden font-sans bg-gradient-dark"
+      className="relative flex flex-col lg:flex-row h-screen w-full overflow-x-hidden overflow-y-hidden font-sans bg-gradient-dark"
       style={{
         background: personalization.backgroundImage
           ? (personalization.backgroundBlur > 0
@@ -470,11 +470,11 @@ const App: React.FC = () => {
 
       {/* Mobile/Tablet Header with Hamburger Menu */}
       <div className="fixed top-0 left-0 right-0 z-30 lg:hidden bg-gradient-to-br from-white/5 via-blue-400/8 to-blue-500/5 backdrop-blur-xl backdrop-saturate-150 border-b border-white/10 shadow-glass">
-        <div className="flex items-center justify-between p-4 md:px-6">
-          <h1 className="text-base md:text-lg font-bold text-white">FahrtenBuch Pro</h1>
+        <div className="flex items-center justify-between px-4 py-3 md:px-6 md:py-4">
+          <h1 className="text-lg md:text-xl font-bold text-white">FahrtenBuch Pro</h1>
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="p-2 min-h-11 min-w-11 rounded-smooth transition-all duration-300 transform hover:scale-105 hover:bg-gradient-surface hover:shadow-brand/20 hover:shadow-md text-white"
+            className="p-2 rounded-md transition-all duration-200 hover:bg-white/10 text-white active:scale-95"
           >
             <Menu size={24} />
           </button>
@@ -488,7 +488,7 @@ const App: React.FC = () => {
             className="fixed inset-0 bg-black/50 z-40 animate-fadeIn lg:hidden"
             onClick={() => setMobileMenuOpen(false)}
           />
-          <nav className="fixed top-0 left-0 w-4/5 max-w-sm md:max-w-md h-screen z-50 text-on-surface-dark flex flex-col shadow-glass bg-gradient-to-br from-white/5 via-blue-400/8 to-blue-500/5 backdrop-blur-xl backdrop-saturate-150 border-white/10 animate-slideInLeft overflow-y-auto lg:hidden">
+          <nav className="fixed top-0 left-0 w-full max-w-xs md:max-w-sm h-screen z-50 text-on-surface-dark flex flex-col shadow-glass bg-gradient-to-br from-white/5 via-blue-400/8 to-blue-500/5 backdrop-blur-xl backdrop-saturate-150 border-r border-white/10 animate-slideInLeft overflow-y-auto lg:hidden">
             {renderSidebarContent()}
           </nav>
         </>
@@ -508,8 +508,8 @@ const App: React.FC = () => {
           {renderSidebarContent()}
         </nav>
       )}
-      <main className="relative z-10 flex-1 overflow-y-auto overflow-x-hidden bg-transparent w-full h-full pt-24 lg:pt-10 px-4 md:px-6 lg:px-10 pb-6 lg:pb-10">
-        <div className="w-full h-full">
+      <main className="relative z-10 flex-1 overflow-y-auto overflow-x-hidden bg-transparent w-full h-full pt-20 lg:pt-6 px-4 md:px-6 lg:px-8 pb-6">
+        <div className="w-full max-w-7xl mx-auto h-full">
           <Suspense fallback={<div className="text-sm text-on-surface-dark-secondary">Loading…</div>}>
             {renderView()}
           </Suspense>
@@ -519,8 +519,8 @@ const App: React.FC = () => {
 
       {/* Version Update Notification */}
       {hasUpdate && (
-        <div className="fixed bottom-4 right-4 z-50 animate-bounce-subtle">
-          <div className="bg-gradient-to-br from-brand-primary to-blue-600 text-white p-4 rounded-organic shadow-lg border border-white/20 backdrop-blur-md flex items-center gap-4 max-w-sm">
+        <div className="fixed bottom-4 left-4 right-4 md:left-auto md:right-4 z-50 animate-bounce-subtle">
+          <div className="bg-gradient-to-br from-brand-primary to-blue-600 text-white p-4 rounded-xl shadow-lg border border-white/20 backdrop-blur-md flex flex-col md:flex-row items-start md:items-center gap-3 md:gap-4 w-full md:max-w-sm">
             <div className="bg-white/20 p-2 rounded-full">
               <RefreshIcon className="w-6 h-6 animate-spin-slow" />
             </div>
@@ -530,7 +530,7 @@ const App: React.FC = () => {
             </div>
             <button
               onClick={() => reloadPage(false)}
-              className="bg-blue-950/80 text-white border border-white/20 px-4 py-2 rounded-full text-xs font-bold hover:bg-blue-900 transition-all shadow-lg active:scale-95"
+              className="w-full md:w-auto bg-blue-950/80 text-white border border-white/20 px-4 py-2 rounded-full text-xs font-bold hover:bg-blue-900 transition-all shadow-lg active:scale-95"
             >
               {t('update_now')}
             </button>
