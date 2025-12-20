@@ -369,9 +369,9 @@ const TripsView: React.FC<TripsViewProps> = ({ personalization, theme }) => {
               <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
                 <Button
                   id="trips-bulk-upload-btn"
-                  variant="success"
+                  variant="primary"
                   onClick={() => setIsBulkModalOpen(true)}
-                  className="h-[38px] w-full sm:w-auto min-w-[160px] border border-white/10"
+                  className="h-[38px] w-full sm:w-auto min-w-[160px] bg-gradient-to-r from-brand-secondary to-success-dark shadow-[0_2px_10px_rgba(52,199,89,0.3),inset_0_1px_0_rgba(255,255,255,0.2)] hover:shadow-[0_4px_16px_rgba(52,199,89,0.4),inset_0_1px_0_rgba(255,255,255,0.3)] focus:ring-green-500"
                 >
                   <UploadCloudIcon className="w-5 h-5 mr-2" />
                   {t('trips_bulkUpload')}
