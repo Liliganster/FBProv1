@@ -290,17 +290,20 @@ export const DriveIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
     {...props}
     xmlns="http://www.w3.org/2000/svg"
     viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1.6"
-    strokeLinecap="round"
-    strokeLinejoin="round"
   >
-    {/* Simple stylized triangle similar to Google Drive */}
-    <path d="M9 3h6l4 7-3 5H8L4 10l5-7z" fill="none" />
-    <path d="M9 3 4 10l4 8" />
-    <path d="M15 3 20 10l-4 8" />
-    <path d="M8 18h8" />
+    {/* Icono tipo Google Drive: triángulo de tres colores */}
+    <path
+      d="M7.5 3L3 11l3 5.5L10.5 8.5 7.5 3z"
+      fill="#0F9D58"
+    />
+    <path
+      d="M16.5 3h-9L11 8.5h9L16.5 3z"
+      fill="#FFC107"
+    />
+    <path
+      d="M11 8.5L6 16.5 7.5 21h9l1.5-4.5-7-8z"
+      fill="#4285F4"
+    />
   </svg>
 );
 

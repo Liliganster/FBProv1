@@ -39,8 +39,9 @@ const DISCOVERY_DOCS = [
 ];
 
 const GOOGLE_CALENDAR_CLIENT_ID = import.meta.env.VITE_GOOGLE_CALENDAR_CLIENT_ID;
-const GOOGLE_PICKER_DEVELOPER_KEY =
-  import.meta.env.VITE_GOOGLE_PICKER_API_KEY || import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '';
+// Dedicated key for Google Picker / Drive.
+// No fallback to MAPS key to avoid "developer key not recognized" errors.
+const GOOGLE_PICKER_DEVELOPER_KEY = import.meta.env.VITE_GOOGLE_PICKER_API_KEY || '';
 
 export const GoogleCalendarProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const { userProfile } = useUserProfile();
