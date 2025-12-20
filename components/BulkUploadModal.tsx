@@ -750,17 +750,6 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
                     >
                       {t('bulk_document_type_callsheet')}
                     </Button>
-                    <Button
-                      type="button"
-                      variant={documentType === DocumentType.EMAIL ? 'primary' : 'ghost'}
-                      onClick={() => setDocumentType(DocumentType.EMAIL)}
-                      className={`w-full text-center px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${documentType === DocumentType.EMAIL
-                        ? 'bg-brand-primary text-white'
-                        : 'text-on-surface-dark-secondary hover:bg-gray-700/50'
-                        }`}
-                    >
-                      {t('bulk_document_type_email')}
-                    </Button>
                   </div>
                 </div>
                 <div id="bulk-ai-mode">
@@ -820,19 +809,6 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({ projects, onSave, onC
                   </div>
                   <p className="mt-1 text-[10px] text-on-surface-dark-secondary">{t('bulk_extraction_mode_selected', { mode: aiExtractMode === 'vision' ? 'Vision' : (aiExtractMode === 'direct' ? t('bulk_extraction_mode_direct') : t('bulk_extraction_mode_agent')) })}</p>
                 </div>
-                {documentType === DocumentType.EMAIL && (
-                  <div id="bulk-ai-paste">
-                    <label className="block text-xs font-medium uppercase tracking-wide text-on-surface-dark-secondary mb-2">{t('bulk_ai_paste_label')}</label>
-                    <textarea
-                      id="bulk-ai-textarea"
-                      rows={8}
-                      className="w-full bg-background-dark border border-gray-600/70 rounded-md p-3 font-mono text-xs focus:outline-none focus:ring-2 focus:ring-brand-primary resize-y min-h-[140px]"
-                      placeholder={t('bulk_ai_paste_placeholder')}
-                      value={aiText}
-                      onChange={(e) => setAiText(e.target.value)}
-                    />
-                  </div>
-                )}
                 <div id="bulk-ai-drop" onDragOver={handleDragOver} onDrop={handleDrop} className="border-2 border-dashed border-gray-600 rounded-lg p-8 text-center cursor-pointer hover:border-brand-primary transition-colors" onClick={() => document.getElementById('ai-upload')?.click()}>
                   <UploadCloudIcon className="w-12 h-12 mx-auto text-gray-500 mb-2" />
                   <h3 className="font-semibold text-lg text-white">{t('bulk_ai_drag_drop_title')}</h3>
